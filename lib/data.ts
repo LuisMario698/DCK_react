@@ -1,5 +1,6 @@
 import { Embarcacion } from '@/types/embarcacion';
 import { Persona } from '@/types/persona';
+import { Manifiesto } from '@/types/manifiesto';
 
 // Datos de ejemplo - Embarcaciones
 export const embarcacionesData: Embarcacion[] = [
@@ -52,12 +53,40 @@ export const personasData: Persona[] = [
   },
 ];
 
+// Datos de ejemplo - Manifiestos
+export const manifiestosData: Manifiesto[] = [
+  {
+    id: 1,
+    personaId: 1,
+    personaNombre: 'Juan Pérez García',
+    embarcacionId: 3,
+    embarcacionNombre: 'El Oro Jackson',
+    fechaCreacion: new Date(Date.now() - 86400000 * 5), // Hace 5 días
+    descripcion: 'Manifiesto de carga y tripulación',
+    estado: 'Activo',
+  },
+  {
+    id: 2,
+    personaId: 2,
+    personaNombre: 'María González López',
+    embarcacionId: 3,
+    embarcacionNombre: 'El Oro Jackson',
+    fechaCreacion: new Date(Date.now() - 86400000 * 3), // Hace 3 días
+    descripcion: 'Manifiesto de inspección',
+    estado: 'Pendiente',
+  },
+];
+
 export function getEmbarcaciones(): Embarcacion[] {
   return embarcacionesData;
 }
 
 export function getPersonas(): Persona[] {
   return personasData;
+}
+
+export function getManifiestos(): Manifiesto[] {
+  return manifiestosData;
 }
 
 export function formatFechaRelativa(fecha: Date): string {
@@ -70,4 +99,12 @@ export function formatFechaRelativa(fecha: Date): string {
   if (dias < 7) return `Hace ${dias} días`;
   if (dias < 30) return `Hace ${Math.floor(dias / 7)} semanas`;
   return `Hace ${Math.floor(dias / 30)} meses`;
+}
+
+export function formatFecha(fecha: Date): string {
+  return fecha.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 }
