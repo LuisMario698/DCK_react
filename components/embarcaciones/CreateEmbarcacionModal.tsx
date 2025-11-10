@@ -79,8 +79,8 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">
             {buqueToEdit ? 'Editar Buque' : 'Crear Nuevo Buque'}
@@ -96,7 +96,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
               value={nombre} 
               onChange={(e) => setNombre(e.target.value)} 
               placeholder="Ej: La Perla Negra"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" 
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
             />
           </div>
 
@@ -105,7 +105,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
             <select 
               value={tipo} 
               onChange={(e) => setTipo(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
             >
               <option value="Barco">Barco</option>
               <option value="Lancha">Lancha</option>
@@ -122,7 +122,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
               value={matricula} 
               onChange={(e) => setMatricula(e.target.value)} 
               placeholder="Ej: ABC-1234"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" 
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
             />
           </div>
 
@@ -132,7 +132,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
               value={puerto} 
               onChange={(e) => setPuerto(e.target.value)} 
               placeholder="Ej: Puerto Limón"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" 
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
             />
           </div>
 
@@ -144,7 +144,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
               value={capacidad} 
               onChange={(e) => setCapacidad(e.target.value)} 
               placeholder="Ej: 500"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2" 
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
             />
           </div>
 
@@ -153,7 +153,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
             <select 
               value={estado} 
               onChange={(e) => setEstado(e.target.value as 'Activo' | 'Inactivo' | 'En Mantenimiento')} 
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
             >
               <option value="Activo">Activo</option>
               <option value="Inactivo">Inactivo</option>

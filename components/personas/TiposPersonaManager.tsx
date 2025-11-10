@@ -159,8 +159,8 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold text-gray-800">
                 {editingTipo ? 'Editar Tipo de Persona' : 'Nuevo Tipo de Persona'}
@@ -182,7 +182,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   required
                   value={formData.nombre_tipo}
                   onChange={(e) => setFormData({ ...formData, nombre_tipo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                   placeholder="Ej: Capitán, Tripulante, Inspector"
                   disabled={saving}
                 />
@@ -195,7 +195,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white text-gray-900"
                   placeholder="Descripción opcional del tipo de persona"
                   rows={3}
                   disabled={saving}

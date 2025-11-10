@@ -86,7 +86,7 @@ export function Sidebar() {
           bg-gray-900/8 backdrop-blur-2xl
           rounded-2xl
           z-50 
-          ${hasAnimated ? 'transition-transform duration-300 ease-in-out' : ''}
+          ${hasAnimated ? 'transition-transform duration-200 ease-in-out' : ''}
           ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+2rem)]'}
           shadow-2xl border-2 border-white/40
           will-change-transform
@@ -126,7 +126,7 @@ export function Sidebar() {
             <nav ref={navRef} className="space-y-7 relative">
               {/* Indicador estilo vidrio azul - Fluent Design */}
               <div
-                className="absolute left-0 rounded-lg transition-all duration-300 ease-out pointer-events-none"
+                className="absolute left-0 rounded-lg transition-all duration-200 ease-out pointer-events-none"
                 style={{
                   top: `${indicatorStyle.top}px`,
                   height: `${indicatorStyle.height}px`,

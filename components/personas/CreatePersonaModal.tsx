@@ -102,8 +102,8 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             {personaToEdit ? 'Editar Persona' : 'Crear Nueva Persona'}
@@ -135,11 +135,11 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                     required
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                     placeholder="Ej: Juan Carlos Pérez Rodríguez"
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-600 mt-1">
                     Ingrese el nombre completo de la persona
                   </p>
                 </div>
@@ -152,7 +152,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                     required
                     value={formData.tipo_persona_id || ''}
                     onChange={(e) => setFormData({ ...formData, tipo_persona_id: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                     disabled={loading}
                   >
                     <option value="">Seleccione un tipo</option>
@@ -162,7 +162,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-600 mt-1">
                     Seleccione el rol o función de la persona
                   </p>
                 </div>
@@ -174,12 +174,12 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                   <textarea
                     value={formData.info_contacto}
                     onChange={(e) => setFormData({ ...formData, info_contacto: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white text-gray-900"
                     placeholder="Ej: Tel: +506 8888-8888, Email: correo@ejemplo.com, Dirección: San José"
                     rows={4}
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-600 mt-1">
                     Puede incluir teléfono, email, dirección u otros datos de contacto
                   </p>
                 </div>

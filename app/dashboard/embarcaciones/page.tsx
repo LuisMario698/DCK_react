@@ -36,7 +36,7 @@ export default function EmbarcacionesPage() {
 
   const totalItems = buques.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-
+  
   const handleEdit = (id: number) => {
     console.log('🚢 handleEdit llamado con id:', id);
     const buque = buques.find(b => b.id === id);
