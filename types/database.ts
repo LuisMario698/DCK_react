@@ -117,15 +117,23 @@ export interface Manifiesto {
   id: number;
   numero_manifiesto: string;
   fecha_emision: string;
-  buque_id: number | null;
+  buque_id: number;
   generador_id: number | null;
-  transportista_id: number | null;
-  receptor_id: number | null;
   imagen_manifiesto_url: string | null;
-  estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado';
-  digitalizador_id: number | null;
-  fecha_digitalizacion: string | null;
+  estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado' | 'aprobado' | 'rechazado';
   observaciones: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManifiestoResiduo {
+  id: number;
+  manifiesto_id: number;
+  aceite_usado: number;
+  filtros_aceite: number;
+  filtros_diesel: number;
+  filtros_aire: number;
+  basura: number;
   created_at: string;
   updated_at: string;
 }
@@ -173,8 +181,6 @@ export interface CumplimientoConRelaciones extends Cumplimiento {
 export interface ManifiestoConRelaciones extends Manifiesto {
   buque?: Buque;
   generador?: Persona;
-  transportista?: Persona;
-  receptor?: Persona;
 }
 
 export interface ManifiestoBasuronConRelaciones extends ManifiestoBasuron {

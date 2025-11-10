@@ -1,15 +1,17 @@
  'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { createBuque } from '@/lib/services/buques';
+import { createBuque, updateBuque } from '@/lib/services/buques';
+import { Buque } from '@/types/database';
 
 interface Props {
   onCreate: () => void;
   onClose: () => void;
+  buqueToEdit?: Buque | null;
 }
 
-export function CreateEmbarcacionModal({ onCreate, onClose }: Props) {
+export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props) {
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('Barco');
@@ -18,12 +20,35 @@ export function CreateEmbarcacionModal({ onCreate, onClose }: Props) {
   const [capacidad, setCapacidad] = useState('');
   const [estado, setEstado] = useState<'Activo' | 'Inactivo' | 'En Mantenimiento'>('Activo');
 
+  // Cargar datos si estamos editando
+  useEffect(() => {
+    if (buqueToEdit) {
+      setNombre(buqueToEdit.nombre_buque);
+      setTipo(buqueToEdit.tipo_buque || 'Barco');
+      setMatricula(buqueToEdit.matricula || '');
+      setPuerto(buqueToEdit.puerto_base || '');
+      setCapacidad(buqueToEdit.capacidad_toneladas?.toString() || '');
+      setEstado(buqueToEdit.estado);
+    } else {
+      resetForm();
+    }
+  }, [buqueToEdit]);
+
+  const resetForm = () => {
+    setNombre('');
+    setTipo('Barco');
+    setMatricula('');
+    setPuerto('');
+    setCapacidad('');
+    setEstado('Activo');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await createBuque({
+      const buqueData = {
         nombre_buque: nombre,
         tipo_buque: tipo,
         matricula: matricula || null,
@@ -31,15 +56,23 @@ export function CreateEmbarcacionModal({ onCreate, onClose }: Props) {
         capacidad_toneladas: capacidad ? parseFloat(capacidad) : null,
         estado,
         propietario_id: null,
-        fecha_registro: new Date().toISOString().split('T')[0]
-      });
+        fecha_registro: buqueToEdit?.fecha_registro || new Date().toISOString().split('T')[0]
+      };
 
-      alert('Buque creado exitosamente');
+      if (buqueToEdit) {
+        await updateBuque(buqueToEdit.id, buqueData);
+        alert('Buque actualizado exitosamente');
+      } else {
+        await createBuque(buqueData);
+        alert('Buque creado exitosamente');
+      }
+
       onCreate();
       onClose();
+      resetForm();
     } catch (error) {
-      console.error('Error creando buque:', error);
-      alert('Error al crear el buque');
+      console.error('Error guardando buque:', error);
+      alert(`Error al ${buqueToEdit ? 'actualizar' : 'crear'} el buque`);
     } finally {
       setLoading(false);
     }
@@ -49,7 +82,9 @@ export function CreateEmbarcacionModal({ onCreate, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Crear Nuevo Buque</h3>
+          <h3 className="text-lg font-semibold">
+            {buqueToEdit ? 'Editar Buque' : 'Crear Nuevo Buque'}
+          </h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✖</button>
         </div>
 
@@ -131,7 +166,14 @@ export function CreateEmbarcacionModal({ onCreate, onClose }: Props) {
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creando...' : 'Crear Buque'}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  {buqueToEdit ? 'Actualizando...' : 'Creando...'}
+                </span>
+              ) : (
+                buqueToEdit ? 'Actualizar Buque' : 'Crear Buque'
+              )}
             </Button>
           </div>
         </form>

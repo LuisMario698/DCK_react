@@ -39,23 +39,33 @@ export default function PersonasPage() {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   
   const handleEdit = (id: number) => {
+    console.log('🔵 handleEdit llamado con id:', id);
     const persona = personas.find(p => p.id === id);
+    console.log('🔵 Persona encontrada:', persona);
     if (persona) {
       setPersonaToEdit(persona);
       setIsModalOpen(true);
+      console.log('🔵 Modal abierto con persona:', persona);
+    } else {
+      console.error('❌ No se encontró persona con id:', id);
     }
   };
   
   const handleDelete = async (id: number) => {
+    console.log('🔴 handleDelete llamado con id:', id);
     if (confirm('¿Estás seguro de eliminar esta persona?')) {
       try {
+        console.log('🔴 Eliminando persona...');
         await deletePersona(id);
         await loadPersonas();
         alert('Persona eliminada exitosamente');
+        console.log('🔴 Persona eliminada exitosamente');
       } catch (error) {
-        console.error('Error eliminando persona:', error);
+        console.error('❌ Error eliminando persona:', error);
         alert('Error al eliminar la persona');
       }
+    } else {
+      console.log('🔴 Eliminación cancelada por el usuario');
     }
   };
   
