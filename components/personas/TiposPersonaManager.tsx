@@ -35,12 +35,15 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
   }
 
   const handleOpenModal = (tipo?: TipoPersona) => {
+    console.log('🟢 handleOpenModal llamado con tipo:', tipo);
     if (tipo) {
       setEditingTipo(tipo);
       setFormData({ nombre_tipo: tipo.nombre_tipo, descripcion: tipo.descripcion || '' });
+      console.log('🟢 Modo edición activado para tipo:', tipo.nombre_tipo);
     } else {
       setEditingTipo(null);
       setFormData({ nombre_tipo: '', descripcion: '' });
+      console.log('🟢 Modo creación activado');
     }
     setIsModalOpen(true);
   };
@@ -83,15 +86,20 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
   };
 
   const handleDelete = async (id: number) => {
+    console.log('🟡 handleDelete de tipo llamado con id:', id);
     if (confirm('¿Estás seguro de eliminar este tipo de persona? Esto puede afectar a las personas asociadas.')) {
       try {
+        console.log('🟡 Eliminando tipo...');
         await deleteTipoPersona(id);
         await loadTipos();
         onUpdate?.();
+        console.log('🟡 Tipo eliminado exitosamente');
       } catch (error) {
-        console.error('Error eliminando tipo:', error);
+        console.error('❌ Error eliminando tipo:', error);
         alert('Error al eliminar. Es posible que haya personas asociadas a este tipo.');
       }
+    } else {
+      console.log('🟡 Eliminación de tipo cancelada por el usuario');
     }
   };
 

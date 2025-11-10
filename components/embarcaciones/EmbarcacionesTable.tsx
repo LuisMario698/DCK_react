@@ -90,14 +90,22 @@ export function EmbarcacionesTable({
               <TableCell>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => onEdit?.(buque.id)}
+                    onClick={() => {
+                      console.log('⛴️ Click en botón EDITAR buque, buque.id:', buque.id);
+                      console.log('⛴️ onEdit existe?', !!onEdit);
+                      onEdit?.(buque.id);
+                    }}
                     className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 font-medium text-gray-700"
                   >
                     <Icons.Edit />
                     <span>Editar</span>
                   </button>
                   <button
-                    onClick={() => onDelete?.(buque.id)}
+                    onClick={() => {
+                      console.log('⛴️ Click en botón ELIMINAR buque, buque.id:', buque.id);
+                      console.log('⛴️ onDelete existe?', !!onDelete);
+                      onDelete?.(buque.id);
+                    }}
                     className="w-9 h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                     title="Eliminar"
                   >

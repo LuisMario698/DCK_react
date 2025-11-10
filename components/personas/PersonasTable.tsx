@@ -101,7 +101,11 @@ export function PersonasTable({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => onEdit?.(persona.id)}
+                      onClick={() => {
+                        console.log('⭐ Click en botón EDITAR, persona.id:', persona.id);
+                        console.log('⭐ onEdit existe?', !!onEdit);
+                        onEdit?.(persona.id);
+                      }}
                       className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all flex items-center gap-1.5 font-medium text-gray-700"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,7 +114,11 @@ export function PersonasTable({
                       <span>Editar</span>
                     </button>
                     <button
-                      onClick={() => onDelete?.(persona.id)}
+                      onClick={() => {
+                        console.log('⭐ Click en botón ELIMINAR, persona.id:', persona.id);
+                        console.log('⭐ onDelete existe?', !!onDelete);
+                        onDelete?.(persona.id);
+                      }}
                       className="w-9 h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm hover:shadow"
                       title="Eliminar"
                     >
