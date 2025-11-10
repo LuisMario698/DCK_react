@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
-import { createManifiesto, getManifiestos, deleteManifiesto } from '@/lib/services/manifiestos';
+import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto } from '@/lib/services/manifiestos';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 
 export default function ManifiestosPage() {
@@ -11,6 +11,7 @@ export default function ManifiestosPage() {
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
   
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
@@ -19,7 +20,8 @@ export default function ManifiestosPage() {
     numero_manifiesto: '',
     fecha_emision: new Date().toISOString().split('T')[0],
     buque_id: '',
-    persona_id: '',
+    responsable_principal_id: '',
+    responsable_secundario_id: '',
     observaciones: '',
   });
   
@@ -27,7 +29,6 @@ export default function ManifiestosPage() {
     aceite_usado: 0,
     filtros_aceite: 0,
     filtros_diesel: 0,
-    filtros_aire: 0,
     basura: 0,
   });
   
@@ -103,7 +104,7 @@ export default function ManifiestosPage() {
 
   const handleSubmit = async () => {
     try {
-      if (!formData.numero_manifiesto || !formData.fecha_emision || !formData.buque_id || !formData.persona_id) {
+      if (!formData.fecha_emision || !formData.buque_id || !formData.responsable_principal_id) {
         alert('❌ Por favor completa todos los campos obligatorios');
         return;
       }
@@ -111,30 +112,30 @@ export default function ManifiestosPage() {
       setSaving(true);
       
       const manifiestoData = {
-        numero_manifiesto: formData.numero_manifiesto,
         fecha_emision: formData.fecha_emision,
         buque_id: parseInt(formData.buque_id),
-        generador_id: parseInt(formData.persona_id),
+        responsable_principal_id: parseInt(formData.responsable_principal_id),
+        responsable_secundario_id: formData.responsable_secundario_id ? parseInt(formData.responsable_secundario_id) : null,
         estado_digitalizacion: archivo ? 'completado' : 'pendiente' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
       };
 
-      await createManifiesto(manifiestoData, residuos);
-      alert('✅ Manifiesto creado exitosamente');
+      const resultado = await createManifiesto(manifiestoData, residuos, archivo);
+      alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
       
       setFormData({
         numero_manifiesto: '',
         fecha_emision: new Date().toISOString().split('T')[0],
         buque_id: '',
-        persona_id: '',
+        responsable_principal_id: '',
+        responsable_secundario_id: '',
         observaciones: '',
       });
       setResiduos({
         aceite_usado: 0,
         filtros_aceite: 0,
         filtros_diesel: 0,
-        filtros_aire: 0,
         basura: 0,
       });
       setArchivo(null);
@@ -163,7 +164,8 @@ export default function ManifiestosPage() {
   };
 
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
-  const selectedPersona = personas.find(p => p.id === parseInt(formData.persona_id));
+  const selectedResponsablePrincipal = personas.find(p => p.id === parseInt(formData.responsable_principal_id));
+  const selectedResponsableSecundario = personas.find(p => p.id === parseInt(formData.responsable_secundario_id));
 
   return (
     <div className="space-y-6">
@@ -216,22 +218,10 @@ export default function ManifiestosPage() {
               <div className="space-y-6">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl font-bold text-gray-900 mb-2">📋 Información Básica</h2>
-                  <p className="text-gray-600">Ingrese los datos básicos del manifiesto</p>
+                  <p className="text-gray-600">Seleccione la fecha del manifiesto</p>
+                  <p className="text-sm text-blue-600 mt-2">ℹ️ El número se generará automáticamente</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Número de Manifiesto <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.numero_manifiesto}
-                      onChange={(e) => setFormData({ ...formData, numero_manifiesto: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-lg"
-                      placeholder="Ej: MAN-2025-001"
-                    />
-                  </div>
+                <div className="max-w-2xl mx-auto">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
                       Fecha de Emisión <span className="text-red-500">*</span>
@@ -351,22 +341,7 @@ export default function ManifiestosPage() {
                     />
                   </div>
                   
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border-2 border-purple-300">
-                    <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <span className="text-2xl">💨</span>
-                      Filtros de Aire (Unidades)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={residuos.filtros_aire}
-                      onChange={(e) => setResiduos({ ...residuos, filtros_aire: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-lg bg-white"
-                      placeholder="0"
-                    />
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-xl border-2 border-red-300 md:col-span-2">
+                  <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 rounded-xl border-2 border-red-300">
                     <label className="block text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <span className="text-2xl">🗑️</span>
                       Basura (Kilogramos)
@@ -388,40 +363,76 @@ export default function ManifiestosPage() {
             {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="text-center mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-2">👤 Persona Responsable</h2>
-                  <p className="text-gray-600">Seleccione la persona responsable del manifiesto</p>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">👤 Personas Responsables</h2>
+                  <p className="text-gray-600">Seleccione las personas responsables del manifiesto</p>
                 </div>
-                <div className="max-w-2xl mx-auto">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">
-                    Seleccionar Persona <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    required
-                    value={formData.persona_id}
-                    onChange={(e) => setFormData({ ...formData, persona_id: e.target.value })}
-                    className="w-full px-5 py-4 text-lg font-medium border-2 border-purple-400 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-purple-500 bg-white shadow-md"
-                  >
-                    <option value="">🔍 Seleccionar persona...</option>
-                    {personas.map((persona) => (
-                      <option key={persona.id} value={persona.id}>
-                        👤 {persona.nombre} {persona.tipo_persona?.nombre_tipo ? `(${persona.tipo_persona.nombre_tipo})` : ''}
-                      </option>
-                    ))}
-                  </select>
+                <div className="max-w-2xl mx-auto space-y-6">
+                  {/* Responsable Principal */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-3">
+                      Responsable Principal <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      required
+                      value={formData.responsable_principal_id}
+                      onChange={(e) => setFormData({ ...formData, responsable_principal_id: e.target.value })}
+                      className="w-full px-5 py-4 text-lg font-medium border-2 border-purple-400 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-purple-500 bg-white shadow-md"
+                    >
+                      <option value="">🔍 Seleccionar responsable principal...</option>
+                      {personas.map((persona) => (
+                        <option key={persona.id} value={persona.id}>
+                          👤 {persona.nombre} {persona.tipo_persona?.nombre_tipo ? `(${persona.tipo_persona.nombre_tipo})` : ''}
+                        </option>
+                      ))}
+                    </select>
 
-                  {selectedPersona && (
-                    <div className="mt-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-400 rounded-xl shadow-md">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-                          <span className="text-2xl">✅</span>
-                        </div>
-                        <div>
-                          <p className="text-lg font-bold text-purple-900">Persona Seleccionada</p>
-                          <p className="text-gray-700">{selectedPersona.nombre}</p>
+                    {selectedResponsablePrincipal && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-400 rounded-xl shadow-md">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <span className="text-xl">✅</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-purple-900">Responsable Principal</p>
+                            <p className="text-gray-700">{selectedResponsablePrincipal.nombre}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+
+                  {/* Responsable Secundario */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-3">
+                      Responsable Secundario <span className="text-gray-400">(Opcional)</span>
+                    </label>
+                    <select
+                      value={formData.responsable_secundario_id}
+                      onChange={(e) => setFormData({ ...formData, responsable_secundario_id: e.target.value })}
+                      className="w-full px-5 py-4 text-lg font-medium border-2 border-blue-400 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-blue-500 bg-white shadow-md"
+                    >
+                      <option value="">🔍 Seleccionar responsable secundario (opcional)...</option>
+                      {personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).map((persona) => (
+                        <option key={persona.id} value={persona.id}>
+                          👤 {persona.nombre} {persona.tipo_persona?.nombre_tipo ? `(${persona.tipo_persona.nombre_tipo})` : ''}
+                        </option>
+                      ))}
+                    </select>
+
+                    {selectedResponsableSecundario && (
+                      <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-400 rounded-xl shadow-md">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                            <span className="text-xl">✅</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-blue-900">Responsable Secundario</p>
+                            <p className="text-gray-700">{selectedResponsableSecundario.nombre}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -575,7 +586,7 @@ export default function ManifiestosPage() {
                     <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Número</th>
                     <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Fecha</th>
                     <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Buque</th>
-                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Generador</th>
+                    <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Responsables</th>
                     <th className="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider">Estado</th>
                     <th className="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider">Acciones</th>
                   </tr>
@@ -613,9 +624,21 @@ export default function ManifiestosPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xl">👤</span>
-                            <span className="text-gray-700">{manifiesto.generador?.nombre || 'N/A'}</span>
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">👤</span>
+                              <span className="text-sm font-semibold text-gray-900">
+                                {manifiesto.responsable_principal?.nombre || 'N/A'}
+                              </span>
+                            </div>
+                            {manifiesto.responsable_secundario && (
+                              <div className="flex items-center gap-2 pl-6">
+                                <span className="text-sm text-gray-500">+</span>
+                                <span className="text-sm text-gray-600">
+                                  {manifiesto.responsable_secundario.nombre}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -640,6 +663,16 @@ export default function ManifiestosPage() {
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
                             <button
+                              onClick={() => setViewingManifiesto(manifiesto)}
+                              className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                              title="Ver detalles"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                            </button>
+                            <button
                               onClick={() => handleDelete(manifiesto.id)}
                               className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                               title="Eliminar"
@@ -658,6 +691,183 @@ export default function ManifiestosPage() {
             </div>
           )}
         </div>
+
+      {/* Modal de visualización de detalles */}
+      {viewingManifiesto && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header del Modal */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-8 py-6 rounded-t-3xl z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center">
+                    <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h2 className="text-3xl font-bold text-white">Detalles del Manifiesto</h2>
+                    <p className="text-blue-100 text-sm mt-1">{viewingManifiesto.numero_manifiesto}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setViewingManifiesto(null)} 
+                  className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all"
+                >
+                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del Modal */}
+            <div className="p-8 space-y-6">
+              {/* Información Básica */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">📋</span>
+                  Información Básica
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Número de Manifiesto</p>
+                    <p className="text-lg font-bold text-blue-600">{viewingManifiesto.numero_manifiesto}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Fecha de Emisión</p>
+                    <p className="text-lg text-gray-900">
+                      {new Date(viewingManifiesto.fecha_emision).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Estado</p>
+                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                      viewingManifiesto.estado_digitalizacion === 'completado' 
+                        ? 'bg-green-100 text-green-800' 
+                        : viewingManifiesto.estado_digitalizacion === 'en_proceso'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : viewingManifiesto.estado_digitalizacion === 'aprobado'
+                        ? 'bg-blue-100 text-blue-800'
+                        : viewingManifiesto.estado_digitalizacion === 'rechazado'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {viewingManifiesto.estado_digitalizacion === 'completado' && '✅ Completado'}
+                      {viewingManifiesto.estado_digitalizacion === 'en_proceso' && '⚙️ En Proceso'}
+                      {viewingManifiesto.estado_digitalizacion === 'pendiente' && '⏳ Pendiente'}
+                      {viewingManifiesto.estado_digitalizacion === 'aprobado' && '👍 Aprobado'}
+                      {viewingManifiesto.estado_digitalizacion === 'rechazado' && '❌ Rechazado'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Embarcación */}
+              <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-2xl p-6 border-2 border-cyan-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">🚢</span>
+                  Embarcación
+                </h3>
+                <div>
+                  <p className="text-lg font-bold text-gray-900">{viewingManifiesto.buque?.nombre_buque || 'N/A'}</p>
+                </div>
+              </div>
+
+              {/* Responsables */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <span className="text-2xl">👥</span>
+                  Responsables
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold">Responsable Principal</p>
+                    <p className="text-lg font-bold text-gray-900">{viewingManifiesto.responsable_principal?.nombre || 'N/A'}</p>
+                  </div>
+                  {viewingManifiesto.responsable_secundario && (
+                    <div>
+                      <p className="text-sm text-gray-600 font-semibold">Responsable Secundario</p>
+                      <p className="text-lg font-bold text-gray-900">{viewingManifiesto.responsable_secundario.nombre}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Residuos */}
+              {viewingManifiesto.residuos && (
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">♻️</span>
+                    Residuos Registrados
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-xl p-4 border-2 border-amber-200">
+                      <p className="text-xs text-gray-600 font-semibold">Aceite Usado</p>
+                      <p className="text-2xl font-bold text-amber-600">{viewingManifiesto.residuos.aceite_usado} L</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border-2 border-blue-200">
+                      <p className="text-xs text-gray-600 font-semibold">Filtros de Aceite</p>
+                      <p className="text-2xl font-bold text-blue-600">{viewingManifiesto.residuos.filtros_aceite} un</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border-2 border-green-200">
+                      <p className="text-xs text-gray-600 font-semibold">Filtros de Diesel</p>
+                      <p className="text-2xl font-bold text-green-600">{viewingManifiesto.residuos.filtros_diesel} un</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border-2 border-red-200">
+                      <p className="text-xs text-gray-600 font-semibold">Basura</p>
+                      <p className="text-2xl font-bold text-red-600">{viewingManifiesto.residuos.basura} kg</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Imagen del Manifiesto */}
+              {viewingManifiesto.imagen_manifiesto_url && (
+                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-2xl p-6 border-2 border-gray-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">📄</span>
+                    Documento Digitalizado
+                  </h3>
+                  <div className="bg-white rounded-xl p-4 border-2 border-gray-300">
+                    <img 
+                      src={viewingManifiesto.imagen_manifiesto_url} 
+                      alt="Manifiesto escaneado" 
+                      className="w-full h-auto rounded-lg shadow-lg"
+                    />
+                    <a
+                      href={viewingManifiesto.imagen_manifiesto_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Abrir imagen en nueva pestaña
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Observaciones */}
+              {viewingManifiesto.observaciones && (
+                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-6 border-2 border-yellow-200">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span className="text-2xl">📝</span>
+                    Observaciones
+                  </h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{viewingManifiesto.observaciones}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
