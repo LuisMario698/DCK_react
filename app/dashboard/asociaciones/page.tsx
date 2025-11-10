@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { getAsociaciones, deleteAsociacion } from '@/lib/services/asociaciones';
 import { AsociacionRecolectora } from '@/types/database';
@@ -48,17 +47,16 @@ export default function AsociacionesPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Asociaciones Recolectoras</h1>
-            <p className="text-sm text-gray-500 mt-1">Gestión de empresas y organizaciones recolectoras</p>
-          </div>
-          <Button onClick={() => alert('Crear asociación - Modal próximamente')}>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Asociaciones Recolectoras</h1>
+          <p className="text-sm text-gray-500 mt-1">Gestión de empresas y organizaciones recolectoras</p>
+        </div>
+        <Button onClick={() => alert('Crear asociación - Modal próximamente')}>
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
             Nueva Asociación
           </Button>
         </div>
@@ -214,7 +212,6 @@ export default function AsociacionesPage() {
             </div>
           )}
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

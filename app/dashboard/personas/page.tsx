@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PersonasTable } from '@/components/personas/PersonasTable';
 import { CreatePersonaModal } from '@/components/personas/CreatePersonaModal';
 import { TiposPersonaManager } from '@/components/personas/TiposPersonaManager';
@@ -79,9 +78,8 @@ export default function PersonasPage() {
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Gestión de Personas</h1>
             <p className="text-sm text-gray-500 mt-1">Administra el personal y tripulación del sistema</p>
@@ -185,14 +183,13 @@ export default function PersonasPage() {
             onItemsPerPageChange={setItemsPerPage}
           />
         </div>
+        
+        <CreatePersonaModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onCreate={handleCreate}
+          personaToEdit={personaToEdit}
+        />
       </div>
-      
-      <CreatePersonaModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onCreate={handleCreate}
-        personaToEdit={personaToEdit}
-      />
-    </DashboardLayout>
   );
 }

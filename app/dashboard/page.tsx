@@ -1,4 +1,3 @@
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Icons } from '@/components/ui/Icons';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
@@ -14,8 +13,7 @@ export default async function DashboardPage() {
   ]);
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-800">Panel principal</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -92,6 +90,5 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
   );
 }

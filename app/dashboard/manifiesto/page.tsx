@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ManifiestosTable } from '@/components/manifiestos/ManifiestosTable';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
@@ -95,16 +94,15 @@ export default function ManifiestosPage() {
   };
   
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Digitalización de Manifiestos</h1>
-          <p className="text-sm text-gray-500 mt-1">Complete el proceso de digitalización paso a paso</p>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-800">Digitalización de Manifiestos</h1>
+        <p className="text-sm text-gray-500 mt-1">Complete el proceso de digitalización paso a paso</p>
+      </div>
 
-        {/* Proceso de Digitalización */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+      {/* Proceso de Digitalización */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
           {/* Steps Progress */}
           <div className="mb-8">
             <div className="flex items-center justify-between">
@@ -432,11 +430,11 @@ export default function ManifiestosPage() {
                 Finalizar Digitalización
               </Button>
             )}
-          </div>
         </div>
+      </div>
 
-        {/* Tabla de Manifiestos */}
-        <div>
+      {/* Tabla de Manifiestos */}
+      <div>
           <h2 className="text-xl font-bold text-gray-800 mb-4">Manifiestos Digitalizados</h2>
           <div className="space-y-4">
             <ManifiestosTable 
@@ -456,7 +454,6 @@ export default function ManifiestosPage() {
             />
           </div>
         </div>
-      </div>
-    </DashboardLayout>
+    </div>
   );
 }

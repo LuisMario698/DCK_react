@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { EmbarcacionesTable } from '@/components/embarcaciones/EmbarcacionesTable';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
@@ -64,21 +63,18 @@ export default function EmbarcacionesPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Cargando buques...</p>
-          </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando buques...</p>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-800">Gestión de Buques</h1>
           <Button onClick={handleCreate} className="gap-2">
             <Icons.Plus />
@@ -110,6 +106,5 @@ export default function EmbarcacionesPage() {
           />
         )}
       </div>
-    </DashboardLayout>
   );
 }
