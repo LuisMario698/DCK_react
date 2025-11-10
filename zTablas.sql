@@ -216,7 +216,8 @@ CREATE TABLE IF NOT EXISTS manifiestos (
     numero_manifiesto TEXT UNIQUE NOT NULL,
     fecha_emision DATE DEFAULT CURRENT_DATE NOT NULL,
     buque_id BIGINT REFERENCES buques(id) ON DELETE CASCADE NOT NULL,
-    generador_id BIGINT REFERENCES personas(id) ON DELETE SET NULL,
+    responsable_principal_id BIGINT REFERENCES personas(id) ON DELETE SET NULL,
+    responsable_secundario_id BIGINT REFERENCES personas(id) ON DELETE SET NULL,
     imagen_manifiesto_url TEXT,
     estado_digitalizacion TEXT DEFAULT 'pendiente' CHECK (estado_digitalizacion IN ('pendiente', 'en_proceso', 'completado', 'aprobado', 'rechazado')),
     observaciones TEXT,
@@ -226,7 +227,8 @@ CREATE TABLE IF NOT EXISTS manifiestos (
 
 -- Índices para manifiestos
 CREATE INDEX IF NOT EXISTS idx_manifiestos_buque ON manifiestos(buque_id);
-CREATE INDEX IF NOT EXISTS idx_manifiestos_generador ON manifiestos(generador_id);
+CREATE INDEX IF NOT EXISTS idx_manifiestos_responsable_principal ON manifiestos(responsable_principal_id);
+CREATE INDEX IF NOT EXISTS idx_manifiestos_responsable_secundario ON manifiestos(responsable_secundario_id);
 CREATE INDEX IF NOT EXISTS idx_manifiestos_numero ON manifiestos(numero_manifiesto);
 CREATE INDEX IF NOT EXISTS idx_manifiestos_fecha ON manifiestos(fecha_emision);
 CREATE INDEX IF NOT EXISTS idx_manifiestos_estado ON manifiestos(estado_digitalizacion);
@@ -240,7 +242,6 @@ CREATE TABLE IF NOT EXISTS manifiestos_residuos (
     aceite_usado NUMERIC(10, 2) DEFAULT 0 CHECK (aceite_usado >= 0),
     filtros_aceite INTEGER DEFAULT 0 CHECK (filtros_aceite >= 0),
     filtros_diesel INTEGER DEFAULT 0 CHECK (filtros_diesel >= 0),
-    filtros_aire INTEGER DEFAULT 0 CHECK (filtros_aire >= 0),
     basura NUMERIC(10, 2) DEFAULT 0 CHECK (basura >= 0),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

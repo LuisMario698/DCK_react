@@ -1,5 +1,35 @@
 import { createClient } from '@/lib/supabase/client'
 import { Manifiesto, ManifiestoConRelaciones } from '@/types/database'
+import { uploadManifiestoImage, deleteManifiestoImage } from './storage'
+
+// Generar número de manifiesto: MAN{ddmmyyyy}{número del día}
+export async function generarNumeroManifiesto(fecha: string): Promise<string> {
+  const supabase = createClient()
+  
+  // Convertir fecha a formato ddmmyyyy
+  const fechaObj = new Date(fecha)
+  const dia = String(fechaObj.getDate()).padStart(2, '0')
+  const mes = String(fechaObj.getMonth() + 1).padStart(2, '0')
+  const anio = fechaObj.getFullYear()
+  const fechaFormato = `${dia}${mes}${anio}`
+  
+  // Obtener manifiestos del mismo día
+  const { data, error } = await supabase
+    .from('manifiestos')
+    .select('numero_manifiesto')
+    .eq('fecha_emision', fecha)
+    .order('created_at', { ascending: false })
+  
+  if (error) {
+    console.error('Error obteniendo manifiestos del día:', error)
+  }
+  
+  // Calcular el siguiente número del día
+  const numeroDelDia = (data?.length || 0) + 1
+  const numeroFormateado = String(numeroDelDia).padStart(3, '0')
+  
+  return `MAN${fechaFormato}${numeroFormateado}`
+}
 
 export async function getManifiestos() {
   const supabase = createClient()
@@ -31,7 +61,9 @@ export async function getManifiestos() {
     .select(`
       *,
       buque:buques(id, nombre_buque),
-      generador:personas(id, nombre)
+      responsable_principal:personas!manifiestos_responsable_principal_id_fkey(id, nombre),
+      responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(id, nombre),
+      residuos:manifiestos_residuos(*)
     `)
     .order('created_at', { ascending: false })
   
@@ -55,7 +87,9 @@ export async function getManifiestoById(id: number) {
     .select(`
       *,
       buque:buques(nombre_buque),
-      generador:personas!manifiestos_generador_id_fkey(nombre)
+      responsable_principal:personas!manifiestos_responsable_principal_id_fkey(nombre),
+      responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(nombre),
+      residuos:manifiestos_residuos(*)
     `)
     .eq('id', id)
     .single()
@@ -65,26 +99,61 @@ export async function getManifiestoById(id: number) {
 }
 
 export async function createManifiesto(
-  manifiesto: Omit<Manifiesto, 'id' | 'created_at' | 'updated_at'>,
+  manifiesto: Omit<Manifiesto, 'id' | 'created_at' | 'updated_at' | 'numero_manifiesto'>,
   residuos?: {
     aceite_usado: number;
     filtros_aceite: number;
     filtros_diesel: number;
-    filtros_aire: number;
     basura: number;
     observaciones?: string;
-  }
+  },
+  archivo?: File | null
 ) {
   const supabase = createClient()
   
-  // Insertar el manifiesto
+  // Generar número de manifiesto automáticamente
+  const numeroManifiesto = await generarNumeroManifiesto(manifiesto.fecha_emision)
+  
+  console.log('📋 Creando manifiesto con número:', numeroManifiesto)
+  
+  // Insertar el manifiesto sin la imagen primero
   const { data: manifiestoData, error: manifiestoError } = await supabase
     .from('manifiestos')
-    .insert(manifiesto)
+    .insert({
+      ...manifiesto,
+      numero_manifiesto: numeroManifiesto,
+      imagen_manifiesto_url: null, // Temporalmente null
+    })
     .select()
     .single()
   
   if (manifiestoError) throw manifiestoError
+  
+  // Si hay archivo, subirlo y actualizar el manifiesto
+  let imagenUrl = null
+  if (archivo && manifiestoData) {
+    try {
+      console.log('📤 Subiendo archivo adjunto...')
+      imagenUrl = await uploadManifiestoImage(archivo, numeroManifiesto)
+      
+      // Actualizar el manifiesto con la URL de la imagen
+      const { error: errorActualizacion } = await supabase
+        .from('manifiestos')
+        .update({ 
+          imagen_manifiesto_url: imagenUrl,
+          estado_digitalizacion: 'completado'
+        })
+        .eq('id', manifiestoData.id)
+
+      if (errorActualizacion) {
+        console.error('⚠️ Error actualizando URL de imagen:', errorActualizacion)
+      } else {
+        console.log('✅ URL de imagen actualizada en manifiesto')
+      }
+    } catch (uploadError) {
+      console.error('⚠️ Error subiendo archivo:', uploadError)
+    }
+  }
   
   // Si hay residuos, insertarlos en la tabla intermedia
   if (residuos && manifiestoData) {
@@ -93,7 +162,6 @@ export async function createManifiesto(
       aceite_usado: residuos.aceite_usado || 0,
       filtros_aceite: residuos.filtros_aceite || 0,
       filtros_diesel: residuos.filtros_diesel || 0,
-      filtros_aire: residuos.filtros_aire || 0,
       basura: residuos.basura || 0
     }
     
@@ -103,11 +171,13 @@ export async function createManifiesto(
     
     if (residuosError) {
       console.error('Error insertando residuos:', residuosError)
-      // No lanzar error para no bloquear la creación del manifiesto
     }
   }
   
-  return manifiestoData as Manifiesto
+  return {
+    ...manifiestoData,
+    imagen_manifiesto_url: imagenUrl,
+  } as Manifiesto
 }
 
 export async function updateManifiesto(
@@ -117,7 +187,6 @@ export async function updateManifiesto(
     aceite_usado: number;
     filtros_aceite: number;
     filtros_diesel: number;
-    filtros_aire: number;
     basura: number;
     observaciones?: string;
   }
@@ -141,7 +210,6 @@ export async function updateManifiesto(
       aceite_usado: residuos.aceite_usado || 0,
       filtros_aceite: residuos.filtros_aceite || 0,
       filtros_diesel: residuos.filtros_diesel || 0,
-      filtros_aire: residuos.filtros_aire || 0,
       basura: residuos.basura || 0
     }
     

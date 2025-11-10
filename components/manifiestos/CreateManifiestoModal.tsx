@@ -17,7 +17,6 @@ interface ResiduosData {
   aceite_usado: number;
   filtros_aceite: number;
   filtros_diesel: number;
-  filtros_aire: number;
   basura: number;
 }
 
@@ -41,7 +40,6 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
     aceite_usado: 0,
     filtros_aceite: 0,
     filtros_diesel: 0,
-    filtros_aire: 0,
     basura: 0,
   });
 
@@ -120,7 +118,8 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
         numero_manifiesto: formData.numero_manifiesto,
         fecha_emision: formData.fecha_emision,
         buque_id: parseInt(formData.buque_id),
-        generador_id: parseInt(formData.persona_id),
+        responsable_principal_id: parseInt(formData.persona_id),
+        responsable_secundario_id: null,
         estado_digitalizacion: archivo ? 'completado' : 'pendiente' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
@@ -158,7 +157,6 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
       aceite_usado: 0,
       filtros_aceite: 0,
       filtros_diesel: 0,
-      filtros_aire: 0,
       basura: 0,
     });
     setArchivo(null);
@@ -373,32 +371,6 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                 </div>
               </div>
 
-              {/* Filtros de Aire */}
-              <div className="bg-white border-2 border-green-300 rounded-xl p-5 shadow-md">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
-                    <span className="text-2xl">💨</span>
-                  </div>
-                  <label className="text-sm font-bold text-gray-700">FILTROS DE AIRE</label>
-                </div>
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={residuos.filtros_aire}
-                      onChange={(e) => updateResiduo('filtros_aire', parseInt(e.target.value) || 0)}
-                      className="w-full px-4 py-3 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div className="px-4 py-3 bg-gray-100 border-2 border-gray-300 rounded-lg font-bold text-gray-700">
-                    Unidades
-                  </div>
-                </div>
-              </div>
-
               {/* Basura */}
               <div className="bg-white border-2 border-green-300 rounded-xl p-5 shadow-md md:col-span-2">
                 <div className="flex items-center gap-3 mb-3">
@@ -441,10 +413,6 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                 <div>
                   <p className="text-xs text-gray-500">F. Diesel</p>
                   <p className="text-lg font-bold text-green-700">{residuos.filtros_diesel} un</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500">F. Aire</p>
-                  <p className="text-lg font-bold text-green-700">{residuos.filtros_aire} un</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Basura</p>
