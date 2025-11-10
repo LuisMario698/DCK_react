@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
+import { CreateResiduoModal } from '@/components/residuos/CreateResiduoModal';
 import { getResiduos, deleteResiduo } from '@/lib/services/residuos';
 import { ResiduoConRelaciones } from '@/types/database';
 
 export default function ResiduosPage() {
   const [residuos, setResiduos] = useState<ResiduoConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [residuoToEdit, setResiduoToEdit] = useState<ResiduoConRelaciones | null>(null);
 
   useEffect(() => {
     loadResiduos();
@@ -27,17 +30,46 @@ export default function ResiduosPage() {
     }
   }
 
+  const handleEdit = (id: number) => {
+    console.log('♻️ handleEdit llamado con id:', id);
+    const residuo = residuos.find(r => r.id === id);
+    console.log('♻️ Residuo encontrado:', residuo);
+    if (residuo) {
+      setResiduoToEdit(residuo);
+      setIsModalOpen(true);
+      console.log('♻️ Modal abierto con residuo:', residuo);
+    } else {
+      console.error('❌ No se encontró residuo con id:', id);
+    }
+  };
+
   const handleDelete = async (id: number) => {
+    console.log('🔴 handleDelete llamado con id:', id);
     if (confirm('¿Estás seguro de eliminar este residuo?')) {
       try {
+        console.log('🔴 Eliminando residuo...');
         await deleteResiduo(id);
         await loadResiduos();
         alert('Residuo eliminado exitosamente');
+        console.log('🔴 Residuo eliminado exitosamente');
       } catch (error) {
-        console.error('Error eliminando residuo:', error);
+        console.error('❌ Error eliminando residuo:', error);
         alert('Error al eliminar el residuo');
       }
+    } else {
+      console.log('🔴 Eliminación cancelada por el usuario');
     }
+  };
+
+  const handleCreate = async () => {
+    await loadResiduos();
+    setIsModalOpen(false);
+    setResiduoToEdit(null);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setResiduoToEdit(null);
   };
 
   const estadisticas = {
@@ -63,7 +95,7 @@ export default function ResiduosPage() {
             <h1 className="text-2xl font-bold text-gray-800">Gestión de Residuos</h1>
             <p className="text-sm text-gray-500 mt-1">Control y seguimiento de residuos recolectados</p>
           </div>
-          <Button onClick={() => alert('Crear residuo - Modal próximamente')}>
+          <Button onClick={() => setIsModalOpen(true)}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -201,16 +233,28 @@ export default function ResiduosPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => alert(`Ver detalles del residuo ${residuo.id}`)}
-                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                            onClick={() => {
+                              console.log('♻️ Click en botón EDITAR residuo, id:', residuo.id);
+                              handleEdit(residuo.id);
+                            }}
+                            className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1.5 font-medium text-gray-700"
                           >
-                            Ver
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Editar
                           </button>
                           <button
-                            onClick={() => handleDelete(residuo.id)}
-                            className="text-red-600 hover:text-red-800 font-medium text-sm"
+                            onClick={() => {
+                              console.log('♻️ Click en botón ELIMINAR residuo, id:', residuo.id);
+                              handleDelete(residuo.id);
+                            }}
+                            className="w-9 h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            title="Eliminar"
                           >
-                            Eliminar
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                           </button>
                         </div>
                       </td>
@@ -221,6 +265,14 @@ export default function ResiduosPage() {
             </div>
           )}
         </div>
+
+        {/* Modal de Crear/Editar */}
+        <CreateResiduoModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSave={handleCreate}
+          residuoToEdit={residuoToEdit}
+        />
       </div>
     </DashboardLayout>
   );

@@ -209,43 +209,45 @@ CREATE INDEX IF NOT EXISTS idx_reutilizacion_asociacion ON reutilizacion_residuo
 CREATE INDEX IF NOT EXISTS idx_reutilizacion_fecha ON reutilizacion_residuos(fecha_reutilizacion);
 
 -- ============================================
--- 10. TABLA: manifiestos (manifests) - NUEVA
+-- 10. TABLA: manifiestos (manifests)
 -- ============================================
 CREATE TABLE IF NOT EXISTS manifiestos (
     id BIGSERIAL PRIMARY KEY,
-    buque_id BIGINT REFERENCES buques(id) ON DELETE CASCADE,
-    persona_responsable_id BIGINT REFERENCES personas(id) ON DELETE SET NULL,
-    fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    numero_manifiesto TEXT UNIQUE,
-    estado TEXT DEFAULT 'Pendiente' CHECK (estado IN ('Pendiente', 'En Proceso', 'Completado', 'Aprobado', 'Rechazado')),
-    tipo_manifiesto TEXT, -- Carga, Tripulación, Pasajeros, Residuos
+    numero_manifiesto TEXT UNIQUE NOT NULL,
+    fecha_emision DATE DEFAULT CURRENT_DATE NOT NULL,
+    buque_id BIGINT REFERENCES buques(id) ON DELETE CASCADE NOT NULL,
+    generador_id BIGINT REFERENCES personas(id) ON DELETE SET NULL,
+    imagen_manifiesto_url TEXT,
+    estado_digitalizacion TEXT DEFAULT 'pendiente' CHECK (estado_digitalizacion IN ('pendiente', 'en_proceso', 'completado', 'aprobado', 'rechazado')),
     observaciones TEXT,
-    documento_url TEXT,
-    
-    -- Proceso de digitalización
-    paso_actual INTEGER DEFAULT 1 CHECK (paso_actual BETWEEN 1 AND 4),
-    digitalizacion_completada BOOLEAN DEFAULT false,
-    fecha_digitalizacion TIMESTAMP WITH TIME ZONE,
-    
-    -- Validación
-    validado BOOLEAN DEFAULT false,
-    validado_por_id BIGINT REFERENCES usuarios_sistema(id) ON DELETE SET NULL,
-    fecha_validacion TIMESTAMP WITH TIME ZONE,
-    
-    -- Aprobación
-    aprobado BOOLEAN DEFAULT false,
-    aprobado_por_id BIGINT REFERENCES usuarios_sistema(id) ON DELETE SET NULL,
-    fecha_aprobacion TIMESTAMP WITH TIME ZONE,
-    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Índices para manifiestos
 CREATE INDEX IF NOT EXISTS idx_manifiestos_buque ON manifiestos(buque_id);
-CREATE INDEX IF NOT EXISTS idx_manifiestos_responsable ON manifiestos(persona_responsable_id);
-CREATE INDEX IF NOT EXISTS idx_manifiestos_estado ON manifiestos(estado);
+CREATE INDEX IF NOT EXISTS idx_manifiestos_generador ON manifiestos(generador_id);
 CREATE INDEX IF NOT EXISTS idx_manifiestos_numero ON manifiestos(numero_manifiesto);
+CREATE INDEX IF NOT EXISTS idx_manifiestos_fecha ON manifiestos(fecha_emision);
+CREATE INDEX IF NOT EXISTS idx_manifiestos_estado ON manifiestos(estado_digitalizacion);
+
+-- ============================================
+-- 10.1 TABLA: manifiestos_residuos (manifest_waste)
+-- ============================================
+CREATE TABLE IF NOT EXISTS manifiestos_residuos (
+    id BIGSERIAL PRIMARY KEY,
+    manifiesto_id BIGINT REFERENCES manifiestos(id) ON DELETE CASCADE NOT NULL UNIQUE,
+    aceite_usado NUMERIC(10, 2) DEFAULT 0 CHECK (aceite_usado >= 0),
+    filtros_aceite INTEGER DEFAULT 0 CHECK (filtros_aceite >= 0),
+    filtros_diesel INTEGER DEFAULT 0 CHECK (filtros_diesel >= 0),
+    filtros_aire INTEGER DEFAULT 0 CHECK (filtros_aire >= 0),
+    basura NUMERIC(10, 2) DEFAULT 0 CHECK (basura >= 0),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Índices para manifiestos_residuos
+CREATE INDEX IF NOT EXISTS idx_manifiestos_residuos_manifiesto ON manifiestos_residuos(manifiesto_id);
 
 -- ============================================
 -- 11. TABLA: manifiesto_basuron (waste_dump_manifest)
