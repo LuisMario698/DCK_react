@@ -49,6 +49,37 @@ body {
   }
 }
 
+/* Animaciones de deslizamiento para formularios */
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-slideIn {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.animate-slideOut {
+  animation: slideOutToLeft 0.3s ease-out;
+}
+
 /* Efecto de pulsación suave */
 @keyframes pulse-glow {
   0%, 100% {
