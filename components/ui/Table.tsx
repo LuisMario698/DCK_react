@@ -44,11 +44,12 @@ export function TableRow({ children }: TableRowProps) {
 
 interface TableHeadProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-export function TableHead({ children }: TableHeadProps) {
+export function TableHead({ children, className }: TableHeadProps) {
   return (
-    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+    <th className={`px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider ${className || ''}`}>
       {children}
     </th>
   );
@@ -62,7 +63,7 @@ interface TableCellProps {
 
 export function TableCell({ children, colSpan, className }: TableCellProps) {
   return (
-    <td className={className || "px-6 py-4 text-sm text-gray-700"} colSpan={colSpan}>
+    <td className={`px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 ${className || ''}`} colSpan={colSpan}>
       {children}
     </td>
   );

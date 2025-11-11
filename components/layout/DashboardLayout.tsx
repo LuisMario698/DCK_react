@@ -35,11 +35,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex flex-col min-h-screen w-full">
           <Header />
           <main 
-            className={`flex-1 p-4 lg:p-8 transition-opacity duration-150 ${
+            className={`flex-1 p-3 sm:p-4 md:p-6 lg:p-8 transition-opacity duration-150 ${
               transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
             }`}
           >
-            {displayChildren}
+            <div className="max-w-[100vw] overflow-x-hidden">
+              {displayChildren}
+            </div>
           </main>
         </div>
       </div>

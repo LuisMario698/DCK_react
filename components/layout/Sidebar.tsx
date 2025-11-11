@@ -81,15 +81,16 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside 
         className={`
-          fixed top-4 left-4 
-          w-[280px] max-h-[calc(100vh-2rem)]
+          fixed inset-y-0 left-0 sm:top-4 sm:left-4 sm:bottom-4
+          w-[280px] sm:w-[280px] sm:max-h-[calc(100vh-2rem)]
           bg-gray-900/8 backdrop-blur-2xl
-          rounded-2xl
+          sm:rounded-2xl
           z-50 
           ${hasAnimated ? 'transition-transform duration-200 ease-in-out' : ''}
-          ${isOpen ? 'translate-x-0' : '-translate-x-[calc(100%+2rem)]'}
-          shadow-2xl border-2 border-white/40
+          ${isOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-[calc(100%+2rem)]'}
+          shadow-2xl border-r-2 sm:border-2 border-white/40
           will-change-transform
+          overflow-y-auto
         `}
         style={{
           boxShadow: '0 20px 60px 0 rgba(0, 0, 0, 0.2), 0 8px 16px 0 rgba(0, 0, 0, 0.1)',

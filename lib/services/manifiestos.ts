@@ -55,15 +55,14 @@ export async function getManifiestos() {
     return []
   }
   
-  // Intenta obtener con relaciones
+  // Intenta obtener con relaciones - usando sintaxis simplificada
   const { data, error } = await supabase
     .from('manifiestos')
     .select(`
       *,
-      buque:buques(id, nombre_buque),
-      responsable_principal:personas!manifiestos_responsable_principal_id_fkey(id, nombre),
-      responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(id, nombre),
-      residuos:manifiestos_residuos(*)
+      buque:buque_id(id, nombre_buque),
+      responsable_principal:responsable_principal_id(id, nombre),
+      responsable_secundario:responsable_secundario_id(id, nombre)
     `)
     .order('created_at', { ascending: false })
   
@@ -74,7 +73,28 @@ export async function getManifiestos() {
   }
   
   console.log('✅ Manifiestos obtenidos con relaciones:', data?.length || 0, 'registros')
-  console.log('📊 Datos:', data)
+  
+  // Cargar residuos manualmente para cada manifiesto
+  if (data && data.length > 0) {
+    const { data: residuosData, error: residuosError } = await supabase
+      .from('manifiestos_residuos')
+      .select('*')
+    
+    if (!residuosError && residuosData) {
+      console.log('✅ Residuos cargados:', residuosData.length, 'registros')
+      
+      // Asociar residuos a cada manifiesto
+      const manifestosConResiduos = data.map(manifiesto => ({
+        ...manifiesto,
+        residuos: residuosData.find(r => r.manifiesto_id === manifiesto.id) || null
+      }))
+      
+      console.log('📊 Primer manifiesto con residuos:', manifestosConResiduos[0])
+      return manifestosConResiduos as ManifiestoConRelaciones[]
+    } else {
+      console.warn('⚠️ No se pudieron cargar los residuos:', residuosError)
+    }
+  }
   
   return data as ManifiestoConRelaciones[]
 }
@@ -86,16 +106,26 @@ export async function getManifiestoById(id: number) {
     .from('manifiestos')
     .select(`
       *,
-      buque:buques(nombre_buque),
-      responsable_principal:personas!manifiestos_responsable_principal_id_fkey(nombre),
-      responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(nombre),
-      residuos:manifiestos_residuos(*)
+      buque:buque_id(nombre_buque),
+      responsable_principal:responsable_principal_id(nombre),
+      responsable_secundario:responsable_secundario_id(nombre)
     `)
     .eq('id', id)
     .single()
   
   if (error) throw error
-  return data as ManifiestoConRelaciones
+  
+  // Cargar residuos manualmente
+  const { data: residuos } = await supabase
+    .from('manifiestos_residuos')
+    .select('*')
+    .eq('manifiesto_id', id)
+    .maybeSingle()
+  
+  return {
+    ...data,
+    residuos: residuos || null
+  } as ManifiestoConRelaciones
 }
 
 export async function createManifiesto(
