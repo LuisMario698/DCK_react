@@ -3,32 +3,33 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
 
-const menuItems = [
-  { label: 'Panel', href: '/dashboard', icon: 'Dashboard' },
-  { label: 'Personas', href: '/dashboard/personas', icon: 'Users' },
-  { label: 'Embarcaciones', href: '/dashboard/embarcaciones', icon: 'Ship' },
-  { label: 'Manifiesto', href: '/dashboard/manifiesto', icon: 'Document' },
-];
-
-const externosItems = [
-  { label: 'Asociaciones recolectoras', href: '/dashboard/asociaciones', icon: 'Building' },
-  { label: 'Reutilización de residuos', href: '/dashboard/reutilizacion', icon: 'Recycle' },
-];
-
-const sistemaItems = [
-  { label: 'Usuarios del sistema', href: '/dashboard/usuarios', icon: 'User' },
-];
-
 export function Sidebar() {
+  const t = useTranslations('Sidebar');
   const pathname = usePathname();
   const { isOpen, closeSidebar } = useSidebar();
   const [hasAnimated, setHasAnimated] = useState(false);
   const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
   const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
   const navRef = useRef<HTMLDivElement>(null);
+  
+  // Extract locale from pathname
+  const locale = pathname.split('/')[1] || 'es';
+
+  const menuItems = [
+    { label: t('menu.panel'), href: `/${locale}/dashboard`, icon: 'Dashboard' },
+    { label: t('menu.personas'), href: `/${locale}/dashboard/personas`, icon: 'Users' },
+    { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: 'Ship' },
+    { label: t('menu.manifiesto'), href: `/${locale}/dashboard/manifiesto`, icon: 'Document' },
+    { label: t('menu.manifiestoBasuron'), href: `/${locale}/dashboard/manifiesto-basuron`, icon: 'Recycle' },
+  ];
+
+  const externosItems = [
+    { label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: 'Building' },
+  ];
 
   // Marcar que ya se ha animado después del primer render
   useEffect(() => {
@@ -144,7 +145,7 @@ export function Sidebar() {
               
               {/* Menu Principal */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">Menú Principal</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">{t('menu.titulo')}</p>
                 <div className="space-y-1">
                   {menuItems.map((item) => (
                     <Link
@@ -170,7 +171,7 @@ export function Sidebar() {
               
               {/* Externos */}
               <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">Gestión Externa</p>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">{t('externos.titulo')}</p>
                 <div className="space-y-1">
                   {externosItems.map((item) => (
                     <Link
@@ -194,38 +195,13 @@ export function Sidebar() {
                 </div>
               </div>
               
-              {/* Sistema */}
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">Administración</p>
-                <div className="space-y-1">
-                  {sistemaItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      ref={(el) => { menuRefs.current[item.href] = el; }}
-                      href={item.href}
-                      onClick={handleLinkClick}
-                      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                        isActive(item.href)
-                          ? 'text-blue-600 font-medium'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-white/10'
-                      }`}
-                      style={{ zIndex: 1 }}
-                    >
-                      <div className="flex-shrink-0">
-                        {IconComponent(item.icon)}
-                      </div>
-                      <span className="text-sm">{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
             </nav>
           </div>
           
           {/* Footer del sidebar */}
           <div className="p-4 border-t border-white/30 bg-white/20">
             <div className="text-xs text-gray-500 text-center">
-              CIAD Sistema v1.0
+              {t('version')}
             </div>
           </div>
         </div>

@@ -1,0 +1,38 @@
+{
+  "Sidebar": {
+    "menu": {
+      "titulo": "Main Menu",
+      "panel": "Dashboard",
+      "personas": "People",
+      "embarcaciones": "Vessels",
+      "manifiesto": "Manifest",
+      "manifiestoBasuron": "Waste Dump Manifest"
+    },
+    "externos": {
+      "titulo": "External Management",
+      "asociaciones": "Collection Associations"
+    },
+    "version": "CIAD System v1.0"
+  },
+  "Dashboard": {
+    "titulo": "Dashboard",
+    "subtitulo": "Welcome to the Marine Waste Management System",
+    "estadisticas": {
+      "totalManifiestos": "Total Manifests",
+      "totalBuques": "Total Vessels",
+      "totalPersonas": "Total People",
+      "totalAsociaciones": "Total Associations"
+    },
+    "actividad": {
+      "titulo": "Recent Activity",
+      "sinActividad": "No recent activity"
+    },
+    "accesosRapidos": {
+      "titulo": "Quick Access",
+      "nuevoManifiesto": "New Manifest",
+      "nuevoBuque": "New Vessel",
+      "nuevaPersona": "New Person",
+      "nuevaAsociacion": "New Association"
+    }
+  }
+}

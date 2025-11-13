@@ -104,7 +104,7 @@ export default function ManifiestoBasuronPage() {
               <tbody className="divide-y">
                 {manifiestos.map((m) => (
                   <tr key={m.id}>
-                    <td className="px-6 py-4 font-mono text-sm">{m.numero_ticket || m.id}</td>
+                    <td className="px-6 py-4 font-mono text-sm">{m.id}</td>
                     <td className="px-6 py-4">{m.buque?.nombre_buque || '—'}</td>
                     <td className="px-6 py-4">{new Date(m.fecha).toLocaleDateString()}</td>
                     <td className="px-6 py-4">{m.peso_entrada} kg</td>

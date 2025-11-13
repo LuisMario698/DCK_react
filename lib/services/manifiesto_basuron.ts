@@ -8,12 +8,10 @@ export async function getManifiestosBasuron() {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      usuario_sistema:usuarios_sistema(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buque_id(id, nombre_buque),
+      responsable:responsable_id(id, nombre)
     `)
     .order('fecha', { ascending: false })
-    .order('hora_entrada', { ascending: false })
   
   if (error) throw error
   return data as ManifiestoBasuronConRelaciones[]
@@ -26,9 +24,8 @@ export async function getManifiestoBasuronById(id: number) {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      usuario_sistema:usuarios_sistema(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buque_id(id, nombre_buque),
+      responsable:responsable_id(id, nombre)
     `)
     .eq('id', id)
     .single()
@@ -37,7 +34,7 @@ export async function getManifiestoBasuronById(id: number) {
   return data as ManifiestoBasuronConRelaciones
 }
 
-export async function createManifiestoBasuron(manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'total_depositado' | 'numero_ticket'>) {
+export async function createManifiestoBasuron(manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'total_depositado'>) {
   const supabase = createClient()
   
   const { data, error } = await supabase
@@ -75,10 +72,9 @@ export async function deleteManifiestoBasuron(id: number) {
   if (error) throw error
 }
 
-// Completar manifiesto (agregar hora de salida y peso de salida)
+// Completar manifiesto (agregar peso de salida)
 export async function completarManifiestoBasuron(
   id: number, 
-  horaSalida: string, 
   pesoSalida: number
 ) {
   const supabase = createClient()
@@ -86,7 +82,6 @@ export async function completarManifiestoBasuron(
   const { data, error } = await supabase
     .from('manifiesto_basuron')
     .update({
-      hora_salida: horaSalida,
       peso_salida: pesoSalida,
       estado: 'Completado'
     })

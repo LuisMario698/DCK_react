@@ -1,0 +1,38 @@
+{
+  "Sidebar": {
+    "menu": {
+      "titulo": "Menú Principal",
+      "panel": "Panel",
+      "personas": "Personas",
+      "embarcaciones": "Embarcaciones",
+      "manifiesto": "Manifiesto",
+      "manifiestoBasuron": "Manifiesto Basurón"
+    },
+    "externos": {
+      "titulo": "Gestión Externa",
+      "asociaciones": "Asociaciones recolectoras"
+    },
+    "version": "CIAD Sistema v1.0"
+  },
+  "Dashboard": {
+    "titulo": "Panel de Control",
+    "subtitulo": "Bienvenido al Sistema de Gestión de Residuos Marítimos",
+    "estadisticas": {
+      "totalManifiestos": "Total Manifiestos",
+      "totalBuques": "Total Buques",
+      "totalPersonas": "Total Personas",
+      "totalAsociaciones": "Total Asociaciones"
+    },
+    "actividad": {
+      "titulo": "Actividad Reciente",
+      "sinActividad": "No hay actividad reciente"
+    },
+    "accesosRapidos": {
+      "titulo": "Accesos Rápidos",
+      "nuevoManifiesto": "Nuevo Manifiesto",
+      "nuevoBuque": "Nuevo Buque",
+      "nuevaPersona": "Nueva Persona",
+      "nuevaAsociacion": "Nueva Asociación"
+    }
+  }
+}

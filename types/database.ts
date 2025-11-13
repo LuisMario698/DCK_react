@@ -14,31 +14,6 @@ export interface Buque {
   updated_at: string;
 }
 
-export interface TipoResiduo {
-  id: number;
-  nombre_tipo: string;
-  metrica: string;
-  descripcion: string | null;
-  categoria: string | null;
-  peligrosidad: 'Baja' | 'Media' | 'Alta';
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Residuo {
-  id: number;
-  buque_id: number;
-  tipo_residuo_id: number | null;
-  cantidad_generada: number;
-  fecha_generacion: string;
-  cumplimiento_id: number | null;
-  estado: 'Generado' | 'Almacenado' | 'Recolectado' | 'Procesado';
-  ubicacion_almacenamiento: string | null;
-  observaciones: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface AsociacionRecolectora {
   id: number;
   nombre_asociacion: string;
@@ -50,48 +25,6 @@ export interface AsociacionRecolectora {
   certificaciones: string[] | null;
   especialidad: string[] | null;
   estado: 'Activo' | 'Inactivo' | 'Suspendido';
-  created_at: string;
-  updated_at: string;
-}
-
-export interface UsuarioSistema {
-  id: number;
-  nombre_usuario: string;
-  rol: 'Administrador' | 'Usuario' | 'Supervisor' | 'Inspector';
-  contacto_usuario: string | null;
-  email: string;
-  hash_contraseña: string;
-  estado: 'Activo' | 'Inactivo' | 'Suspendido';
-  ultimo_acceso: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Cumplimiento {
-  id: number;
-  buque_id: number;
-  fecha_inspeccion: string;
-  observaciones: string | null;
-  usuario_sistema_id: number | null;
-  calificacion: 'Excelente' | 'Bueno' | 'Regular' | 'Deficiente' | null;
-  estado: 'Pendiente' | 'Aprobado' | 'Rechazado';
-  documento_url: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ReutilizacionResiduo {
-  id: number;
-  residuo_id: number;
-  asociacion_id: number | null;
-  fecha_reutilizacion: string;
-  cantidad_reutilizada: number;
-  metodo_reutilizacion: string | null;
-  producto_final: string | null;
-  impacto_ambiental: string | null;
-  costo_proceso: number | null;
-  ingreso_generado: number | null;
-  observaciones: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -141,41 +74,20 @@ export interface ManifiestoResiduo {
 export interface ManifiestoBasuron {
   id: number;
   fecha: string;
-  hora_entrada: string;
-  hora_salida: string | null;
   peso_entrada: number;
   peso_salida: number | null;
   total_depositado: number;
-  observaciones: string | null;
   buque_id: number;
-  usuario_sistema_id: number | null;
+  responsable_id: number | null;
+  observaciones: string | null;
   estado: 'En Proceso' | 'Completado' | 'Cancelado';
-  numero_ticket: string | null;
-  tipo_residuo_id: number | null;
-  comprobante_url: string | null;
   created_at: string;
   updated_at: string;
 }
 
 // Tipos con relaciones para consultas JOIN
-export interface ResiduoConRelaciones extends Residuo {
-  buque?: Buque;
-  tipo_residuo?: TipoResiduo;
-  cumplimiento?: Cumplimiento;
-}
-
 export interface PersonaConTipo extends Persona {
   tipo_persona?: TipoPersona;
-}
-
-export interface ReutilizacionConRelaciones extends ReutilizacionResiduo {
-  residuo?: ResiduoConRelaciones;
-  asociacion?: AsociacionRecolectora;
-}
-
-export interface CumplimientoConRelaciones extends Cumplimiento {
-  buque?: Buque;
-  usuario_sistema?: UsuarioSistema;
 }
 
 export interface ManifiestoConRelaciones extends Manifiesto {
@@ -187,6 +99,5 @@ export interface ManifiestoConRelaciones extends Manifiesto {
 
 export interface ManifiestoBasuronConRelaciones extends ManifiestoBasuron {
   buque?: Buque;
-  usuario_sistema?: UsuarioSistema;
-  tipo_residuo?: TipoResiduo;
+  responsable?: Persona;
 }

@@ -177,9 +177,11 @@ export default function ManifiestosPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <span className="break-words">Gestión de Manifiestos</span>
+          <div>
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">Gestión de Manifiestos</span>
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg">Registra y gestiona los manifiestos de residuos marítimos</p>
+            </div>
         </h1>
-        <p className="text-gray-600 text-sm sm:text-base md:text-lg">Registra y gestiona los manifiestos de residuos marítimos</p>
       </div>
 
       {/* Proceso de Digitalización */}

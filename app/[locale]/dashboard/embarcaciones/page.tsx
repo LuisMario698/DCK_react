@@ -100,9 +100,18 @@ export default function EmbarcacionesPage() {
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gestión de Buques</h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">Administra la flota de embarcaciones</p>
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2 sm:gap-3">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l5.12-5.12A3 3 0 0110.24 9H13a2 2 0 012 2v5.5M3 15v3a3 3 0 003 3h12a3 3 0 003-3v-3M3 15h18" />
+            </svg>
+          </div>
+          <div>
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">Gestión de Buques</span>
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg">Administra la flota de embarcaciones</p>
+            </div>
+          </h1>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="gap-2 w-full sm:w-auto">
           <Icons.Plus />

@@ -2,9 +2,15 @@
 
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
+import LanguageSwitcher from './LanguageSwitcher';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
+  
+  // Extract locale from pathname (e.g., "/es/dashboard" -> "es")
+  const locale = (pathname.split('/')[1] || 'es') as 'es' | 'en';
 
   return (
     <header className="h-14 sm:h-16 bg-white border-b border-gray-200 flex items-center justify-between px-3 sm:px-4 lg:px-6 sticky top-0 z-30 shadow-sm">
@@ -28,10 +34,8 @@ export function Header() {
       </div>
       
       <div className="flex items-center gap-1 sm:gap-2">
-        {/* Language Selector */}
-        <button className="flex items-center gap-2 p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900">
-          <Icons.Globe />
-        </button>
+        {/* Language Switcher */}
+        <LanguageSwitcher currentLocale={locale} />
         
         {/* Settings */}
         <button className="flex items-center gap-2 p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600 hover:text-gray-900">
