@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { PersonasTable } from '@/components/personas/PersonasTable';
 import { CreatePersonaModal } from '@/components/personas/CreatePersonaModal';
 import { TiposPersonaManager } from '@/components/personas/TiposPersonaManager';
@@ -10,6 +11,7 @@ import { getPersonas, deletePersona } from '@/lib/services/personas';
 import { PersonaConTipo } from '@/types/database';
 
 export default function PersonasPage() {
+  const t = useTranslations('Personas');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showTiposManager, setShowTiposManager] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,16 +55,16 @@ export default function PersonasPage() {
   
   const handleDelete = async (id: number) => {
     console.log('🔴 handleDelete llamado con id:', id);
-    if (confirm('¿Estás seguro de eliminar esta persona?')) {
+    if (confirm(t('mensajes.confirmEliminar'))) {
       try {
         console.log('🔴 Eliminando persona...');
         await deletePersona(id);
         await loadPersonas();
-        alert('Persona eliminada exitosamente');
+        alert(t('mensajes.personaEliminada'));
         console.log('🔴 Persona eliminada exitosamente');
       } catch (error) {
         console.error('❌ Error eliminando persona:', error);
-        alert('Error al eliminar la persona');
+        alert(t('mensajes.errorEliminar'));
       }
     } else {
       console.log('🔴 Eliminación cancelada por el usuario');
@@ -108,8 +110,8 @@ export default function PersonasPage() {
             </svg>
           </div>
           <div>
-            <span className="text-xl sm:text-2xl font-bold text-gray-800">Gestión de Personas</span>
-            <p className="text-gray-600 text-sm sm:text-base md:text-lg">Administra el personal y tripulación del sistema</p>
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{t('titulo')}</span>
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg">{t('subtitulo')}</p>
             </div>
           </h1>
         </div>
@@ -119,15 +121,15 @@ export default function PersonasPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span className="hidden sm:inline">{showTiposManager ? 'Ocultar' : 'Gestionar'} Tipos</span>
-              <span className="sm:hidden">Tipos</span>
+              <span className="hidden sm:inline">{t('gestionarTipos')}</span>
+              <span className="sm:hidden">{t('gestionarTipos')}</span>
             </Button>
             <Button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none">
               <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              <span className="hidden sm:inline">Nueva Persona</span>
-              <span className="sm:hidden">Nuevo</span>
+              <span className="hidden sm:inline">{t('nuevaPersona')}</span>
+              <span className="sm:hidden">{t('nuevaPersona')}</span>
             </Button>
           </div>
         </div>

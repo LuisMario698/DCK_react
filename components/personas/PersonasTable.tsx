@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { PersonaConTipo } from '@/types/database';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 
@@ -27,6 +28,8 @@ export function PersonasTable({
   onEdit,
   onDelete 
 }: PersonasTableProps) {
+  const t = useTranslations('Personas');
+  
   const getTipoColor = (tipo: string | undefined) => {
     switch (tipo) {
       case 'Capitán':
@@ -49,17 +52,17 @@ export function PersonasTable({
           <Table>
             <TableHeader>
               <TableHead className="hidden sm:table-cell">ID</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="hidden md:table-cell">Tipo</TableHead>
-              <TableHead className="hidden lg:table-cell">Información de Contacto</TableHead>
+              <TableHead>{t('tabla.nombre')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('tabla.tipo')}</TableHead>
+              <TableHead className="hidden lg:table-cell">{t('tabla.email')} / {t('tabla.telefono')}</TableHead>
               <TableHead className="hidden md:table-cell">Registro</TableHead>
-              <TableHead>Acciones</TableHead>
+              <TableHead>{t('tabla.acciones')}</TableHead>
             </TableHeader>
             <TableBody>
               {personas.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                    No hay personas registradas
+                    {t('sinResultados')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -112,7 +115,7 @@ export function PersonasTable({
                             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            <span className="hidden sm:inline">Editar</span>
+                            <span className="hidden sm:inline">{t('acciones.editar')}</span>
                           </button>
                           <button
                             onClick={() => {
@@ -121,7 +124,7 @@ export function PersonasTable({
                               onDelete?.(persona.id);
                             }}
                             className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all shadow-sm hover:shadow flex-shrink-0"
-                            title="Eliminar"
+                            title={t('acciones.eliminar')}
                           >
                             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Buque } from '@/types/database';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { Icons } from '@/components/ui/Icons';
@@ -28,6 +29,8 @@ export function EmbarcacionesTable({
   onEdit,
   onDelete 
 }: EmbarcacionesTableProps) {
+  const t = useTranslations('Embarcaciones');
+  
   return (
     <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
       <div className="inline-block min-w-full align-middle">
@@ -35,20 +38,20 @@ export function EmbarcacionesTable({
           <Table>
             <TableHeader>
               <TableHead className="hidden sm:table-cell">ID</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead className="hidden lg:table-cell">Matrícula</TableHead>
-              <TableHead className="hidden md:table-cell">Tipo</TableHead>
+              <TableHead>{t('tabla.nombre')}</TableHead>
+              <TableHead className="hidden lg:table-cell">{t('tabla.matricula')}</TableHead>
+              <TableHead className="hidden md:table-cell">{t('tabla.tipo')}</TableHead>
               <TableHead className="hidden xl:table-cell">Puerto Base</TableHead>
               <TableHead className="hidden lg:table-cell">Capacidad</TableHead>
               <TableHead className="hidden md:table-cell">Estado</TableHead>
               <TableHead className="hidden lg:table-cell">Registro</TableHead>
-              <TableHead>Acciones</TableHead>
+              <TableHead>{t('tabla.acciones')}</TableHead>
             </TableHeader>
             <TableBody>
               {embarcaciones.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-8 text-gray-500">
-                    No hay buques registrados
+                    {t('sinResultados')}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -106,7 +109,7 @@ export function EmbarcacionesTable({
                           className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap"
                         >
                           <Icons.Edit />
-                          <span className="hidden sm:inline">Editar</span>
+                          <span className="hidden sm:inline">{t('acciones.editar')}</span>
                         </button>
                         <button
                           onClick={() => {
@@ -115,7 +118,7 @@ export function EmbarcacionesTable({
                             onDelete?.(buque.id);
                           }}
                           className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0"
-                          title="Eliminar"
+                          title={t('acciones.eliminar')}
                         >
                           <Icons.Trash />
                         </button>

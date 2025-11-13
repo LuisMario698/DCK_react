@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { EmbarcacionesTable } from '@/components/embarcaciones/EmbarcacionesTable';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +11,7 @@ import { CreateEmbarcacionModal } from '@/components/embarcaciones/CreateEmbarca
 import { Buque } from '@/types/database';
 
 export default function EmbarcacionesPage() {
+  const t = useTranslations('Embarcaciones');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -52,16 +54,16 @@ export default function EmbarcacionesPage() {
 
   const handleDelete = async (id: number) => {
     console.log('🔴 handleDelete llamado con id:', id);
-    if (confirm('¿Estás seguro de eliminar este buque?')) {
+    if (confirm(t('mensajes.confirmEliminar'))) {
       try {
         console.log('🔴 Eliminando buque...');
         await deleteBuque(id);
         await loadBuques();
-        alert('Buque eliminado exitosamente');
+        alert(t('mensajes.embarcacionEliminada'));
         console.log('🔴 Buque eliminado exitosamente');
       } catch (error) {
         console.error('❌ Error eliminando buque:', error);
-        alert('Error al eliminar el buque');
+        alert(t('mensajes.errorEliminar'));
       }
     } else {
       console.log('🔴 Eliminación cancelada por el usuario');
@@ -108,14 +110,14 @@ export default function EmbarcacionesPage() {
             </svg>
           </div>
           <div>
-            <span className="text-xl sm:text-2xl font-bold text-gray-800">Gestión de Buques</span>
-            <p className="text-gray-600 text-sm sm:text-base md:text-lg">Administra la flota de embarcaciones</p>
+            <span className="text-xl sm:text-2xl font-bold text-gray-800">{t('titulo')}</span>
+            <p className="text-gray-600 text-sm sm:text-base md:text-lg">{t('subtitulo')}</p>
             </div>
           </h1>
         </div>
         <Button onClick={() => setIsModalOpen(true)} className="gap-2 w-full sm:w-auto">
           <Icons.Plus />
-          <span>Nuevo Buque</span>
+          <span>{t('nuevaEmbarcacion')}</span>
         </Button>
       </div>
 

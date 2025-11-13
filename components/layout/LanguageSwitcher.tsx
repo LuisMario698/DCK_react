@@ -25,7 +25,7 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: Loc
     <button
       onClick={toggleLocale}
       disabled={isPending}
-      className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50"
+      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-transparent dark:hover:bg-transparent transition-colors duration-200 disabled:opacity-50"
       title={currentLocale === 'es' ? 'Cambiar a inglés' : 'Switch to Spanish'}
     >
       {/* Globe Icon */}

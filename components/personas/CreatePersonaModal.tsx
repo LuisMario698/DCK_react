@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { createPersona, updatePersona } from '@/lib/services/personas';
 import { getTiposPersona } from '@/lib/services/tipos_persona';
@@ -20,6 +21,9 @@ export interface PersonaFormData {
 }
 
 export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }: CreatePersonaModalProps) {
+  const t = useTranslations('Personas.modal');
+  const tm = useTranslations('Personas.mensajes');
+  
   const [formData, setFormData] = useState<PersonaFormData>({
     nombre: '',
     tipo_persona_id: null,
@@ -73,7 +77,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     e.preventDefault();
     
     if (!formData.tipo_persona_id) {
-      alert('Por favor selecciona un tipo de persona');
+      alert(t('seleccioneTipo'));
       return;
     }
 
@@ -83,9 +87,11 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
       if (personaToEdit) {
         // Editar persona existente
         await updatePersona(personaToEdit.id, formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
+        alert(tm('personaEditada'));
       } else {
         // Crear nueva persona
         await createPersona(formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
+        alert(tm('personaCreada'));
       }
       
       resetForm();
@@ -93,7 +99,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
       onClose();
     } catch (error) {
       console.error('Error guardando persona:', error);
-      alert(`Error al ${personaToEdit ? 'actualizar' : 'crear'} la persona. Por favor intenta nuevamente.`);
+      alert(personaToEdit ? tm('errorEditar') : tm('errorCrear'));
     } finally {
       setLoading(false);
     }
@@ -106,7 +112,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
       <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {personaToEdit ? 'Editar Persona' : 'Crear Nueva Persona'}
+            {personaToEdit ? t('tituloEditar') : t('tituloCrear')}
           </h2>
           <button
             onClick={onClose}
@@ -128,7 +134,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre Completo *
+                    {t('nombre')} *
                   </label>
                   <input
                     type="text"
@@ -136,17 +142,14 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
-                    placeholder="Ej: Juan Carlos Pérez Rodríguez"
+                    placeholder={t('nombre')}
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-600 mt-1">
-                    Ingrese el nombre completo de la persona
-                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tipo de Persona *
+                    {t('tipo')} *
                   </label>
                   <select
                     required
@@ -155,33 +158,27 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
                     disabled={loading}
                   >
-                    <option value="">Seleccione un tipo</option>
+                    <option value="">{t('seleccioneTipo')}</option>
                     {tiposPersona.map((tipo) => (
                       <option key={tipo.id} value={tipo.id}>
                         {tipo.nombre_tipo}
                       </option>
                     ))}
                   </select>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Seleccione el rol o función de la persona
-                  </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Información de Contacto
+                    {t('email')} / {t('telefono')}
                   </label>
                   <textarea
                     value={formData.info_contacto}
                     onChange={(e) => setFormData({ ...formData, info_contacto: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white text-gray-900"
-                    placeholder="Ej: Tel: +506 8888-8888, Email: correo@ejemplo.com, Dirección: San José"
+                    placeholder={`${t('email')}, ${t('telefono')}`}
                     rows={4}
                     disabled={loading}
                   />
-                  <p className="text-xs text-gray-600 mt-1">
-                    Puede incluir teléfono, email, dirección u otros datos de contacto
-                  </p>
                 </div>
               </div>
 
@@ -192,7 +189,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                   onClick={onClose}
                   disabled={loading}
                 >
-                  Cancelar
+                  {t('cancelar')}
                 </Button>
                 <Button 
                   type="submit" 
@@ -202,10 +199,10 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Creando...
+                      {personaToEdit ? t('guardar') : t('crear')}...
                     </span>
                   ) : (
-                    personaToEdit ? 'Actualizar Persona' : 'Crear Persona'
+                    personaToEdit ? t('guardar') : t('crear')
                   )}
                 </Button>
               </div>

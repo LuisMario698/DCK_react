@@ -34,5 +34,121 @@
       "nuevaPersona": "Nueva Persona",
       "nuevaAsociacion": "Nueva Asociación"
     }
+  },
+  "Personas": {
+    "titulo": "Gestión de Personas",
+    "subtitulo": "Administra las personas registradas en el sistema",
+    "buscar": "Buscar persona...",
+    "filtrarTipo": "Filtrar por tipo",
+    "todosTipos": "Todos los tipos",
+    "nuevaPersona": "Nueva Persona",
+    "gestionarTipos": "Gestionar Tipos de Persona",
+    "tabla": {
+      "nombre": "Nombre",
+      "rut": "RUT",
+      "tipo": "Tipo",
+      "email": "Email",
+      "telefono": "Teléfono",
+      "acciones": "Acciones"
+    },
+    "acciones": {
+      "editar": "Editar",
+      "eliminar": "Eliminar"
+    },
+    "sinResultados": "No se encontraron personas",
+    "paginacion": {
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "pagina": "Página",
+      "de": "de"
+    },
+    "modal": {
+      "tituloCrear": "Crear Nueva Persona",
+      "tituloEditar": "Editar Persona",
+      "nombre": "Nombre completo",
+      "rut": "RUT",
+      "tipo": "Tipo de Persona",
+      "seleccioneTipo": "Seleccione un tipo",
+      "email": "Email",
+      "telefono": "Teléfono",
+      "cancelar": "Cancelar",
+      "crear": "Crear Persona",
+      "guardar": "Guardar Cambios"
+    },
+    "modalTipos": {
+      "titulo": "Gestionar Tipos de Persona",
+      "nuevoTipo": "Nuevo Tipo",
+      "nombreTipo": "Nombre del tipo",
+      "agregar": "Agregar Tipo",
+      "eliminar": "Eliminar",
+      "cerrar": "Cerrar"
+    },
+    "mensajes": {
+      "personaCreada": "Persona creada exitosamente",
+      "personaEditada": "Persona actualizada exitosamente",
+      "personaEliminada": "Persona eliminada exitosamente",
+      "errorCrear": "Error al crear persona",
+      "errorEditar": "Error al editar persona",
+      "errorEliminar": "Error al eliminar persona",
+      "confirmEliminar": "¿Está seguro de eliminar esta persona?"
+    }
+  },
+  "Embarcaciones": {
+    "titulo": "Gestión de Embarcaciones",
+    "subtitulo": "Administra las embarcaciones registradas en el sistema",
+    "buscar": "Buscar embarcación...",
+    "nuevaEmbarcacion": "Nueva Embarcación",
+    "tabla": {
+      "nombre": "Nombre del Buque",
+      "matricula": "Matrícula",
+      "bandera": "Bandera",
+      "tipo": "Tipo",
+      "eslora": "Eslora",
+      "manga": "Manga",
+      "puntal": "Puntal",
+      "acciones": "Acciones"
+    },
+    "acciones": {
+      "editar": "Editar",
+      "eliminar": "Eliminar"
+    },
+    "sinResultados": "No se encontraron embarcaciones",
+    "paginacion": {
+      "anterior": "Anterior",
+      "siguiente": "Siguiente",
+      "pagina": "Página",
+      "de": "de"
+    },
+    "modal": {
+      "tituloCrear": "Crear Nueva Embarcación",
+      "tituloEditar": "Editar Embarcación",
+      "nombreBuque": "Nombre del Buque",
+      "matricula": "Matrícula",
+      "numeroOMI": "Número OMI",
+      "bandera": "Bandera",
+      "tipoBuque": "Tipo de Buque",
+      "seleccioneTipo": "Seleccione un tipo",
+      "eslora": "Eslora (metros)",
+      "manga": "Manga (metros)",
+      "puntal": "Puntal (metros)",
+      "propietario": "Propietario",
+      "seleccionePropietario": "Seleccione un propietario",
+      "capitan": "Capitán",
+      "seleccioneCapitan": "Seleccione un capitán",
+      "armador": "Armador",
+      "seleccioneArmador": "Seleccione un armador",
+      "cancelar": "Cancelar",
+      "crear": "Crear Embarcación",
+      "guardar": "Guardar Cambios"
+    },
+    "mensajes": {
+      "embarcacionCreada": "Embarcación creada exitosamente",
+      "embarcacionEditada": "Embarcación actualizada exitosamente",
+      "embarcacionEliminada": "Embarcación eliminada exitosamente",
+      "errorCrear": "Error al crear embarcación",
+      "errorEditar": "Error al editar embarcación",
+      "errorEliminar": "Error al eliminar embarcación",
+      "confirmEliminar": "¿Está seguro de eliminar esta embarcación?"
+    }
   }
 }

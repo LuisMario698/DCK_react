@@ -1,6 +1,7 @@
  'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { createBuque, updateBuque } from '@/lib/services/buques';
 import { Buque } from '@/types/database';
@@ -12,6 +13,9 @@ interface Props {
 }
 
 export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props) {
+  const t = useTranslations('Embarcaciones.modal');
+  const tm = useTranslations('Embarcaciones.mensajes');
+  
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('Barco');
@@ -61,10 +65,10 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
 
       if (buqueToEdit) {
         await updateBuque(buqueToEdit.id, buqueData);
-        alert('Buque actualizado exitosamente');
+        alert(tm('embarcacionEditada'));
       } else {
         await createBuque(buqueData);
-        alert('Buque creado exitosamente');
+        alert(tm('embarcacionCreada'));
       }
 
       onCreate();
@@ -72,7 +76,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
       resetForm();
     } catch (error) {
       console.error('Error guardando buque:', error);
-      alert(`Error al ${buqueToEdit ? 'actualizar' : 'crear'} el buque`);
+      alert(buqueToEdit ? tm('errorEditar') : tm('errorCrear'));
     } finally {
       setLoading(false);
     }
@@ -83,14 +87,14 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
       <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">
-            {buqueToEdit ? 'Editar Buque' : 'Crear Nuevo Buque'}
+            {buqueToEdit ? t('tituloEditar') : t('tituloCrear')}
           </h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✖</button>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-gray-600">Nombre del Buque *</label>
+            <label className="text-sm text-gray-600">{t('nombreBuque')} *</label>
             <input 
               required 
               value={nombre} 

@@ -34,5 +34,121 @@
       "nuevaPersona": "New Person",
       "nuevaAsociacion": "New Association"
     }
+  },
+  "Personas": {
+    "titulo": "People Management",
+    "subtitulo": "Manage people registered in the system",
+    "buscar": "Search person...",
+    "filtrarTipo": "Filter by type",
+    "todosTipos": "All types",
+    "nuevaPersona": "New Person",
+    "gestionarTipos": "Manage Person Types",
+    "tabla": {
+      "nombre": "Name",
+      "rut": "ID Number",
+      "tipo": "Type",
+      "email": "Email",
+      "telefono": "Phone",
+      "acciones": "Actions"
+    },
+    "acciones": {
+      "editar": "Edit",
+      "eliminar": "Delete"
+    },
+    "sinResultados": "No people found",
+    "paginacion": {
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "pagina": "Page",
+      "de": "of"
+    },
+    "modal": {
+      "tituloCrear": "Create New Person",
+      "tituloEditar": "Edit Person",
+      "nombre": "Full name",
+      "rut": "ID Number",
+      "tipo": "Person Type",
+      "seleccioneTipo": "Select a type",
+      "email": "Email",
+      "telefono": "Phone",
+      "cancelar": "Cancel",
+      "crear": "Create Person",
+      "guardar": "Save Changes"
+    },
+    "modalTipos": {
+      "titulo": "Manage Person Types",
+      "nuevoTipo": "New Type",
+      "nombreTipo": "Type name",
+      "agregar": "Add Type",
+      "eliminar": "Delete",
+      "cerrar": "Close"
+    },
+    "mensajes": {
+      "personaCreada": "Person created successfully",
+      "personaEditada": "Person updated successfully",
+      "personaEliminada": "Person deleted successfully",
+      "errorCrear": "Error creating person",
+      "errorEditar": "Error editing person",
+      "errorEliminar": "Error deleting person",
+      "confirmEliminar": "Are you sure you want to delete this person?"
+    }
+  },
+  "Embarcaciones": {
+    "titulo": "Vessel Management",
+    "subtitulo": "Manage vessels registered in the system",
+    "buscar": "Search vessel...",
+    "nuevaEmbarcacion": "New Vessel",
+    "tabla": {
+      "nombre": "Vessel Name",
+      "matricula": "Registration",
+      "bandera": "Flag",
+      "tipo": "Type",
+      "eslora": "Length",
+      "manga": "Beam",
+      "puntal": "Depth",
+      "acciones": "Actions"
+    },
+    "acciones": {
+      "editar": "Edit",
+      "eliminar": "Delete"
+    },
+    "sinResultados": "No vessels found",
+    "paginacion": {
+      "anterior": "Previous",
+      "siguiente": "Next",
+      "pagina": "Page",
+      "de": "of"
+    },
+    "modal": {
+      "tituloCrear": "Create New Vessel",
+      "tituloEditar": "Edit Vessel",
+      "nombreBuque": "Vessel Name",
+      "matricula": "Registration",
+      "numeroOMI": "IMO Number",
+      "bandera": "Flag",
+      "tipoBuque": "Vessel Type",
+      "seleccioneTipo": "Select a type",
+      "eslora": "Length (meters)",
+      "manga": "Beam (meters)",
+      "puntal": "Depth (meters)",
+      "propietario": "Owner",
+      "seleccionePropietario": "Select an owner",
+      "capitan": "Captain",
+      "seleccioneCapitan": "Select a captain",
+      "armador": "Shipowner",
+      "seleccioneArmador": "Select a shipowner",
+      "cancelar": "Cancel",
+      "crear": "Create Vessel",
+      "guardar": "Save Changes"
+    },
+    "mensajes": {
+      "embarcacionCreada": "Vessel created successfully",
+      "embarcacionEditada": "Vessel updated successfully",
+      "embarcacionEliminada": "Vessel deleted successfully",
+      "errorCrear": "Error creating vessel",
+      "errorEditar": "Error editing vessel",
+      "errorEliminar": "Error deleting vessel",
+      "confirmEliminar": "Are you sure you want to delete this vessel?"
+    }
   }
 }
