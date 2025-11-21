@@ -150,5 +150,23 @@
       "errorEliminar": "Error deleting vessel",
       "confirmEliminar": "Are you sure you want to delete this vessel?"
     }
+  },
+  "Manifiestos": {
+    "titulo": "Manifests Management",
+    "subtitulo": "Manage waste manifests",
+    "acciones": {
+      "descargarPDF": "Download PDF",
+      "ver": "View",
+      "editar": "Edit",
+      "eliminar": "Delete"
+    },
+    "mensajes": {
+      "generandoPDF": "Generating PDF...",
+      "pdfGenerado": "PDF generated successfully",
+      "errorGenerarPDF": "Error generating PDF",
+      "descargando": "Downloading...",
+      "descargaExitosa": "Download completed",
+      "errorDescarga": "Error downloading PDF"
+    }
   }
 }

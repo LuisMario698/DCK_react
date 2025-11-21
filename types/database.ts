@@ -66,6 +66,7 @@ export interface ManifiestoResiduo {
   aceite_usado: number;
   filtros_aceite: number;
   filtros_diesel: number;
+  filtros_aire: number;
   basura: number;
   created_at: string;
   updated_at: string;
@@ -100,4 +101,25 @@ export interface ManifiestoConRelaciones extends Manifiesto {
 export interface ManifiestoBasuronConRelaciones extends ManifiestoBasuron {
   buque?: Buque;
   responsable?: Persona;
+}
+
+export interface ManifiestoNoFirmado {
+  id: number;
+  manifiesto_id: number;
+  nombre_archivo: string;
+  ruta_archivo: string;
+  url_descarga: string | null;
+  numero_manifiesto: string;
+  fecha_generacion: string;
+  estado: 'pendiente' | 'descargado' | 'firmado' | 'cancelado';
+  descargado_en: string | null;
+  descargado_por: string | null;
+  firmado_en: string | null;
+  observaciones: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ManifiestoNoFirmadoConRelaciones extends ManifiestoNoFirmado {
+  manifiesto?: ManifiestoConRelaciones;
 }

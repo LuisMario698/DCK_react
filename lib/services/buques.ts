@@ -40,11 +40,11 @@ export async function createBuque(buque: Omit<Buque, 'id' | 'created_at' | 'upda
 }
 
 export async function updateBuque(id: number, buque: Partial<Buque>) {
-  const supabase = createClient()
+  const supabase = createClient() // Se crea la conexion mediante un cliente de Supabase
   
   const { data, error } = await supabase
     .from('buques')
-    .update(buque)
+    .update(buque)  // Aqui es donde se actualiza la embarcacion con los nuevo datos
     .eq('id', id)
     .select()
     .single()

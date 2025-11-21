@@ -134,6 +134,7 @@ export async function createManifiesto(
     aceite_usado: number;
     filtros_aceite: number;
     filtros_diesel: number;
+    filtros_aire: number;
     basura: number;
     observaciones?: string;
   },
@@ -192,6 +193,7 @@ export async function createManifiesto(
       aceite_usado: residuos.aceite_usado || 0,
       filtros_aceite: residuos.filtros_aceite || 0,
       filtros_diesel: residuos.filtros_diesel || 0,
+      filtros_aire: residuos.filtros_aire || 0,
       basura: residuos.basura || 0
     }
     
@@ -217,6 +219,7 @@ export async function updateManifiesto(
     aceite_usado: number;
     filtros_aceite: number;
     filtros_diesel: number;
+    filtros_aire: number;
     basura: number;
     observaciones?: string;
   }

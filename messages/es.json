@@ -150,5 +150,23 @@
       "errorEliminar": "Error al eliminar embarcación",
       "confirmEliminar": "¿Está seguro de eliminar esta embarcación?"
     }
+  },
+  "Manifiestos": {
+    "titulo": "Gestión de Manifiestos",
+    "subtitulo": "Administra los manifiestos de residuos",
+    "acciones": {
+      "descargarPDF": "Descargar PDF",
+      "ver": "Ver",
+      "editar": "Editar",
+      "eliminar": "Eliminar"
+    },
+    "mensajes": {
+      "generandoPDF": "Generando PDF...",
+      "pdfGenerado": "PDF generado exitosamente",
+      "errorGenerarPDF": "Error al generar PDF",
+      "descargando": "Descargando...",
+      "descargaExitosa": "Descarga completada",
+      "errorDescarga": "Error al descargar PDF"
+    }
   }
 }

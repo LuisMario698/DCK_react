@@ -1,17 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
 import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto } from '@/lib/services/manifiestos';
+import { generarPDFManifiesto, generarNombreArchivoPDF } from '@/lib/utils/pdfGenerator';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 
 export default function ManifiestosPage() {
+  const t = useTranslations('Manifiestos');
+  const tm = useTranslations('Manifiestos.mensajes');
   const [manifiestos, setManifiestos] = useState<ManifiestoConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
+  const [generandoPDF, setGenerandoPDF] = useState<string | null>(null);
   
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
@@ -29,6 +34,7 @@ export default function ManifiestosPage() {
     aceite_usado: 0,
     filtros_aceite: 0,
     filtros_diesel: 0,
+    filtros_aire: 0,
     basura: 0,
   });
   
@@ -109,6 +115,11 @@ export default function ManifiestosPage() {
         return;
       }
 
+      if (!archivo) {
+        alert('❌ Debes digitalizar el manifiesto antes de guardarlo. El archivo es obligatorio.');
+        return;
+      }
+
       setSaving(true);
       
       const manifiestoData = {
@@ -116,7 +127,7 @@ export default function ManifiestosPage() {
         buque_id: parseInt(formData.buque_id),
         responsable_principal_id: parseInt(formData.responsable_principal_id),
         responsable_secundario_id: formData.responsable_secundario_id ? parseInt(formData.responsable_secundario_id) : null,
-        estado_digitalizacion: archivo ? 'completado' : 'pendiente' as any,
+        estado_digitalizacion: 'completado' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
       };
@@ -136,6 +147,7 @@ export default function ManifiestosPage() {
         aceite_usado: 0,
         filtros_aceite: 0,
         filtros_diesel: 0,
+        filtros_aire: 0,
         basura: 0,
       });
       setArchivo(null);
@@ -160,6 +172,37 @@ export default function ManifiestosPage() {
         console.error('Error eliminando manifiesto:', error);
         alert('❌ Error al eliminar el manifiesto');
       }
+    }
+  };
+
+  const handleDescargarPDF = async (manifiesto: ManifiestoConRelaciones) => {
+    try {
+      setGenerandoPDF(manifiesto.id.toString());
+      
+      // Generar el PDF
+      const pdfBlob = await generarPDFManifiesto(manifiesto);
+      const nombreArchivo = generarNombreArchivoPDF(manifiesto.numero_manifiesto);
+      
+      // Crear URL del blob para descarga directa
+      const url = URL.createObjectURL(pdfBlob);
+      
+      // Descargar el archivo
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nombreArchivo;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Limpiar la URL del blob
+      URL.revokeObjectURL(url);
+      
+      alert(tm('descargaExitosa'));
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      alert(tm('errorDescarga'));
+    } finally {
+      setGenerandoPDF(null);
     }
   };
 
@@ -430,6 +473,28 @@ export default function ManifiestosPage() {
                       />
                     </div>
                     
+                    {/* Filtros de Aire */}
+                    <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-cyan-600 flex items-center justify-center text-white flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                          </svg>
+                        </div>
+                        <label className="block text-xs sm:text-sm font-semibold text-gray-700">
+                          Filtros Aire (Unidades)
+                        </label>
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        value={residuos.filtros_aire}
+                        onChange={(e) => setResiduos({ ...residuos, filtros_aire: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none text-xs sm:text-sm text-gray-900 transition-all"
+                        placeholder="0"
+                      />
+                    </div>
+                    
                     {/* Basura */}
                     <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-3 sm:p-4">
                       <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -581,7 +646,65 @@ export default function ManifiestosPage() {
               <div className="space-y-3 sm:space-y-4">
                 <div className="text-center mb-3 sm:mb-4">
                   <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">Digitalizar Documento</h2>
-                  <p className="text-xs sm:text-sm text-gray-500">Cargue el archivo escaneado del manifiesto físico (opcional)</p>
+                  <p className="text-xs sm:text-sm text-red-600 font-semibold">⚠️ El archivo digitalizado es OBLIGATORIO para guardar el manifiesto</p>
+                </div>
+                
+                {/* Instrucciones y botón de descarga PDF */}
+                <div className="max-w-2xl mx-auto mb-4 bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-bold text-blue-900 mb-2">📋 Instrucciones para digitalizar:</h3>
+                      <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside mb-3">
+                        <li>Descarga el PDF del manifiesto usando el botón de abajo</li>
+                        <li>Imprime el documento</li>
+                        <li>Solicita las firmas de los responsables</li>
+                        <li>Escanea el documento firmado</li>
+                        <li>Sube el archivo escaneado en esta sección</li>
+                      </ol>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Crear un manifiesto temporal para la descarga
+                          const manifiestoTemp: ManifiestoConRelaciones = {
+                            id: 0,
+                            numero_manifiesto: 'BORRADOR-' + new Date().getTime(),
+                            fecha_emision: formData.fecha_emision,
+                            buque_id: parseInt(formData.buque_id),
+                            responsable_principal_id: parseInt(formData.responsable_principal_id),
+                            responsable_secundario_id: formData.responsable_secundario_id ? parseInt(formData.responsable_secundario_id) : null,
+                            estado_digitalizacion: 'pendiente',
+                            observaciones: formData.observaciones,
+                            imagen_manifiesto_url: null,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                            buque: selectedBuque,
+                            responsable_principal: selectedResponsablePrincipal,
+                            responsable_secundario: selectedResponsableSecundario,
+                            residuos: {
+                              id: 0,
+                              manifiesto_id: 0,
+                              ...residuos,
+                              created_at: new Date().toISOString(),
+                              updated_at: new Date().toISOString()
+                            }
+                          };
+                          handleDescargarPDF(manifiestoTemp);
+                        }}
+                        disabled={!formData.buque_id || !formData.responsable_principal_id}
+                        className="w-full sm:w-auto px-4 py-2.5 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Descargar PDF del Manifiesto
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="max-w-2xl mx-auto">
                   <div
@@ -805,7 +928,30 @@ export default function ManifiestosPage() {
                             </span>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                          <div className="flex gap-1 sm:gap-2 min-w-[120px]">
+                          <div className="flex gap-1 sm:gap-2 min-w-[160px]">
+                            <button
+                              onClick={() => handleDescargarPDF(manifiesto)}
+                              disabled={generandoPDF === manifiesto.id.toString()}
+                              className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={t('acciones.descargarPDF')}
+                            >
+                              {generandoPDF === manifiesto.id.toString() ? (
+                                <>
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                  <span className="hidden sm:inline">...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                  <span className="hidden lg:inline">PDF</span>
+                                </>
+                              )}
+                            </button>
                             <button
                               onClick={() => setViewingManifiesto(manifiesto)}
                               className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap"
