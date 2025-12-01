@@ -5,10 +5,17 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/Button';
 import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
+import { generateBasuronPDF } from '@/lib/utils/pdfGeneratorBasuron';
+import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
+import { getBuques } from '@/lib/services/buques';
+import { getPersonas } from '@/lib/services/personas';
 
 export default function ManifiestoBasuronPage() {
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [buques, setBuques] = useState<any[]>([]);
+  const [personas, setPersonas] = useState<any[]>([]);
 
   useEffect(() => {
     loadData();
@@ -16,8 +23,14 @@ export default function ManifiestoBasuronPage() {
 
   async function loadData() {
     try {
-      const data = await getManifiestosBasuron();
-      setManifiestos(data);
+      const [manifestosData, buquesData, personasData] = await Promise.all([
+        getManifiestosBasuron(),
+        getBuques(),
+        getPersonas(),
+      ]);
+      setManifiestos(manifestosData);
+      setBuques(buquesData);
+      setPersonas(personasData);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -51,7 +64,7 @@ export default function ManifiestoBasuronPage() {
             <h1 className="text-2xl font-bold text-gray-800">Manifiesto Basurón</h1>
             <p className="text-sm text-gray-500 mt-1">Control de pesaje y depósito de residuos</p>
           </div>
-          <Button onClick={() => alert('Próximamente')}>
+          <Button onClick={() => setIsModalOpen(true)}>
             <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
@@ -120,7 +133,21 @@ export default function ManifiestoBasuronPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button onClick={() => handleDelete(m.id)} className="text-red-600">Eliminar</button>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => generateBasuronPDF(m)}
+                          className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                          title="Descargar PDF"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          PDF
+                        </button>
+                        <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800">
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -128,6 +155,14 @@ export default function ManifiestoBasuronPage() {
             </table>
           )}
         </div>
+
+        <CreateManifiestoBasuronModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={loadData}
+          buques={buques}
+          personas={personas}
+        />
       </div>
     // </DashboardLayout>
   );
