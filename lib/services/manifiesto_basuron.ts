@@ -8,8 +8,7 @@ export async function getManifiestosBasuron() {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buque_id(id, nombre_buque),
-      responsable:responsable_id(id, nombre)
+      buque:buque_id(id, nombre_buque)
     `)
     .order('fecha', { ascending: false })
   
@@ -24,8 +23,7 @@ export async function getManifiestoBasuronById(id: number) {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buque_id(id, nombre_buque),
-      responsable:responsable_id(id, nombre)
+      buque:buque_id(id, nombre_buque)
     `)
     .eq('id', id)
     .single()
@@ -173,7 +171,7 @@ export async function getEstadisticasManifiestosBasuron(fecha?: string) {
   
   let query = supabase
     .from('manifiesto_basuron')
-    .select('peso_entrada, peso_salida, total_depositado, estado')
+    .select('peso_entrada, peso_salida, total_depositado')
   
   if (fecha) {
     query = query.eq('fecha', fecha)
@@ -185,8 +183,8 @@ export async function getEstadisticasManifiestosBasuron(fecha?: string) {
   
   const stats = {
     total: data.length,
-    completados: data.filter(m => m.estado === 'Completado').length,
-    enProceso: data.filter(m => m.estado === 'En Proceso').length,
+    completados: 0,
+    enProceso: 0,
     pesoTotalDepositado: data.reduce((sum, m) => sum + Number(m.total_depositado || 0), 0),
     pesoPromedioDepositado: data.length > 0 
       ? data.reduce((sum, m) => sum + Number(m.total_depositado || 0), 0) / data.length 

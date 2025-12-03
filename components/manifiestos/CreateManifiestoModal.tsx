@@ -17,6 +17,7 @@ interface ResiduosData {
   aceite_usado: number;
   filtros_aceite: number;
   filtros_diesel: number;
+  filtros_aire: number;
   basura: number;
 }
 
@@ -40,6 +41,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
     aceite_usado: 0,
     filtros_aceite: 0,
     filtros_diesel: 0,
+    filtros_aire: 0,
     basura: 0,
   });
 
@@ -104,15 +106,29 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validar campos requeridos ANTES de setLoading
+    if (!formData.numero_manifiesto.trim()) {
+      alert('❌ El número de manifiesto es obligatorio');
+      return;
+    }
+    if (!formData.fecha_emision) {
+      alert('❌ La fecha de emisión es obligatoria');
+      return;
+    }
+    if (!formData.buque_id) {
+      alert('❌ Selecciona una embarcación');
+      return;
+    }
+    if (!formData.persona_id) {
+      alert('❌ Selecciona una persona responsable');
+      return;
+    }
+    // Los residuos pueden ser >= 0, no requieren validación extra
+
     setLoading(true);
 
     try {
-      // Validar campos requeridos
-      if (!formData.numero_manifiesto || !formData.fecha_emision || !formData.buque_id || !formData.persona_id) {
-        alert('❌ Por favor completa todos los campos obligatorios');
-        return;
-      }
-
       // Aquí puedes agregar la lógica para subir el archivo si es necesario
       const manifiestoData = {
         numero_manifiesto: formData.numero_manifiesto,
@@ -157,6 +173,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
       aceite_usado: 0,
       filtros_aceite: 0,
       filtros_diesel: 0,
+      filtros_aire: 0,
       basura: 0,
     });
     setArchivo(null);
@@ -258,7 +275,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <p className="text-sm font-bold text-cyan-700 uppercase tracking-wide">✅ Embarcación Seleccionada</p>
+                    <p className="text-sm font-bold text-cyan-700 uppercase tracking-wide">Embarcación Seleccionada</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -371,6 +388,32 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                 </div>
               </div>
 
+              {/* Filtros de Aire */}
+              <div className="bg-white border-2 border-green-300 rounded-xl p-5 shadow-md">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">💨</span>
+                  </div>
+                  <label className="text-sm font-bold text-gray-700">FILTROS DE AIRE</label>
+                </div>
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={residuos.filtros_aire}
+                      onChange={(e) => updateResiduo('filtros_aire', parseInt(e.target.value) || 0)}
+                      className="w-full px-4 py-3 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none"
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="px-4 py-3 bg-gray-100 border-2 border-gray-300 rounded-lg font-bold text-gray-700">
+                    Unidades
+                  </div>
+                </div>
+              </div>
+
               {/* Basura */}
               <div className="bg-white border-2 border-green-300 rounded-xl p-5 shadow-md md:col-span-2">
                 <div className="flex items-center gap-3 mb-3">
@@ -401,7 +444,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
             {/* Resumen */}
             <div className="mt-6 p-4 bg-white border-2 border-green-400 rounded-xl">
               <p className="text-sm font-semibold text-gray-600 mb-2">📊 Resumen de Residuos:</p>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-3 text-center">
                 <div>
                   <p className="text-xs text-gray-500">Aceite</p>
                   <p className="text-lg font-bold text-green-700">{residuos.aceite_usado} L</p>
@@ -413,6 +456,10 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                 <div>
                   <p className="text-xs text-gray-500">F. Diesel</p>
                   <p className="text-lg font-bold text-green-700">{residuos.filtros_diesel} un</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">F. Aire</p>
+                  <p className="text-lg font-bold text-green-700">{residuos.filtros_aire} un</p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-500">Basura</p>

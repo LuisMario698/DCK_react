@@ -74,9 +74,9 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text(fechaTexto, margin, yPosition);
 
   // CUADRO PRINCIPAL DEL FORMULARIO
-  yPosition = 65;
+  yPosition = 70;
   doc.setLineWidth(1);
-  doc.rect(15, yPosition, pageWidth - 30, 135);
+  doc.rect(15, yPosition, pageWidth - 30, 145);
 
   // TICKET
   yPosition += 10;
@@ -123,12 +123,9 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text('HORA DE SALIDA:', 25, yPosition);
   doc.line(65, yPosition + 2, pageWidth - 25, yPosition + 2);
   
-  const horaSalida = manifiesto.updated_at && manifiesto.estado === 'Completado'
-    ? new Date(manifiesto.updated_at).toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    : 'Pendiente';
+  const horaSalida = manifiesto.hora_salida && manifiesto.hora_salida !== ''
+    ? manifiesto.hora_salida
+    : '—';
   doc.setFont('helvetica', 'normal');
   doc.text(horaSalida, 67, yPosition);
 
@@ -147,7 +144,9 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text('PESO DE SALIDA:', 25, yPosition);
   doc.line(65, yPosition + 2, pageWidth - 25, yPosition + 2);
   
-  const pesoSalida = manifiesto.peso_salida ? `${manifiesto.peso_salida.toFixed(2)} kg` : 'Pendiente';
+  const pesoSalida = manifiesto.peso_salida != null
+    ? `${manifiesto.peso_salida.toFixed(2)} kg`
+    : '—';
   doc.setFont('helvetica', 'normal');
   doc.text(pesoSalida, 67, yPosition);
 
@@ -167,56 +166,38 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text('NOMBRE DEL USUARIO:', 25, yPosition);
   doc.line(75, yPosition + 2, pageWidth - 25, yPosition + 2);
   
-  const nombreUsuario = manifiesto.responsable?.nombre || 'No especificado';
+  const nombreUsuario = manifiesto.nombre_usuario || '';
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text(nombreUsuario, 77, yPosition);
 
-  // SECCIÓN DE RECIBE
-  yPosition += 20;
-  doc.setLineWidth(1);
-  doc.line(15, yPosition, pageWidth - 15, yPosition);
-  
-  yPosition += 8;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('RECIBE: Comisionado para elección de...', 25, yPosition);
-  
-  yPosition += 6;
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Basura y Residuos Aceitosos (MARPOL - ANEXO)', 25, yPosition);
-
-  // FIRMAS EN LA PARTE INFERIOR
+  // SECCIÓN DE OBSERVACIONES Y FIRMA
   yPosition += 15;
-  const firmaWidth = (pageWidth - 50) / 2;
-  const firmaStartX = 25;
-  
-  // RESPONSABLE
-  doc.setLineWidth(0.5);
-  doc.line(firmaStartX, yPosition, firmaStartX + firmaWidth, yPosition);
-  doc.setFontSize(8);
+  const blockWidth = pageWidth - 50;
+  const blockStartX = 25;
+  // Observaciones arriba
   doc.setFont('helvetica', 'bold');
-  doc.text('RESPONSABLE', firmaStartX + firmaWidth / 2, yPosition + 5, { align: 'center' });
-  
-  if (manifiesto.responsable) {
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(manifiesto.responsable.nombre, firmaStartX + firmaWidth / 2, yPosition - 3, { align: 'center' });
-  }
-
-  // OBSERVACIONES
-  const obsX = firmaStartX + firmaWidth + 20;
-  doc.line(obsX, yPosition, obsX + firmaWidth, yPosition);
-  doc.setFont('helvetica', 'bold');
-  doc.text('OBSERVACIONES:', obsX + firmaWidth / 2, yPosition + 5, { align: 'center' });
-  
+  doc.setFontSize(10);
+  doc.text('OBSERVACIONES:', blockStartX, yPosition);
+  yPosition += 6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
   if (manifiesto.observaciones) {
-    doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    const obsTexto = doc.splitTextToSize(manifiesto.observaciones, firmaWidth - 10);
-    doc.text(obsTexto, obsX + firmaWidth / 2, yPosition - 3, { align: 'center' });
+    const obsTexto = doc.splitTextToSize(manifiesto.observaciones, blockWidth);
+    doc.text(obsTexto, blockStartX, yPosition);
+    yPosition += Array.isArray(obsTexto) ? (obsTexto.length * 4 + 2) : 12;
+  } else {
+    doc.text('-', blockStartX, yPosition);
+    yPosition += 10;
   }
+  // Espacio de firma vacío (más abajo)
+  yPosition += 18;
+  doc.setLineWidth(0.5);
+  const lineaFirmaY = yPosition + 22;
+  doc.line(blockStartX, lineaFirmaY, blockStartX + blockWidth, lineaFirmaY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('Firma', blockStartX + blockWidth / 2, lineaFirmaY + 6, { align: 'center' });
 
   // PIE DE PÁGINA
   yPosition = pageHeight - 20;

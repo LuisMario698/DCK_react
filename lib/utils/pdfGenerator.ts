@@ -150,11 +150,18 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones):
     doc.text(`${manifiesto.residuos.filtros_diesel} ${unidad}`, 72, yPosition);
   }
 
-  // FILTROS DE AIRE (campo vacío para compatibilidad con el formato)
+  // FILTROS DE AIRE (en piezas)
   yPosition += 15;
   doc.setFont('helvetica', 'bold');
   doc.text('FILTROS DE AIRE:', 25, yPosition);
   doc.line(65, yPosition + 2, pageWidth - 25, yPosition + 2);
+  
+  if (manifiesto.residuos?.filtros_aire) {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    const unidad = manifiesto.residuos.filtros_aire === 1 ? 'pieza' : 'piezas';
+    doc.text(`${manifiesto.residuos.filtros_aire} ${unidad}`, 67, yPosition);
+  }
 
   // BASURA (en kg)
   yPosition += 15;

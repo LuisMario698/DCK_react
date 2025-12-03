@@ -79,11 +79,12 @@ export interface ManifiestoBasuron {
   peso_salida: number | null;
   total_depositado: number;
   buque_id: number;
-  responsable_id: number | null;
   observaciones: string | null;
-  estado: 'En Proceso' | 'Completado' | 'Cancelado';
   created_at: string;
   updated_at: string;
+  hora_entrada: string;
+  hora_salida: string | null;
+  nombre_usuario: string | null;
 }
 
 // Tipos con relaciones para consultas JOIN
@@ -100,7 +101,6 @@ export interface ManifiestoConRelaciones extends Manifiesto {
 
 export interface ManifiestoBasuronConRelaciones extends ManifiestoBasuron {
   buque?: Buque;
-  responsable?: Persona;
 }
 
 export interface ManifiestoNoFirmado {

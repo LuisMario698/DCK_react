@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
@@ -17,6 +17,7 @@ export default function ManifiestosPage() {
   const [saving, setSaving] = useState(false);
   const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
   
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
@@ -40,6 +41,7 @@ export default function ManifiestosPage() {
   
   const [archivo, setArchivo] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const buqueSelectRef = useRef<HTMLSelectElement | null>(null);
 
   const steps = [
     { number: 1, title: 'Información Básica' },
@@ -72,6 +74,37 @@ export default function ManifiestosPage() {
   }
 
   const handleNext = () => {
+    // Validar paso actual antes de avanzar
+    if (currentStep === 1) {
+      if (!formData.fecha_emision) {
+        setShowValidation(true);
+        return;
+      }
+    }
+    if (currentStep === 2) {
+      if (!formData.buque_id) {
+        setShowValidation(true);
+        // Llevar el foco y scroll al select de buque
+        buqueSelectRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        buqueSelectRef.current?.focus();
+        return;
+      }
+    }
+    // Paso 3 (residuos) es opcional, puede estar en 0
+    if (currentStep === 4) {
+      if (!formData.responsable_principal_id) {
+        setShowValidation(true);
+        return;
+      }
+    }
+    if (currentStep === 5) {
+      if (!archivo) {
+        setShowValidation(true);
+        return;
+      }
+    }
+    
+    setShowValidation(false);
     if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
@@ -99,12 +132,14 @@ export default function ManifiestosPage() {
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setArchivo(e.dataTransfer.files[0]);
+      setShowValidation(false);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setArchivo(e.target.files[0]);
+      setShowValidation(false);
     }
   };
 
@@ -324,9 +359,15 @@ export default function ManifiestosPage() {
                           type="date"
                           required
                           value={formData.fecha_emision}
-                          onChange={(e) => setFormData({ ...formData, fecha_emision: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, fecha_emision: e.target.value });
+                            setShowValidation(false);
+                          }}
                           className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-xs sm:text-sm text-gray-900"
                         />
+                        {showValidation && !formData.fecha_emision && (
+                          <p className="text-xs text-red-600 mt-1">Por favor, selecciona la fecha de emisión</p>
+                        )}
                       </div>
                     </div>
                     <div className="mt-3 p-2.5 sm:p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
@@ -353,7 +394,7 @@ export default function ManifiestosPage() {
                     <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                       <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-blue-600 flex items-center justify-center text-white flex-shrink-0">
                         <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l5.12-5.12A3 3 0 0110.24 9H13a2 2 0 012 2v5.5M3 15v3a3 3 0 003 3h12a3 3 0 003-3v-3M3 15h18m-9-6v6m-3-3h6" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 14l2 1c2 1 4 1 6 1s4 0 6-1l2-1m-16 0l2-5h12l2 5M6 9l3-3h6l3 3" />
                         </svg>
                       </div>
                       <label className="block text-xs sm:text-sm font-semibold text-gray-700">
@@ -361,10 +402,17 @@ export default function ManifiestosPage() {
                       </label>
                     </div>
                     <select
+                      ref={buqueSelectRef}
                       required
                       value={formData.buque_id}
-                      onChange={(e) => setFormData({ ...formData, buque_id: e.target.value })}
-                      className="w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-gray-900 cursor-pointer"
+                      onChange={(e) => {
+                        setFormData({ ...formData, buque_id: e.target.value });
+                        setShowValidation(false);
+                      }}
+                      className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-lg focus:ring-2 outline-none transition-all text-gray-900 cursor-pointer border 
+                        ${showValidation && !formData.buque_id 
+                          ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                          : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'}`}
                     >
                       <option value="">Seleccionar embarcación...</option>
                       {buques.map((buque) => (
@@ -373,6 +421,9 @@ export default function ManifiestosPage() {
                         </option>
                       ))}
                     </select>
+                    {showValidation && !formData.buque_id && (
+                      <p className="text-xs text-red-600 mt-1">Por favor, selecciona un objeto de la lista.</p>
+                    )}
 
                     {selectedBuque && (
                       <div className="mt-3 p-2.5 sm:p-3 bg-green-50 border-l-4 border-green-500 rounded-lg">
@@ -544,7 +595,10 @@ export default function ManifiestosPage() {
                         <select
                           required
                           value={formData.responsable_principal_id}
-                          onChange={(e) => setFormData({ ...formData, responsable_principal_id: e.target.value })}
+                          onChange={(e) => {
+                            setFormData({ ...formData, responsable_principal_id: e.target.value });
+                            setShowValidation(false);
+                          }}
                           className="w-full px-3 sm:px-4 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-gray-900 cursor-pointer"
                         >
                           <option value="">Seleccionar responsable principal...</option>
@@ -554,6 +608,9 @@ export default function ManifiestosPage() {
                             </option>
                           ))}
                         </select>
+                        {showValidation && !formData.responsable_principal_id && (
+                          <p className="text-xs text-red-600 mt-1">Por favor, selecciona un responsable principal.</p>
+                        )}
                       </div>
                     </div>
 
@@ -747,6 +804,9 @@ export default function ManifiestosPage() {
                           Seleccionar Archivo
                         </label>
                         <p className="text-[10px] sm:text-xs text-gray-500 mt-3 sm:mt-4">Formatos soportados: PDF, JPG, PNG • Tamaño máximo: 10MB</p>
+                        {showValidation && !archivo && (
+                          <p className="text-xs text-red-600 mt-2">Por favor, sube el archivo digitalizado del manifiesto.</p>
+                        )}
                       </div>
                     ) : (
                       <div className="space-y-3 sm:space-y-4">
@@ -829,7 +889,7 @@ export default function ManifiestosPage() {
       <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
         <div className="mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
-            <span className="text-2xl sm:text-3xl">📊</span>
+            <span className="text-2xl sm:text-3xl"></span>
             <span className="break-words">Manifiestos Registrados</span>
           </h2>
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los manifiestos creados en el sistema</p>
