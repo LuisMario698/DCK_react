@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { DashboardStats, ReporteDetalladoItem } from '@/types/dashboard';
 import { getReporteComplejo } from '@/lib/services/dashboard_stats';
 import { Icons } from '@/components/ui/Icons';
+import { createClient } from '@/lib/supabase/client';
 
 interface DashboardClientProps {
     initialStats: DashboardStats;
@@ -14,6 +15,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     const [activeTab, setActiveTab] = useState<'general' | 'reportes'>('general');
     const [reportData, setReportData] = useState<ReporteDetalladoItem[]>([]);
     const [loadingReport, setLoadingReport] = useState(false);
+    const supabase = createClient();
 
     // Filtros de reporte
     const [filters, setFilters] = useState({
@@ -26,7 +28,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     const loadReport = async () => {
         setLoadingReport(true);
         try {
-            const data = await getReporteComplejo({
+            const data = await getReporteComplejo(supabase, {
                 fechaInicio: filters.fechaInicio || undefined,
                 fechaFin: filters.fechaFin || undefined,
                 buqueId: filters.buqueId ? Number(filters.buqueId) : undefined,
@@ -48,8 +50,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <button
                         onClick={() => setActiveTab('general')}
                         className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${activeTab === 'general'
-                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                             }`}
                     >
                         Dashboard
@@ -57,8 +59,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <button
                         onClick={() => setActiveTab('reportes')}
                         className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${activeTab === 'reportes'
-                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                            ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                             }`}
                     >
                         Reportes
@@ -319,8 +321,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${item.estado === 'completado'
-                                                        ? 'bg-green-100 text-green-700'
-                                                        : 'bg-amber-100 text-amber-700'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-amber-100 text-amber-700'
                                                     }`}>
                                                     {item.estado}
                                                 </span>

@@ -3,14 +3,18 @@ import { getDashboardStats } from '@/lib/services/dashboard_stats';
 import { useTranslations } from 'next-intl';
 import { getTranslations } from 'next-intl/server';
 import { DashboardClient } from '@/components/dashboard/DashboardClient';
+import { createServerClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
   const t = await getTranslations('Dashboard');
+  const supabase = await createServerClient();
 
   // Cargar datos iniciales en el servidor para SEO y rendimiento
   const [stats, buques] = await Promise.all([
-    getDashboardStats(),
-    getBuques()
+    getDashboardStats(supabase),
+    getBuques(supabase)
   ]);
 
   return (
