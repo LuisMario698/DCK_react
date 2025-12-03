@@ -85,6 +85,12 @@ export interface ManifiestoBasuron {
   hora_entrada: string;
   hora_salida: string | null;
   nombre_usuario: string | null;
+  // Nuevos campos confirmados en esquema
+  numero_ticket: string | null;
+  estado: 'En Proceso' | 'Completado' | 'Cancelado' | null;
+  usuario_sistema_id: number | null;
+  tipo_residuo_id: number | null;
+  comprobante_url: string | null;
 }
 
 // Tipos con relaciones para consultas JOIN
