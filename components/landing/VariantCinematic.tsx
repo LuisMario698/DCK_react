@@ -4,70 +4,119 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icons } from '@/components/ui/Icons';
 
-const IMAGES = [
-    'https://images.unsplash.com/photo-1516937941348-c09645f8b927?auto=format&fit=crop&q=80', // Port container
-    'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&q=80', // Ocean
-    'https://images.unsplash.com/photo-1621451537084-482c73073a0f?auto=format&fit=crop&q=80', // Ship
+const MEDIA = [
+    { type: 'image', src: 'https://images.unsplash.com/photo-1516937941348-c09645f8b927?auto=format&fit=crop&q=80' }, // Port container
+    { type: 'video', src: 'https://cdn.pixabay.com/video/2020/05/25/40139-424930032_large.mp4', poster: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?auto=format&fit=crop&q=80' }, // Ocean waves video
+    { type: 'image', src: 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?auto=format&fit=crop&q=80' }, // Ship
+    { type: 'video', src: 'https://cdn.pixabay.com/video/2019/04/23/23011-332483109_large.mp4', poster: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&q=80' }, // Aerial sea video
+    { type: 'image', src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80' }, // Beach/Ocean generic
 ];
 
 export function VariantCinematic() {
-    const [currentImage, setCurrentImage] = useState(0);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [prevIndex, setPrevIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
         const interval = setInterval(() => {
-            setCurrentImage((prev) => (prev + 1) % IMAGES.length);
-        }, 5000);
+            setPrevIndex(currentIndex);
+            setCurrentIndex((prev) => (prev + 1) % MEDIA.length);
+        }, 6000); // Increased duration for better viewing
         return () => clearInterval(interval);
-    }, []);
+    }, [currentIndex]);
 
     return (
         <div className="relative min-h-screen w-full overflow-x-hidden bg-gray-900 font-sans text-white selection:bg-blue-500 selection:text-white">
 
             {/* Navbar */}
-            <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10 transition-all">
-                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <img src="/logo_DCK.png" alt="DCK Logo" className="h-12 w-auto object-contain" />
+            <nav className="fixed top-0 w-full z-50 bg-gradient-to-b from-black/90 via-black/50 to-transparent transition-all duration-500">
+                <div className="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between">
+                    <div className="group flex items-center gap-6 rounded-full px-6 py-3 transition-all duration-300 hover:bg-white/95 hover:shadow-xl hover:scale-105 cursor-default">
+                        {/* DCK Logo - Swaps on hover */}
+                        <div className="relative h-20 w-auto">
+                            <img src="/logo_DCK.png" alt="DCK Logo" className="h-full w-auto object-contain drop-shadow-lg transition-opacity duration-300 group-hover:opacity-0" />
+                            <img src="/logo_DCK_negras.png" alt="DCK Logo" className="absolute inset-0 h-full w-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                        </div>
+
+                        <div className="h-12 w-px bg-white/30 transition-colors duration-300 group-hover:bg-black/10"></div>
+
+                        <div className="flex items-center gap-5">
+                            <img src="/logo_ITSPP.png" alt="ITSPP Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
+                            <img src="/logo_ICS.png" alt="ICS Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
+                        </div>
                     </div>
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium tracking-wide">
-                        <a href="#about" className="hover:text-blue-400 transition-colors">CONCIENCIA AZUL</a>
-                        <a href="#services" className="hover:text-blue-400 transition-colors">SERVICIOS</a>
-                        <a href="#impact" className="hover:text-blue-400 transition-colors">IMPACTO</a>
+                    <div className="hidden md:flex items-center gap-10 text-sm font-bold tracking-widest text-white/90">
+                        <a href="#about" className="hover:text-blue-400 transition-colors drop-shadow-md">CONCIENCIA AZUL</a>
+                        <a href="#services" className="hover:text-blue-400 transition-colors drop-shadow-md">SERVICIOS</a>
+                        <a href="#impact" className="hover:text-blue-400 transition-colors drop-shadow-md">IMPACTO</a>
                     </div>
-                    <Link
-                        href="/dashboard"
-                        className="px-6 py-2 bg-white text-black font-bold text-sm tracking-wide hover:bg-blue-500 hover:text-white transition-colors rounded-sm"
-                    >
-                        ACCESO CLIENTES
-                    </Link>
                 </div>
             </nav>
 
             {/* Hero Section */}
-            <header className="relative h-screen flex flex-col justify-center items-center text-center px-6">
+            <header className="relative h-screen flex flex-col justify-center items-center text-center px-6 overflow-hidden">
                 {/* Background Layers */}
-                <div
-                    className="absolute inset-0 z-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${IMAGES[0]})`, opacity: mounted ? 0 : 1 }}
-                />
-                <div className="absolute inset-0 z-0">
-                    {IMAGES.map((src, index) => (
-                        <div
-                            key={src}
-                            className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${mounted && index === currentImage ? 'opacity-100' : 'opacity-0'
-                                }`}
-                        >
-                            <img src={src} alt="Background" className="h-full w-full object-cover transform scale-105 animate-ken-burns" />
-                        </div>
-                    ))}
+                <div className="absolute inset-0 z-0 bg-black">
+                    {MEDIA.map((item, index) => {
+                        const isActive = index === currentIndex;
+                        const isPrev = index === prevIndex;
+                        // Keep previous slide visible (opacity 1) until it's no longer previous or active
+                        // Actually, we want the NEW slide to fade in ON TOP of the OLD slide.
+                        // So OLD slide should stay opacity-100.
+                        // But eventually OLD slide needs to hide.
+                        // When does OLD slide hide? When it is neither active nor prev?
+                        // If we cycle 0 -> 1. Prev=0, Curr=1.
+                        // 0 is visible. 1 fades in.
+                        // When we go 1 -> 2. Prev=1, Curr=2.
+                        // 0 is now hidden.
+
+                        let zIndex = 0;
+                        let opacity = 'opacity-0';
+
+                        if (isActive) {
+                            zIndex = 20;
+                            opacity = 'opacity-100';
+                        } else if (isPrev) {
+                            zIndex = 10;
+                            opacity = 'opacity-100';
+                        }
+
+                        return (
+                            <div
+                                key={index}
+                                className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${opacity}`}
+                                style={{ zIndex }}
+                            >
+                                {item.type === 'video' ? (
+                                    <video
+                                        src={item.src}
+                                        poster={item.poster}
+                                        autoPlay
+                                        muted
+                                        loop
+                                        playsInline
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <img
+                                        src={item.src}
+                                        alt="Background"
+                                        className="h-full w-full object-cover transform scale-105 animate-ken-burns"
+                                    />
+                                )}
+                                {/* Overlay for text readability */}
+                                <div className="absolute inset-0 bg-black/40"></div>
+                            </div>
+                        );
+                    })}
                 </div>
-                <div className="absolute inset-0 bg-black/50 z-10"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-black/30 z-10"></div>
+
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-black/30 z-20 pointer-events-none"></div>
 
                 {/* Hero Content */}
-                <div className="relative z-20 max-w-5xl space-y-8 animate-fade-in-up">
+                <div className="relative z-30 max-w-5xl space-y-8 animate-fade-in-up">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/10 border border-blue-500/20 rounded-full backdrop-blur-md">
                         <span className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
                         <span className="text-blue-300 text-sm font-medium tracking-widest uppercase">Puerto Peñasco, Sonora</span>
@@ -90,7 +139,7 @@ export function VariantCinematic() {
                 </div>
 
                 {/* Scroll Indicator */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 animate-bounce text-white/50">
+                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 animate-bounce text-white/50">
                     <Icons.ArrowRight className="w-6 h-6 rotate-90" />
                 </div>
             </header>
@@ -191,7 +240,7 @@ export function VariantCinematic() {
                 <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
                     <div className="col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <img src="/logo_DCK.png" alt="DCK Logo" className="h-16 w-auto object-contain" />
+                            <img src="/logo_DCK_negras.png" alt="DCK Logo" className="h-16 w-auto object-contain invert" />
                         </div>
                         <p className="text-gray-500 max-w-md mb-8">
                             Sistema de Gestión de Residuos Marinos. <br />
