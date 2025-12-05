@@ -89,7 +89,11 @@ export default function SimpleBasuronForm({ onBack, onSuccess }: SimpleBasuronFo
         peso_entrada: formData.pesoEntrada,
         peso_salida: formData.pesoSalida || null,
         nombre_usuario: formData.nombreUsuario || null,
-        observaciones: formData.observaciones || null
+        observaciones: formData.observaciones || null,
+        estado: 'En Proceso',
+        usuario_sistema_id: null,
+        tipo_residuo_id: null,
+        comprobante_url: null
       });
       
       setShowSuccess(true);
