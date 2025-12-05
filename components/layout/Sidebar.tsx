@@ -84,26 +84,24 @@ export function Sidebar() {
         className={`
           fixed inset-y-0 left-0 sm:top-4 sm:left-4 sm:bottom-4
           w-[280px] sm:w-[280px] sm:max-h-[calc(100vh-2rem)]
-          bg-gray-900/8 backdrop-blur-2xl
+          bg-white
           sm:rounded-2xl
           z-50 
           ${hasAnimated ? 'transition-transform duration-200 ease-in-out' : ''}
           ${isOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-[calc(100%+2rem)]'}
-          shadow-2xl border-r-2 sm:border-2 border-white/40
+          shadow-2xl border-r sm:border border-gray-200
           will-change-transform
           overflow-y-auto
         `}
         style={{
-          boxShadow: '0 20px 60px 0 rgba(0, 0, 0, 0.2), 0 8px 16px 0 rgba(0, 0, 0, 0.1)',
-          backdropFilter: 'blur(24px) saturate(160%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+          boxShadow: '0 20px 60px 0 rgba(0, 0, 0, 0.15), 0 8px 16px 0 rgba(0, 0, 0, 0.08)',
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
         }}
       >
         <div className="flex flex-col h-full">
           {/* Header del sidebar con botón cerrar */}
-          <div className="p-5 border-b border-white/10">
+          <div className="p-5 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
@@ -156,7 +154,7 @@ export function Sidebar() {
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                         isActive(item.href)
                           ? 'text-blue-600 font-medium'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-white/10'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                       style={{ zIndex: 1 }}
                     >
@@ -182,7 +180,7 @@ export function Sidebar() {
                       className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                         isActive(item.href)
                           ? 'text-blue-600 font-medium'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-white/10'
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                       }`}
                       style={{ zIndex: 1 }}
                     >
@@ -199,7 +197,7 @@ export function Sidebar() {
           </div>
           
           {/* Footer del sidebar */}
-          <div className="p-4 border-t border-white/30 bg-white/20">
+          <div className="p-4 border-t border-gray-100 bg-gray-50">
             <div className="text-xs text-gray-500 text-center">
               {t('version')}
             </div>

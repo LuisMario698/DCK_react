@@ -6,6 +6,15 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const LOGO_SEMARNAT_URL = `${SUPABASE_URL}/storage/v1/object/public/images/logoSemarnat.png`;
 const LOGO_MX_URL = `${SUPABASE_URL}/storage/v1/object/public/images/logoMxHover.png`;
 
+// Interfaz para las firmas opcionales
+export interface FirmasManifiesto {
+  motoristaFirma?: string | null;
+  motoristaNombre?: string;
+  cocineroFirma?: string | null;
+  cocineroNombre?: string;
+  oficialFirma?: string | null;
+}
+
 /**
  * Cargar imagen desde URL y convertirla a base64
  */
@@ -28,7 +37,7 @@ async function cargarImagenBase64(url: string): Promise<string> {
 /**
  * Generar PDF del manifiesto sin firmar con formato SEMARNAT
  */
-export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones): Promise<Blob> {
+export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, firmas?: FirmasManifiesto): Promise<Blob> {
   const doc = new jsPDF();
   
   // Configuración
@@ -183,55 +192,90 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones):
   yPosition += 8;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('RECIBE: Comisionado para elección de...', 25, yPosition);
+  doc.text('RECIBE: Oficial Comisionado para recolección de', 25, yPosition);
   
-  yPosition += 6;
+  yPosition += 5;
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Basura y Residuos Aceitosos (MARPOL - ANEXO)', 25, yPosition);
+  doc.text('Basura y Residuos Aceitosos (MARPOL ANEXO V)', 25, yPosition);
+  
+  // Firma del oficial comisionado (si existe)
+  if (firmas?.oficialFirma) {
+    try {
+      doc.addImage(firmas.oficialFirma, 'PNG', pageWidth - 80, yPosition - 12, 50, 18);
+    } catch (error) {
+      console.error('Error agregando firma del oficial:', error);
+    }
+  }
 
   // FIRMAS EN LA PARTE INFERIOR
   yPosition += 20;
-  const firmaWidth = (pageWidth - 40) / 3;
+  const firmaWidth = (pageWidth - 40) / 2; // Solo 2 columnas: Motorista y Cocinero
   const firmaStartX = 20;
   
   // Líneas de firma
   doc.setLineWidth(0.5);
   
-  // RESPONSABLE DE ENTREGA DE LÍQUIDOS (ACEITE USADO)
-  doc.line(firmaStartX, yPosition, firmaStartX + firmaWidth - 5, yPosition);
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  const text1 = 'RESPONSABLE DE ENTREGA DE';
-  const text2 = 'LIQUIDOS';
-  const text3 = '(ACEITE USADO)';
-  doc.text(text1, firmaStartX + (firmaWidth - 5) / 2, yPosition + 5, { align: 'center' });
-  doc.text(text2, firmaStartX + (firmaWidth - 5) / 2, yPosition + 9, { align: 'center' });
-  doc.text(text3, firmaStartX + (firmaWidth - 5) / 2, yPosition + 13, { align: 'center' });
-  
-  if (manifiesto.responsable_principal) {
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(manifiesto.responsable_principal.nombre, firmaStartX + (firmaWidth - 5) / 2, yPosition - 3, { align: 'center' });
-  }
-  
   // MOTORISTA
-  const motorX = firmaStartX + firmaWidth + 10;
-  doc.line(motorX, yPosition, motorX + firmaWidth - 5, yPosition);
-  doc.setFont('helvetica', 'bold');
-  doc.text('MOTORISTA:', motorX + (firmaWidth - 5) / 2, yPosition + 5, { align: 'center' });
+  const motorX = firmaStartX;
   
-  if (manifiesto.responsable_secundario) {
-    doc.setFontSize(8);
+  // Nombre del motorista arriba de la línea
+  if (firmas?.motoristaNombre) {
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text(manifiesto.responsable_secundario.nombre, motorX + (firmaWidth - 5) / 2, yPosition - 3, { align: 'center' });
+    doc.text(firmas.motoristaNombre, motorX + (firmaWidth - 10) / 2, yPosition - 20, { align: 'center' });
+  } else if (manifiesto.responsable_principal) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(manifiesto.responsable_principal.nombre, motorX + (firmaWidth - 10) / 2, yPosition - 20, { align: 'center' });
   }
+  
+  // Firma del motorista (imagen) arriba de la línea
+  if (firmas?.motoristaFirma) {
+    try {
+      doc.addImage(firmas.motoristaFirma, 'PNG', motorX + 10, yPosition - 18, 40, 15);
+    } catch (error) {
+      console.error('Error agregando firma del motorista:', error);
+    }
+  }
+  
+  // Línea de firma del motorista
+  doc.line(motorX, yPosition, motorX + firmaWidth - 10, yPosition);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MOTORISTA:', motorX + (firmaWidth - 10) / 2, yPosition + 5, { align: 'center' });
+  doc.setFontSize(7);
+  doc.text('Responsable de entrega de líquidos', motorX + (firmaWidth - 10) / 2, yPosition + 10, { align: 'center' });
+  doc.text('(ACEITE USADO)', motorX + (firmaWidth - 10) / 2, yPosition + 14, { align: 'center' });
   
   // COCINERO
   const cocineroX = motorX + firmaWidth + 10;
-  doc.line(cocineroX, yPosition, cocineroX + firmaWidth - 5, yPosition);
+  
+  // Nombre del cocinero arriba de la línea
+  if (firmas?.cocineroNombre) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(firmas.cocineroNombre, cocineroX + (firmaWidth - 10) / 2, yPosition - 20, { align: 'center' });
+  } else if (manifiesto.responsable_secundario) {
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(manifiesto.responsable_secundario.nombre, cocineroX + (firmaWidth - 10) / 2, yPosition - 20, { align: 'center' });
+  }
+  
+  // Firma del cocinero (imagen) arriba de la línea
+  if (firmas?.cocineroFirma) {
+    try {
+      doc.addImage(firmas.cocineroFirma, 'PNG', cocineroX + 10, yPosition - 18, 40, 15);
+    } catch (error) {
+      console.error('Error agregando firma del cocinero:', error);
+    }
+  }
+  
+  // Línea de firma del cocinero
+  doc.line(cocineroX, yPosition, cocineroX + firmaWidth - 10, yPosition);
+  doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('COCINERO:', cocineroX + (firmaWidth - 5) / 2, yPosition + 5, { align: 'center' });
+  doc.text('COCINERO:', cocineroX + (firmaWidth - 10) / 2, yPosition + 5, { align: 'center' });
 
   // PIE DE PÁGINA
   yPosition = pageHeight - 20;
@@ -258,8 +302,8 @@ export function generarNombreArchivoPDF(numeroManifiesto: string): string {
 /**
  * Descargar PDF directamente en el navegador
  */
-export async function descargarPDFManifiesto(manifiesto: ManifiestoConRelaciones): Promise<void> {
-  const pdfBlob = await generarPDFManifiesto(manifiesto);
+export async function descargarPDFManifiesto(manifiesto: ManifiestoConRelaciones, firmas?: FirmasManifiesto): Promise<void> {
+  const pdfBlob = await generarPDFManifiesto(manifiesto, firmas);
   const url = URL.createObjectURL(pdfBlob);
   const link = document.createElement('a');
   link.href = url;

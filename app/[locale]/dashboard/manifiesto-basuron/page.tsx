@@ -51,13 +51,6 @@ export default function ManifiestoBasuronPage() {
   return (
     // <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Manifiesto Basurón</h1>
-            <p className="text-sm text-gray-500 mt-1">Control de pesaje y depósito de residuos</p>
-          </div>
-        </div>
-
         {/* Wizard inline siempre visible */}
         <CreateManifiestoBasuronModal
           inline
@@ -67,9 +60,20 @@ export default function ManifiestoBasuronPage() {
           buques={buques}
         />
 
-        {/* Eliminado resumen de registros y depositado */}
+        {/* Botón para ir a la lista de registros */}
+        <div className="flex justify-center">
+          <button
+            onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:shadow-md"
+          >
+            <span>Ver registros</span>
+            <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          </button>
+        </div>
 
-        <div className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+        <div id="lista-registros" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
           <div className="mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Registros Basurón</h2>
             <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los registros de pesaje</p>
