@@ -1,5 +1,9 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { DashboardClient } from '@/components/dashboard/DashboardClient';
+import { createServerClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 // Componente de Tarjeta Grande para el menú principal
 const ActionCard = ({ 

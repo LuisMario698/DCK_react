@@ -1,10 +1,5 @@
-import { redirect } from 'next/navigation';
+import { VariantCinematic } from '@/components/landing/VariantCinematic';
 
-export default async function Home({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  redirect(`/${locale}/dashboard`);
+export default function LandingPage() {
+  return <VariantCinematic />;
 }

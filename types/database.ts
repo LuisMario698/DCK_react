@@ -77,14 +77,18 @@ export interface ManifiestoBasuron {
   fecha: string;
   peso_entrada: number;
   peso_salida: number | null;
-  total_depositado: number;
+  total_depositado: number | null;
   buque_id: number;
   observaciones: string | null;
-  created_at: string;
-  updated_at: string;
-  hora_entrada: string;
+  created_at: string | null;
+  updated_at: string | null;
+  hora_entrada: string | null;
   hora_salida: string | null;
   nombre_usuario: string | null;
+  estado: 'En Proceso' | 'Completado' | 'Cancelado' | null;
+  usuario_sistema_id: number | null;
+  tipo_residuo_id: number | null;
+  comprobante_url: string | null;
 }
 
 // Tipos con relaciones para consultas JOIN
