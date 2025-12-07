@@ -1,15 +1,14 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { DashboardClient } from '@/components/dashboard/DashboardClient';
 import { createServerClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 // Componente de Tarjeta Grande para el menú principal
-const ActionCard = ({ 
-  title, 
-  icon, 
-  description, 
+const ActionCard = ({
+  title,
+  icon,
+  description,
   href
 }: {
   title: string;
@@ -17,7 +16,7 @@ const ActionCard = ({
   description: string;
   href: string;
 }) => (
-  <Link 
+  <Link
     href={href}
     className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl shadow-lg transition-all duration-200 transform hover:-translate-y-1 hover:shadow-2xl bg-white hover:bg-blue-500 border-2 border-gray-200 hover:border-blue-500 w-full h-48 md:h-56 group"
   >
@@ -62,7 +61,7 @@ export default async function DashboardPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   return (
     <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center">
       {/* Header con logo y título */}
@@ -83,23 +82,23 @@ export default async function DashboardPage({
 
       {/* Tarjetas de Acciones - Layout horizontal */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full px-4">
-        <ActionCard 
-          title="Manifiesto" 
+        <ActionCard
+          title="Manifiesto"
           icon={<ManifiestoIcon />}
           description="Recolección de barco"
           href={`/${locale}/dashboard/manifiesto`}
         />
-        <ActionCard 
-          title="Basurón" 
+        <ActionCard
+          title="Basurón"
           icon={<BasuronIcon />}
           description="Pesar en relleno"
           href={`/${locale}/dashboard/manifiesto-basuron`}
         />
-        <ActionCard 
-          title="Estadísticas" 
+        <ActionCard
+          title="Estadísticas"
           icon={<EstadisticasIcon />}
-          description="Ver reportes"
-          href={`/${locale}/dashboard/simple?view=estadisticas`}
+          description="Ver reportes y KPI"
+          href={`/${locale}/dashboard/estadisticas`}
         />
       </div>
 

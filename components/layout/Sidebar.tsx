@@ -15,10 +15,11 @@ export function Sidebar() {
 
   const menuItems = [
     { label: t('menu.panel'), href: `/${locale}/dashboard`, icon: 'Dashboard' },
-    { label: t('menu.personas'), href: `/${locale}/dashboard/personas`, icon: 'Users' },
-    { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: 'Ship' },
     { label: t('menu.manifiesto'), href: `/${locale}/dashboard/manifiesto`, icon: 'Document' },
     { label: t('menu.manifiestoBasuron'), href: `/${locale}/dashboard/manifiesto-basuron`, icon: 'Recycle' },
+    { label: 'Estadísticas', href: `/${locale}/dashboard/estadisticas`, icon: 'Chart' },
+    { label: t('menu.personas'), href: `/${locale}/dashboard/personas`, icon: 'Users' },
+    { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: 'Ship' },
   ];
 
   const externosItems = [
