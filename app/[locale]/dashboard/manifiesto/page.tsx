@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
-import { getBuques } from '@/lib/services/buques';
-import { getPersonas } from '@/lib/services/personas';
+import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
+import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
 import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto } from '@/lib/services/manifiestos';
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
@@ -55,6 +55,12 @@ export default function ManifiestosPage() {
   const [oficialSignature, setOficialSignature] = useState<string | null>(null);
   const [activeSignature, setActiveSignature] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
   
+  // Estado para el modal de firma flotante
+  const [signatureModalType, setSignatureModalType] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
+  const signatureModalCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawingRef = useRef(false);
+  const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+  
   // Estados para autocompletado de nombres
   const [motoristaNombre, setMotoristaNombre] = useState('');
   const [cocineroNombre, setCocineroNombre] = useState('');
@@ -62,7 +68,12 @@ export default function ManifiestosPage() {
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   
-  const buqueSelectRef = useRef<HTMLSelectElement | null>(null);
+  // Estados para autocompletado de embarcaciones
+  const [buqueNombre, setBuqueNombre] = useState('');
+  const [showBuqueSuggestions, setShowBuqueSuggestions] = useState(false);
+  const [selectedBuqueIndex, setSelectedBuqueIndex] = useState(-1);
+  
+  const buqueInputRef = useRef<HTMLInputElement | null>(null);
   
   // Referencias para navegación con Enter
   const fechaRef = useRef<HTMLInputElement>(null);
@@ -81,7 +92,7 @@ export default function ManifiestosPage() {
   // Lista de referencias en orden para navegación
   const fieldRefs = [
     { ref: fechaRef, name: 'fecha' },
-    { ref: buqueSelectRef, name: 'buque' },
+    { ref: buqueInputRef, name: 'buque' },
     { ref: aceiteRef, name: 'aceite' },
     { ref: filtrosAceiteRef, name: 'filtrosAceite' },
     { ref: filtrosDieselRef, name: 'filtrosDiesel' },
@@ -185,6 +196,116 @@ export default function ManifiestosPage() {
     }
   };
 
+  // Funciones para el modal de firma flotante
+  const openSignatureModal = (type: 'motorista' | 'cocinero' | 'oficial') => {
+    setSignatureModalType(type);
+    // Limpiar refs al abrir
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+  };
+
+  const closeSignatureModal = () => {
+    setSignatureModalType(null);
+    setActiveSignature(null);
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+  };
+
+  const getCanvasCoordinates = (e: React.MouseEvent | React.TouchEvent, canvas: HTMLCanvasElement) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    if ('touches' in e) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    } else {
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+  };
+
+  const startModalDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!signatureModalType) return;
+    const canvas = signatureModalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    e.preventDefault();
+    const point = getCanvasCoordinates(e, canvas);
+    
+    isDrawingRef.current = true;
+    lastPointRef.current = point;
+    
+    // Configurar el contexto una sola vez
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#1e3a5f';
+  };
+
+  const drawModal = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawingRef.current || !signatureModalType) return;
+    const canvas = signatureModalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || !lastPointRef.current) return;
+
+    e.preventDefault();
+    const point = getCanvasCoordinates(e, canvas);
+    
+    // Dibujar línea directamente sin usar setState
+    ctx.beginPath();
+    ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+    
+    lastPointRef.current = point;
+  };
+
+  const stopModalDrawing = () => {
+    isDrawingRef.current = false;
+    lastPointRef.current = null;
+  };
+
+  const clearModalSignature = () => {
+    const canvas = signatureModalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const saveModalSignature = () => {
+    if (!signatureModalType) return;
+    const canvas = signatureModalCanvasRef.current;
+    if (!canvas) return;
+    
+    const data = canvas.toDataURL();
+    if (signatureModalType === 'motorista') {
+      setMotoristaSignature(data);
+    } else if (signatureModalType === 'cocinero') {
+      setCocineroSignature(data);
+    } else {
+      setOficialSignature(data);
+    }
+    closeSignatureModal();
+  };
+
+  const getSignatureModalTitle = () => {
+    switch (signatureModalType) {
+      case 'oficial': return 'Firma del Oficial Comisionado';
+      case 'motorista': return 'Firma del Motorista';
+      case 'cocinero': return 'Firma del Cocinero';
+      default: return 'Firma';
+    }
+  };
+
   // Función para manejar navegación con teclado (Enter y flechas)
   const handleKeyDown = (e: React.KeyboardEvent, currentIndex: number) => {
     if (e.key === 'Enter' || e.key === 'ArrowDown') {
@@ -253,24 +374,43 @@ export default function ManifiestosPage() {
 
   const handleSubmit = async () => {
     try {
-      if (!formData.fecha_emision || !formData.buque_id || !formData.responsable_principal_id) {
+      // Validar campos requeridos (ahora validamos por nombre, no por ID)
+      if (!formData.fecha_emision || (!formData.buque_id && !buqueNombre.trim()) || (!formData.responsable_principal_id && !motoristaNombre.trim())) {
         alert('❌ Por favor completa todos los campos obligatorios');
+        setShowValidation(true);
         return;
       }
 
-      // El archivo ahora es opcional
-      // if (!archivo) {
-      //   alert('❌ Debes digitalizar el manifiesto antes de guardarlo. El archivo es obligatorio.');
-      //   return;
-      // }
-
       setSaving(true);
+
+      // Auto-registrar embarcación si es nueva
+      let buqueId = formData.buque_id;
+      if (!buqueId && buqueNombre.trim()) {
+        const nuevaBuque = await createBuqueAutomatico(buqueNombre.trim());
+        buqueId = nuevaBuque.id.toString();
+      }
+
+      // Auto-registrar motorista si es nuevo
+      let motoristaId = formData.responsable_principal_id;
+      if (!motoristaId && motoristaNombre.trim()) {
+        const tipoMotorista = await getOrCreateTipoPersona('Motorista');
+        const nuevoMotorista = await createPersonaAutomatica(motoristaNombre.trim(), tipoMotorista.id);
+        motoristaId = nuevoMotorista.id.toString();
+      }
+
+      // Auto-registrar cocinero si es nuevo
+      let cocineroId = formData.responsable_secundario_id;
+      if (!cocineroId && cocineroNombre.trim()) {
+        const tipoCocinero = await getOrCreateTipoPersona('Cocinero');
+        const nuevoCocinero = await createPersonaAutomatica(cocineroNombre.trim(), tipoCocinero.id);
+        cocineroId = nuevoCocinero.id.toString();
+      }
       
       const manifiestoData = {
         fecha_emision: formData.fecha_emision,
-        buque_id: parseInt(formData.buque_id),
-        responsable_principal_id: parseInt(formData.responsable_principal_id),
-        responsable_secundario_id: formData.responsable_secundario_id ? parseInt(formData.responsable_secundario_id) : null,
+        buque_id: parseInt(buqueId),
+        responsable_principal_id: parseInt(motoristaId),
+        responsable_secundario_id: cocineroId ? parseInt(cocineroId) : null,
         estado_digitalizacion: 'completado' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
@@ -295,6 +435,7 @@ export default function ManifiestosPage() {
         basura: 0,
       });
       setArchivo(null);
+      setBuqueNombre('');
       setMotoristaNombre('');
       setCocineroNombre('');
       setMotoristaSignature(null);
@@ -425,27 +566,77 @@ export default function ManifiestosPage() {
             {/* NOMBRE DEL BARCO */}
             <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'buque' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
               <label className="text-base font-bold text-black w-36 flex-shrink-0">BARCO:</label>
-              <select
-                ref={buqueSelectRef}
-                value={formData.buque_id}
-                onChange={(e) => {
-                  setFormData({ ...formData, buque_id: e.target.value });
-                  setShowValidation(false);
-                }}
-                onFocus={() => setActiveField('buque')}
-                onBlur={() => setActiveField(null)}
-                onKeyDown={(e) => handleKeyDown(e, 1)}
-                className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium cursor-pointer transition-all duration-200 ${
-                  showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
-                }`}
-              >
-                <option value="">Seleccionar...</option>
-                {buques.map((buque) => (
-                  <option key={buque.id} value={buque.id}>
-                    {buque.nombre_buque}
-                  </option>
-                ))}
-              </select>
+              <div className="flex-1 relative">
+                <input
+                  ref={buqueInputRef}
+                  type="text"
+                  value={buqueNombre}
+                  placeholder="Escribe el nombre del barco..."
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setBuqueNombre(value);
+                    setShowBuqueSuggestions(value.length > 0);
+                    setSelectedBuqueIndex(-1);
+                    const buqueExacto = buques.find(b => b.nombre_buque.toLowerCase() === value.toLowerCase());
+                    if (buqueExacto) {
+                      setFormData({ ...formData, buque_id: buqueExacto.id.toString() });
+                    } else {
+                      setFormData({ ...formData, buque_id: '' });
+                    }
+                    setShowValidation(false);
+                  }}
+                  onFocus={() => { setActiveField('buque'); if (buqueNombre.length > 0) setShowBuqueSuggestions(true); }}
+                  onBlur={() => { setActiveField(null); setTimeout(() => setShowBuqueSuggestions(false), 200); }}
+                  onKeyDown={(e) => {
+                    const filteredBuques = buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase()));
+                    if (e.key === 'ArrowDown' && showBuqueSuggestions && filteredBuques.length > 0) {
+                      e.preventDefault();
+                      setSelectedBuqueIndex(prev => prev < filteredBuques.length - 1 ? prev + 1 : prev);
+                    } else if (e.key === 'ArrowUp' && showBuqueSuggestions && selectedBuqueIndex > 0) {
+                      e.preventDefault();
+                      setSelectedBuqueIndex(prev => prev - 1);
+                    } else if (e.key === 'Enter' && showBuqueSuggestions && selectedBuqueIndex >= 0) {
+                      e.preventDefault();
+                      const buque = filteredBuques[selectedBuqueIndex];
+                      setBuqueNombre(buque.nombre_buque);
+                      setFormData({ ...formData, buque_id: buque.id.toString() });
+                      setShowBuqueSuggestions(false);
+                      setSelectedBuqueIndex(-1);
+                    } else if (e.key === 'Escape') {
+                      setShowBuqueSuggestions(false);
+                    } else if (e.key === 'Enter' && !showBuqueSuggestions) {
+                      handleKeyDown(e, 1);
+                    }
+                  }}
+                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 ${
+                    showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
+                  }`}
+                />
+                {showBuqueSuggestions && (
+                  <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1">
+                    {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).map((buque, index) => (
+                      <div
+                        key={buque.id}
+                        onClick={() => {
+                          setBuqueNombre(buque.nombre_buque);
+                          setFormData({ ...formData, buque_id: buque.id.toString() });
+                          setShowBuqueSuggestions(false);
+                        }}
+                        className={`px-3 py-2 cursor-pointer text-base ${
+                          index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'
+                        }`}
+                      >
+                        {buque.nombre_buque}
+                        {buque.matricula && <span className="text-sm text-gray-500 ml-2">({buque.matricula})</span>}
+                      </div>
+                    ))}
+                    {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).length === 0 && (
+                      <div className="px-3 py-2 text-gray-500 text-sm">No se encontraron embarcaciones</div>
+                    )}
+                  </div>
+                )}
+                {showValidation && !formData.buque_id && <p className="text-xs text-red-600 mt-1">* Seleccione una embarcación válida</p>}
+              </div>
             </div>
 
             {/* Línea divisoria */}
@@ -590,10 +781,10 @@ export default function ManifiestosPage() {
               <p className="text-base font-bold text-black">RECIBE: Oficial Comisionado</p>
               <p className="text-sm text-black mb-3">Recolección de Basura y Residuos Aceitosos (MARPOL ANEXO V)</p>
               
-              {!showOficialSignature ? (
+              {!oficialSignature ? (
                 <button
                   type="button"
-                  onClick={() => setShowOficialSignature(true)}
+                  onClick={() => openSignatureModal('oficial')}
                   className="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -602,38 +793,16 @@ export default function ManifiestosPage() {
                   Firmar
                 </button>
               ) : (
-                <div>
-                  <div className="relative border-2 border-gray-300 rounded-lg bg-white overflow-hidden">
-                    <canvas
-                      ref={oficialCanvasRef}
-                      width={300}
-                      height={60}
-                      className="w-full cursor-crosshair touch-none"
-                      onMouseDown={(e) => startDrawing(e, 'oficial')}
-                      onMouseMove={(e) => draw(e, 'oficial')}
-                      onMouseUp={() => stopDrawing('oficial')}
-                      onMouseLeave={() => stopDrawing('oficial')}
-                      onTouchStart={(e) => startDrawing(e, 'oficial')}
-                      onTouchMove={(e) => draw(e, 'oficial')}
-                      onTouchEnd={() => stopDrawing('oficial')}
-                    />
-                    {!oficialSignature && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <p className="text-gray-300 text-xs">Firme aquí</p>
-                      </div>
-                    )}
+                <div className="space-y-2">
+                  <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
+                    <img src={oficialSignature} alt="Firma Oficial" className="w-full h-16 object-contain" />
                   </div>
-                  <div className="flex justify-center gap-2 mt-2">
-                    <button type="button" onClick={() => clearSignature('oficial')} className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200">Borrar</button>
-                    <button type="button" onClick={() => setShowOficialSignature(false)} className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200">Ocultar</button>
+                  <div className="flex items-center justify-center gap-3">
+                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    <span className="text-sm text-green-600 font-medium">Firmado</span>
+                    <button type="button" onClick={() => openSignatureModal('oficial')} className="text-sm text-blue-600 hover:underline">Editar</button>
+                    <button type="button" onClick={() => setOficialSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
                   </div>
-                </div>
-              )}
-              {oficialSignature && !showOficialSignature && (
-                <div className="flex items-center justify-center gap-2 py-1">
-                  <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  <span className="text-xs text-green-600">Firmado</span>
-                  <button type="button" onClick={() => setShowOficialSignature(true)} className="text-xs text-blue-600 hover:underline ml-2">Editar</button>
                 </div>
               )}
             </div>
@@ -698,32 +867,23 @@ export default function ManifiestosPage() {
               {showValidation && !formData.responsable_principal_id && <p className="text-xs text-red-600 mt-1">* Requerido</p>}
               
               <div className="mt-3">
-                {!showMotoristaSignature ? (
-                  <button type="button" onClick={() => setShowMotoristaSignature(true)}
+                {!motoristaSignature ? (
+                  <button type="button" onClick={() => openSignatureModal('motorista')}
                     className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                     Firmar
                   </button>
                 ) : (
-                  <div>
-                    <div className="relative border-2 border-gray-300 rounded-lg bg-white overflow-hidden">
-                      <canvas ref={motoristaCanvasRef} width={300} height={60} className="w-full cursor-crosshair touch-none"
-                        onMouseDown={(e) => startDrawing(e, 'motorista')} onMouseMove={(e) => draw(e, 'motorista')}
-                        onMouseUp={() => stopDrawing('motorista')} onMouseLeave={() => stopDrawing('motorista')}
-                        onTouchStart={(e) => startDrawing(e, 'motorista')} onTouchMove={(e) => draw(e, 'motorista')} onTouchEnd={() => stopDrawing('motorista')} />
-                      {!motoristaSignature && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><p className="text-gray-300 text-xs">Firme aquí</p></div>}
+                  <div className="space-y-2">
+                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
+                      <img src={motoristaSignature} alt="Firma Motorista" className="w-full h-12 object-contain" />
                     </div>
-                    <div className="flex justify-center gap-2 mt-2">
-                      <button type="button" onClick={() => clearSignature('motorista')} className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200">Borrar</button>
-                      <button type="button" onClick={() => setShowMotoristaSignature(false)} className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200">Ocultar</button>
+                    <div className="flex items-center justify-center gap-3">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-sm text-green-600 font-medium">Firmado</span>
+                      <button type="button" onClick={() => openSignatureModal('motorista')} className="text-sm text-blue-600 hover:underline">Editar</button>
+                      <button type="button" onClick={() => setMotoristaSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
                     </div>
-                  </div>
-                )}
-                {motoristaSignature && !showMotoristaSignature && (
-                  <div className="flex items-center justify-center gap-2 py-1">
-                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    <span className="text-xs text-green-600">Firmado</span>
-                    <button type="button" onClick={() => setShowMotoristaSignature(true)} className="text-xs text-blue-600 hover:underline ml-2">Editar</button>
                   </div>
                 )}
               </div>
@@ -786,32 +946,23 @@ export default function ManifiestosPage() {
               )}
               
               <div className="mt-3">
-                {!showCocineroSignature ? (
-                  <button type="button" onClick={() => setShowCocineroSignature(true)}
+                {!cocineroSignature ? (
+                  <button type="button" onClick={() => openSignatureModal('cocinero')}
                     className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                     Firmar
                   </button>
                 ) : (
-                  <div>
-                    <div className="relative border-2 border-gray-300 rounded-lg bg-white overflow-hidden">
-                      <canvas ref={cocineroCanvasRef} width={300} height={60} className="w-full cursor-crosshair touch-none"
-                        onMouseDown={(e) => startDrawing(e, 'cocinero')} onMouseMove={(e) => draw(e, 'cocinero')}
-                        onMouseUp={() => stopDrawing('cocinero')} onMouseLeave={() => stopDrawing('cocinero')}
-                        onTouchStart={(e) => startDrawing(e, 'cocinero')} onTouchMove={(e) => draw(e, 'cocinero')} onTouchEnd={() => stopDrawing('cocinero')} />
-                      {!cocineroSignature && <div className="absolute inset-0 flex items-center justify-center pointer-events-none"><p className="text-gray-300 text-xs">Firme aquí</p></div>}
+                  <div className="space-y-2">
+                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
+                      <img src={cocineroSignature} alt="Firma Cocinero" className="w-full h-12 object-contain" />
                     </div>
-                    <div className="flex justify-center gap-2 mt-2">
-                      <button type="button" onClick={() => clearSignature('cocinero')} className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200">Borrar</button>
-                      <button type="button" onClick={() => setShowCocineroSignature(false)} className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded hover:bg-gray-200">Ocultar</button>
+                    <div className="flex items-center justify-center gap-3">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-sm text-green-600 font-medium">Firmado</span>
+                      <button type="button" onClick={() => openSignatureModal('cocinero')} className="text-sm text-blue-600 hover:underline">Editar</button>
+                      <button type="button" onClick={() => setCocineroSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
                     </div>
-                  </div>
-                )}
-                {cocineroSignature && !showCocineroSignature && (
-                  <div className="flex items-center justify-center gap-2 py-1">
-                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    <span className="text-xs text-green-600">Firmado</span>
-                    <button type="button" onClick={() => setShowCocineroSignature(true)} className="text-xs text-blue-600 hover:underline ml-2">Editar</button>
                   </div>
                 )}
               </div>
@@ -894,10 +1045,10 @@ export default function ManifiestosPage() {
       <div className="flex justify-center">
         <button
           onClick={() => document.getElementById('registros-list')?.scrollIntoView({ behavior: 'smooth' })}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all"
+          className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
         >
           <span>Ver registros</span>
-          <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
@@ -1391,6 +1542,102 @@ export default function ManifiestosPage() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Firma Flotante */}
+      {signatureModalType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Fondo oscuro sin blur para mejor rendimiento */}
+          <div 
+            className="absolute inset-0 bg-black/50"
+            onClick={closeSignatureModal}
+          />
+          
+          {/* Panel de firma */}
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{getSignatureModalTitle()}</h3>
+                  <p className="text-blue-100 text-sm">Dibuje su firma en el área de abajo</p>
+                </div>
+              </div>
+              <button
+                onClick={closeSignatureModal}
+                className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {/* Área de firma */}
+            <div className="p-6">
+              <div className="relative border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 overflow-hidden">
+                <canvas
+                  ref={signatureModalCanvasRef}
+                  width={600}
+                  height={200}
+                  className="w-full cursor-crosshair touch-none bg-white"
+                  onMouseDown={startModalDrawing}
+                  onMouseMove={drawModal}
+                  onMouseUp={stopModalDrawing}
+                  onMouseLeave={stopModalDrawing}
+                  onTouchStart={startModalDrawing}
+                  onTouchMove={drawModal}
+                  onTouchEnd={stopModalDrawing}
+                />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <p className="text-gray-300 text-lg">Firme aquí</p>
+                </div>
+                {/* Línea de firma */}
+                <div className="absolute bottom-8 left-8 right-8 border-b-2 border-gray-300 pointer-events-none" />
+                <div className="absolute bottom-2 left-8 text-xs text-gray-400 pointer-events-none">Firma</div>
+              </div>
+              
+              {/* Botones */}
+              <div className="flex justify-between items-center mt-6 gap-4">
+                <button
+                  type="button"
+                  onClick={clearModalSignature}
+                  className="px-5 py-2.5 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Borrar
+                </button>
+                
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={closeSignatureModal}
+                    className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveModalSignature}
+                    className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Guardar Firma
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

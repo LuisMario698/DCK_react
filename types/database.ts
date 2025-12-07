@@ -10,6 +10,7 @@ export interface Buque {
   puerto_base: string | null;
   capacidad_toneladas: number | null;
   estado: 'Activo' | 'Inactivo' | 'En Mantenimiento';
+  registro_completo: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -42,6 +43,7 @@ export interface Persona {
   nombre: string;
   tipo_persona_id: number | null;
   info_contacto: string | null;
+  registro_completo: boolean;
   created_at: string;
   updated_at: string;
 }

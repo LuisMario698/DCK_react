@@ -64,10 +64,10 @@ export default function ManifiestoBasuronPage() {
         <div className="flex justify-center">
           <button
             onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-all hover:shadow-md"
+            className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
           >
             <span>Ver registros</span>
-            <svg className="w-5 h-5 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </button>
