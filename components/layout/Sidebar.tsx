@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -10,13 +9,8 @@ import { useSidebar } from './SidebarContext';
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();
-  const { isOpen, closeSidebar } = useSidebar();
-  const [hasAnimated, setHasAnimated] = useState(false);
-  const [indicatorStyle, setIndicatorStyle] = useState({ top: 0, height: 0, opacity: 0 });
-  const menuRefs = useRef<{ [key: string]: HTMLAnchorElement | null }>({});
-  const navRef = useRef<HTMLDivElement>(null);
-  
-  // Extract locale from pathname
+  const { isOpen, closeSidebar, isCollapsed, toggleCollapse } = useSidebar();
+
   const locale = pathname.split('/')[1] || 'es';
 
   const menuItems = [
@@ -31,177 +25,125 @@ export function Sidebar() {
     { label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: 'Building' },
   ];
 
-  // Marcar que ya se ha animado después del primer render
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setHasAnimated(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Actualizar posición del indicador cuando cambia la ruta
-  useEffect(() => {
-    const activeRef = menuRefs.current[pathname];
-    const navElement = navRef.current;
-    if (activeRef && navElement) {
-      // Calcular la posición relativa al contenedor nav
-      const navRect = navElement.getBoundingClientRect();
-      const linkRect = activeRef.getBoundingClientRect();
-      const relativeTop = linkRect.top - navRect.top;
-      
-      setIndicatorStyle({
-        top: relativeTop,
-        height: linkRect.height,
-        opacity: 1,
-      });
-    }
-  }, [pathname, isOpen]); // Agregamos isOpen para recalcular cuando se abre el sidebar
-  
   const isActive = (href: string) => pathname === href;
-  
+
   const IconComponent = (iconName: string) => {
     const Icon = Icons[iconName as keyof typeof Icons];
     return Icon ? <Icon /> : null;
   };
 
-  const handleLinkClick = () => {
-    // Ya no cerramos el sidebar al hacer clic en un link
-    // Solo se cierra clickeando fuera o en la X
-  };
-
   return (
     <>
-      {/* Overlay invisible para cerrar al hacer clic fuera */}
+      {/* Overlay invisible para cerrar al hacer clic fuera (solo móvil) */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40"
+        <div
+          className="fixed inset-0 z-40 lg:hidden bg-black/50 backdrop-blur-sm"
           onClick={closeSidebar}
         />
       )}
-      
-      {/* Sidebar */}
-      <aside 
+
+      <aside
         className={`
-          fixed inset-y-0 left-0 sm:top-4 sm:left-4 sm:bottom-4
-          w-[280px] sm:w-[280px] sm:max-h-[calc(100vh-2rem)]
-          bg-white
-          sm:rounded-2xl
+          fixed inset-y-0 left-0 
+          h-full
+          ${isCollapsed ? 'w-20' : 'w-64'}
+          bg-white border-r border-gray-200
           z-50 
-          ${hasAnimated ? 'transition-transform duration-200 ease-in-out' : ''}
-          ${isOpen ? 'translate-x-0' : '-translate-x-full sm:-translate-x-[calc(100%+2rem)]'}
-          shadow-2xl border-r sm:border border-gray-200
-          will-change-transform
-          overflow-y-auto
+          transition-all duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          shadow-lg
+          flex flex-col
+          overflow-x-hidden
         `}
-        style={{
-          boxShadow: '0 20px 60px 0 rgba(0, 0, 0, 0.15), 0 8px 16px 0 rgba(0, 0, 0, 0.08)',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-        }}
       >
-        <div className="flex flex-col h-full">
-          {/* Header del sidebar con botón cerrar */}
-          <div className="p-5 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                  <Icons.Ship />
-                </div>
-                <h1 className="text-xl font-bold text-gray-800">CIAD</h1>
-              </div>
-              <button
-                onClick={closeSidebar}
-                className="p-2 rounded-lg hover:bg-white/20 text-gray-600 hover:text-gray-800 transition-colors"
-                aria-label="Cerrar menú"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+        {/* Header */}
+        <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'} border-b border-gray-100 bg-white`}>
+          <div className="flex items-center gap-3 overflow-hidden">
+            <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+              <Icons.Ship className="w-5 h-5" />
             </div>
+            {!isCollapsed && (
+              <h1 className="text-lg font-bold text-gray-800 tracking-wide truncate">
+                CIAD<span className="text-blue-600">.Panel</span>
+              </h1>
+            )}
           </div>
-          
-          {/* Contenido del menú */}
-          <div className="p-5 pb-6">
-            <nav ref={navRef} className="space-y-7 relative">
-              {/* Indicador estilo vidrio azul - Fluent Design */}
-              <div
-                className="absolute left-0 rounded-lg transition-all duration-200 ease-out pointer-events-none"
-                style={{
-                  top: `${indicatorStyle.top}px`,
-                  height: `${indicatorStyle.height}px`,
-                  width: '100%',
-                  opacity: indicatorStyle.opacity,
-                  zIndex: 0,
-                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.18) 0%, rgba(37, 99, 235, 0.25) 100%)',
-                  backdropFilter: 'blur(12px) saturate(140%)',
-                  WebkitBackdropFilter: 'blur(12px) saturate(140%)',
-                  border: '1px solid rgba(59, 130, 246, 0.25)',
-                  boxShadow: '0 2px 12px rgba(59, 130, 246, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-                }}
-              />
-              
-              {/* Menu Principal */}
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">{t('menu.titulo')}</p>
-                <div className="space-y-1">
-                  {menuItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      ref={(el) => { menuRefs.current[item.href] = el; }}
-                      href={item.href}
-                      onClick={handleLinkClick}
-                      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                        isActive(item.href)
-                          ? 'text-blue-600 font-medium'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
-                      style={{ zIndex: 1 }}
-                    >
-                      <div className="flex-shrink-0">
-                        {IconComponent(item.icon)}
-                      </div>
-                      <span className="text-sm">{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Externos */}
-              <div>
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">{t('externos.titulo')}</p>
-                <div className="space-y-1">
-                  {externosItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      ref={(el) => { menuRefs.current[item.href] = el; }}
-                      href={item.href}
-                      onClick={handleLinkClick}
-                      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                        isActive(item.href)
-                          ? 'text-blue-600 font-medium'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                      }`}
-                      style={{ zIndex: 1 }}
-                    >
-                      <div className="flex-shrink-0">
-                        {IconComponent(item.icon)}
-                      </div>
-                      <span className="text-sm">{item.label}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              
-            </nav>
-          </div>
-          
-          {/* Footer del sidebar */}
-          <div className="p-4 border-t border-gray-100 bg-gray-50">
-            <div className="text-xs text-gray-500 text-center">
-              {t('version')}
+          {/* Botón cerrar solo visible en móvil */}
+          <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-gray-900">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex-1 overflow-y-auto py-6 custom-scrollbar overflow-x-hidden">
+          <nav className="px-3 space-y-6">
+            <div className="space-y-1">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
+                    ${isActive(item.href)
+                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    }
+                  `}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  <div className={`flex-shrink-0 transition-transform duration-200 ${!isCollapsed && isActive(item.href) ? 'scale-110' : ''}`}>
+                    {IconComponent(item.icon)}
+                  </div>
+                  {!isCollapsed && (
+                    <span className="ml-3 text-sm font-medium truncate">{item.label}</span>
+                  )}
+                </Link>
+              ))}
             </div>
-          </div>
+
+            <div className="space-y-1">
+              {!isCollapsed && <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Externos</p>}
+              {externosItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
+                    ${isActive(item.href)
+                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                    }
+                  `}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  <div className="flex-shrink-0">
+                    {IconComponent(item.icon)}
+                  </div>
+                  {!isCollapsed && (
+                    <span className="ml-3 text-sm font-medium truncate">{item.label}</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </nav>
+        </div>
+
+        {/* Footer / Collapse Toggle (Solo Desktop) */}
+        <div className="hidden lg:block p-4 border-t border-gray-100 bg-gray-50/50">
+          <button
+            onClick={toggleCollapse}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center w-full gap-2'} p-2 rounded-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm`}
+          >
+            <svg
+              className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+            {!isCollapsed && <span className="text-xs font-semibold uppercase">Colapsar</span>}
+          </button>
         </div>
       </aside>
     </>

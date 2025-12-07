@@ -2,41 +2,50 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+
 interface SidebarContextType {
   isOpen: boolean;
+  isCollapsed: boolean;
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;
+  toggleCollapse: () => void;
+  setIsCollapsed: (value: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Cargar el estado del sidebar desde localStorage al montar
+  // Cargar estado desde localStorage
   useEffect(() => {
     const savedState = localStorage.getItem('sidebarOpen');
-    if (savedState !== null) {
-      setIsOpen(savedState === 'true');
-    }
+    const savedCollapsed = localStorage.getItem('sidebarCollapsed');
+
+    if (savedState !== null) setIsOpen(savedState === 'true');
+    if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true');
+
     setMounted(true);
   }, []);
 
-  // Guardar el estado en localStorage cada vez que cambie
+  // Persistir estado
   useEffect(() => {
     if (mounted) {
       localStorage.setItem('sidebarOpen', String(isOpen));
+      localStorage.setItem('sidebarCollapsed', String(isCollapsed));
     }
-  }, [isOpen, mounted]);
+  }, [isOpen, isCollapsed, mounted]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const closeSidebar = () => setIsOpen(false);
   const openSidebar = () => setIsOpen(true);
+  const toggleCollapse = () => setIsCollapsed(!isCollapsed);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar, openSidebar }}>
+    <SidebarContext.Provider value={{ isOpen, isCollapsed, toggleSidebar, closeSidebar, openSidebar, toggleCollapse, setIsCollapsed }}>
       {children}
     </SidebarContext.Provider>
   );
