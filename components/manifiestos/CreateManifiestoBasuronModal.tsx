@@ -47,6 +47,8 @@ export function CreateManifiestoBasuronModal({
     peso_entrada: '',
     peso_salida: '',
     buque_id: '',
+    recibimos_de: '',
+    direccion: '',
     observaciones: '',
     nombre_usuario: '',
   });
@@ -70,6 +72,8 @@ export function CreateManifiestoBasuronModal({
       peso_entrada: '',
       peso_salida: '',
       buque_id: '',
+      recibimos_de: '',
+      direccion: '',
       observaciones: '',
       nombre_usuario: '',
     });
@@ -85,8 +89,8 @@ export function CreateManifiestoBasuronModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validaciones
-    if (!formData.buque_id || !formData.peso_entrada || !formData.peso_salida) {
+    // Validaciones - ahora recibimos_de es texto libre
+    if (!formData.recibimos_de || !formData.peso_entrada || !formData.peso_salida) {
       setShowValidation(true);
       return;
     }
@@ -109,8 +113,8 @@ export function CreateManifiestoBasuronModal({
         hora_salida: horaSalidaSql,
         peso_entrada: pesoEntrada,
         peso_salida: pesoSalida,
-        buque_id: parseInt(formData.buque_id),
-        observaciones: formData.observaciones || null,
+        buque_id: formData.buque_id ? parseInt(formData.buque_id) : null,
+        observaciones: `De: ${formData.recibimos_de} | Dir: ${formData.direccion} | ${formData.observaciones}`.trim(),
         nombre_usuario: formData.nombre_usuario || null,
       };
 
@@ -138,18 +142,26 @@ export function CreateManifiestoBasuronModal({
     <div className={inline ? '' : 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'}>
       <div className={inline ? 'w-full' : 'bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto'}>
         
-        {/* Formulario estilo documento físico - Dos columnas */}
+        {/* Formulario estilo documento físico - Recibo Relleno Sanitario */}
         <div className="bg-white border-2 border-gray-800 rounded-lg overflow-hidden max-w-6xl mx-auto">
-          {/* Encabezado del documento */}
-          <div className="bg-gray-50 px-6 py-4 border-b-2 border-gray-800">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <h2 className="text-xl font-bold text-black">REGISTRO DE PESAJE - BASURÓN</h2>
-                <p className="text-base font-medium text-black">Puerto Peñasco, Sonora a {new Date(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          {/* Encabezado del recibo - Estilo azul */}
+          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-700 text-white px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {/* Logo camión */}
+                <div className="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17h8M8 17a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 104 0 2 2 0 00-4 0zM9 12V7a2 2 0 012-2h6a2 2 0 012 2v5m-4 0H5a2 2 0 00-2 2v3h2" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold tracking-wider">RECIBO RELLENO SANITARIO</h2>
+                  <p className="text-blue-200 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-sm text-black">Depósito calculado:</p>
-                <p className="text-2xl font-bold text-blue-600">{calcularTotalDepositado().toFixed(2)} kg</p>
+              <div className="text-right bg-white/10 rounded-xl px-4 py-2">
+                <p className="text-xs text-blue-200">Total depositado:</p>
+                <p className="text-2xl font-bold text-white">{calcularTotalDepositado().toFixed(0)} kg</p>
               </div>
             </div>
           </div>
@@ -199,11 +211,11 @@ export function CreateManifiestoBasuronModal({
                   </div>
                 </div>
 
-                {/* HORA ENTRADA */}
+                {/* HORA */}
                 <div 
                   className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'horaEntrada' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
                 >
-                  <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA ENTRADA:</label>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA:</label>
                   <div className="flex-1 flex items-center gap-2">
                     <DatePicker
                       selected={formData.hora_entrada ? (() => {
@@ -241,88 +253,55 @@ export function CreateManifiestoBasuronModal({
                   </div>
                 </div>
 
-                {/* HORA SALIDA */}
-                <div 
-                  className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'horaSalida' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
-                >
-                  <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA SALIDA:</label>
-                  <div className="flex-1 flex items-center gap-2">
-                    <DatePicker
-                      selected={formData.hora_salida ? (() => {
-                        const [hours, minutes] = formData.hora_salida.split(':');
-                        const date = new Date();
-                        date.setHours(parseInt(hours), parseInt(minutes), 0);
-                        return date;
-                      })() : null}
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const hours = String(date.getHours()).padStart(2, '0');
-                          const minutes = String(date.getMinutes()).padStart(2, '0');
-                          setFormData({ ...formData, hora_salida: `${hours}:${minutes}` });
-                        }
-                      }}
-                      onFocus={() => setActiveField('horaSalida')}
-                      onBlur={() => setActiveField(null)}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Hora"
-                      dateFormat="HH:mm"
-                      timeFormat="HH:mm"
-                      locale="es"
-                      showPopperArrow={false}
-                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${
-                        activeField === 'horaSalida' ? 'border-blue-600' : 'border-gray-400'
-                      }`}
-                      wrapperClassName="flex-1"
-                      popperClassName="datepicker-popper"
-                      placeholderText="Seleccionar..."
-                    />
-                    <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* EMBARCACIÓN */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'buque' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                  <label className="text-base font-bold text-black w-36 flex-shrink-0">EMBARCACIÓN:</label>
-                  <select
-                    ref={buqueSelectRef}
-                    value={formData.buque_id}
+                {/* RECIBIMOS DE - Campo de texto libre */}
+                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'recibimos' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">RECIBIMOS DE:</label>
+                  <input
+                    type="text"
+                    value={formData.recibimos_de}
                     onChange={(e) => {
-                      setFormData({ ...formData, buque_id: e.target.value });
+                      setFormData({ ...formData, recibimos_de: e.target.value });
                       setShowValidation(false);
                     }}
-                    onFocus={() => setActiveField('buque')}
+                    onFocus={() => setActiveField('recibimos')}
                     onBlur={() => setActiveField(null)}
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium cursor-pointer transition-all duration-200 ${
-                      showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
+                    placeholder="Nombre de quien entrega..."
+                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
+                      showValidation && !formData.recibimos_de ? 'border-red-500' : activeField === 'recibimos' ? 'border-blue-600' : 'border-gray-400'
                     }`}
-                  >
-                    <option value="">Seleccionar...</option>
-                    {buques.map((buque) => (
-                      <option key={buque.id} value={buque.id}>
-                        {buque.nombre_buque} {buque.matricula ? `(${buque.matricula})` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
-                {showValidation && !formData.buque_id && <p className="text-sm text-red-600 ml-3">* Requerido</p>}
+                {showValidation && !formData.recibimos_de && <p className="text-sm text-red-600 ml-3">* Requerido</p>}
+
+                {/* DIRECCIÓN */}
+                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'direccion' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">DIRECCIÓN:</label>
+                  <input
+                    type="text"
+                    value={formData.direccion}
+                    onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                    onFocus={() => setActiveField('direccion')}
+                    onBlur={() => setActiveField(null)}
+                    placeholder="Dirección..."
+                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
+                      activeField === 'direccion' ? 'border-blue-600' : 'border-gray-400'
+                    }`}
+                  />
+                </div>
 
                 {/* Línea divisoria */}
                 <div className="border-t border-gray-200 my-2"></div>
 
-                {/* USUARIO */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'usuario' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                  <label className="text-base font-bold text-black w-36 flex-shrink-0">USUARIO:</label>
+                {/* RECIBÍ */}
+                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'usuario' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">RECIBÍ:</label>
                   <input
                     type="text"
                     value={formData.nombre_usuario}
                     onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
                     onFocus={() => setActiveField('usuario')}
                     onBlur={() => setActiveField(null)}
-                    placeholder="Nombre del usuario"
+                    placeholder="Nombre de quien recibe"
                     className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
                       activeField === 'usuario' ? 'border-blue-600' : 'border-gray-400'
                     }`}
@@ -331,7 +310,7 @@ export function CreateManifiestoBasuronModal({
 
                 {/* Observaciones */}
                 <div className={`mt-4 transition-all duration-200 ${activeField === 'observaciones' ? 'bg-blue-100/60 border-l-4 border-l-blue-600 rounded-lg p-3 -mx-3' : 'border-l-4 border-l-transparent'}`}>
-                  <label className="block text-sm font-bold text-black mb-1">OBSERVACIONES (opcional)</label>
+                  <label className="block text-sm font-bold text-black mb-1 uppercase">Observaciones (opcional)</label>
                   <textarea
                     value={formData.observaciones}
                     onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
@@ -344,12 +323,17 @@ export function CreateManifiestoBasuronModal({
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA - Pesaje */}
-              <div className="p-6 bg-gray-50/50 space-y-4">
-                <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Control de Pesaje</h3>
+              {/* COLUMNA DERECHA - Pesaje (# KILOS) */}
+              <div className="p-6 bg-gradient-to-b from-blue-50/50 to-indigo-50/50 space-y-4">
+                <h3 className="text-lg font-bold text-blue-800 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                  # KILOS
+                </h3>
                 
                 {/* PESO DE ENTRADA */}
-                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                <div className="bg-white rounded-xl p-4 border-2 border-green-200 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -357,31 +341,31 @@ export function CreateManifiestoBasuronModal({
                       </svg>
                     </div>
                     <div>
-                      <p className="text-base font-bold text-black">PESO DE ENTRADA</p>
-                      <p className="text-sm text-black">Vehículo con carga</p>
+                      <p className="text-base font-bold text-black">PESO ENTRADA</p>
+                      <p className="text-sm text-gray-600">Vehículo con carga</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
                       min="0"
-                      step="0.01"
+                      step="1"
                       value={formData.peso_entrada}
                       onChange={(e) => setFormData({ ...formData, peso_entrada: e.target.value })}
                       onFocus={() => setActiveField('pesoEntrada')}
                       onBlur={() => setActiveField(null)}
-                      placeholder="0.00"
-                      className={`flex-1 px-4 py-3 text-xl font-bold border-2 rounded-lg focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                        showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-blue-600' : 'border-gray-300'
+                      placeholder="0"
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                        showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-300'
                       }`}
                     />
-                    <span className="text-lg font-bold text-black px-3 py-3 bg-gray-100 rounded-lg border-2 border-gray-300">kg</span>
+                    <span className="text-lg font-bold text-gray-600 px-3 py-3 bg-gray-100 rounded-lg">kg</span>
                   </div>
                   {showValidation && !formData.peso_entrada && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
                 </div>
 
                 {/* PESO DE SALIDA */}
-                <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+                <div className="bg-white rounded-xl p-4 border-2 border-red-200 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,45 +373,61 @@ export function CreateManifiestoBasuronModal({
                       </svg>
                     </div>
                     <div>
-                      <p className="text-base font-bold text-black">PESO DE SALIDA</p>
-                      <p className="text-sm text-black">Vehículo sin carga</p>
+                      <p className="text-base font-bold text-black">PESO SALIDA</p>
+                      <p className="text-sm text-gray-600">Vehículo sin carga</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
                       min="0"
-                      step="0.01"
+                      step="1"
                       value={formData.peso_salida}
                       onChange={(e) => setFormData({ ...formData, peso_salida: e.target.value })}
                       onFocus={() => setActiveField('pesoSalida')}
                       onBlur={() => setActiveField(null)}
-                      placeholder="0.00"
-                      className={`flex-1 px-4 py-3 text-xl font-bold border-2 rounded-lg focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                        showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-blue-600' : 'border-gray-300'
+                      placeholder="0"
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
+                        showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300'
                       }`}
                     />
-                    <span className="text-lg font-bold text-black px-3 py-3 bg-gray-100 rounded-lg border-2 border-gray-300">kg</span>
+                    <span className="text-lg font-bold text-gray-600 px-3 py-3 bg-gray-100 rounded-lg">kg</span>
                   </div>
                   {showValidation && !formData.peso_salida && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
                 </div>
 
                 {/* TOTAL DEPOSITADO */}
-                <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-black">TOTAL DEPOSITADO</p>
-                      <p className="text-sm text-black">Diferencia de pesos</p>
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-5 shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white/80">= TOTAL DEPOSITADO</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-center py-3 bg-white rounded-lg border-2 border-blue-300">
-                    <p className="text-3xl font-bold text-blue-600">{calcularTotalDepositado().toFixed(2)} kg</p>
+                  <div className="text-center py-3 bg-white rounded-lg">
+                    <p className="text-4xl font-bold text-blue-600">{calcularTotalDepositado().toFixed(0)} <span className="text-xl">kg</span></p>
                   </div>
+                </div>
+
+                {/* Botones rápidos */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <span className="text-sm text-gray-600 mr-2">Rápido:</span>
+                  {[500, 1000, 1500, 2000, 2500, 3000].map(peso => (
+                    <button
+                      key={peso}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
+                      className="px-3 py-1 text-sm bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300 font-medium transition-colors"
+                    >
+                      {peso >= 1000 ? `${peso/1000}T` : `${peso}kg`}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Info de embarcación seleccionada */}
@@ -443,7 +443,7 @@ export function CreateManifiestoBasuronModal({
                         <p className="text-sm font-bold text-green-800">Embarcación seleccionada</p>
                         <p className="text-base font-bold text-black">{selectedBuque.nombre_buque}</p>
                         {selectedBuque.matricula && (
-                          <p className="text-sm text-black">Matrícula: {selectedBuque.matricula}</p>
+                          <p className="text-sm text-gray-600">Matrícula: {selectedBuque.matricula}</p>
                         )}
                       </div>
                     </div>
@@ -452,27 +452,33 @@ export function CreateManifiestoBasuronModal({
               </div>
             </div>
 
-            {/* Botón Guardar */}
-            <div className="border-t-2 border-gray-800 p-4 bg-white">
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-green-600 text-white text-lg font-bold rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Guardando...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>GUARDAR REGISTRO</span>
-                  </>
-                )}
-              </button>
+            {/* Footer con botón Guardar */}
+            <div className="border-t-2 border-gray-800 p-4 bg-gray-50">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <p className="text-xs text-gray-500 italic text-center md:text-left">
+                  POR UNA CIUDAD MÁS LIMPIA Y DIGNA PARA TODOS<br/>
+                  <span className="font-bold">NO ES COMPROBANTE FISCAL</span>
+                </p>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-8 py-3 bg-green-600 text-white text-lg font-bold rounded-xl hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>GUARDAR RECIBO</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>

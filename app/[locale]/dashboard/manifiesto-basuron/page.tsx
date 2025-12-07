@@ -75,8 +75,8 @@ export default function ManifiestoBasuronPage() {
 
         <div id="lista-registros" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
           <div className="mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Registros Basurón</h2>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los registros de pesaje</p>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recibos del Relleno Sanitario</h2>
+            <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
           </div>
 
         {loading ? (
@@ -107,7 +107,7 @@ export default function ManifiestoBasuronPage() {
                             <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p className="text-lg font-semibold">No hay registros basurón</p>
+                            <p className="text-lg font-semibold">No hay recibos registrados</p>
                             <p className="text-sm">Crea uno nuevo con el formulario superior</p>
                           </div>
                         </td>
