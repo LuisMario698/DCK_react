@@ -4,6 +4,8 @@ import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
+import logoMobile from '@/Contexto-DCK/logo_DCK.png';
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
@@ -27,10 +29,14 @@ export function Header() {
 
       {/* Logo/Title en móvil */}
       <div className="flex items-center gap-2 sm:hidden">
-        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-          <Icons.Ship />
+        <div className="relative w-24 h-8">
+          <Image
+            src={logoMobile}
+            alt="DCK Logo"
+            fill
+            className="object-contain object-left"
+          />
         </div>
-        <span className="text-sm font-bold text-gray-900">CIAD</span>
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">

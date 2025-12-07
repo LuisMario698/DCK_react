@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
+import logoExpanded from '@/Contexto-DCK/logo_DCK.png';
+import logoCollapsed from '@/Contexto-DCK/logo_DCK_no_letras.png';
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
@@ -58,19 +61,32 @@ export function Sidebar() {
         `}
       >
         {/* Header */}
-        <div className={`h-16 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-6'} border-b border-gray-100 bg-white`}>
-          <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-md shadow-blue-500/20">
-              <Icons.Ship className="w-5 h-5" />
-            </div>
-            {!isCollapsed && (
-              <h1 className="text-lg font-bold text-gray-800 tracking-wide truncate">
-                CIAD<span className="text-blue-600">.Panel</span>
-              </h1>
+        <div className={`h-28 flex items-center ${isCollapsed ? 'justify-center' : 'justify-center relative'} border-b border-gray-100 bg-white`}>
+          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : 'w-full flex justify-center'}`}>
+            {isCollapsed ? (
+              <div className="flex-shrink-0 w-16 h-16 relative">
+                <Image
+                  src={logoCollapsed}
+                  alt="DCK"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            ) : (
+              <div className="relative w-60 h-24 transition-all duration-300">
+                <Image
+                  src={logoExpanded}
+                  alt="DCK Logo"
+                  fill
+                  className="object-contain object-center"
+                  priority
+                />
+              </div>
             )}
           </div>
           {/* Botón cerrar solo visible en móvil */}
-          <button onClick={closeSidebar} className="lg:hidden text-gray-400 hover:text-gray-900">
+          <button onClick={closeSidebar} className="lg:hidden absolute right-4 text-gray-400 hover:text-gray-900">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>

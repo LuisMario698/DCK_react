@@ -34,16 +34,16 @@ export function VariantCinematic() {
                 <div className="max-w-7xl mx-auto px-6 h-28 flex items-center justify-between">
                     <div className="group flex items-center gap-6 rounded-full px-6 py-3 transition-all duration-300 hover:bg-white/95 hover:shadow-xl hover:scale-105 cursor-default">
                         {/* DCK Logo - Swaps on hover */}
+                        {/* DCK Logo - Swaps on hover */}
                         <div className="relative h-20 w-auto">
-                            <img src="/logo_DCK.png" alt="DCK Logo" className="h-full w-auto object-contain drop-shadow-lg transition-opacity duration-300 group-hover:opacity-0" />
-                            <img src="/logo_DCK_negras.png" alt="DCK Logo" className="absolute inset-0 h-full w-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <img src="/assets/logo_DCK.png" alt="DCK Logo" className="h-full w-auto object-contain drop-shadow-lg" />
                         </div>
 
                         <div className="h-12 w-px bg-white/30 transition-colors duration-300 group-hover:bg-black/10"></div>
 
                         <div className="flex items-center gap-5">
-                            <img src="/logo_ITSPP.png" alt="ITSPP Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
-                            <img src="/logo_ICS.png" alt="ICS Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
+                            <img src="/assets/logo_ITSPP.png" alt="ITSPP Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
+                            <img src="/assets/logo_ICS.png" alt="ICS Logo" className="h-14 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100 group-hover:drop-shadow-none drop-shadow-md" />
                         </div>
                     </div>
                     <div className="hidden md:flex items-center gap-10 text-sm font-bold tracking-widest text-white/90">
@@ -240,7 +240,7 @@ export function VariantCinematic() {
                 <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
                     <div className="col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <img src="/logo_DCK_negras.png" alt="DCK Logo" className="h-16 w-auto object-contain invert" />
+                            <img src="/assets/logo_DCK.png" alt="DCK Logo" className="h-16 w-auto object-contain" />
                         </div>
                         <p className="text-gray-500 max-w-md mb-8">
                             Sistema de Gestión de Residuos Marinos. <br />
