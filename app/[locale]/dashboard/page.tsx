@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { createServerClient } from '@/lib/supabase/server';
+import logoIcon from '@/Contexto-DCK/logo_DCK_no_letras.png';
+import { DashboardBackground } from '@/components/dashboard/DashboardBackground';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,67 +66,100 @@ export default async function DashboardPage({
   const { locale } = await params;
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center">
-      {/* Header con logo y título */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center gap-4 mb-4">
-          <div className="bg-blue-600 text-white p-3 rounded-xl">
-            <ShipIcon />
-          </div>
-          <div className="text-left">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">CDK Recolección</h1>
-            <p className="text-gray-500 text-sm md:text-base">Puerto Peñasco, Sonora</p>
+    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center relative">
+      <DashboardBackground />
+      <div className="relative z-10 w-full">
+        {/* Header con logo y título */}
+        {/* Header con logo y título */}
+        {/* Hero Banner */}
+        <div className="w-full max-w-5xl mx-auto mb-12 px-4">
+          <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/50 to-white border border-blue-100/60 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-blue-900/5">
+            {/* Decoración de fondo */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-400/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
+              {/* Logo */}
+              <div className="relative w-48 h-48 md:w-64 md:h-64 transition-transform hover:scale-105 duration-500">
+                <Image
+                  src={logoIcon}
+                  alt="DCK Icon"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+
+              {/* Texto */}
+              <div className="text-center md:text-left flex flex-col items-center md:items-start">
+                <h1 className="text-7xl md:text-8xl font-black text-gray-900 leading-none tracking-tighter mb-2">
+                  DCK
+                </h1>
+                <div className="h-1.5 w-24 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full mb-4"></div>
+                <p className="text-xl md:text-2xl text-gray-500 font-medium tracking-[0.25em] uppercase">
+                  Conciencia y Cultura
+                </p>
+              </div>
+            </div>
+
+            {/* Separador sutil */}
+            <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-100 to-transparent my-8"></div>
+
+            {/* Saludo Integrado */}
+            <div className="text-center relative z-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+                ¡Hola! 👋 ¿Qué vamos a hacer hoy?
+              </h2>
+              <p className="text-gray-500 text-lg">Selecciona una opción del panel de control</p>
+            </div>
           </div>
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-gray-700 mt-6">
-          ¡Hola! 👋 ¿Qué vamos a hacer?
-        </h2>
-      </div>
 
-      {/* Tarjetas de Acciones - Layout horizontal */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full px-4">
-        <ActionCard
-          title="Manifiesto"
-          icon={<ManifiestoIcon />}
-          description="Recolección de barco"
-          href={`/${locale}/dashboard/manifiesto`}
-        />
-        <ActionCard
-          title="Basurón"
-          icon={<BasuronIcon />}
-          description="Pesar en relleno"
-          href={`/${locale}/dashboard/manifiesto-basuron`}
-        />
-        <ActionCard
-          title="Estadísticas"
-          icon={<EstadisticasIcon />}
-          description="Ver reportes y KPI"
-          href={`/${locale}/dashboard/estadisticas`}
-        />
-      </div>
+        {/* Tarjetas de Acciones - Layout horizontal */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full px-4">
+          <ActionCard
+            title="Manifiesto"
+            icon={<ManifiestoIcon />}
+            description="Recolección de barco"
+            href={`/${locale}/dashboard/manifiesto`}
+          />
+          <ActionCard
+            title="Basurón"
+            icon={<BasuronIcon />}
+            description="Pesar en relleno"
+            href={`/${locale}/dashboard/manifiesto-basuron`}
+          />
+          <ActionCard
+            title="Estadísticas"
+            icon={<EstadisticasIcon />}
+            description="Ver reportes y KPI"
+            href={`/${locale}/dashboard/estadisticas`}
+          />
+        </div>
 
-      {/* Accesos rápidos a otras secciones */}
-      <div className="mt-10 text-center">
-        <p className="text-gray-400 text-sm mb-3">Otras secciones</p>
-        <div className="flex flex-wrap justify-center gap-3">
-          <Link
-            href={`/${locale}/dashboard/embarcaciones`}
-            className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
-          >
-            🚢 Embarcaciones
-          </Link>
-          <Link
-            href={`/${locale}/dashboard/personas`}
-            className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
-          >
-            👥 Personas
-          </Link>
-          <Link
-            href={`/${locale}/dashboard/asociaciones`}
-            className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
-          >
-            🏢 Asociaciones
-          </Link>
+        {/* Accesos rápidos a otras secciones */}
+        <div className="mt-10 text-center">
+          <p className="text-gray-400 text-sm mb-3">Otras secciones</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href={`/${locale}/dashboard/embarcaciones`}
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+            >
+              🚢 Embarcaciones
+            </Link>
+            <Link
+              href={`/${locale}/dashboard/personas`}
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+            >
+              👥 Personas
+            </Link>
+            <Link
+              href={`/${locale}/dashboard/asociaciones`}
+              className="px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg text-sm transition-colors"
+            >
+              🏢 Asociaciones
+            </Link>
+          </div>
         </div>
       </div>
     </div>
