@@ -7,8 +7,9 @@ import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
 import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
-import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto } from '@/lib/services/manifiestos';
+import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
+import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 
 // Registrar locale español
@@ -23,10 +24,10 @@ export default function ManifiestosPage() {
   const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
-  
+
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
-  
+
   const [formData, setFormData] = useState({
     numero_manifiesto: '',
     fecha_emision: new Date().toISOString().split('T')[0],
@@ -35,7 +36,7 @@ export default function ManifiestosPage() {
     responsable_secundario_id: '',
     observaciones: '',
   });
-  
+
   const [residuos, setResiduos] = useState({
     aceite_usado: 0,
     filtros_aceite: 0,
@@ -43,7 +44,7 @@ export default function ManifiestosPage() {
     filtros_aire: 0,
     basura: 0,
   });
-  
+
   const [archivo, setArchivo] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
@@ -54,27 +55,27 @@ export default function ManifiestosPage() {
   const [cocineroSignature, setCocineroSignature] = useState<string | null>(null);
   const [oficialSignature, setOficialSignature] = useState<string | null>(null);
   const [activeSignature, setActiveSignature] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
-  
+
   // Estado para el modal de firma flotante
   const [signatureModalType, setSignatureModalType] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
   const signatureModalCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
-  
+
   // Estados para autocompletado de nombres
   const [motoristaNombre, setMotoristaNombre] = useState('');
   const [cocineroNombre, setCocineroNombre] = useState('');
   const [showMotoristaSuggestions, setShowMotoristaSuggestions] = useState(false);
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  
+
   // Estados para autocompletado de embarcaciones
   const [buqueNombre, setBuqueNombre] = useState('');
   const [showBuqueSuggestions, setShowBuqueSuggestions] = useState(false);
   const [selectedBuqueIndex, setSelectedBuqueIndex] = useState(-1);
-  
+
   const buqueInputRef = useRef<HTMLInputElement | null>(null);
-  
+
   // Referencias para navegación con Enter
   const fechaRef = useRef<HTMLInputElement>(null);
   const aceiteRef = useRef<HTMLInputElement>(null);
@@ -113,15 +114,15 @@ export default function ManifiestosPage() {
     const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     setActiveSignature(type);
     setIsDrawing(true);
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     let x, y;
-    
+
     if ('touches' in e) {
       x = e.touches[0].clientX - rect.left;
       y = e.touches[0].clientY - rect.top;
@@ -129,7 +130,7 @@ export default function ManifiestosPage() {
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
     }
-    
+
     ctx.beginPath();
     ctx.moveTo(x, y);
   };
@@ -139,13 +140,13 @@ export default function ManifiestosPage() {
     const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     const rect = canvas.getBoundingClientRect();
     let x, y;
-    
+
     if ('touches' in e) {
       e.preventDefault();
       x = e.touches[0].clientX - rect.left;
@@ -154,7 +155,7 @@ export default function ManifiestosPage() {
       x = e.clientX - rect.left;
       y = e.clientY - rect.top;
     }
-    
+
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
     ctx.strokeStyle = '#1e3a5f';
@@ -215,7 +216,7 @@ export default function ManifiestosPage() {
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    
+
     if ('touches' in e) {
       return {
         x: (e.touches[0].clientX - rect.left) * scaleX,
@@ -235,13 +236,13 @@ export default function ManifiestosPage() {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     e.preventDefault();
     const point = getCanvasCoordinates(e, canvas);
-    
+
     isDrawingRef.current = true;
     lastPointRef.current = point;
-    
+
     // Configurar el contexto una sola vez
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
@@ -258,13 +259,13 @@ export default function ManifiestosPage() {
 
     e.preventDefault();
     const point = getCanvasCoordinates(e, canvas);
-    
+
     // Dibujar línea directamente sin usar setState
     ctx.beginPath();
     ctx.moveTo(lastPointRef.current.x, lastPointRef.current.y);
     ctx.lineTo(point.x, point.y);
     ctx.stroke();
-    
+
     lastPointRef.current = point;
   };
 
@@ -285,7 +286,7 @@ export default function ManifiestosPage() {
     if (!signatureModalType) return;
     const canvas = signatureModalCanvasRef.current;
     if (!canvas) return;
-    
+
     const data = canvas.toDataURL();
     if (signatureModalType === 'motorista') {
       setMotoristaSignature(data);
@@ -405,7 +406,7 @@ export default function ManifiestosPage() {
         const nuevoCocinero = await createPersonaAutomatica(cocineroNombre.trim(), tipoCocinero.id);
         cocineroId = nuevoCocinero.id.toString();
       }
-      
+
       const manifiestoData = {
         fecha_emision: formData.fecha_emision,
         buque_id: parseInt(buqueId),
@@ -417,8 +418,56 @@ export default function ManifiestosPage() {
       };
 
       const resultado = await createManifiesto(manifiestoData, residuos, archivo);
+
+      // --- Generar y subir PDF Automáticamente ---
+      try {
+        setGenerandoPDF(resultado.id.toString());
+
+        // 1. Preparar datos completos para el PDF (Relaciones)
+        const buqueObj = buques.find(b => b.id === resultado.buque_id);
+        const respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
+        const respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
+
+        // Construir objeto con la estructura que espera el generador
+        const manifestoCompleto = {
+          ...resultado,
+          buque: buqueObj, // El generador suele esperar el objeto o { nombre_buque }
+          responsable_principal: respPrincObj,
+          responsable_secundario: respSecObj,
+          residuos: { ...residuos } // Pasamos los valores actuales
+        } as unknown as ManifiestoConRelaciones;
+
+        // 2. Preparar Firmas
+        const firmasPDF: FirmasManifiesto = {
+          motoristaFirma: motoristaSignature,
+          motoristaNombre: motoristaNombre || respPrincObj?.nombre,
+          cocineroFirma: cocineroSignature,
+          cocineroNombre: cocineroNombre || respSecObj?.nombre,
+          oficialFirma: oficialSignature
+        };
+
+        // 3. Generar PDF Blob
+        const pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
+
+        // 4. Subir PDF
+        console.log("Subiendo PDF generado...");
+        const pdfUrl = await uploadManifiestoPDF(pdfBlob, resultado.numero_manifiesto);
+
+        // 5. Actualizar Manifiesto con URL
+        if (pdfUrl) {
+          await updateManifiesto(resultado.id, { pdf_manifiesto_url: pdfUrl });
+          console.log("✅ PDF vinculado exitosamente");
+        }
+
+      } catch (pdfError) {
+        console.error("⚠️ Error generando/subiendo PDF automático:", pdfError);
+        // No bloqueamos el flujo principal, pero avisamos en consola
+      } finally {
+        setGenerandoPDF(null);
+      }
+
       alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
-      
+
       setFormData({
         numero_manifiesto: '',
         fecha_emision: new Date().toISOString().split('T')[0],
@@ -441,7 +490,7 @@ export default function ManifiestosPage() {
       setMotoristaSignature(null);
       setCocineroSignature(null);
       setOficialSignature(null);
-      
+
       loadData();
     } catch (error: any) {
       console.error('Error guardando manifiesto:', error);
@@ -467,25 +516,25 @@ export default function ManifiestosPage() {
   const handleDescargarPDF = async (manifiesto: ManifiestoConRelaciones) => {
     try {
       setGenerandoPDF(manifiesto.id.toString());
-      
+
       // Preparar firmas para el PDF
       const firmasPDF: FirmasManifiesto = {
         motoristaFirma: motoristaSignature,
         motoristaNombre: motoristaNombre || personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre,
         cocineroFirma: cocineroSignature,
-        cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id 
-          ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre 
+        cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
+          ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
           : undefined),
         oficialFirma: oficialSignature
       };
-      
+
       // Generar el PDF con firmas
       const pdfBlob = await generarPDFManifiesto(manifiesto, firmasPDF);
       const nombreArchivo = generarNombreArchivoPDF(manifiesto.numero_manifiesto);
-      
+
       // Crear URL del blob para descarga directa
       const url = URL.createObjectURL(pdfBlob);
-      
+
       // Descargar el archivo
       const link = document.createElement('a');
       link.href = url;
@@ -493,10 +542,10 @@ export default function ManifiestosPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Limpiar la URL del blob
       URL.revokeObjectURL(url);
-      
+
       alert(tm('descargaExitosa'));
     } catch (error) {
       console.error('Error generando PDF:', error);
@@ -524,9 +573,9 @@ export default function ManifiestosPage() {
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
           <div className="p-6 space-y-4">
             <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Datos del Manifiesto</h3>
-            
+
             {/* FECHA */}
-            <div 
+            <div
               className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
             >
               <label className="text-base font-bold text-black w-36 flex-shrink-0">FECHA:</label>
@@ -546,9 +595,8 @@ export default function ManifiestosPage() {
                   dateFormat="dd/MM/yyyy"
                   locale="es"
                   showPopperArrow={false}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${
-                    activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400'
-                  }`}
+                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400'
+                    }`}
                   calendarClassName="custom-datepicker"
                   wrapperClassName="flex-1"
                   popperClassName="datepicker-popper"
@@ -608,9 +656,8 @@ export default function ManifiestosPage() {
                       handleKeyDown(e, 1);
                     }
                   }}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 ${
-                    showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
-                  }`}
+                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 ${showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
+                    }`}
                 />
                 {showBuqueSuggestions && (
                   <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1">
@@ -622,9 +669,8 @@ export default function ManifiestosPage() {
                           setFormData({ ...formData, buque_id: buque.id.toString() });
                           setShowBuqueSuggestions(false);
                         }}
-                        className={`px-3 py-2 cursor-pointer text-base ${
-                          index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'
-                        }`}
+                        className={`px-3 py-2 cursor-pointer text-base ${index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'
+                          }`}
                       >
                         {buque.nombre_buque}
                         {buque.matricula && <span className="text-sm text-gray-500 ml-2">({buque.matricula})</span>}
@@ -659,9 +705,8 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 2)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                      activeField === 'aceite' ? 'border-blue-600' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'aceite' ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                   />
                   <span className="text-sm font-medium text-black">gal</span>
                 </div>
@@ -681,9 +726,8 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 3)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                      activeField === 'filtrosAceite' ? 'border-blue-600' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAceite' ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                   />
                   <span className="text-sm font-medium text-black">uds</span>
                 </div>
@@ -703,9 +747,8 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 4)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                      activeField === 'filtrosDiesel' ? 'border-blue-600' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosDiesel' ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                   />
                   <span className="text-sm font-medium text-black">uds</span>
                 </div>
@@ -725,9 +768,8 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 5)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                      activeField === 'filtrosAire' ? 'border-blue-600' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAire' ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                   />
                   <span className="text-sm font-medium text-black">uds</span>
                 </div>
@@ -748,9 +790,8 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 6)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                      activeField === 'basura' ? 'border-blue-600' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'basura' ? 'border-blue-600' : 'border-gray-300'
+                      }`}
                   />
                   <span className="text-sm font-medium text-black">kg</span>
                 </div>
@@ -775,12 +816,12 @@ export default function ManifiestosPage() {
           {/* COLUMNA DERECHA - Firmas */}
           <div className="p-6 bg-gray-50/50 space-y-4">
             <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Firmas</h3>
-            
+
             {/* FIRMA OFICIAL COMISIONADO */}
             <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
               <p className="text-base font-bold text-black">RECIBE: Oficial Comisionado</p>
               <p className="text-sm text-black mb-3">Recolección de Basura y Residuos Aceitosos (MARPOL ANEXO V)</p>
-              
+
               {!oficialSignature ? (
                 <button
                   type="button"
@@ -850,9 +891,8 @@ export default function ManifiestosPage() {
                     setShowMotoristaSuggestions(false);
                   }
                 }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${
-                  showValidation && !formData.responsable_principal_id ? 'border-red-500' : activeField === 'motorista' ? 'border-blue-600' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${showValidation && !formData.responsable_principal_id ? 'border-red-500' : activeField === 'motorista' ? 'border-blue-600' : 'border-gray-300'
+                  }`}
               />
               {showMotoristaSuggestions && (
                 <div className="bg-white border border-gray-300 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
@@ -865,7 +905,7 @@ export default function ManifiestosPage() {
                 </div>
               )}
               {showValidation && !formData.responsable_principal_id && <p className="text-xs text-red-600 mt-1">* Requerido</p>}
-              
+
               <div className="mt-3">
                 {!motoristaSignature ? (
                   <button type="button" onClick={() => openSignatureModal('motorista')}
@@ -930,9 +970,8 @@ export default function ManifiestosPage() {
                     setShowCocineroSuggestions(false);
                   }
                 }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${
-                  activeField === 'cocinero' ? 'border-blue-600' : 'border-gray-300'
-                }`}
+                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${activeField === 'cocinero' ? 'border-blue-600' : 'border-gray-300'
+                  }`}
               />
               {showCocineroSuggestions && (
                 <div className="bg-white border border-gray-300 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
@@ -944,7 +983,7 @@ export default function ManifiestosPage() {
                   ))}
                 </div>
               )}
-              
+
               <div className="mt-3">
                 {!cocineroSignature ? (
                   <button type="button" onClick={() => openSignatureModal('cocinero')}
@@ -992,12 +1031,11 @@ export default function ManifiestosPage() {
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`relative rounded-lg p-3 text-center transition-all ${
-                  dragActive ? 'bg-blue-50 border-2 border-blue-500 border-dashed' : archivo ? 'bg-green-50 border-2 border-green-500' : 'bg-white border-2 border-gray-300 border-dashed'
-                }`}
+                className={`relative rounded-lg p-3 text-center transition-all ${dragActive ? 'bg-blue-50 border-2 border-blue-500 border-dashed' : archivo ? 'bg-green-50 border-2 border-green-500' : 'bg-white border-2 border-gray-300 border-dashed'
+                  }`}
               >
                 <input type="file" id="file-upload" onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
-                
+
                 {!archivo ? (
                   <label htmlFor="file-upload" className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1065,154 +1103,153 @@ export default function ManifiestosPage() {
         </div>
 
         {loading ? (
-            <div className="flex justify-center items-center py-8 sm:py-12">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
-                  <table className="w-full">
-                    <thead className="bg-gray-50/50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Resp. Principal</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Resp. Secundario</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Estado</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-                      </tr>
-                    </thead>
-                <tbody>
-                  {manifiestos.length === 0 ? (
+          <div className="flex justify-center items-center py-8 sm:py-12">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
+                <table className="w-full">
+                  <thead className="bg-gray-50/50 border-b border-gray-200">
                     <tr>
-                      <td colSpan={7} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
-                        <div className="flex flex-col items-center gap-3">
-                          <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <p className="text-lg font-semibold">No hay manifiestos registrados</p>
-                          <p className="text-sm">Complete el formulario arriba para crear uno nuevo</p>
-                        </div>
-                      </td>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Resp. Principal</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Resp. Secundario</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Estado</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
-                  ) : (
-                    manifiestos.map((manifiesto) => {
-                      // Buscar el buque por ID si no viene en la relación
-                      const buqueNombre = manifiesto.buque?.nombre_buque || 
-                        buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || 
-                        'N/A';
-                      
-                      // Buscar responsables por ID si no vienen en la relación
-                      const respPrincipal = manifiesto.responsable_principal?.nombre || 
-                        personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre || 
-                        'N/A';
-                      
-                      const respSecundario = manifiesto.responsable_secundario?.nombre || 
-                        (manifiesto.responsable_secundario_id ? 
-                          personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre : 
-                          null);
-
-                      return (
-                        <tr key={manifiesto.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <span className="font-semibold text-blue-600 whitespace-nowrap">{manifiesto.numero_manifiesto}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <span className="font-medium text-gray-900 truncate">{buqueNombre}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden md:table-cell">
-                            <span className="font-medium text-gray-900">{respPrincipal}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
-                            <span className="text-gray-600">{respSecundario || '—'}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
-                            <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                              manifiesto.estado_digitalizacion === 'completado' 
-                                ? 'bg-green-100 text-green-800' 
-                                : manifiesto.estado_digitalizacion === 'en_proceso'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : manifiesto.estado_digitalizacion === 'aprobado'
-                                ? 'bg-blue-100 text-blue-800'
-                                : manifiesto.estado_digitalizacion === 'rechazado'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {manifiesto.estado_digitalizacion === 'completado' && 'Completado'}
-                              {manifiesto.estado_digitalizacion === 'en_proceso' && 'En Proceso'}
-                              {manifiesto.estado_digitalizacion === 'pendiente' && 'Pendiente'}
-                              {manifiesto.estado_digitalizacion === 'aprobado' && 'Aprobado'}
-                              {manifiesto.estado_digitalizacion === 'rechazado' && 'Rechazado'}
-                            </span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden sm:table-cell">
-                            <span className="text-gray-600 whitespace-nowrap">
-                              {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                          <div className="flex gap-1 sm:gap-2 min-w-[160px]">
-                            <button
-                              onClick={() => handleDescargarPDF(manifiesto)}
-                              disabled={generandoPDF === manifiesto.id.toString()}
-                              className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={t('acciones.descargarPDF')}
-                            >
-                              {generandoPDF === manifiesto.id.toString() ? (
-                                <>
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                  </svg>
-                                  <span className="hidden sm:inline">...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                  </svg>
-                                  <span className="hidden lg:inline">PDF</span>
-                                </>
-                              )}
-                            </button>
-                            <button
-                              onClick={() => setViewingManifiesto(manifiesto)}
-                              className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap"
-                              title="Ver detalles"
-                            >
-                              <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                              </svg>
-                              <span className="hidden sm:inline">Ver</span>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(manifiesto.id)}
-                              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0"
-                              title="Eliminar"
-                            >
-                              <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
+                  </thead>
+                  <tbody>
+                    {manifiestos.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                          <div className="flex flex-col items-center gap-3">
+                            <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p className="text-lg font-semibold">No hay manifiestos registrados</p>
+                            <p className="text-sm">Complete el formulario arriba para crear uno nuevo</p>
                           </div>
                         </td>
                       </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-                </div>
+                    ) : (
+                      manifiestos.map((manifiesto) => {
+                        // Buscar el buque por ID si no viene en la relación
+                        const buqueNombre = manifiesto.buque?.nombre_buque ||
+                          buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque ||
+                          'N/A';
+
+                        // Buscar responsables por ID si no vienen en la relación
+                        const respPrincipal = manifiesto.responsable_principal?.nombre ||
+                          personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre ||
+                          'N/A';
+
+                        const respSecundario = manifiesto.responsable_secundario?.nombre ||
+                          (manifiesto.responsable_secundario_id ?
+                            personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre :
+                            null);
+
+                        return (
+                          <tr key={manifiesto.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                              <span className="font-semibold text-blue-600 whitespace-nowrap">{manifiesto.numero_manifiesto}</span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                              <span className="font-medium text-gray-900 truncate">{buqueNombre}</span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden md:table-cell">
+                              <span className="font-medium text-gray-900">{respPrincipal}</span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
+                              <span className="text-gray-600">{respSecundario || '—'}</span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
+                              <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${manifiesto.estado_digitalizacion === 'completado'
+                                ? 'bg-green-100 text-green-800'
+                                : manifiesto.estado_digitalizacion === 'en_proceso'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : manifiesto.estado_digitalizacion === 'aprobado'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : manifiesto.estado_digitalizacion === 'rechazado'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {manifiesto.estado_digitalizacion === 'completado' && 'Completado'}
+                                {manifiesto.estado_digitalizacion === 'en_proceso' && 'En Proceso'}
+                                {manifiesto.estado_digitalizacion === 'pendiente' && 'Pendiente'}
+                                {manifiesto.estado_digitalizacion === 'aprobado' && 'Aprobado'}
+                                {manifiesto.estado_digitalizacion === 'rechazado' && 'Rechazado'}
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden sm:table-cell">
+                              <span className="text-gray-600 whitespace-nowrap">
+                                {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                              <div className="flex gap-1 sm:gap-2 min-w-[160px]">
+                                <button
+                                  onClick={() => handleDescargarPDF(manifiesto)}
+                                  disabled={generandoPDF === manifiesto.id.toString()}
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title={t('acciones.descargarPDF')}
+                                >
+                                  {generandoPDF === manifiesto.id.toString() ? (
+                                    <>
+                                      <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      <span className="hidden sm:inline">...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                      </svg>
+                                      <span className="hidden lg:inline">PDF</span>
+                                    </>
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => setViewingManifiesto(manifiesto)}
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap"
+                                  title="Ver detalles"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                  <span className="hidden sm:inline">Ver</span>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(manifiesto.id)}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0"
+                                  title="Eliminar"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
 
       {/* Modal de visualización de detalles */}
@@ -1238,8 +1275,8 @@ export default function ManifiestosPage() {
                     </p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setViewingManifiesto(null)} 
+                <button
+                  onClick={() => setViewingManifiesto(null)}
                   className="w-10 h-10 sm:w-11 sm:h-11 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center transition-all flex-shrink-0 hover:scale-110 active:scale-95 shadow-lg ring-2 ring-white/20"
                 >
                   <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1253,18 +1290,18 @@ export default function ManifiestosPage() {
             <div className="p-4 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 bg-gradient-to-br from-gray-50 to-white">
               {(() => {
                 // Buscar el buque por ID si no viene en la relación
-                const buqueNombre = viewingManifiesto.buque?.nombre_buque || 
-                  buques.find(b => b.id === viewingManifiesto.buque_id)?.nombre_buque || 
+                const buqueNombre = viewingManifiesto.buque?.nombre_buque ||
+                  buques.find(b => b.id === viewingManifiesto.buque_id)?.nombre_buque ||
                   'N/A';
-                
+
                 // Buscar responsables por ID si no vienen en la relación
-                const respPrincipal = viewingManifiesto.responsable_principal?.nombre || 
-                  personas.find(p => p.id === viewingManifiesto.responsable_principal_id)?.nombre || 
+                const respPrincipal = viewingManifiesto.responsable_principal?.nombre ||
+                  personas.find(p => p.id === viewingManifiesto.responsable_principal_id)?.nombre ||
                   'N/A';
-                
-                const respSecundario = viewingManifiesto.responsable_secundario?.nombre || 
-                  (viewingManifiesto.responsable_secundario_id ? 
-                    personas.find(p => p.id === viewingManifiesto.responsable_secundario_id)?.nombre : 
+
+                const respSecundario = viewingManifiesto.responsable_secundario?.nombre ||
+                  (viewingManifiesto.responsable_secundario_id ?
+                    personas.find(p => p.id === viewingManifiesto.responsable_secundario_id)?.nombre :
                     null);
 
                 return (
@@ -1311,17 +1348,16 @@ export default function ManifiestosPage() {
                             </svg>
                             <p className="text-xs sm:text-sm text-gray-600 font-semibold">Estado</p>
                           </div>
-                          <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-sm ${
-                            viewingManifiesto.estado_digitalizacion === 'completado' 
-                              ? 'bg-green-100 text-green-800 border border-green-300' 
-                              : viewingManifiesto.estado_digitalizacion === 'en_proceso'
+                          <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold shadow-sm ${viewingManifiesto.estado_digitalizacion === 'completado'
+                            ? 'bg-green-100 text-green-800 border border-green-300'
+                            : viewingManifiesto.estado_digitalizacion === 'en_proceso'
                               ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
                               : viewingManifiesto.estado_digitalizacion === 'aprobado'
-                              ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                              : viewingManifiesto.estado_digitalizacion === 'rechazado'
-                              ? 'bg-red-100 text-red-800 border border-red-300'
-                              : 'bg-gray-100 text-gray-800 border border-gray-300'
-                          }`}>
+                                ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                : viewingManifiesto.estado_digitalizacion === 'rechazado'
+                                  ? 'bg-red-100 text-red-800 border border-red-300'
+                                  : 'bg-gray-100 text-gray-800 border border-gray-300'
+                            }`}>
                             {viewingManifiesto.estado_digitalizacion === 'completado' && '✓ Completado'}
                             {viewingManifiesto.estado_digitalizacion === 'en_proceso' && '⟳ En Proceso'}
                             {viewingManifiesto.estado_digitalizacion === 'pendiente' && '○ Pendiente'}
@@ -1497,9 +1533,9 @@ export default function ManifiestosPage() {
                   </h3>
                   <div className="bg-white rounded-xl p-4 sm:p-5 border border-gray-300 shadow-inner">
                     <div className="relative group">
-                      <img 
-                        src={viewingManifiesto.imagen_manifiesto_url} 
-                        alt="Manifiesto escaneado" 
+                      <img
+                        src={viewingManifiesto.imagen_manifiesto_url}
+                        alt="Manifiesto escaneado"
                         className="w-full h-auto rounded-lg border-2 border-gray-200 shadow-md group-hover:shadow-xl transition-shadow duration-300"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 rounded-lg transition-colors duration-300"></div>
@@ -1551,11 +1587,11 @@ export default function ManifiestosPage() {
       {signatureModalType && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Fondo oscuro sin blur para mejor rendimiento */}
-          <div 
+          <div
             className="absolute inset-0 bg-black/50"
             onClick={closeSignatureModal}
           />
-          
+
           {/* Panel de firma */}
           <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
@@ -1580,7 +1616,7 @@ export default function ManifiestosPage() {
                 </svg>
               </button>
             </div>
-            
+
             {/* Área de firma */}
             <div className="p-6">
               <div className="relative border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 overflow-hidden">
@@ -1604,7 +1640,7 @@ export default function ManifiestosPage() {
                 <div className="absolute bottom-8 left-8 right-8 border-b-2 border-gray-300 pointer-events-none" />
                 <div className="absolute bottom-2 left-8 text-xs text-gray-400 pointer-events-none">Firma</div>
               </div>
-              
+
               {/* Botones */}
               <div className="flex justify-between items-center mt-6 gap-4">
                 <button
@@ -1617,7 +1653,7 @@ export default function ManifiestosPage() {
                   </svg>
                   Borrar
                 </button>
-                
+
                 <div className="flex gap-3">
                   <button
                     type="button"

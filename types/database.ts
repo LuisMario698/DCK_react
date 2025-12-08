@@ -56,6 +56,7 @@ export interface Manifiesto {
   responsable_principal_id: number | null;
   responsable_secundario_id: number | null;
   imagen_manifiesto_url: string | null;
+  pdf_manifiesto_url: string | null;
   estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado' | 'aprobado' | 'rechazado';
   observaciones: string | null;
   created_at: string;
