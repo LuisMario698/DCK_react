@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SimpleManifiestoForm from '@/components/simple/SimpleManifiestoForm';
-import SimpleBasuronForm from '@/components/simple/SimpleBasuronForm';
 import SimpleEstadisticas from '@/components/simple/SimpleEstadisticas';
 
 /**
@@ -117,7 +116,7 @@ export default function SimpleDashboard() {
           title="Basurón" 
           icon={<BasuronIcon />}
           description="Pesar en relleno"
-          onClick={() => setCurrentView('basuron')}
+          onClick={() => router.push('/dashboard/manifiesto-basuron')}
         />
         <ActionCard 
           title="Estadísticas" 
@@ -163,9 +162,6 @@ export default function SimpleDashboard() {
         {currentView === 'home' && renderHome()}
         {currentView === 'manifiesto' && (
           <SimpleManifiestoForm onBack={handleBack} onSuccess={handleSuccess} />
-        )}
-        {currentView === 'basuron' && (
-          <SimpleBasuronForm onBack={handleBack} onSuccess={handleSuccess} />
         )}
         {currentView === 'estadisticas' && (
           <SimpleEstadisticas onBack={handleBack} />

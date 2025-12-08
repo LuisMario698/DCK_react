@@ -217,35 +217,16 @@ export function CreateManifiestoBasuronModal({
                 >
                   <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA:</label>
                   <div className="flex-1 flex items-center gap-2">
-                    <DatePicker
-                      selected={formData.hora_entrada ? (() => {
-                        const [hours, minutes] = formData.hora_entrada.split(':');
-                        const date = new Date();
-                        date.setHours(parseInt(hours), parseInt(minutes), 0);
-                        return date;
-                      })() : null}
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const hours = String(date.getHours()).padStart(2, '0');
-                          const minutes = String(date.getMinutes()).padStart(2, '0');
-                          setFormData({ ...formData, hora_entrada: `${hours}:${minutes}` });
-                        }
-                      }}
+                    <input
+                      type="time"
+                      value={formData.hora_entrada || ''}
+                      onChange={(e) => setFormData({ ...formData, hora_entrada: e.target.value })}
                       onFocus={() => setActiveField('horaEntrada')}
                       onBlur={() => setActiveField(null)}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Hora"
-                      dateFormat="HH:mm"
-                      timeFormat="HH:mm"
-                      locale="es"
-                      showPopperArrow={false}
-                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${
+                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-lg font-medium transition-all duration-200 ${
                         activeField === 'horaEntrada' ? 'border-blue-600' : 'border-gray-400'
                       }`}
-                      wrapperClassName="flex-1"
-                      popperClassName="datepicker-popper"
+                      placeholder="HH:MM"
                     />
                     <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

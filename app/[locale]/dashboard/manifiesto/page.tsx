@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
@@ -67,6 +67,16 @@ export default function ManifiestosPage() {
   const [showMotoristaSuggestions, setShowMotoristaSuggestions] = useState(false);
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  
+  // Estados para filtros y búsqueda de manifiestos
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filtroActivo, setFiltroActivo] = useState<'todos' | 'buque' | 'motorista' | 'cocinero' | 'fecha' | 'numero'>('todos');
+  const [fechaFiltroInicio, setFechaFiltroInicio] = useState<Date | null>(null);
+  const [fechaFiltroFin, setFechaFiltroFin] = useState<Date | null>(null);
+  const [showFiltroFecha, setShowFiltroFecha] = useState(false);
+  const [filtroSeleccionBuque, setFiltroSeleccionBuque] = useState<number | null>(null);
+  const [filtroSeleccionMotorista, setFiltroSeleccionMotorista] = useState<number | null>(null);
+  const [filtroSeleccionCocinero, setFiltroSeleccionCocinero] = useState<number | null>(null);
   
   // Estados para autocompletado de embarcaciones
   const [buqueNombre, setBuqueNombre] = useState('');
@@ -326,6 +336,88 @@ export default function ManifiestosPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Lógica de filtrado de manifiestos con useMemo para mejor rendimiento
+  const manifiestosFiltrados = useMemo(() => {
+    return manifiestos.filter((manifiesto) => {
+      // Obtener nombres para búsqueda
+      const buqueNombreManifiesto = manifiesto.buque?.nombre_buque || 
+        buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || '';
+      
+      const motoristaNombreManifiesto = manifiesto.responsable_principal?.nombre || 
+        personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre || '';
+      
+      const cocineroNombreManifiesto = manifiesto.responsable_secundario?.nombre || 
+        (manifiesto.responsable_secundario_id ? 
+          personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre : '') || '';
+
+      // Filtro por selección específica
+      if (filtroActivo === 'buque' && filtroSeleccionBuque !== null) {
+        if (manifiesto.buque_id !== filtroSeleccionBuque) return false;
+      }
+      
+      if (filtroActivo === 'motorista' && filtroSeleccionMotorista !== null) {
+        if (manifiesto.responsable_principal_id !== filtroSeleccionMotorista) return false;
+      }
+      
+      if (filtroActivo === 'cocinero' && filtroSeleccionCocinero !== null) {
+        if (manifiesto.responsable_secundario_id !== filtroSeleccionCocinero) return false;
+      }
+
+      // Búsqueda general
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesSearch = 
+          manifiesto.numero_manifiesto?.toLowerCase().includes(query) ||
+          buqueNombreManifiesto.toLowerCase().includes(query) ||
+          motoristaNombreManifiesto.toLowerCase().includes(query) ||
+          cocineroNombreManifiesto.toLowerCase().includes(query);
+        
+        // Si hay filtro activo específico, combinar con búsqueda
+        if (filtroActivo !== 'todos') {
+          switch (filtroActivo) {
+            case 'buque':
+              if (!buqueNombreManifiesto.toLowerCase().includes(query)) return false;
+              break;
+            case 'motorista':
+              if (!motoristaNombreManifiesto.toLowerCase().includes(query)) return false;
+              break;
+            case 'cocinero':
+              if (!cocineroNombreManifiesto.toLowerCase().includes(query)) return false;
+              break;
+            case 'numero':
+              if (!manifiesto.numero_manifiesto?.toLowerCase().includes(query)) return false;
+              break;
+            case 'fecha':
+              // El filtro de fecha usa los DatePickers, no la búsqueda de texto
+              break;
+          }
+        } else {
+          if (!matchesSearch) return false;
+        }
+      }
+
+      // Filtro por rango de fechas
+      if (filtroActivo === 'fecha' && (fechaFiltroInicio || fechaFiltroFin)) {
+        const fechaManifiesto = new Date(manifiesto.fecha_emision);
+        fechaManifiesto.setHours(0, 0, 0, 0);
+
+        if (fechaFiltroInicio) {
+          const inicio = new Date(fechaFiltroInicio);
+          inicio.setHours(0, 0, 0, 0);
+          if (fechaManifiesto < inicio) return false;
+        }
+
+        if (fechaFiltroFin) {
+          const fin = new Date(fechaFiltroFin);
+          fin.setHours(23, 59, 59, 999);
+          if (fechaManifiesto > fin) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [manifiestos, buques, personas, searchQuery, filtroActivo, fechaFiltroInicio, fechaFiltroFin, filtroSeleccionBuque, filtroSeleccionMotorista, filtroSeleccionCocinero]);
 
   async function loadData() {
     try {
@@ -1064,6 +1156,241 @@ export default function ManifiestosPage() {
           <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los manifiestos creados en el sistema</p>
         </div>
 
+        {/* Barra de búsqueda y filtros */}
+        <div className="mb-6 space-y-4">
+          {/* Barra de búsqueda */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar por número, buque, motorista, cocinero..."
+              className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 placeholder-gray-400"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Botones de filtros */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => { setFiltroActivo('todos'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'todos'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              📋 Todos
+            </button>
+            <button
+              onClick={() => { setFiltroActivo('buque'); setShowFiltroFecha(false); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'buque'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              🚢 Por Buque
+            </button>
+            <button
+              onClick={() => { setFiltroActivo('motorista'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionCocinero(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'motorista'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              👨‍🔧 Por Motorista
+            </button>
+            <button
+              onClick={() => { setFiltroActivo('cocinero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'cocinero'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              👨‍🍳 Por Cocinero
+            </button>
+            <button
+              onClick={() => { setFiltroActivo('numero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'numero'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              🔢 Por Número
+            </button>
+            <button
+              onClick={() => { setFiltroActivo('fecha'); setShowFiltroFecha(!showFiltroFecha); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                filtroActivo === 'fecha'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              📅 Por Fecha
+            </button>
+            
+            {/* Limpiar filtros */}
+            {(searchQuery || filtroActivo !== 'todos' || fechaFiltroInicio || fechaFiltroFin || filtroSeleccionBuque || filtroSeleccionMotorista || filtroSeleccionCocinero) && (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setFiltroActivo('todos');
+                  setFechaFiltroInicio(null);
+                  setFechaFiltroFin(null);
+                  setShowFiltroFecha(false);
+                  setFiltroSeleccionBuque(null);
+                  setFiltroSeleccionMotorista(null);
+                  setFiltroSeleccionCocinero(null);
+                }}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
+
+          {/* Selector de Buque */}
+          {filtroActivo === 'buque' && (
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in slide-in-from-top-2 duration-200">
+              <label className="block text-sm font-medium text-blue-800 mb-2">🚢 Selecciona un buque:</label>
+              <select
+                value={filtroSeleccionBuque || ''}
+                onChange={(e) => setFiltroSeleccionBuque(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-4 py-2.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              >
+                <option value="">-- Todos los buques --</option>
+                {buques.map((buque) => (
+                  <option key={buque.id} value={buque.id}>
+                    {buque.nombre_buque}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Selector de Motorista */}
+          {filtroActivo === 'motorista' && (
+            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200 animate-in slide-in-from-top-2 duration-200">
+              <label className="block text-sm font-medium text-orange-800 mb-2">👨‍🔧 Selecciona un motorista:</label>
+              <select
+                value={filtroSeleccionMotorista || ''}
+                onChange={(e) => setFiltroSeleccionMotorista(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-4 py-2.5 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900"
+              >
+                <option value="">-- Todos los motoristas --</option>
+                {/* Obtener IDs únicos de responsables principales usados en manifiestos */}
+                {Array.from(new Set(manifiestos.map(m => m.responsable_principal_id).filter(Boolean)))
+                  .map(id => personas.find(p => p.id === id))
+                  .filter(Boolean)
+                  .map((persona) => (
+                    <option key={persona!.id} value={persona!.id}>
+                      {persona!.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {/* Selector de Cocinero */}
+          {filtroActivo === 'cocinero' && (
+            <div className="p-4 bg-green-50 rounded-xl border border-green-200 animate-in slide-in-from-top-2 duration-200">
+              <label className="block text-sm font-medium text-green-800 mb-2">👨‍🍳 Selecciona un cocinero:</label>
+              <select
+                value={filtroSeleccionCocinero || ''}
+                onChange={(e) => setFiltroSeleccionCocinero(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-4 py-2.5 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+              >
+                <option value="">-- Todos los cocineros --</option>
+                {/* Obtener IDs únicos de responsables secundarios usados en manifiestos */}
+                {Array.from(new Set(manifiestos.map(m => m.responsable_secundario_id).filter(Boolean)))
+                  .map(id => personas.find(p => p.id === id))
+                  .filter(Boolean)
+                  .map((persona) => (
+                    <option key={persona!.id} value={persona!.id}>
+                      {persona!.nombre}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {/* Selector de rango de fechas */}
+          {showFiltroFecha && filtroActivo === 'fecha' && (
+            <div className="flex flex-wrap items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 shadow-sm animate-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-blue-200">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-semibold text-blue-700">Desde:</span>
+                </div>
+                <DatePicker
+                  selected={fechaFiltroInicio}
+                  onChange={(date) => setFechaFiltroInicio(date)}
+                  dateFormat="dd/MM/yyyy"
+                  locale="es"
+                  placeholderText="Seleccionar fecha"
+                  className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
+                  isClearable
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-blue-200">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm font-semibold text-blue-700">Hasta:</span>
+                </div>
+                <DatePicker
+                  selected={fechaFiltroFin}
+                  onChange={(date) => setFechaFiltroFin(date)}
+                  dateFormat="dd/MM/yyyy"
+                  locale="es"
+                  placeholderText="Seleccionar fecha"
+                  className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
+                  isClearable
+                  minDate={fechaFiltroInicio || undefined}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Indicador de resultados */}
+          {(searchQuery || filtroActivo !== 'todos' || fechaFiltroInicio || fechaFiltroFin || filtroSeleccionBuque || filtroSeleccionMotorista || filtroSeleccionCocinero) && (
+            <div className="text-sm text-gray-600 flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span>
+                Mostrando <strong>{manifiestosFiltrados.length}</strong> de <strong>{manifiestos.length}</strong> manifiestos
+                {filtroActivo === 'buque' && filtroSeleccionBuque && ` - Buque: ${buques.find(b => b.id === filtroSeleccionBuque)?.nombre_buque}`}
+                {filtroActivo === 'motorista' && filtroSeleccionMotorista && ` - Motorista: ${personas.find(p => p.id === filtroSeleccionMotorista)?.nombre}`}
+                {filtroActivo === 'cocinero' && filtroSeleccionCocinero && ` - Cocinero: ${personas.find(p => p.id === filtroSeleccionCocinero)?.nombre}`}
+                {filtroActivo === 'fecha' && ' (filtrado por fecha)'}
+                {filtroActivo === 'numero' && searchQuery && ` (buscando: "${searchQuery}")`}
+              </span>
+            </div>
+          )}
+        </div>
+
         {loading ? (
             <div className="flex justify-center items-center py-8 sm:py-12">
               <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -1098,7 +1425,7 @@ export default function ManifiestosPage() {
                       </td>
                     </tr>
                   ) : (
-                    manifiestos.map((manifiesto) => {
+                    manifiestosFiltrados.map((manifiesto) => {
                       // Buscar el buque por ID si no viene en la relación
                       const buqueNombre = manifiesto.buque?.nombre_buque || 
                         buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || 

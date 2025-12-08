@@ -37,7 +37,7 @@ export default function SimpleEstadisticas({ onBack }: SimpleEstadisticasProps) 
     loadData();
   }, []);
 
-  const filtrarPorPeriodo = <T extends { fecha?: string; fecha_emision?: string; created_at?: string }>(
+  const filtrarPorPeriodo = <T extends { fecha?: string | null; fecha_emision?: string | null; created_at?: string | null }>(
     datos: T[]
   ): T[] => {
     const ahora = new Date();
