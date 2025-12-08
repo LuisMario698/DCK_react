@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DashboardStats, ReporteDetalladoItem } from '@/types/dashboard';
 import { 
     getReporteComplejo, 
@@ -1105,11 +1105,25 @@ interface ExpandableImpactCardProps {
 
 function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: ExpandableImpactCardProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [openUpward, setOpenUpward] = useState(false);
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    const handleMouseEnter = () => {
+        if (cardRef.current) {
+            const rect = cardRef.current.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            // Si la tarjeta está en la mitad inferior de la pantalla, abrir hacia arriba
+            const shouldOpenUpward = rect.bottom > windowHeight * 0.6;
+            setOpenUpward(shouldOpenUpward);
+        }
+        setIsOpen(true);
+    };
 
     return (
         <div 
+            ref={cardRef}
             className="relative"
-            onMouseEnter={() => setIsOpen(true)}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={() => setIsOpen(false)}
         >
             {/* Tarjeta base - tamaño fijo */}
@@ -1131,38 +1145,47 @@ function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: Expand
                     <div className={`
                         w-8 h-8 rounded-full flex items-center justify-center text-base
                         transition-all duration-300
-                        ${isOpen ? 'bg-white/40 rotate-180' : 'bg-white/15'}
+                        ${isOpen ? 'bg-white/40' : 'bg-white/15'}
+                        ${isOpen && openUpward ? 'rotate-0' : isOpen ? 'rotate-180' : ''}
                     `}>
                         ▼
                     </div>
                 </div>
             </div>
 
-            {/* Panel flotante que aparece encima */}
+            {/* Panel flotante - aparece arriba o abajo según posición */}
             {isOpen && (
-                <div className="absolute left-0 right-0 top-full mt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="bg-gray-900 rounded-2xl p-5 shadow-2xl shadow-black/40 border border-gray-700/50">
-                        {/* Flecha apuntando arriba */}
-                        <div className="absolute -top-2 left-8 w-4 h-4 bg-gray-900 rotate-45 border-l border-t border-gray-700/50"></div>
+                <div className={`absolute left-0 right-0 z-50 animate-in fade-in duration-200 ${
+                    openUpward 
+                        ? 'bottom-full mb-2 slide-in-from-bottom-2' 
+                        : 'top-full mt-2 slide-in-from-top-2'
+                }`}>
+                    <div className="bg-gray-900 rounded-2xl p-4 shadow-2xl shadow-black/40 border border-gray-700/50">
+                        {/* Flecha - cambia posición según dirección */}
+                        <div className={`absolute left-8 w-4 h-4 bg-gray-900 rotate-45 border-gray-700/50 ${
+                            openUpward 
+                                ? '-bottom-2 border-r border-b' 
+                                : '-top-2 border-l border-t'
+                        }`}></div>
                         
-                        <p className="text-base text-gray-400 font-medium mb-4 flex items-center gap-2">
-                            <span className="text-2xl">{emoji}</span> 
+                        <p className="text-sm text-gray-400 font-medium mb-3 flex items-center gap-2">
+                            <span className="text-xl">{emoji}</span> 
                             <span>Esto equivale a:</span>
                         </p>
                         
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             {comparisons.map((comparison, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="flex items-center gap-4 bg-gray-800 rounded-xl px-5 py-4 hover:bg-gray-700 transition-colors"
+                                    className="flex items-center gap-3 bg-gray-800 rounded-xl px-4 py-3 hover:bg-gray-700 transition-colors"
                                 >
-                                    <span className="text-3xl">{comparison.icon}</span>
+                                    <span className="text-2xl">{comparison.icon}</span>
                                     <div>
                                         <p className="text-white">
-                                            <span className="font-bold text-2xl">
+                                            <span className="font-bold text-xl">
                                                 {typeof comparison.value === 'number' ? comparison.value.toLocaleString() : comparison.value}
                                             </span>
-                                            <span className="text-gray-300 text-lg ml-2">{comparison.text}</span>
+                                            <span className="text-gray-300 text-base ml-2">{comparison.text}</span>
                                         </p>
                                     </div>
                                 </div>
