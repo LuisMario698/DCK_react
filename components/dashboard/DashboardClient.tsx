@@ -270,10 +270,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
         <div className="space-y-8 font-sans text-gray-600">
             {/* Tabs de Navegación Estilizados */}
             <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex space-x-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex space-x-2 bg-white p-2 rounded-2xl shadow-sm border border-gray-100">
                     <button
                         onClick={() => setActiveTab('general')}
-                        className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${activeTab === 'general'
+                        className={`px-8 py-3 text-base font-semibold rounded-xl transition-all duration-300 ${activeTab === 'general'
                             ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
                             : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                             }`}
@@ -282,7 +282,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </button>
                     <button
                         onClick={() => setActiveTab('reportes')}
-                        className={`px-6 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${activeTab === 'reportes'
+                        className={`px-8 py-3 text-base font-semibold rounded-xl transition-all duration-300 ${activeTab === 'reportes'
                             ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
                             : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                             }`}
@@ -293,9 +293,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                 {/* Selector de Período */}
                 {activeTab === 'general' && (
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-500 font-medium">Período:</span>
-                        <div className="flex space-x-1 bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3">
+                        <span className="text-base text-gray-500 font-medium">Período:</span>
+                        <div className="flex space-x-1 bg-white p-1.5 rounded-xl shadow-sm border border-gray-100">
                             {[
                                 { key: 'semana', label: '7D' },
                                 { key: 'mes', label: '1M' },
@@ -306,7 +306,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <button
                                     key={p.key}
                                     onClick={() => setPeriodoSeleccionado(p.key as PeriodoFiltro)}
-                                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ${
+                                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-200 ${
                                         periodoSeleccionado === p.key
                                             ? 'bg-blue-600 text-white shadow-sm'
                                             : 'text-gray-500 hover:bg-gray-50'
@@ -317,7 +317,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             ))}
                         </div>
                         {loadingStats && (
-                            <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                            <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
                         )}
                     </div>
                 )}
@@ -407,8 +407,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             <div className="flex justify-between items-center mb-8">
                                 <div className="flex items-start gap-3">
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-800">📊 Estadísticas de Residuos</h3>
-                                        <p className="text-sm text-gray-400 mt-1">Comparativa mensual de Aceite vs Basura</p>
+                                        <h3 className="text-2xl font-bold text-gray-800">📊 Estadísticas de Residuos</h3>
+                                        <p className="text-base text-gray-400 mt-1">Comparativa mensual de Aceite vs Basura</p>
                                     </div>
                                     <InfoTooltip
                                         title="¿Qué muestra esta gráfica?"
@@ -420,11 +420,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     />
                                 </div>
                                 <div className="flex gap-4">
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2 text-base text-gray-600">
                                         <span className="w-4 h-4 rounded-full bg-blue-500"></span> 
                                         <span className="font-medium">Basura (kg)</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2 text-base text-gray-600">
                                         <span className="w-4 h-4 rounded-full bg-amber-400"></span> 
                                         <span className="font-medium">Aceite (L)</span>
                                     </div>
@@ -476,13 +476,13 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                     </div>
 
                                                     {/* Valor encima de la barra */}
-                                                    <div className="text-xs font-bold text-gray-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="text-sm font-bold text-gray-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         {total.toLocaleString()}
                                                     </div>
 
                                                     {/* Barra con dos secciones */}
                                                     <div 
-                                                        className="w-full max-w-[45px] relative rounded-xl overflow-hidden transition-all duration-500 hover:scale-105 cursor-pointer shadow-sm hover:shadow-lg" 
+                                                        className="w-full max-w-[50px] relative rounded-xl overflow-hidden transition-all duration-500 hover:scale-105 cursor-pointer shadow-sm hover:shadow-lg" 
                                                         style={{ height: `${heightPercent}%` }}
                                                     >
                                                         {/* Sección Aceite (arriba - ámbar) */}
@@ -499,8 +499,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                                                     {/* Nombre del mes */}
                                                     <div className="mt-3 text-center">
-                                                        <span className="text-sm font-bold text-gray-700">{nombreMes}</span>
-                                                        <span className="text-xs text-gray-400 block">{anio}</span>
+                                                        <span className="text-base font-bold text-gray-700">{nombreMes}</span>
+                                                        <span className="text-sm text-gray-400 block">{anio}</span>
                                                     </div>
                                                 </div>
                                             );
@@ -511,14 +511,14 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                             {/* Línea de referencia y totales */}
                             <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
-                                <div className="text-sm text-gray-500">
+                                <div className="text-base text-gray-500">
                                     <span className="font-medium">Total período:</span>{' '}
-                                    <span className="font-bold text-gray-800">
+                                    <span className="font-bold text-gray-800 text-lg">
                                         {initialStats.residuosPorMes.reduce((sum, m) => sum + m.aceite + m.basura, 0).toLocaleString()}
                                     </span>
                                     <span className="text-gray-400"> kg + L</span>
                                 </div>
-                                <div className="text-xs text-gray-400">
+                                <div className="text-sm text-gray-400">
                                     Pasa el mouse sobre las barras para ver detalles
                                 </div>
                             </div>
@@ -527,7 +527,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Gráfica Secundaria (Top Buques / Donut Style) */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50 flex flex-col">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-gray-800">🚢 Top Buques</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">🚢 Top Buques</h3>
                                 <InfoTooltip
                                     title="¿Qué significa Top Buques?"
                                     description="Muestra los 4 buques que más residuos han generado este mes. La barra indica la proporción respecto al buque con mayor cantidad."
@@ -537,7 +537,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-sm text-gray-400 mb-8">Mayores generadores este mes</p>
+                            <p className="text-base text-gray-400 mb-8">Mayores generadores este mes</p>
 
                             <div className="flex-1 flex flex-col justify-center space-y-6">
                                 {initialStats.topBuques.slice(0, 4).map((buque, idx) => {
@@ -553,11 +553,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                         {buque.nombreBuque.substring(0, 2).toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-gray-800 text-sm">{buque.nombreBuque}</p>
-                                                        <p className="text-xs text-gray-400">{buque.cantidadManifiestos} entregas</p>
+                                                        <p className="font-bold text-gray-800 text-base">{buque.nombreBuque}</p>
+                                                        <p className="text-sm text-gray-400">{buque.cantidadManifiestos} entregas</p>
                                                     </div>
                                                 </div>
-                                                <span className="font-bold text-gray-700 text-sm">{buque.totalKg.toFixed(0)} kg</span>
+                                                <span className="font-bold text-gray-700 text-base">{buque.totalKg.toFixed(0)} kg</span>
                                             </div>
                                             <div className="w-full bg-gray-50 rounded-full h-2 overflow-hidden">
                                                 <div
@@ -570,7 +570,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 })}
                             </div>
 
-                            <button className="mt-8 w-full py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                            <button className="mt-8 w-full py-3.5 rounded-xl border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
                                 Ver reporte completo
                             </button>
                         </div>
@@ -581,7 +581,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Gráfica de Distribución por Tipo (Dona) */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-gray-800">🍩 Distribución por Tipo</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">🍩 Distribución por Tipo</h3>
                                 <InfoTooltip
                                     title="¿Cómo leer la gráfica de dona?"
                                     description="El círculo muestra qué proporción ocupa cada tipo de residuo del total. Cada color representa un tipo diferente: amarillo es aceite, azul es basura general y verde es el basurón."
@@ -591,11 +591,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-sm text-gray-400 mb-6">Proporción de residuos recolectados</p>
+                            <p className="text-base text-gray-400 mb-6">Proporción de residuos recolectados</p>
                             
                             <div className="flex items-center justify-center gap-8">
                                 {/* Gráfica de Dona */}
-                                <div className="relative w-48 h-48">
+                                <div className="relative w-52 h-52">
                                     <DonutChart 
                                         data={[
                                             { label: 'Aceite', value: stats.totalAceiteUsado, color: '#F59E0B' },
@@ -605,31 +605,31 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center flex-col">
                                         <span className="text-2xl font-bold text-gray-800">{stats.totalResiduosReciclados.toLocaleString()}</span>
-                                        <span className="text-xs text-gray-400">kg total</span>
+                                        <span className="text-sm text-gray-400">kg total</span>
                                     </div>
                                 </div>
                                 
                                 {/* Leyenda */}
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-4 h-4 rounded-full bg-amber-500"></div>
+                                        <div className="w-5 h-5 rounded-full bg-amber-500"></div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-700">Aceite Usado</p>
-                                            <p className="text-xs text-gray-400">{stats.totalAceiteUsado.toLocaleString()} L</p>
+                                            <p className="text-base font-medium text-gray-700">Aceite Usado</p>
+                                            <p className="text-sm text-gray-400">{stats.totalAceiteUsado.toLocaleString()} L</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+                                        <div className="w-5 h-5 rounded-full bg-blue-500"></div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-700">Basura General</p>
-                                            <p className="text-xs text-gray-400">{stats.totalBasuraGeneral.toLocaleString()} kg</p>
+                                            <p className="text-base font-medium text-gray-700">Basura General</p>
+                                            <p className="text-sm text-gray-400">{stats.totalBasuraGeneral.toLocaleString()} kg</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-4 h-4 rounded-full bg-emerald-500"></div>
+                                        <div className="w-5 h-5 rounded-full bg-emerald-500"></div>
                                         <div>
-                                            <p className="text-sm font-medium text-gray-700">Basurón</p>
-                                            <p className="text-xs text-gray-400">{stats.totalBasuron.toLocaleString()} kg</p>
+                                            <p className="text-base font-medium text-gray-700">Basurón</p>
+                                            <p className="text-sm text-gray-400">{stats.totalBasuron.toLocaleString()} kg</p>
                                         </div>
                                     </div>
                                 </div>
@@ -639,7 +639,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Gráfica de Filtros Recolectados */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-gray-800">🔧 Filtros Recolectados</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">🔧 Filtros Recolectados</h3>
                                 <InfoTooltip
                                     title="¿Qué son los filtros?"
                                     description="Los filtros son componentes de los motores que deben ser reemplazados y reciclados. Hay 3 tipos: de aceite (retienen impurezas), de diesel (limpian el combustible) y de aire (filtran partículas)."
@@ -649,14 +649,14 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-sm text-gray-400 mb-6">Desglose por tipo de filtro</p>
+                            <p className="text-base text-gray-400 mb-6">Desglose por tipo de filtro</p>
                             
                             <div className="space-y-6">
                                 {/* Filtros Aceite */}
                                 <div>
                                     <div className="flex justify-between mb-2">
-                                        <span className="text-sm font-medium text-gray-700">Filtros de Aceite</span>
-                                        <span className="text-sm font-bold text-amber-600">{stats.filtrosAceite} uds</span>
+                                        <span className="text-base font-medium text-gray-700">Filtros de Aceite</span>
+                                        <span className="text-base font-bold text-amber-600">{stats.filtrosAceite} uds</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                                         <div 
@@ -669,8 +669,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Filtros Diesel */}
                                 <div>
                                     <div className="flex justify-between mb-2">
-                                        <span className="text-sm font-medium text-gray-700">Filtros de Diesel</span>
-                                        <span className="text-sm font-bold text-blue-600">{stats.filtrosDiesel} uds</span>
+                                        <span className="text-base font-medium text-gray-700">Filtros de Diesel</span>
+                                        <span className="text-base font-bold text-blue-600">{stats.filtrosDiesel} uds</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                                         <div 
@@ -683,8 +683,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Filtros Aire */}
                                 <div>
                                     <div className="flex justify-between mb-2">
-                                        <span className="text-sm font-medium text-gray-700">Filtros de Aire</span>
-                                        <span className="text-sm font-bold text-emerald-600">{stats.filtrosAire} uds</span>
+                                        <span className="text-base font-medium text-gray-700">Filtros de Aire</span>
+                                        <span className="text-base font-bold text-emerald-600">{stats.filtrosAire} uds</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
                                         <div 
@@ -697,8 +697,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Total */}
                                 <div className="pt-4 border-t border-gray-100">
                                     <div className="flex justify-between">
-                                        <span className="text-sm font-bold text-gray-800">Total Filtros</span>
-                                        <span className="text-lg font-bold text-gray-800">{(stats.filtrosAceite + stats.filtrosDiesel + stats.filtrosAire).toLocaleString()} uds</span>
+                                        <span className="text-base font-bold text-gray-800">Total Filtros</span>
+                                        <span className="text-xl font-bold text-gray-800">{(stats.filtrosAceite + stats.filtrosDiesel + stats.filtrosAire).toLocaleString()} uds</span>
                                     </div>
                                 </div>
                             </div>
@@ -710,7 +710,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Comparación vs Período Anterior */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-xl font-bold text-gray-800">📈 Comparación vs Período Anterior</h3>
+                                <h3 className="text-2xl font-bold text-gray-800">📈 Comparación vs Período Anterior</h3>
                                 <InfoTooltip
                                     title="¿Qué compara esta gráfica?"
                                     description="Compara los residuos del período actual con el período anterior (ej: este mes vs mes pasado). El porcentaje verde indica aumento y rojo indica disminución."
@@ -772,16 +772,16 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Métricas de Impacto Ambiental */}
                         <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-8 rounded-3xl shadow-xl shadow-emerald-200 text-white relative">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-xl font-bold">🌍 Impacto Ambiental</h3>
+                                <h3 className="text-2xl font-bold">🌍 Impacto Ambiental</h3>
                                 <div className="relative inline-block">
                                     <button
-                                        className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all duration-200 text-xs font-bold group"
+                                        className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all duration-200 text-sm font-bold group hover:scale-110"
                                         title="Cada litro de aceite contamina 1,000L de agua. Aquí calculamos el impacto positivo de tu reciclaje."
                                     >
                                         ?
-                                        <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-                                            <span className="block bg-gray-900 text-white rounded-xl p-3 shadow-xl text-xs">
-                                                <strong>¿Cómo calculamos esto?</strong><br/>
+                                        <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                                            <span className="block bg-gray-900 text-white rounded-2xl p-4 shadow-2xl text-sm border border-gray-700">
+                                                <strong className="text-base">¿Cómo calculamos esto?</strong><br/><br/>
                                                 • CO₂: Aceite × 2.5 + Basurón × 0.5<br/>
                                                 • Árboles: CO₂ ÷ 21 kg/año<br/>
                                                 • Agua: 1L aceite = 1,000L agua protegida
@@ -790,7 +790,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </button>
                                 </div>
                             </div>
-                            <p className="text-emerald-100 text-sm mb-6">Contribución al medio ambiente</p>
+                            <p className="text-emerald-100 text-base mb-6">Contribución al medio ambiente</p>
                             
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {/* CO2 Evitado - Expandible */}
@@ -919,7 +919,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="flex justify-between items-center mb-8">
                         <div>
                             <h3 className="text-2xl font-bold text-gray-800">Reportes Avanzados</h3>
-                            <p className="text-gray-400 mt-1">Genera y exporta datos detallados</p>
+                            <p className="text-base text-gray-400 mt-1">Genera y exporta datos detallados</p>
                         </div>
                         <button className="p-2 bg-gray-50 rounded-xl text-gray-500 hover:bg-gray-100">
                             <Icons.Settings className="w-6 h-6" />
@@ -929,28 +929,28 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     {/* Filtros Estilizados */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Desde</label>
+                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Desde</label>
                             <input
                                 type="date"
-                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
+                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
                                 value={filters.fechaInicio}
                                 onChange={e => setFilters({ ...filters, fechaInicio: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Hasta</label>
+                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hasta</label>
                             <input
                                 type="date"
-                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
+                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
                                 value={filters.fechaFin}
                                 onChange={e => setFilters({ ...filters, fechaFin: e.target.value })}
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Buque</label>
+                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Buque</label>
                             <div className="relative">
                                 <select
-                                    className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-sm focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600 appearance-none"
+                                    className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600 appearance-none"
                                     value={filters.buqueId}
                                     onChange={e => setFilters({ ...filters, buqueId: e.target.value })}
                                 >
@@ -968,7 +968,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             <button
                                 onClick={loadReport}
                                 disabled={loadingReport}
-                                className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-bold text-sm shadow-lg shadow-blue-200 transition-all transform active:scale-95"
+                                className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-bold text-base shadow-lg shadow-blue-200 transition-all transform active:scale-95"
                             >
                                 {loadingReport ? 'Generando...' : 'Generar Reporte'}
                             </button>
@@ -980,18 +980,18 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         <div className="flex justify-end gap-3 mb-6">
                             <button
                                 onClick={() => exportToCSV(reportData)}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 font-semibold text-sm transition-colors"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 font-semibold text-base transition-colors"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Exportar CSV
                             </button>
                             <button
                                 onClick={() => exportToPDF(reportData, stats)}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 font-semibold text-sm transition-colors"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 font-semibold text-base transition-colors"
                             >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                 </svg>
                                 Exportar PDF
@@ -1001,7 +1001,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Tabla de Resultados Premium */}
                     <div className="overflow-hidden rounded-2xl border border-gray-100">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-base text-left">
                             <thead className="bg-gray-50/80 text-gray-500 font-semibold">
                                 <tr>
                                     <th className="px-6 py-4 rounded-tl-2xl">Fecha</th>
@@ -1015,7 +1015,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             <tbody className="divide-y divide-gray-50 bg-white">
                                 {reportData.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-base">
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
                                                     <Icons.Document className="w-8 h-8" />
@@ -1028,14 +1028,14 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     reportData.map((item, idx) => (
                                         <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
                                             <td className="px-6 py-4 text-gray-600">{new Date(item.fecha).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 font-mono text-xs text-gray-400 group-hover:text-blue-600 transition-colors">{item.folio}</td>
+                                            <td className="px-6 py-4 font-mono text-sm text-gray-400 group-hover:text-blue-600 transition-colors">{item.folio}</td>
                                             <td className="px-6 py-4 font-medium text-gray-800">{item.buque}</td>
                                             <td className="px-6 py-4 text-gray-600">{item.tipoResiduo}</td>
                                             <td className="px-6 py-4 text-right font-bold text-gray-800">
-                                                {item.cantidad} <span className="text-xs font-normal text-gray-400 ml-1">{item.unidad}</span>
+                                                {item.cantidad} <span className="text-sm font-normal text-gray-400 ml-1">{item.unidad}</span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${item.estado === 'completado'
+                                                <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${item.estado === 'completado'
                                                     ? 'bg-green-100 text-green-700'
                                                     : 'bg-amber-100 text-amber-700'
                                                     }`}>
@@ -1107,92 +1107,71 @@ function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: Expand
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <>
-            {/* Tarjeta simple - siempre igual */}
+        <div 
+            className="relative"
+            onMouseEnter={() => setIsOpen(true)}
+            onMouseLeave={() => setIsOpen(false)}
+        >
+            {/* Tarjeta base - tamaño fijo */}
             <div 
-                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:bg-white/20 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 group"
-                onClick={() => setIsOpen(true)}
+                className={`
+                    bg-white/10 backdrop-blur-sm rounded-2xl p-5 cursor-pointer
+                    transition-all duration-200
+                    ${isOpen ? 'bg-white/25 shadow-lg shadow-black/20' : 'hover:bg-white/15'}
+                `}
             >
-                <div className="flex items-start justify-between">
-                    <div>
-                        <div className="text-3xl mb-2">{emoji}</div>
-                        <p className="text-2xl font-bold text-white">{value} {unit}</p>
-                        <p className="text-emerald-100 text-xs">{label}</p>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="text-4xl">{emoji}</div>
+                        <div>
+                            <p className="text-2xl font-bold text-white">{value} {unit}</p>
+                            <p className="text-emerald-100 text-sm">{label}</p>
+                        </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/30 flex items-center justify-center text-sm transition-all group-hover:scale-110">
-                        👆
+                    <div className={`
+                        w-8 h-8 rounded-full flex items-center justify-center text-base
+                        transition-all duration-300
+                        ${isOpen ? 'bg-white/40 rotate-180' : 'bg-white/15'}
+                    `}>
+                        ▼
                     </div>
                 </div>
-                <p className="text-[10px] text-white/50 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Clic para ver equivalencias
-                </p>
             </div>
 
-            {/* Modal centrado */}
+            {/* Panel flotante que aparece encima */}
             {isOpen && (
-                <div 
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200"
-                    onClick={() => setIsOpen(false)}
-                >
-                    {/* Overlay oscuro */}
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                    
-                    {/* Contenido del modal */}
-                    <div 
-                        className="relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 w-full max-w-md shadow-2xl shadow-black/50 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Botón cerrar */}
-                        <button 
-                            onClick={() => setIsOpen(false)}
-                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition-colors"
-                        >
-                            ✕
-                        </button>
-
-                        {/* Header */}
-                        <div className="text-center mb-6">
-                            <div className="text-5xl mb-3">{emoji}</div>
-                            <p className="text-4xl font-bold text-white">{value} {unit}</p>
-                            <p className="text-emerald-100 text-sm mt-1">{label}</p>
-                        </div>
-
-                        {/* Separador */}
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="flex-1 h-px bg-white/20"></div>
-                            <span className="text-white/80 text-sm font-medium">📊 Esto equivale a</span>
-                            <div className="flex-1 h-px bg-white/20"></div>
-                        </div>
-
-                        {/* Comparaciones */}
+                <div className="absolute left-0 right-0 top-full mt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="bg-gray-900 rounded-2xl p-5 shadow-2xl shadow-black/40 border border-gray-700/50">
+                        {/* Flecha apuntando arriba */}
+                        <div className="absolute -top-2 left-8 w-4 h-4 bg-gray-900 rotate-45 border-l border-t border-gray-700/50"></div>
+                        
+                        <p className="text-base text-gray-400 font-medium mb-4 flex items-center gap-2">
+                            <span className="text-2xl">{emoji}</span> 
+                            <span>Esto equivale a:</span>
+                        </p>
+                        
                         <div className="space-y-3">
                             {comparisons.map((comparison, idx) => (
                                 <div 
                                     key={idx} 
-                                    className="flex items-center gap-4 bg-white/15 rounded-2xl p-4 hover:bg-white/25 transition-colors"
+                                    className="flex items-center gap-4 bg-gray-800 rounded-xl px-5 py-4 hover:bg-gray-700 transition-colors"
                                 >
-                                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
-                                        {comparison.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="font-bold text-white text-lg">
-                                            {typeof comparison.value === 'number' ? comparison.value.toLocaleString() : comparison.value}
+                                    <span className="text-3xl">{comparison.icon}</span>
+                                    <div>
+                                        <p className="text-white">
+                                            <span className="font-bold text-2xl">
+                                                {typeof comparison.value === 'number' ? comparison.value.toLocaleString() : comparison.value}
+                                            </span>
+                                            <span className="text-gray-300 text-lg ml-2">{comparison.text}</span>
                                         </p>
-                                        <p className="text-emerald-100 text-sm">{comparison.text}</p>
-                                        <p className="text-white/50 text-xs mt-0.5">{comparison.detail}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
-
-                        {/* Footer */}
-                        <p className="text-center text-white/60 text-xs mt-6">
-                            Clic fuera para cerrar
-                        </p>
                     </div>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 
@@ -1212,27 +1191,27 @@ function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
                 onClick={() => setIsOpen(!isOpen)}
                 onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => setIsOpen(false)}
-                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-400 hover:text-blue-500 flex items-center justify-center transition-all duration-200 text-xs font-bold"
+                className="w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-500 text-blue-500 hover:text-white flex items-center justify-center transition-all duration-200 text-sm font-bold shadow-md hover:shadow-lg hover:scale-110"
                 aria-label="Más información"
             >
                 ?
             </button>
             
             {isOpen && (
-                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <div className="bg-gray-900 text-white rounded-xl p-4 shadow-xl">
-                        <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-xs">💡</span>
+                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-80 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="bg-gray-900 text-white rounded-2xl p-5 shadow-2xl shadow-black/30 border border-gray-700">
+                        <h4 className="font-bold text-base mb-3 flex items-center gap-2">
+                            <span className="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-sm">💡</span>
                             {title}
                         </h4>
-                        <p className="text-gray-300 text-xs leading-relaxed mb-2">{description}</p>
+                        <p className="text-gray-300 text-sm leading-relaxed mb-3">{description}</p>
                         {examples && examples.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-gray-700">
-                                <p className="text-gray-400 text-xs font-medium mb-1">Ejemplo:</p>
-                                <ul className="text-xs text-gray-300 space-y-1">
+                                <p className="text-gray-400 text-sm font-medium mb-2">Ejemplo:</p>
+                                <ul className="text-sm text-gray-300 space-y-2">
                                     {examples.map((ex, i) => (
                                         <li key={i} className="flex items-start gap-2">
-                                            <span className="text-green-400">✓</span>
+                                            <span className="text-green-400 text-base">✓</span>
                                             {ex}
                                         </li>
                                     ))}
@@ -1241,7 +1220,7 @@ function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
                         )}
                     </div>
                     {/* Flecha */}
-                    <div className="w-3 h-3 bg-gray-900 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1"></div>
+                    <div className="w-4 h-4 bg-gray-900 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-2 border-b border-r border-gray-700"></div>
                 </div>
             )}
         </div>
@@ -1326,15 +1305,15 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
     return (
         <div>
             <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-medium text-gray-700">{label}</span>
+                <span className="text-base font-medium text-gray-700">{label}</span>
                 <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-800">{actual.toLocaleString()} {unit}</span>
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${positivo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                    <span className="text-base font-bold text-gray-800">{actual.toLocaleString()} {unit}</span>
+                    <span className={`text-sm font-bold px-2.5 py-1 rounded-lg ${positivo ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                         {positivo ? '↑' : '↓'} {Math.abs(cambio).toFixed(1)}%
                     </span>
                 </div>
             </div>
-            <div className="relative h-4 flex gap-1">
+            <div className="relative h-5 flex gap-1">
                 {/* Barra actual */}
                 <div className="flex-1 bg-gray-100 rounded-full overflow-hidden">
                     <div 
@@ -1344,8 +1323,8 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
                 </div>
             </div>
             <div className="flex justify-between mt-1">
-                <span className="text-xs text-gray-400">Actual</span>
-                <span className="text-xs text-gray-400">Anterior: {anterior.toLocaleString()} {unit}</span>
+                <span className="text-sm text-gray-400">Actual</span>
+                <span className="text-sm text-gray-400">Anterior: {anterior.toLocaleString()} {unit}</span>
             </div>
         </div>
     );
@@ -1474,13 +1453,13 @@ function SimpleKpiCard({ title, value, subtitle, icon, color, trendUp }: SimpleK
             </div>
             
             {/* Título */}
-            <p className="text-gray-500 text-sm font-medium mb-1 group-hover:text-white/80 transition-colors">{title}</p>
+            <p className="text-gray-500 text-base font-medium mb-1 group-hover:text-white/80 transition-colors">{title}</p>
             
             {/* Valor grande */}
-            <p className="text-3xl font-bold text-gray-800 mb-2 group-hover:text-white transition-colors">{value}</p>
+            <p className="text-4xl font-bold text-gray-800 mb-2 group-hover:text-white transition-colors">{value}</p>
             
             {/* Subtítulo */}
-            <p className="text-sm text-gray-400 group-hover:text-white/70 transition-colors">{subtitle}</p>
+            <p className="text-base text-gray-400 group-hover:text-white/70 transition-colors">{subtitle}</p>
         </div>
     );
 }
