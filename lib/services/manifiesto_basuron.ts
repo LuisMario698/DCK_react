@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { ManifiestoBasuron, ManifiestoBasuronConRelaciones } from '@/types/database'
+import { generarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron'
 
 export async function getManifiestosBasuron() {
   const supabase = createClient()
@@ -32,12 +33,41 @@ export async function getManifiestoBasuronById(id: number) {
   return data as ManifiestoBasuronConRelaciones
 }
 
-export async function createManifiestoBasuron(manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'total_depositado'>) {
+export async function createManifiestoBasuron(
+  manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'total_depositado'>,
+  file?: File
+) {
   const supabase = createClient()
+
+  let pdfUrl = manifiesto.pdf_manifiesto_url
+
+  if (file) {
+    const fileExt = file.name.split('.').pop()
+    const fileName = `Scan_${Date.now()}.${fileExt}`
+
+    const { error: uploadError } = await supabase
+      .storage
+      .from('manifiestos_basuron_pdf')
+      .upload(fileName, file)
+
+    if (uploadError) throw uploadError
+
+    const { data: publicUrlData } = supabase
+      .storage
+      .from('manifiestos_basuron_pdf')
+      .getPublicUrl(fileName)
+
+    pdfUrl = publicUrlData.publicUrl
+  }
+
+  const payload = {
+    ...manifiesto,
+    pdf_manifiesto_url: pdfUrl
+  }
 
   const { data, error } = await supabase
     .from('manifiesto_basuron')
-    .insert(manifiesto)
+    .insert(payload)
     .select()
     .single()
 
@@ -70,25 +100,71 @@ export async function deleteManifiestoBasuron(id: number) {
   if (error) throw error
 }
 
-// Completar manifiesto (agregar peso de salida)
+// Completar manifiesto (agregar peso de salida) y generar PDF
 export async function completarManifiestoBasuron(
   id: number,
   pesoSalida: number
 ) {
   const supabase = createClient()
 
-  const { data, error } = await supabase
+  // 1. Actualizar datos
+  const { data: updatedData, error: updateError } = await supabase
     .from('manifiesto_basuron')
     .update({
       peso_salida: pesoSalida,
       estado: 'Completado'
     })
     .eq('id', id)
-    .select()
+    .select(`
+      *,
+      buque:buque_id(id, nombre_buque)
+    `)
     .single()
 
-  if (error) throw error
-  return data as ManifiestoBasuron
+  if (updateError) throw updateError
+
+  if (!updatedData) throw new Error('No se pudo actualizar el manifiesto')
+
+  let finalData = updatedData as ManifiestoBasuronConRelaciones;
+
+  // 2. Generar y Subir PDF
+  try {
+    const pdfBlob = await generarPDFBasuron(finalData)
+
+    const fileName = `Manifiesto_Basuron_${finalData.id}_${Date.now()}.pdf`
+    const { data: uploadData, error: uploadError } = await supabase
+      .storage
+      .from('manifiestos_basuron_pdf')
+      .upload(fileName, pdfBlob, {
+        contentType: 'application/pdf',
+        upsert: true
+      })
+
+    if (uploadError) {
+      console.error('Error subiendo PDF:', uploadError)
+    } else {
+      // 3. Guardar URL del PDF
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('manifiestos_basuron_pdf')
+        .getPublicUrl(fileName)
+
+      if (publicUrlData) {
+        const { error: urlUpdateError } = await supabase
+          .from('manifiesto_basuron')
+          .update({ pdf_manifiesto_url: publicUrlData.publicUrl })
+          .eq('id', id)
+
+        if (!urlUpdateError) {
+          finalData.pdf_manifiesto_url = publicUrlData.publicUrl
+        }
+      }
+    }
+  } catch (pdfError) {
+    console.error('Error en proceso de generación de PDF:', pdfError)
+  }
+
+  return finalData
 }
 
 // Obtener manifiestos por buque

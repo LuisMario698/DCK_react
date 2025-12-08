@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
-import { generateBasuronPDF } from '@/lib/utils/pdfGeneratorBasuron';
+import { descargarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron';
+import { ManifiestoBasuronDetails } from '@/components/manifiestos/ManifiestoBasuronDetails';
 import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
 import { getBuques } from '@/lib/services/buques';
 
@@ -12,6 +13,7 @@ export default function ManifiestoBasuronPage() {
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
   const [buques, setBuques] = useState<any[]>([]);
+  const [selectedManifiesto, setSelectedManifiesto] = useState<ManifiestoBasuronConRelaciones | null>(null);
 
   useEffect(() => {
     loadData();
@@ -50,34 +52,34 @@ export default function ManifiestoBasuronPage() {
 
   return (
     // <DashboardLayout>
-      <div className="space-y-6">
-        {/* Wizard inline siempre visible */}
-        <CreateManifiestoBasuronModal
-          inline
-          isOpen={false}
-          onClose={() => {}}
-          onSuccess={loadData}
-          buques={buques}
-        />
+    <div className="space-y-6">
+      {/* Wizard inline siempre visible */}
+      <CreateManifiestoBasuronModal
+        inline
+        isOpen={false}
+        onClose={() => { }}
+        onSuccess={loadData}
+        buques={buques}
+      />
 
-        {/* Botón para ir a la lista de registros */}
-        <div className="flex justify-center">
-          <button
-            onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
-            className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
-          >
-            <span>Ver registros</span>
-            <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </button>
+      {/* Botón para ir a la lista de registros */}
+      <div className="flex justify-center">
+        <button
+          onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
+          className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
+        >
+          <span>Ver registros</span>
+          <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </button>
+      </div>
+
+      <div id="lista-registros" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recibos del Relleno Sanitario</h2>
+          <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
         </div>
-
-        <div id="lista-registros" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
-          <div className="mb-4 sm:mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recibos del Relleno Sanitario</h2>
-            <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
-          </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
@@ -144,10 +146,10 @@ export default function ManifiestoBasuronPage() {
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.estado === 'Completado'
-                                ? 'bg-green-100 text-green-800'
-                                : m.estado === 'En Proceso'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
+                              ? 'bg-green-100 text-green-800'
+                              : m.estado === 'En Proceso'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-gray-100 text-gray-800'
                               }`}>
                               {m.estado || 'En Proceso'}
                             </span>
@@ -156,12 +158,13 @@ export default function ManifiestoBasuronPage() {
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
                             <div className="flex gap-1 sm:gap-2 min-w-[100px]">
                               <button
-                                onClick={() => generateBasuronPDF(m)}
+                                onClick={() => setSelectedManifiesto(m)}
                                 className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Descargar PDF"
+                                title="Ver Detalles"
                               >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                 </svg>
                               </button>
                               <button
@@ -187,6 +190,11 @@ export default function ManifiestoBasuronPage() {
       </div>
 
       {/* El listado queda debajo del wizard */}
+      <ManifiestoBasuronDetails
+        isOpen={!!selectedManifiesto}
+        onClose={() => setSelectedManifiesto(null)}
+        manifiesto={selectedManifiesto}
+      />
     </div>
     // </DashboardLayout>
   );

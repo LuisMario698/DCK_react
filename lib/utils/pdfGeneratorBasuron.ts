@@ -24,9 +24,9 @@ async function cargarImagenBase64(url: string): Promise<string> {
   }
 }
 
-export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelaciones) {
+export async function generarPDFBasuron(manifiesto: ManifiestoBasuronConRelaciones): Promise<Blob> {
   const doc = new jsPDF();
-  
+
   // Configuración
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -39,7 +39,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   // ENCABEZADO PRINCIPAL CON BORDE
   doc.setLineWidth(1.5);
   doc.roundedRect(10, 10, pageWidth - 20, 35, 3, 3);
-  
+
   // Logo SEMARNAT
   if (logoSemarnatBase64) {
     try {
@@ -54,7 +54,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   const centroX = pageWidth - 85;
   doc.text('CENTRO DE ACOPIO 2024 AL 2034', centroX, 18);
-  
+
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.text('Número de Registro Ambiental BOO2604804813', centroX, 24);
@@ -85,7 +85,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text('TICKET:', 25, yPosition);
   doc.setLineWidth(0.5);
   doc.line(50, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   doc.text(`#${manifiesto.id}`, 52, yPosition);
@@ -96,7 +96,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFontSize(11);
   doc.text('NOMBRE DEL BARCO:', 25, yPosition);
   doc.line(75, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   if (manifiesto.buque?.nombre_buque) {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
@@ -108,8 +108,8 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   doc.text('HORA DE ENTRADA:', 25, yPosition);
   doc.line(68, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
-  const horaEntrada = new Date(manifiesto.created_at).toLocaleTimeString('es-ES', {
+
+  const horaEntrada = new Date(manifiesto.created_at || new Date().toISOString()).toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit'
   });
@@ -122,7 +122,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   doc.text('HORA DE SALIDA:', 25, yPosition);
   doc.line(65, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   const horaSalida = manifiesto.hora_salida && manifiesto.hora_salida !== ''
     ? manifiesto.hora_salida
     : '—';
@@ -134,7 +134,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   doc.text('PESO DE ENTRADA:', 25, yPosition);
   doc.line(68, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   doc.setFont('helvetica', 'normal');
   doc.text(`${manifiesto.peso_entrada.toFixed(2)} kg`, 70, yPosition);
 
@@ -143,7 +143,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   doc.text('PESO DE SALIDA:', 25, yPosition);
   doc.line(65, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   const pesoSalida = manifiesto.peso_salida != null
     ? `${manifiesto.peso_salida.toFixed(2)} kg`
     : '—';
@@ -155,9 +155,9 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFont('helvetica', 'bold');
   doc.text('TOTAL DEPOSITADO:', 25, yPosition);
   doc.line(70, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   doc.setFontSize(11);
-  doc.text(`${manifiesto.total_depositado.toFixed(2)} kg`, 72, yPosition);
+  doc.text(`${(manifiesto.total_depositado || 0).toFixed(2)} kg`, 72, yPosition);
 
   // NOMBRE DEL USUARIO
   yPosition += 15;
@@ -165,7 +165,7 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.setFontSize(11);
   doc.text('NOMBRE DEL USUARIO:', 25, yPosition);
   doc.line(75, yPosition + 2, pageWidth - 25, yPosition + 2);
-  
+
   const nombreUsuario = manifiesto.nombre_usuario || '';
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
@@ -209,7 +209,22 @@ export async function generateBasuronPDF(manifiesto: ManifiestoBasuronConRelacio
   doc.text(piePagina, pageWidth / 2, yPosition, { align: 'center' });
   doc.text(piePagina2, pageWidth / 2, yPosition + 4, { align: 'center' });
 
-  // Guardar PDF
-  const fileName = `Manifiesto_Basuron_${manifiesto.id}_${new Date().toISOString().split('T')[0]}.pdf`;
-  doc.save(fileName);
+  // Guardar PDF logic refactored
+  return doc.output('blob');
+}
+
+/**
+ * Descargar PDF directamente en el navegador
+ */
+export async function descargarPDFBasuron(manifiesto: ManifiestoBasuronConRelaciones): Promise<void> {
+  const blob = await generarPDFBasuron(manifiesto);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  // Nombre de archivo con formato estándar
+  link.download = `Manifiesto_Basuron_${manifiesto.id}_${new Date().toISOString().split('T')[0]}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

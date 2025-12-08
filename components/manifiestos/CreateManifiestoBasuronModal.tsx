@@ -34,8 +34,10 @@ export function CreateManifiestoBasuronModal({
   const [loading, setLoading] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
   const buqueSelectRef = useRef<HTMLSelectElement | null>(null);
-  
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
     hora_entrada: (() => {
@@ -78,6 +80,10 @@ export function CreateManifiestoBasuronModal({
       observaciones: '',
       nombre_usuario: '',
     });
+    setFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setShowValidation(false);
   };
 
@@ -89,7 +95,7 @@ export function CreateManifiestoBasuronModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validaciones - ahora recibimos_de es texto libre
     if (!formData.recibimos_de || !formData.peso_entrada || !formData.peso_salida) {
       setShowValidation(true);
@@ -114,12 +120,16 @@ export function CreateManifiestoBasuronModal({
         hora_salida: horaSalidaSql,
         peso_entrada: pesoEntrada,
         peso_salida: pesoSalida,
+        // buque_id ya no es obligatorio, enviamos null si no hay
         buque_id: formData.buque_id ? parseInt(formData.buque_id) : null,
-        observaciones: `De: ${formData.recibimos_de} | Dir: ${formData.direccion} | ${formData.observaciones}`.trim(),
-        nombre_usuario: formData.nombre_usuario || null,
+        observaciones: formData.observaciones, // Ya no concatenamos datos
+        recibimos_de: formData.recibimos_de,
+        direccion: formData.direccion,
+        recibido_por: formData.nombre_usuario, // Mapeamos input "Recibí" a columna recibido_por
+        nombre_usuario: formData.nombre_usuario, // Mantenemos compatibilidad por si acaso
       };
 
-      await createManifiestoBasuron(payload);
+      await createManifiestoBasuron(payload, file || undefined);
 
       alert('✅ Registro creado exitosamente');
       onSuccess();
@@ -136,13 +146,13 @@ export function CreateManifiestoBasuronModal({
   };
 
   if (!isOpen && !inline) return null;
-  
+
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
 
   return (
     <div className={inline ? '' : 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'}>
       <div className={inline ? 'w-full' : 'bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto'}>
-        
+
         {/* Formulario estilo documento físico - Recibo Relleno Sanitario */}
         <div className="bg-white border-2 border-gray-800 rounded-lg overflow-hidden max-w-6xl mx-auto">
           {/* Encabezado del recibo - Estilo azul */}
@@ -170,13 +180,13 @@ export function CreateManifiestoBasuronModal({
           {/* Contenido del formulario - Layout de dos columnas */}
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
-              
+
               {/* COLUMNA IZQUIERDA - Datos generales */}
               <div className="p-6 space-y-4">
                 <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Información General</h3>
-                
+
                 {/* FECHA */}
-                <div 
+                <div
                   className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
                 >
                   <label className="text-base font-bold text-black w-36 flex-shrink-0">FECHA:</label>
@@ -196,9 +206,8 @@ export function CreateManifiestoBasuronModal({
                       dateFormat="dd/MM/yyyy"
                       locale="es"
                       showPopperArrow={false}
-                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${
-                        activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400'
-                      }`}
+                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400'
+                        }`}
                       wrapperClassName="flex-1"
                       popperClassName="datepicker-popper"
                       showMonthDropdown
@@ -213,7 +222,7 @@ export function CreateManifiestoBasuronModal({
                 </div>
 
                 {/* HORA */}
-                <div 
+                <div
                   className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'horaEntrada' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
                 >
                   <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA:</label>
@@ -223,9 +232,8 @@ export function CreateManifiestoBasuronModal({
                       onChange={(time) => setFormData({ ...formData, hora_entrada: time })}
                       onFocus={() => setActiveField('horaEntrada')}
                       onBlur={() => setActiveField(null)}
-                      className={`border-b-2 bg-transparent focus:outline-none text-black text-lg font-medium transition-all duration-200 cursor-pointer ${
-                        activeField === 'horaEntrada' ? 'border-blue-600' : 'border-gray-400'
-                      }`}
+                      className={`border-b-2 bg-transparent focus:outline-none text-black text-lg font-medium transition-all duration-200 cursor-pointer ${activeField === 'horaEntrada' ? 'border-blue-600' : 'border-gray-400'
+                        }`}
                       placeholder="HH:MM"
                     />
                     <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -247,9 +255,8 @@ export function CreateManifiestoBasuronModal({
                     onFocus={() => setActiveField('recibimos')}
                     onBlur={() => setActiveField(null)}
                     placeholder="Nombre de quien entrega..."
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
-                      showValidation && !formData.recibimos_de ? 'border-red-500' : activeField === 'recibimos' ? 'border-blue-600' : 'border-gray-400'
-                    }`}
+                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${showValidation && !formData.recibimos_de ? 'border-red-500' : activeField === 'recibimos' ? 'border-blue-600' : 'border-gray-400'
+                      }`}
                   />
                 </div>
                 {showValidation && !formData.recibimos_de && <p className="text-sm text-red-600 ml-3">* Requerido</p>}
@@ -264,9 +271,8 @@ export function CreateManifiestoBasuronModal({
                     onFocus={() => setActiveField('direccion')}
                     onBlur={() => setActiveField(null)}
                     placeholder="Dirección..."
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
-                      activeField === 'direccion' ? 'border-blue-600' : 'border-gray-400'
-                    }`}
+                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${activeField === 'direccion' ? 'border-blue-600' : 'border-gray-400'
+                      }`}
                   />
                 </div>
 
@@ -283,10 +289,23 @@ export function CreateManifiestoBasuronModal({
                     onFocus={() => setActiveField('usuario')}
                     onBlur={() => setActiveField(null)}
                     placeholder="Nombre de quien recibe"
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${
-                      activeField === 'usuario' ? 'border-blue-600' : 'border-gray-400'
-                    }`}
+                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium placeholder:text-gray-500 transition-all duration-200 ${activeField === 'usuario' ? 'border-blue-600' : 'border-gray-400'
+                      }`}
                   />
+                </div>
+
+                {/* DOCUMENTO DIGITALIZADO */}
+                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${!file && showValidation ? 'border-l-4 border-l-red-500 bg-red-50' : file ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">DOCUMENTO:</label>
+                  <div className="flex-1">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf,image/*"
+                      onChange={(e) => setFile(e.target.files?.[0] || null)}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    />
+                  </div>
                 </div>
 
                 {/* Observaciones */}
@@ -312,7 +331,7 @@ export function CreateManifiestoBasuronModal({
                   </svg>
                   # KILOS
                 </h3>
-                
+
                 {/* PESO DE ENTRADA */}
                 <div className="bg-white rounded-xl p-4 border-2 border-green-200 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
@@ -336,9 +355,8 @@ export function CreateManifiestoBasuronModal({
                       onFocus={() => setActiveField('pesoEntrada')}
                       onBlur={() => setActiveField(null)}
                       placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                        showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-300'
-                      }`}
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-300'
+                        }`}
                     />
                     <span className="text-lg font-bold text-gray-600 px-3 py-3 bg-gray-100 rounded-lg">kg</span>
                   </div>
@@ -368,9 +386,8 @@ export function CreateManifiestoBasuronModal({
                       onFocus={() => setActiveField('pesoSalida')}
                       onBlur={() => setActiveField(null)}
                       placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
-                        showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300'
-                      }`}
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-300'
+                        }`}
                     />
                     <span className="text-lg font-bold text-gray-600 px-3 py-3 bg-gray-100 rounded-lg">kg</span>
                   </div>
@@ -406,7 +423,7 @@ export function CreateManifiestoBasuronModal({
                       onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
                       className="px-3 py-1 text-sm bg-blue-200 text-blue-800 rounded-lg hover:bg-blue-300 font-medium transition-colors"
                     >
-                      {peso >= 1000 ? `${peso/1000}T` : `${peso}kg`}
+                      {peso >= 1000 ? `${peso / 1000}T` : `${peso}kg`}
                     </button>
                   ))}
                 </div>
@@ -437,7 +454,7 @@ export function CreateManifiestoBasuronModal({
             <div className="border-t-2 border-gray-800 p-4 bg-gray-50">
               <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <p className="text-xs text-gray-500 italic text-center md:text-left">
-                  POR UNA CIUDAD MÁS LIMPIA Y DIGNA PARA TODOS<br/>
+                  POR UNA CIUDAD MÁS LIMPIA Y DIGNA PARA TODOS<br />
                   <span className="font-bold">NO ES COMPROBANTE FISCAL</span>
                 </p>
                 <button
