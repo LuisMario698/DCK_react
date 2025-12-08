@@ -70,6 +70,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
         estado: ''
     });
 
+    // Acceso rápido seleccionado
+    const [accesoRapidoSeleccionado, setAccesoRapidoSeleccionado] = useState<string | null>(null);
+
     // Cargar estadísticas cuando cambia el período
     useEffect(() => {
         const loadFilteredStats = async () => {
@@ -952,6 +955,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     <DatePicker
                                         selected={filters.fechaInicio ? new Date(filters.fechaInicio + 'T00:00:00') : null}
                                         onChange={(date: Date | null) => {
+                                            setAccesoRapidoSeleccionado(null);
                                             if (date) {
                                                 const year = date.getFullYear();
                                                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -989,6 +993,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     <DatePicker
                                         selected={filters.fechaFin ? new Date(filters.fechaFin + 'T00:00:00') : null}
                                         onChange={(date: Date | null) => {
+                                            setAccesoRapidoSeleccionado(null);
                                             if (date) {
                                                 const year = date.getFullYear();
                                                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1095,14 +1100,22 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                 fechaInicio: formatDate(startDate),
                                                 fechaFin: formatDate(today)
                                             });
+                                            setAccesoRapidoSeleccionado(option.label);
                                         }}
-                                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-blue-100 hover:text-blue-700 font-medium text-sm transition-colors"
+                                        className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                                            accesoRapidoSeleccionado === option.label
+                                                ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-blue-100 hover:text-blue-700'
+                                        }`}
                                     >
                                         {option.label}
                                     </button>
                                 ))}
                                 <button
-                                    onClick={() => setFilters({ ...filters, fechaInicio: '', fechaFin: '', buqueId: '' })}
+                                    onClick={() => {
+                                        setFilters({ ...filters, fechaInicio: '', fechaFin: '', buqueId: '' });
+                                        setAccesoRapidoSeleccionado(null);
+                                    }}
                                     className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium text-sm transition-colors"
                                 >
                                     Limpiar filtros
