@@ -512,63 +512,67 @@ export default function ManifiestosPage() {
 
       const resultado = await createManifiesto(manifiestoData, residuos, archivo);
 
-      // --- Generar y subir PDF Automáticamente ---
-      try {
-        setGenerandoPDF(resultado.id.toString());
+      // --- Generar y subir PDF Automáticamente (Solo si NO se adjuntó archivo) ---
+      if (!archivo) {
+        try {
+          setGenerandoPDF(resultado.id.toString());
 
-        // 1. Preparar datos completos para el PDF (Relaciones)
-        // Intentar encontrar en el estado (existentes).
-        let buqueObj = buques.find(b => b.id === resultado.buque_id);
-        let respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
-        let respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
+          // 1. Preparar datos completos para el PDF (Relaciones)
+          // Intentar encontrar en el estado (existentes).
+          let buqueObj = buques.find(b => b.id === resultado.buque_id);
+          let respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
+          let respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
 
-        // FALLBACK: Si no existe en el estado (acaba de crearse), construir objeto manual
-        if (!buqueObj && resultado.buque_id) {
-          buqueObj = { id: resultado.buque_id, nombre_buque: buqueNombre.trim() } as any;
+          // FALLBACK: Si no existe en el estado (acaba de crearse), construir objeto manual
+          if (!buqueObj && resultado.buque_id) {
+            buqueObj = { id: resultado.buque_id, nombre_buque: buqueNombre.trim() } as any;
+          }
+          if (!respPrincObj && resultado.responsable_principal_id) {
+            respPrincObj = { id: resultado.responsable_principal_id, nombre: motoristaNombre.trim() } as any;
+          }
+          if (!respSecObj && resultado.responsable_secundario_id) {
+            respSecObj = { id: resultado.responsable_secundario_id, nombre: cocineroNombre.trim() } as any;
+          }
+
+          // Construir objeto con la estructura que espera el generador
+          const manifestoCompleto = {
+            ...resultado,
+            buque: buqueObj, // El generador suele esperar el objeto o { nombre_buque }
+            responsable_principal: respPrincObj,
+            responsable_secundario: respSecObj,
+            residuos: { ...residuos } // Pasamos los valores actuales
+          } as unknown as ManifiestoConRelaciones;
+
+          // 2. Preparar Firmas
+          const firmasPDF: FirmasManifiesto = {
+            motoristaFirma: motoristaSignature,
+            motoristaNombre: motoristaNombre || respPrincObj?.nombre,
+            cocineroFirma: cocineroSignature,
+            cocineroNombre: cocineroNombre || respSecObj?.nombre,
+            oficialFirma: oficialSignature
+          };
+
+          // 3. Generar PDF Blob
+          const pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
+
+          // 4. Subir PDF
+          console.log("Subiendo PDF generado...");
+          const pdfUrl = await uploadManifiestoPDF(pdfBlob, resultado.numero_manifiesto);
+
+          // 5. Actualizar Manifiesto con URL
+          if (pdfUrl) {
+            await updateManifiesto(resultado.id, { pdf_manifiesto_url: pdfUrl });
+            console.log("✅ PDF vinculado exitosamente");
+          }
+
+        } catch (pdfError) {
+          console.error("⚠️ Error generando/subiendo PDF automático:", pdfError);
+          // No bloqueamos el flujo principal, pero avisamos en consola
+        } finally {
+          setGenerandoPDF(null);
         }
-        if (!respPrincObj && resultado.responsable_principal_id) {
-          respPrincObj = { id: resultado.responsable_principal_id, nombre: motoristaNombre.trim() } as any;
-        }
-        if (!respSecObj && resultado.responsable_secundario_id) {
-          respSecObj = { id: resultado.responsable_secundario_id, nombre: cocineroNombre.trim() } as any;
-        }
-
-        // Construir objeto con la estructura que espera el generador
-        const manifestoCompleto = {
-          ...resultado,
-          buque: buqueObj, // El generador suele esperar el objeto o { nombre_buque }
-          responsable_principal: respPrincObj,
-          responsable_secundario: respSecObj,
-          residuos: { ...residuos } // Pasamos los valores actuales
-        } as unknown as ManifiestoConRelaciones;
-
-        // 2. Preparar Firmas
-        const firmasPDF: FirmasManifiesto = {
-          motoristaFirma: motoristaSignature,
-          motoristaNombre: motoristaNombre || respPrincObj?.nombre,
-          cocineroFirma: cocineroSignature,
-          cocineroNombre: cocineroNombre || respSecObj?.nombre,
-          oficialFirma: oficialSignature
-        };
-
-        // 3. Generar PDF Blob
-        const pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
-
-        // 4. Subir PDF
-        console.log("Subiendo PDF generado...");
-        const pdfUrl = await uploadManifiestoPDF(pdfBlob, resultado.numero_manifiesto);
-
-        // 5. Actualizar Manifiesto con URL
-        if (pdfUrl) {
-          await updateManifiesto(resultado.id, { pdf_manifiesto_url: pdfUrl });
-          console.log("✅ PDF vinculado exitosamente");
-        }
-
-      } catch (pdfError) {
-        console.error("⚠️ Error generando/subiendo PDF automático:", pdfError);
-        // No bloqueamos el flujo principal, pero avisamos en consola
-      } finally {
-        setGenerandoPDF(null);
+      } else {
+        console.log("ℹ️ Se omitió generación automática de PDF porque se adjuntó archivo.");
       }
 
       alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
@@ -615,6 +619,76 @@ export default function ManifiestosPage() {
         console.error('Error eliminando manifiesto:', error);
         alert('❌ Error al eliminar el manifiesto');
       }
+    }
+  };
+
+  const handleDescargarBorrador = async () => {
+    try {
+      // 1. Validar datos mínimos
+      if (!formData.buque_id) {
+        alert('Por favor selecciona un buque primero');
+        return;
+      }
+
+      // 2. Construir objeto Manifiesto temporal
+      const buqueSeleccionado = buques.find(b => b.id === Number(formData.buque_id));
+      const motoristaSeleccionado = personas.find(p => p.id === Number(formData.responsable_principal_id));
+      const cocineroSeleccionado = personas.find(p => p.id === Number(formData.responsable_secundario_id));
+
+      if (!buqueSeleccionado) {
+        alert('Error: Buque no encontrado');
+        return;
+      }
+
+      const borradorManifiesto: ManifiestoConRelaciones = {
+        id: 0, // ID temporal
+        created_at: new Date().toISOString(),
+        numero_manifiesto: formData.numero_manifiesto || 'BORRADOR',
+        fecha_emision: formData.fecha_emision,
+        buque_id: Number(formData.buque_id),
+        responsable_principal_id: Number(formData.responsable_principal_id) || 0,
+        responsable_secundario_id: Number(formData.responsable_secundario_id) || null,
+        observaciones: formData.observaciones || null,
+        pdf_manifiesto_url: null,
+        imagen_manifiesto_url: null,
+        estado: 'borrador',
+        buque: buqueSeleccionado,
+        responsable_principal: motoristaSeleccionado ? { ...motoristaSeleccionado, rol: 'motorista' } : undefined,
+        responsable_secundario: cocineroSeleccionado ? { ...cocineroSeleccionado, rol: 'cocinero' } : undefined,
+        rol_responsable_principal: 'motorista',
+        rol_responsable_secundario: 'cocinero',
+        residuos: {
+          id: 0,
+          manifiesto_id: 0,
+          created_at: new Date().toISOString(),
+          ...residuos
+        }
+      };
+
+      // 3. Generar PDF SIN firmas
+      const firmasVacias: FirmasManifiesto = {
+        motoristaFirma: null,
+        motoristaNombre: motoristaNombre, // Usar nombre escrito si existe
+        cocineroFirma: null,
+        cocineroNombre: cocineroNombre, // Usar nombre escrito si existe
+        oficialFirma: null
+      };
+
+      const pdfBlob = await generarPDFManifiesto(borradorManifiesto, firmasVacias);
+
+      // 4. Descargar
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `BORRADOR_Manifiesto_${formData.numero_manifiesto || 'SN'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+    } catch (error) {
+      console.error('Error generando borrador:', error);
+      alert('Error al generar el borrador');
     }
   };
 
@@ -1201,6 +1275,24 @@ export default function ManifiestosPage() {
                   <p className="text-xs text-gray-500">Opcional - documento escaneado</p>
                 </div>
               </div>
+
+              {/* Botón Descargar Borrador */}
+              <button
+                type="button"
+                onClick={handleDescargarBorrador}
+                className="w-full mb-4 py-2 px-3 bg-white border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                title="Descargar datos actuales para firmar"
+              >
+                <div className="bg-gray-100 p-1.5 rounded-md group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+                <div className="text-left">
+                  <span className="block text-sm font-bold">Descargar Borrador</span>
+                  <span className="block text-xs font-normal opacity-75">Imprimir y firmar a mano</span>
+                </div>
+              </button>
 
               <div
                 onDragEnter={handleDrag}

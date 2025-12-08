@@ -165,25 +165,33 @@ export async function createManifiesto(
   let pdfUrl = null
   const updates: any = {}
 
-  // 1. Manejo de Imagen
+  // 1. Manejo de Archivo (Imagen o PDF)
   if (archivo && manifiestoData) {
     try {
-      console.log('📤 Subiendo imagen adjunta...')
-      imagenUrl = await uploadManifiestoImage(archivo, numeroManifiesto)
-      updates.imagen_manifiesto_url = imagenUrl
-      updates.estado_digitalizacion = 'completado'
+      const isPdf = archivo.name.toLowerCase().endsWith('.pdf') || archivo.type === 'application/pdf'
+
+      if (isPdf) {
+        console.log('📤 Subiendo PDF adjunto...')
+        pdfUrl = await uploadManifiestoPDF(archivo, numeroManifiesto)
+        updates.pdf_manifiesto_url = pdfUrl
+        updates.estado_digitalizacion = 'completado'
+      } else {
+        console.log('📤 Subiendo imagen adjunta...')
+        imagenUrl = await uploadManifiestoImage(archivo, numeroManifiesto)
+        updates.imagen_manifiesto_url = imagenUrl
+        updates.estado_digitalizacion = 'completado'
+      }
     } catch (uploadError) {
-      console.error('⚠️ Error subiendo imagen:', uploadError)
+      console.error('⚠️ Error subiendo archivo:', uploadError)
     }
   }
 
-  // 2. Manejo de PDF
-  if (pdfFile && manifiestoData) {
+  // 2. Manejo de PDF Generado (Solo si no se subió uno adjunto como PDF)
+  if (pdfFile && manifiestoData && !updates.pdf_manifiesto_url) {
     try {
       console.log('📤 Subiendo PDF generado...')
       pdfUrl = await uploadManifiestoPDF(pdfFile, numeroManifiesto)
       updates.pdf_manifiesto_url = pdfUrl
-      // Si subimos PDF, también podríamos marcar como completado o mantener lógica
     } catch (uploadError) {
       console.error('⚠️ Error subiendo PDF:', uploadError)
     }
