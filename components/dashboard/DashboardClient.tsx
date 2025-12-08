@@ -804,7 +804,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
                             <p className="text-emerald-100 text-base mb-6">Contribución al medio ambiente</p>
                             
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
                                 {/* CO2 Evitado - Expandible */}
                                 <ExpandableImpactCard
                                     emoji="🌱"
@@ -1304,33 +1304,25 @@ function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: Expand
     return (
         <div 
             ref={cardRef}
-            className="relative"
+            className="relative h-full"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={() => setIsOpen(false)}
         >
             {/* Tarjeta base - tamaño fijo */}
             <div 
                 className={`
-                    bg-white/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer
-                    transition-all duration-200
+                    bg-white/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer h-full min-h-[120px]
+                    transition-all duration-200 flex items-center
                     ${isOpen ? 'bg-white/25 shadow-lg shadow-black/20' : 'hover:bg-white/15'}
                 `}
             >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-5">
                         <div className="text-5xl">{emoji}</div>
                         <div>
-                            <p className="text-3xl font-bold text-white">{value} {unit}</p>
+                            <p className="text-3xl font-bold text-white whitespace-nowrap">{value} {unit}</p>
                             <p className="text-emerald-100 text-base mt-1">{label}</p>
                         </div>
-                    </div>
-                    <div className={`
-                        w-9 h-9 rounded-full flex items-center justify-center text-lg
-                        transition-all duration-300
-                        ${isOpen ? 'bg-white/40' : 'bg-white/15'}
-                        ${isOpen && openUpward ? 'rotate-0' : isOpen ? 'rotate-180' : ''}
-                    `}>
-                        ▼
                     </div>
                 </div>
             </div>
