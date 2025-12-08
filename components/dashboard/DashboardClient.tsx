@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { es } from 'date-fns/locale';
+import 'react-datepicker/dist/react-datepicker.css';
 import { DashboardStats, ReporteDetalladoItem } from '@/types/dashboard';
+
+// Registrar locale español para el DatePicker
+registerLocale('es', es);
 import { 
     getReporteComplejo, 
     getDashboardKPIsFiltered, 
@@ -570,7 +576,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 })}
                             </div>
 
-                            <button className="mt-8 w-full py-3.5 rounded-xl border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+                            <button 
+                                onClick={() => setActiveTab('reportes')}
+                                className="mt-8 w-full py-3.5 rounded-xl border border-gray-200 text-base font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                            >
                                 Ver reporte completo
                             </button>
                         </div>
@@ -915,138 +924,317 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
                 </div>
             ) : (
-                <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-100/50 animate-in fade-in duration-500">
-                    <div className="flex justify-between items-center mb-8">
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-800">Reportes Avanzados</h3>
-                            <p className="text-base text-gray-400 mt-1">Genera y exporta datos detallados</p>
-                        </div>
-                        <button className="p-2 bg-gray-50 rounded-xl text-gray-500 hover:bg-gray-100">
-                            <Icons.Settings className="w-6 h-6" />
-                        </button>
-                    </div>
-
-                    {/* Filtros Estilizados */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Desde</label>
-                            <input
-                                type="date"
-                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
-                                value={filters.fechaInicio}
-                                onChange={e => setFilters({ ...filters, fechaInicio: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Hasta</label>
-                            <input
-                                type="date"
-                                className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600"
-                                value={filters.fechaFin}
-                                onChange={e => setFilters({ ...filters, fechaFin: e.target.value })}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-500 uppercase tracking-wider">Buque</label>
-                            <div className="relative">
-                                <select
-                                    className="w-full px-4 py-3 bg-white border-none rounded-xl shadow-sm text-base focus:ring-2 focus:ring-blue-500/20 outline-none text-gray-600 appearance-none"
-                                    value={filters.buqueId}
-                                    onChange={e => setFilters({ ...filters, buqueId: e.target.value })}
-                                >
-                                    <option value="">Todos los buques</option>
-                                    {buques.map(b => (
-                                        <option key={b.id} value={b.id}>{b.nombre_buque}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                                    ▼
-                                </div>
+                <div className="space-y-6 animate-in fade-in duration-500">
+                    {/* Panel de Filtros Mejorado */}
+                    <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-3 bg-blue-100 rounded-xl">
+                                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-800">Filtros de Búsqueda</h3>
+                                <p className="text-gray-400 text-sm">Selecciona los criterios para tu reporte</p>
                             </div>
                         </div>
-                        <div className="flex items-end gap-2">
-                            <button
-                                onClick={loadReport}
-                                disabled={loadingReport}
-                                className="flex-1 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 font-bold text-base shadow-lg shadow-blue-200 transition-all transform active:scale-95"
-                            >
-                                {loadingReport ? 'Generando...' : 'Generar Reporte'}
-                            </button>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {/* Fecha Desde */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Fecha Desde
+                                </label>
+                                <div className="relative">
+                                    <DatePicker
+                                        selected={filters.fechaInicio ? new Date(filters.fechaInicio + 'T00:00:00') : null}
+                                        onChange={(date: Date | null) => {
+                                            if (date) {
+                                                const year = date.getFullYear();
+                                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                const day = String(date.getDate()).padStart(2, '0');
+                                                setFilters({ ...filters, fechaInicio: `${year}-${month}-${day}` });
+                                            } else {
+                                                setFilters({ ...filters, fechaInicio: '' });
+                                            }
+                                        }}
+                                        dateFormat="dd/MM/yyyy"
+                                        locale="es"
+                                        placeholderText="Seleccionar fecha"
+                                        showPopperArrow={false}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none text-gray-700 cursor-pointer"
+                                        wrapperClassName="w-full"
+                                        popperClassName="datepicker-popper"
+                                        showMonthDropdown
+                                        showYearDropdown
+                                        dropdownMode="select"
+                                        todayButton="Hoy"
+                                        isClearable
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Fecha Hasta */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Fecha Hasta
+                                </label>
+                                <div className="relative">
+                                    <DatePicker
+                                        selected={filters.fechaFin ? new Date(filters.fechaFin + 'T00:00:00') : null}
+                                        onChange={(date: Date | null) => {
+                                            if (date) {
+                                                const year = date.getFullYear();
+                                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                                const day = String(date.getDate()).padStart(2, '0');
+                                                setFilters({ ...filters, fechaFin: `${year}-${month}-${day}` });
+                                            } else {
+                                                setFilters({ ...filters, fechaFin: '' });
+                                            }
+                                        }}
+                                        dateFormat="dd/MM/yyyy"
+                                        locale="es"
+                                        placeholderText="Seleccionar fecha"
+                                        showPopperArrow={false}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none text-gray-700 cursor-pointer"
+                                        wrapperClassName="w-full"
+                                        popperClassName="datepicker-popper"
+                                        showMonthDropdown
+                                        showYearDropdown
+                                        dropdownMode="select"
+                                        todayButton="Hoy"
+                                        isClearable
+                                        minDate={filters.fechaInicio ? new Date(filters.fechaInicio) : undefined}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Selector de Buque */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-600">
+                                    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                    Buque
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none text-gray-700 appearance-none cursor-pointer"
+                                        value={filters.buqueId}
+                                        onChange={e => setFilters({ ...filters, buqueId: e.target.value })}
+                                    >
+                                        <option value="">Todos los buques</option>
+                                        {buques.map(b => (
+                                            <option key={b.id} value={b.id}>{b.nombre_buque}</option>
+                                        ))}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Botón Generar */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-transparent">Acción</label>
+                                <button
+                                    onClick={loadReport}
+                                    disabled={loadingReport}
+                                    className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 font-bold text-base shadow-lg shadow-blue-200 transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    {loadingReport ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            Generando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                            Generar Reporte
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Accesos rápidos de fechas */}
+                        <div className="mt-6 pt-4 border-t border-gray-100">
+                            <p className="text-sm text-gray-400 mb-3">Accesos rápidos:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {[
+                                    { label: 'Hoy', days: 0 },
+                                    { label: 'Última semana', days: 7 },
+                                    { label: 'Último mes', days: 30 },
+                                    { label: 'Últimos 3 meses', days: 90 },
+                                    { label: 'Este año', days: 365 },
+                                ].map((option) => (
+                                    <button
+                                        key={option.label}
+                                        onClick={() => {
+                                            const today = new Date();
+                                            const startDate = new Date();
+                                            startDate.setDate(today.getDate() - option.days);
+                                            const formatDate = (d: Date) => {
+                                                const year = d.getFullYear();
+                                                const month = String(d.getMonth() + 1).padStart(2, '0');
+                                                const day = String(d.getDate()).padStart(2, '0');
+                                                return `${year}-${month}-${day}`;
+                                            };
+                                            setFilters({
+                                                ...filters,
+                                                fechaInicio: formatDate(startDate),
+                                                fechaFin: formatDate(today)
+                                            });
+                                        }}
+                                        className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-blue-100 hover:text-blue-700 font-medium text-sm transition-colors"
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => setFilters({ ...filters, fechaInicio: '', fechaFin: '', buqueId: '' })}
+                                    className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium text-sm transition-colors"
+                                >
+                                    Limpiar filtros
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Botones de Exportación */}
+                    {/* Resumen de resultados */}
                     {reportData.length > 0 && (
-                        <div className="flex justify-end gap-3 mb-6">
-                            <button
-                                onClick={() => exportToCSV(reportData)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 font-semibold text-base transition-colors"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Exportar CSV
-                            </button>
-                            <button
-                                onClick={() => exportToPDF(reportData, stats)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 font-semibold text-base transition-colors"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                </svg>
-                                Exportar PDF
-                            </button>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <p className="text-gray-400 text-sm mb-1">Total Registros</p>
+                                <p className="text-3xl font-bold text-gray-800">{reportData.length}</p>
+                            </div>
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <p className="text-gray-400 text-sm mb-1">Total Residuos</p>
+                                <p className="text-3xl font-bold text-blue-600">
+                                    {reportData.reduce((sum, item) => sum + item.cantidad, 0).toLocaleString()} kg
+                                </p>
+                            </div>
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <p className="text-gray-400 text-sm mb-1">Buques Únicos</p>
+                                <p className="text-3xl font-bold text-violet-600">
+                                    {new Set(reportData.map(item => item.buque)).size}
+                                </p>
+                            </div>
+                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                                <p className="text-gray-400 text-sm mb-1">Completados</p>
+                                <p className="text-3xl font-bold text-emerald-600">
+                                    {reportData.filter(item => item.estado === 'completado').length}
+                                </p>
+                            </div>
                         </div>
                     )}
 
-                    {/* Tabla de Resultados Premium */}
-                    <div className="overflow-hidden rounded-2xl border border-gray-100">
-                        <table className="w-full text-base text-left">
-                            <thead className="bg-gray-50/80 text-gray-500 font-semibold">
-                                <tr>
-                                    <th className="px-6 py-4 rounded-tl-2xl">Fecha</th>
-                                    <th className="px-6 py-4">Folio</th>
-                                    <th className="px-6 py-4">Buque</th>
-                                    <th className="px-6 py-4">Residuo</th>
-                                    <th className="px-6 py-4 text-right">Cantidad</th>
-                                    <th className="px-6 py-4 rounded-tr-2xl">Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-50 bg-white">
-                                {reportData.length === 0 ? (
+                    {/* Tabla de Resultados */}
+                    <div className="bg-white rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50 overflow-hidden">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gray-100 rounded-lg">
+                                    <Icons.Document className="w-5 h-5 text-gray-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">Resultados del Reporte</h3>
+                                    <p className="text-sm text-gray-400">
+                                        {reportData.length > 0 
+                                            ? `Mostrando ${reportData.length} registros` 
+                                            : 'Aplica filtros para ver resultados'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-base text-left">
+                                <thead className="bg-gray-50/80 text-gray-500 font-semibold text-sm uppercase tracking-wider">
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-400 text-base">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
-                                                    <Icons.Document className="w-8 h-8" />
-                                                </div>
-                                                <p>{loadingReport ? 'Procesando datos...' : 'Configura los filtros para ver resultados'}</p>
-                                            </div>
-                                        </td>
+                                        <th className="px-6 py-4">Fecha</th>
+                                        <th className="px-6 py-4">Folio</th>
+                                        <th className="px-6 py-4">Buque</th>
+                                        <th className="px-6 py-4">Tipo de Residuo</th>
+                                        <th className="px-6 py-4 text-right">Cantidad</th>
+                                        <th className="px-6 py-4 text-center">Estado</th>
                                     </tr>
-                                ) : (
-                                    reportData.map((item, idx) => (
-                                        <tr key={idx} className="hover:bg-blue-50/30 transition-colors group">
-                                            <td className="px-6 py-4 text-gray-600">{new Date(item.fecha).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 font-mono text-sm text-gray-400 group-hover:text-blue-600 transition-colors">{item.folio}</td>
-                                            <td className="px-6 py-4 font-medium text-gray-800">{item.buque}</td>
-                                            <td className="px-6 py-4 text-gray-600">{item.tipoResiduo}</td>
-                                            <td className="px-6 py-4 text-right font-bold text-gray-800">
-                                                {item.cantidad} <span className="text-sm font-normal text-gray-400 ml-1">{item.unidad}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${item.estado === 'completado'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-amber-100 text-amber-700'
-                                                    }`}>
-                                                    {item.estado}
-                                                </span>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {reportData.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-16 text-center">
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
+                                                        <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <p className="text-gray-600 font-medium text-lg">
+                                                            {loadingReport ? 'Procesando datos...' : 'No hay datos para mostrar'}
+                                                        </p>
+                                                        <p className="text-gray-400 mt-1">
+                                                            {!loadingReport && 'Selecciona las fechas y haz clic en "Generar Reporte"'}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </td>
                                         </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
+                                    ) : (
+                                        reportData.map((item, idx) => (
+                                            <tr key={idx} className="hover:bg-blue-50/50 transition-colors group">
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                                        <span className="text-gray-700 font-medium">{new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700 transition-colors">
+                                                        {item.folio}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 font-semibold text-gray-800">{item.buque}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className="inline-flex items-center gap-2 text-gray-600">
+                                                        {item.tipoResiduo === 'Aceite' && '🛢️'}
+                                                        {item.tipoResiduo === 'Basura' && '🗑️'}
+                                                        {item.tipoResiduo === 'Basurón' && '♻️'}
+                                                        {item.tipoResiduo}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <span className="font-bold text-gray-800">{item.cantidad.toLocaleString()}</span>
+                                                    <span className="text-sm text-gray-400 ml-1">{item.unidad}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
+                                                        item.estado === 'completado'
+                                                            ? 'bg-emerald-100 text-emerald-700'
+                                                            : 'bg-amber-100 text-amber-700'
+                                                    }`}>
+                                                        <span className={`w-2 h-2 rounded-full ${
+                                                            item.estado === 'completado' ? 'bg-emerald-500' : 'bg-amber-500'
+                                                        }`}></span>
+                                                        {item.estado === 'completado' ? 'Completado' : 'Pendiente'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             )}
