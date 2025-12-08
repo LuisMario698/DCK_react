@@ -92,6 +92,11 @@ export interface ManifiestoBasuron {
   usuario_sistema_id: number | null;
   tipo_residuo_id: number | null;
   comprobante_url: string | null;
+  pdf_manifiesto_url: string | null;
+  numero_ticket: string | null;
+  recibimos_de: string | null;
+  direccion: string | null;
+  recibido_por: string | null;
 }
 
 // Tipos con relaciones para consultas JOIN
