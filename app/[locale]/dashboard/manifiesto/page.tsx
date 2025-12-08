@@ -415,6 +415,7 @@ export default function ManifiestosPage() {
         estado_digitalizacion: 'completado' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
+        pdf_manifiesto_url: null,
       };
 
       const resultado = await createManifiesto(manifiestoData, residuos, archivo);
@@ -424,9 +425,21 @@ export default function ManifiestosPage() {
         setGenerandoPDF(resultado.id.toString());
 
         // 1. Preparar datos completos para el PDF (Relaciones)
-        const buqueObj = buques.find(b => b.id === resultado.buque_id);
-        const respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
-        const respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
+        // Intentar encontrar en el estado (existentes).
+        let buqueObj = buques.find(b => b.id === resultado.buque_id);
+        let respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
+        let respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
+
+        // FALLBACK: Si no existe en el estado (acaba de crearse), construir objeto manual
+        if (!buqueObj && resultado.buque_id) {
+          buqueObj = { id: resultado.buque_id, nombre_buque: buqueNombre.trim() } as any;
+        }
+        if (!respPrincObj && resultado.responsable_principal_id) {
+          respPrincObj = { id: resultado.responsable_principal_id, nombre: motoristaNombre.trim() } as any;
+        }
+        if (!respSecObj && resultado.responsable_secundario_id) {
+          respSecObj = { id: resultado.responsable_secundario_id, nombre: cocineroNombre.trim() } as any;
+        }
 
         // Construir objeto con la estructura que espera el generador
         const manifestoCompleto = {
