@@ -325,101 +325,78 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
             {activeTab === 'general' ? (
                 <div className="space-y-8 animate-in fade-in duration-700 slide-in-from-bottom-4">
-                    {/* KPIs Section - Diseño Premium */}
+                    {/* KPIs Section - Diseño Simple y Claro */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Tarjeta Principal (Azul) - Total Reciclado */}
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-3xl text-white shadow-xl shadow-blue-200 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity transform group-hover:scale-110 duration-500">
-                                <Icons.Recycle className="w-24 h-24" />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                                        <Icons.Recycle className="w-6 h-6 text-white" />
-                                    </div>
-                                    <span className="text-blue-100 text-sm font-medium">Total Reciclado</span>
-                                </div>
-                                <h3 className="text-4xl font-bold mb-2 tracking-tight">{stats.totalResiduosReciclados.toLocaleString()} <span className="text-xl font-normal text-blue-200">kg</span></h3>
-                                <div className="flex items-center gap-2 mt-4">
-                                    <span className={`bg-white/20 px-2 py-1 rounded-lg text-xs font-medium backdrop-blur-sm text-white flex items-center gap-1`}>
-                                        <span className={trendTotal.positivo ? 'text-green-300' : 'text-red-300'}>{trendTotal.positivo ? '↑' : '↓'}</span> {trendTotal.valor}
-                                    </span>
-                                    <span className="text-blue-200 text-xs">vs período anterior</span>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Total Reciclado - Azul */}
+                        <SimpleKpiCard
+                            title="Total Reciclado"
+                            value={`${stats.totalResiduosReciclados.toLocaleString()} kg`}
+                            subtitle={`${trendTotal.valor} vs anterior`}
+                            icon="recycle"
+                            color="blue"
+                            trendUp={trendTotal.positivo}
+                        />
 
-                        {/* Tarjeta Manifiestos */}
-                        <KpiCardPremium
+                        {/* Manifiestos - Violeta */}
+                        <SimpleKpiCard
                             title="Manifiestos"
-                            value={stats.totalManifiestos}
-                            subValue="Pendientes"
-                            subValueCount={stats.manifiestosPendientes}
-                            icon="Document"
-                            trend={trendManifiestos.valor}
+                            value={stats.totalManifiestos.toString()}
+                            subtitle={`${stats.manifiestosPendientes} pendientes`}
+                            icon="document"
+                            color="violet"
                             trendUp={trendManifiestos.positivo}
                         />
 
-                        {/* Tarjeta Basurón */}
-                        <KpiCardPremium
+                        {/* Basurón - Esmeralda */}
+                        <SimpleKpiCard
                             title="Basurón"
                             value={`${stats.totalBasuron.toLocaleString()} kg`}
-                            subValue="Entregas"
-                            subValueCount={stats.entregasBasuron}
-                            icon="Ship"
-                            trend={trendBasuron.valor}
+                            subtitle={`${stats.entregasBasuron} entregas`}
+                            icon="truck"
+                            color="emerald"
                             trendUp={trendBasuron.positivo}
                         />
 
-                        {/* Tarjeta Aceite */}
-                        <KpiCardPremium
-                            title="Aceite Recolectado"
+                        {/* Aceite - Ámbar */}
+                        <SimpleKpiCard
+                            title="Aceite Usado"
                             value={`${stats.totalAceiteUsado.toLocaleString()} L`}
-                            subValue="Litros"
-                            subValueCount={stats.totalAceiteUsado}
-                            icon="Drop"
-                            trend={trendAceite.valor}
+                            subtitle="Litros recolectados"
+                            icon="drop"
+                            color="amber"
                             trendUp={trendAceite.positivo}
                         />
                     </div>
 
-                    {/* Segunda fila de KPIs - Filtros y Buques */}
+                    {/* Segunda fila - Filtros y Buques */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <KpiCardPremium
+                        <SimpleKpiCard
                             title="Filtros Aceite"
-                            value={stats.filtrosAceite}
-                            subValue="Unidades"
-                            subValueCount={stats.filtrosAceite}
-                            icon="Settings"
-                            trend=""
-                            trendUp={true}
+                            value={stats.filtrosAceite.toString()}
+                            subtitle="Unidades"
+                            icon="filter"
+                            color="orange"
                         />
-                        <KpiCardPremium
+                        <SimpleKpiCard
                             title="Filtros Diesel"
-                            value={stats.filtrosDiesel}
-                            subValue="Unidades"
-                            subValueCount={stats.filtrosDiesel}
-                            icon="Settings"
-                            trend=""
-                            trendUp={true}
+                            value={stats.filtrosDiesel.toString()}
+                            subtitle="Unidades"
+                            icon="filter"
+                            color="sky"
                         />
-                        <KpiCardPremium
+                        <SimpleKpiCard
                             title="Filtros Aire"
-                            value={stats.filtrosAire}
-                            subValue="Unidades"
-                            subValueCount={stats.filtrosAire}
-                            icon="Settings"
-                            trend=""
-                            trendUp={true}
+                            value={stats.filtrosAire.toString()}
+                            subtitle="Unidades"
+                            icon="filter"
+                            color="teal"
                         />
-                        <KpiCardPremium
-                            title="Buques Activos"
-                            value={stats.buquesActivos}
-                            subValue="Total Flota"
-                            subValueCount={stats.totalBuques}
-                            icon="Ship"
-                            trend=""
-                            trendUp={true}
+                        <SimpleKpiCard
+                            title="Buques"
+                            value={`${stats.buquesActivos} / ${stats.totalBuques}`}
+                            subtitle="Activos / Total"
+                            icon="ship"
+                            color="indigo"
                         />
                     </div>
 
@@ -428,59 +405,138 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         {/* Gráfica Principal (Barras) - Ocupa 2 columnas */}
                         <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
                             <div className="flex justify-between items-center mb-8">
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800">Estadísticas de Residuos</h3>
-                                    <p className="text-sm text-gray-400 mt-1">Comparativa mensual de Aceite vs Basura</p>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                        <span className="w-3 h-3 rounded-full bg-blue-600"></span> Basura
+                                <div className="flex items-start gap-3">
+                                    <div>
+                                        <h3 className="text-xl font-bold text-gray-800">📊 Estadísticas de Residuos</h3>
+                                        <p className="text-sm text-gray-400 mt-1">Comparativa mensual de Aceite vs Basura</p>
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                                        <span className="w-3 h-3 rounded-full bg-gray-200"></span> Aceite
+                                    <InfoTooltip
+                                        title="¿Qué muestra esta gráfica?"
+                                        description="Esta gráfica de barras muestra la cantidad de residuos recolectados cada mes. El azul representa la basura general (kg) y el gris el aceite usado (litros). Las barras más altas indican meses con mayor recolección."
+                                        examples={[
+                                            "Barra alta = mucha recolección ese mes",
+                                            "Pasa el mouse sobre cada barra para ver los detalles exactos"
+                                        ]}
+                                    />
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <span className="w-4 h-4 rounded-full bg-blue-500"></span> 
+                                        <span className="font-medium">Basura (kg)</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <span className="w-4 h-4 rounded-full bg-amber-400"></span> 
+                                        <span className="font-medium">Aceite (L)</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="h-72 flex items-end justify-between gap-4 px-2">
-                                {initialStats.residuosPorMes.map((mes) => {
-                                    const maxVal = Math.max(...initialStats.residuosPorMes.map(m => m.aceite + m.basura));
-                                    const total = mes.aceite + mes.basura;
-                                    // Altura mínima visual para que no desaparezca
-                                    const heightPercent = maxVal > 0 ? Math.max((total / maxVal) * 100, 5) : 0;
+                            {/* Nombres de meses */}
+                            {(() => {
+                                const nombresMeses: { [key: string]: string } = {
+                                    '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr',
+                                    '05': 'May', '06': 'Jun', '07': 'Jul', '08': 'Ago',
+                                    '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic'
+                                };
+                                const maxVal = Math.max(...initialStats.residuosPorMes.map(m => m.aceite + m.basura), 1);
 
-                                    return (
-                                        <div key={mes.mes} className="flex flex-col items-center flex-1 group relative h-full justify-end">
-                                            {/* Tooltip */}
-                                            <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-10 pointer-events-none">
-                                                <div className="bg-gray-900 text-white text-xs py-2 px-3 rounded-xl shadow-xl">
-                                                    <p className="font-semibold mb-1">{mes.mes}</p>
-                                                    <p className="flex justify-between gap-4"><span className="text-gray-400">Aceite:</span> {mes.aceite} L</p>
-                                                    <p className="flex justify-between gap-4"><span className="text-gray-400">Basura:</span> {mes.basura} kg</p>
+                                return (
+                                    <div className="h-72 flex items-end justify-between gap-3 px-2">
+                                        {initialStats.residuosPorMes.map((mes) => {
+                                            const total = mes.aceite + mes.basura;
+                                            const heightPercent = Math.max((total / maxVal) * 100, 8);
+                                            const mesNumero = mes.mes.split('-')[1];
+                                            const nombreMes = nombresMeses[mesNumero] || mesNumero;
+                                            const anio = mes.mes.split('-')[0];
+
+                                            return (
+                                                <div key={mes.mes} className="flex flex-col items-center flex-1 group relative h-full justify-end min-w-[50px]">
+                                                    {/* Tooltip mejorado */}
+                                                    <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">
+                                                        <div className="bg-gray-900 text-white text-sm py-3 px-4 rounded-xl shadow-2xl min-w-[140px]">
+                                                            <p className="font-bold text-base mb-2 text-blue-300">{nombreMes} {anio}</p>
+                                                            <div className="space-y-1">
+                                                                <p className="flex justify-between gap-4">
+                                                                    <span className="text-amber-300">🛢️ Aceite:</span> 
+                                                                    <span className="font-bold">{mes.aceite.toLocaleString()} L</span>
+                                                                </p>
+                                                                <p className="flex justify-between gap-4">
+                                                                    <span className="text-blue-300">🗑️ Basura:</span> 
+                                                                    <span className="font-bold">{mes.basura.toLocaleString()} kg</span>
+                                                                </p>
+                                                                <div className="border-t border-gray-700 pt-1 mt-1">
+                                                                    <p className="flex justify-between gap-4 text-emerald-300">
+                                                                        <span>📦 Total:</span> 
+                                                                        <span className="font-bold">{total.toLocaleString()}</span>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-3 h-3 bg-gray-900 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1"></div>
+                                                    </div>
+
+                                                    {/* Valor encima de la barra */}
+                                                    <div className="text-xs font-bold text-gray-500 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {total.toLocaleString()}
+                                                    </div>
+
+                                                    {/* Barra con dos secciones */}
+                                                    <div 
+                                                        className="w-full max-w-[45px] relative rounded-xl overflow-hidden transition-all duration-500 hover:scale-105 cursor-pointer shadow-sm hover:shadow-lg" 
+                                                        style={{ height: `${heightPercent}%` }}
+                                                    >
+                                                        {/* Sección Aceite (arriba - ámbar) */}
+                                                        <div 
+                                                            className="absolute top-0 w-full bg-gradient-to-b from-amber-300 to-amber-400 transition-all duration-1000"
+                                                            style={{ height: `${(mes.aceite / (total || 1)) * 100}%` }}
+                                                        />
+                                                        {/* Sección Basura (abajo - azul) */}
+                                                        <div
+                                                            className="absolute bottom-0 w-full bg-gradient-to-b from-blue-400 to-blue-600 transition-all duration-1000"
+                                                            style={{ height: `${(mes.basura / (total || 1)) * 100}%` }}
+                                                        />
+                                                    </div>
+
+                                                    {/* Nombre del mes */}
+                                                    <div className="mt-3 text-center">
+                                                        <span className="text-sm font-bold text-gray-700">{nombreMes}</span>
+                                                        <span className="text-xs text-gray-400 block">{anio}</span>
+                                                    </div>
                                                 </div>
-                                                {/* Flechita tooltip */}
-                                                <div className="w-3 h-3 bg-gray-900 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1"></div>
-                                            </div>
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
 
-                                            <div className="w-full max-w-[40px] relative rounded-t-2xl overflow-hidden transition-all duration-500 hover:brightness-95 cursor-pointer" style={{ height: `${heightPercent}%` }}>
-                                                {/* Fondo (Aceite - Gris en diseño ref) */}
-                                                <div className="absolute inset-0 bg-gray-100 rounded-t-2xl"></div>
-                                                {/* Frente (Basura - Azul en diseño ref) */}
-                                                <div
-                                                    className="absolute bottom-0 w-full bg-blue-600 rounded-t-2xl transition-all duration-1000 ease-out"
-                                                    style={{ height: `${(mes.basura / (total || 1)) * 100}%` }}
-                                                />
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-400 mt-4">{mes.mes.split('-')[1]}</span>
-                                        </div>
-                                    );
-                                })}
+                            {/* Línea de referencia y totales */}
+                            <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
+                                <div className="text-sm text-gray-500">
+                                    <span className="font-medium">Total período:</span>{' '}
+                                    <span className="font-bold text-gray-800">
+                                        {initialStats.residuosPorMes.reduce((sum, m) => sum + m.aceite + m.basura, 0).toLocaleString()}
+                                    </span>
+                                    <span className="text-gray-400"> kg + L</span>
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                    Pasa el mouse sobre las barras para ver detalles
+                                </div>
                             </div>
                         </div>
 
                         {/* Gráfica Secundaria (Top Buques / Donut Style) */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50 flex flex-col">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">Top Buques</h3>
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-gray-800">🚢 Top Buques</h3>
+                                <InfoTooltip
+                                    title="¿Qué significa Top Buques?"
+                                    description="Muestra los 4 buques que más residuos han generado este mes. La barra indica la proporción respecto al buque con mayor cantidad."
+                                    examples={[
+                                        "El buque con barra más larga es el mayor generador",
+                                        "Útil para identificar clientes frecuentes"
+                                    ]}
+                                />
+                            </div>
                             <p className="text-sm text-gray-400 mb-8">Mayores generadores este mes</p>
 
                             <div className="flex-1 flex flex-col justify-center space-y-6">
@@ -524,7 +580,17 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Gráfica de Distribución por Tipo (Dona) */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">Distribución por Tipo</h3>
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-gray-800">🍩 Distribución por Tipo</h3>
+                                <InfoTooltip
+                                    title="¿Cómo leer la gráfica de dona?"
+                                    description="El círculo muestra qué proporción ocupa cada tipo de residuo del total. Cada color representa un tipo diferente: amarillo es aceite, azul es basura general y verde es el basurón."
+                                    examples={[
+                                        "Sección más grande = tipo de residuo más recolectado",
+                                        "El número del centro es el total en kg"
+                                    ]}
+                                />
+                            </div>
                             <p className="text-sm text-gray-400 mb-6">Proporción de residuos recolectados</p>
                             
                             <div className="flex items-center justify-center gap-8">
@@ -572,7 +638,17 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                         {/* Gráfica de Filtros Recolectados */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">Filtros Recolectados</h3>
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-gray-800">🔧 Filtros Recolectados</h3>
+                                <InfoTooltip
+                                    title="¿Qué son los filtros?"
+                                    description="Los filtros son componentes de los motores que deben ser reemplazados y reciclados. Hay 3 tipos: de aceite (retienen impurezas), de diesel (limpian el combustible) y de aire (filtran partículas)."
+                                    examples={[
+                                        "Barra más larga = más filtros de ese tipo",
+                                        "Se miden en unidades (uds)"
+                                    ]}
+                                />
+                            </div>
                             <p className="text-sm text-gray-400 mb-6">Desglose por tipo de filtro</p>
                             
                             <div className="space-y-6">
@@ -633,7 +709,17 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Comparación vs Período Anterior */}
                         <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-lg shadow-gray-100/50">
-                            <h3 className="text-xl font-bold text-gray-800 mb-2">Comparación vs Período Anterior</h3>
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="text-xl font-bold text-gray-800">📈 Comparación vs Período Anterior</h3>
+                                <InfoTooltip
+                                    title="¿Qué compara esta gráfica?"
+                                    description="Compara los residuos del período actual con el período anterior (ej: este mes vs mes pasado). El porcentaje verde indica aumento y rojo indica disminución."
+                                    examples={[
+                                        "↑ 15% = 15% más que el período anterior",
+                                        "↓ 10% = 10% menos que el período anterior"
+                                    ]}
+                                />
+                            </div>
                             <p className="text-sm text-gray-400 mb-6">Evolución de residuos recolectados</p>
                             
                             {comparaciones && (
@@ -684,43 +770,145 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Métricas de Impacto Ambiental */}
-                        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-8 rounded-3xl shadow-xl shadow-emerald-200 text-white">
-                            <h3 className="text-xl font-bold mb-2">🌍 Impacto Ambiental</h3>
+                        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-8 rounded-3xl shadow-xl shadow-emerald-200 text-white relative">
+                            <div className="flex items-start gap-3 mb-2">
+                                <h3 className="text-xl font-bold">🌍 Impacto Ambiental</h3>
+                                <div className="relative inline-block">
+                                    <button
+                                        className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all duration-200 text-xs font-bold group"
+                                        title="Cada litro de aceite contamina 1,000L de agua. Aquí calculamos el impacto positivo de tu reciclaje."
+                                    >
+                                        ?
+                                        <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                                            <span className="block bg-gray-900 text-white rounded-xl p-3 shadow-xl text-xs">
+                                                <strong>¿Cómo calculamos esto?</strong><br/>
+                                                • CO₂: Aceite × 2.5 + Basurón × 0.5<br/>
+                                                • Árboles: CO₂ ÷ 21 kg/año<br/>
+                                                • Agua: 1L aceite = 1,000L agua protegida
+                                            </span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
                             <p className="text-emerald-100 text-sm mb-6">Contribución al medio ambiente</p>
                             
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* CO2 Evitado */}
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                                    <div className="text-3xl mb-2">🌱</div>
-                                    <p className="text-2xl font-bold">{((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)).toFixed(0)} kg</p>
-                                    <p className="text-emerald-100 text-xs">CO₂ evitado</p>
-                                </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* CO2 Evitado - Expandible */}
+                                <ExpandableImpactCard
+                                    emoji="🌱"
+                                    value={((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)).toFixed(0)}
+                                    unit="kg"
+                                    label="CO₂ evitado"
+                                    comparisons={[
+                                        {
+                                            icon: "🚗",
+                                            value: Math.round(((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)) / 0.21),
+                                            text: "km en auto evitados",
+                                            detail: "Un auto emite ~0.21 kg CO₂/km"
+                                        },
+                                        {
+                                            icon: "✈️",
+                                            value: Math.round(((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)) / 255),
+                                            text: "vuelos Madrid-Barcelona",
+                                            detail: "Un vuelo corto ≈ 255 kg CO₂"
+                                        },
+                                        {
+                                            icon: "🏠",
+                                            value: Math.round(((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)) / 150),
+                                            text: "meses de luz de un hogar",
+                                            detail: "Hogar promedio ≈ 150 kg CO₂/mes"
+                                        }
+                                    ]}
+                                />
                                 
-                                {/* Árboles equivalentes */}
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                                    <div className="text-3xl mb-2">🌳</div>
-                                    <p className="text-2xl font-bold">{Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21)}</p>
-                                    <p className="text-emerald-100 text-xs">Árboles equivalentes</p>
-                                </div>
+                                {/* Árboles equivalentes - Expandible */}
+                                <ExpandableImpactCard
+                                    emoji="🌳"
+                                    value={Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21).toString()}
+                                    unit=""
+                                    label="Árboles equivalentes"
+                                    comparisons={[
+                                        {
+                                            icon: "🌲",
+                                            value: Math.round(Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21) * 25),
+                                            text: "m² de bosque",
+                                            detail: "Cada árbol ocupa ~25 m² de bosque"
+                                        },
+                                        {
+                                            icon: "⚽",
+                                            value: parseFloat((Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21) * 25 / 7140).toFixed(2)),
+                                            text: "campos de fútbol",
+                                            detail: "Un campo mide ~7,140 m²"
+                                        },
+                                        {
+                                            icon: "🏞️",
+                                            value: Math.round(Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21) / 400),
+                                            text: "hectáreas de bosque",
+                                            detail: "~400 árboles por hectárea"
+                                        }
+                                    ]}
+                                />
                                 
-                                {/* Litros de agua protegidos */}
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                                    <div className="text-3xl mb-2">💧</div>
-                                    <p className="text-2xl font-bold">{(stats.totalAceiteUsado * 1000).toLocaleString()}</p>
-                                    <p className="text-emerald-100 text-xs">Litros de agua protegidos</p>
-                                </div>
+                                {/* Litros de agua protegidos - Expandible */}
+                                <ExpandableImpactCard
+                                    emoji="💧"
+                                    value={(stats.totalAceiteUsado * 1000).toLocaleString()}
+                                    unit=""
+                                    label="Litros de agua protegidos"
+                                    comparisons={[
+                                        {
+                                            icon: "🏊",
+                                            value: Math.round((stats.totalAceiteUsado * 1000) / 50000),
+                                            text: "piscinas olímpicas",
+                                            detail: "Una piscina ≈ 50,000 litros"
+                                        },
+                                        {
+                                            icon: "🚿",
+                                            value: Math.round((stats.totalAceiteUsado * 1000) / 65).toLocaleString(),
+                                            text: "duchas de 5 min",
+                                            detail: "Una ducha usa ~65 litros"
+                                        },
+                                        {
+                                            icon: "👨‍👩‍👧‍👦",
+                                            value: Math.round((stats.totalAceiteUsado * 1000) / 150),
+                                            text: "días de agua familiar",
+                                            detail: "Familia usa ~150 L/día"
+                                        }
+                                    ]}
+                                />
                                 
-                                {/* Residuos reciclados */}
-                                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4">
-                                    <div className="text-3xl mb-2">♻️</div>
-                                    <p className="text-2xl font-bold">{stats.totalResiduosReciclados.toLocaleString()}</p>
-                                    <p className="text-emerald-100 text-xs">kg reciclados total</p>
-                                </div>
+                                {/* Residuos reciclados - Expandible */}
+                                <ExpandableImpactCard
+                                    emoji="♻️"
+                                    value={stats.totalResiduosReciclados.toLocaleString()}
+                                    unit="kg"
+                                    label="kg reciclados total"
+                                    comparisons={[
+                                        {
+                                            icon: "🐘",
+                                            value: parseFloat((stats.totalResiduosReciclados / 5000).toFixed(1)),
+                                            text: "elefantes de peso",
+                                            detail: "Un elefante ≈ 5,000 kg"
+                                        },
+                                        {
+                                            icon: "🚛",
+                                            value: Math.round(stats.totalResiduosReciclados / 8000),
+                                            text: "camiones de basura",
+                                            detail: "Camión carga ~8,000 kg"
+                                        },
+                                        {
+                                            icon: "🏢",
+                                            value: Math.round(stats.totalResiduosReciclados / 500),
+                                            text: "oficinas por mes",
+                                            detail: "Oficina genera ~500 kg/mes"
+                                        }
+                                    ]}
+                                />
                             </div>
                             
                             <div className="mt-6 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
                                 <p className="text-sm text-emerald-100">
-                                    <span className="font-bold text-white">¡Excelente trabajo!</span> Cada litro de aceite correctamente reciclado previene la contaminación de hasta 1,000 litros de agua.
+                                    <span className="font-bold text-white">💡 Tip:</span> Pasa el mouse sobre cada tarjeta para ver comparaciones con objetos del mundo real.
                                 </p>
                             </div>
                         </div>
@@ -899,6 +1087,167 @@ function KpiCardPremium({ title, value, subValue, subValueCount, icon, trend, tr
     );
 }
 
+// Componente de Tarjeta de Impacto Expandible
+interface ImpactComparison {
+    icon: string;
+    value: number | string;
+    text: string;
+    detail: string;
+}
+
+interface ExpandableImpactCardProps {
+    emoji: string;
+    value: string;
+    unit: string;
+    label: string;
+    comparisons: ImpactComparison[];
+}
+
+function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: ExpandableImpactCardProps) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <>
+            {/* Tarjeta simple - siempre igual */}
+            <div 
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 cursor-pointer transition-all duration-200 hover:bg-white/20 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 group"
+                onClick={() => setIsOpen(true)}
+            >
+                <div className="flex items-start justify-between">
+                    <div>
+                        <div className="text-3xl mb-2">{emoji}</div>
+                        <p className="text-2xl font-bold text-white">{value} {unit}</p>
+                        <p className="text-emerald-100 text-xs">{label}</p>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/30 flex items-center justify-center text-sm transition-all group-hover:scale-110">
+                        👆
+                    </div>
+                </div>
+                <p className="text-[10px] text-white/50 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    Clic para ver equivalencias
+                </p>
+            </div>
+
+            {/* Modal centrado */}
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200"
+                    onClick={() => setIsOpen(false)}
+                >
+                    {/* Overlay oscuro */}
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                    
+                    {/* Contenido del modal */}
+                    <div 
+                        className="relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 w-full max-w-md shadow-2xl shadow-black/50 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Botón cerrar */}
+                        <button 
+                            onClick={() => setIsOpen(false)}
+                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center text-white transition-colors"
+                        >
+                            ✕
+                        </button>
+
+                        {/* Header */}
+                        <div className="text-center mb-6">
+                            <div className="text-5xl mb-3">{emoji}</div>
+                            <p className="text-4xl font-bold text-white">{value} {unit}</p>
+                            <p className="text-emerald-100 text-sm mt-1">{label}</p>
+                        </div>
+
+                        {/* Separador */}
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="flex-1 h-px bg-white/20"></div>
+                            <span className="text-white/80 text-sm font-medium">📊 Esto equivale a</span>
+                            <div className="flex-1 h-px bg-white/20"></div>
+                        </div>
+
+                        {/* Comparaciones */}
+                        <div className="space-y-3">
+                            {comparisons.map((comparison, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className="flex items-center gap-4 bg-white/15 rounded-2xl p-4 hover:bg-white/25 transition-colors"
+                                >
+                                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center text-2xl">
+                                        {comparison.icon}
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="font-bold text-white text-lg">
+                                            {typeof comparison.value === 'number' ? comparison.value.toLocaleString() : comparison.value}
+                                        </p>
+                                        <p className="text-emerald-100 text-sm">{comparison.text}</p>
+                                        <p className="text-white/50 text-xs mt-0.5">{comparison.detail}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Footer */}
+                        <p className="text-center text-white/60 text-xs mt-6">
+                            Clic fuera para cerrar
+                        </p>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
+
+// Componente de Tooltip de Información
+interface InfoTooltipProps {
+    title: string;
+    description: string;
+    examples?: string[];
+}
+
+function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="relative inline-block">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                onMouseEnter={() => setIsOpen(true)}
+                onMouseLeave={() => setIsOpen(false)}
+                className="w-6 h-6 rounded-full bg-gray-100 hover:bg-blue-100 text-gray-400 hover:text-blue-500 flex items-center justify-center transition-all duration-200 text-xs font-bold"
+                aria-label="Más información"
+            >
+                ?
+            </button>
+            
+            {isOpen && (
+                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="bg-gray-900 text-white rounded-xl p-4 shadow-xl">
+                        <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-xs">💡</span>
+                            {title}
+                        </h4>
+                        <p className="text-gray-300 text-xs leading-relaxed mb-2">{description}</p>
+                        {examples && examples.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-700">
+                                <p className="text-gray-400 text-xs font-medium mb-1">Ejemplo:</p>
+                                <ul className="text-xs text-gray-300 space-y-1">
+                                    {examples.map((ex, i) => (
+                                        <li key={i} className="flex items-start gap-2">
+                                            <span className="text-green-400">✓</span>
+                                            {ex}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                    {/* Flecha */}
+                    <div className="w-3 h-3 bg-gray-900 transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1"></div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // Componente de Gráfica de Dona (SVG puro)
 interface DonutChartData {
     label: string;
@@ -1001,3 +1350,138 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
         </div>
     );
 }
+
+// Iconos SVG simples y grandes
+const SimpleIcons = {
+    recycle: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+    ),
+    document: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+    ),
+    truck: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12l2 5h-2v4a1 1 0 01-1 1h-1a2 2 0 11-4 0h-4a2 2 0 11-4 0H5a1 1 0 01-1-1V9a2 2 0 012-2h2z" />
+        </svg>
+    ),
+    drop: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3c-4 4-6 7-6 10a6 6 0 1012 0c0-3-2-6-6-10z" />
+        </svg>
+    ),
+    filter: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+    ),
+    ship: (
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 17l3-1.5L9 17l3-1.5 3 1.5 3-1.5 3 1.5M12 3v4m0 0L8 9h8l-4-2zm-6 6v5l6 3 6-3V9" />
+        </svg>
+    ),
+};
+
+// Componente de Tarjeta KPI Simple con colores
+interface SimpleKpiCardProps {
+    title: string;
+    value: string;
+    subtitle: string;
+    icon: keyof typeof SimpleIcons;
+    color: 'blue' | 'violet' | 'emerald' | 'amber' | 'orange' | 'sky' | 'teal' | 'indigo';
+    trendUp?: boolean;
+}
+
+const colorConfig = {
+    blue: {
+        bg: 'bg-blue-50',
+        bgHover: 'hover:bg-blue-500',
+        icon: 'text-blue-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-blue-100',
+        shadow: 'hover:shadow-blue-200',
+    },
+    violet: {
+        bg: 'bg-violet-50',
+        bgHover: 'hover:bg-violet-500',
+        icon: 'text-violet-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-violet-100',
+        shadow: 'hover:shadow-violet-200',
+    },
+    emerald: {
+        bg: 'bg-emerald-50',
+        bgHover: 'hover:bg-emerald-500',
+        icon: 'text-emerald-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-emerald-100',
+        shadow: 'hover:shadow-emerald-200',
+    },
+    amber: {
+        bg: 'bg-amber-50',
+        bgHover: 'hover:bg-amber-500',
+        icon: 'text-amber-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-amber-100',
+        shadow: 'hover:shadow-amber-200',
+    },
+    orange: {
+        bg: 'bg-orange-50',
+        bgHover: 'hover:bg-orange-500',
+        icon: 'text-orange-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-orange-100',
+        shadow: 'hover:shadow-orange-200',
+    },
+    sky: {
+        bg: 'bg-sky-50',
+        bgHover: 'hover:bg-sky-500',
+        icon: 'text-sky-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-sky-100',
+        shadow: 'hover:shadow-sky-200',
+    },
+    teal: {
+        bg: 'bg-teal-50',
+        bgHover: 'hover:bg-teal-500',
+        icon: 'text-teal-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-teal-100',
+        shadow: 'hover:shadow-teal-200',
+    },
+    indigo: {
+        bg: 'bg-indigo-50',
+        bgHover: 'hover:bg-indigo-500',
+        icon: 'text-indigo-500',
+        iconHover: 'group-hover:text-white',
+        border: 'border-indigo-100',
+        shadow: 'hover:shadow-indigo-200',
+    },
+};
+
+function SimpleKpiCard({ title, value, subtitle, icon, color, trendUp }: SimpleKpiCardProps) {
+    const colors = colorConfig[color];
+
+    return (
+        <div className={`group bg-white p-6 rounded-2xl border ${colors.border} shadow-md ${colors.shadow} hover:shadow-xl transition-all duration-300 cursor-pointer ${colors.bgHover}`}>
+            {/* Icono grande */}
+            <div className={`w-16 h-16 ${colors.bg} rounded-2xl flex items-center justify-center mb-4 ${colors.icon} ${colors.iconHover} transition-colors duration-300 group-hover:bg-white/20`}>
+                {SimpleIcons[icon]}
+            </div>
+            
+            {/* Título */}
+            <p className="text-gray-500 text-sm font-medium mb-1 group-hover:text-white/80 transition-colors">{title}</p>
+            
+            {/* Valor grande */}
+            <p className="text-3xl font-bold text-gray-800 mb-2 group-hover:text-white transition-colors">{value}</p>
+            
+            {/* Subtítulo */}
+            <p className="text-sm text-gray-400 group-hover:text-white/70 transition-colors">{subtitle}</p>
+        </div>
+    );
+}
+
