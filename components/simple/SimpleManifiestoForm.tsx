@@ -116,6 +116,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           responsable_secundario_id: formData.responsableMotoristaid,
           observaciones: formData.observaciones || null,
           imagen_manifiesto_url: null,
+          pdf_manifiesto_url: null,
           estado_digitalizacion: 'pendiente'
         },
         {
