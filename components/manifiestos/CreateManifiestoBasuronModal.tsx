@@ -5,6 +5,7 @@ import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
+import { TimePicker } from '@/components/ui/TimePicker';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -34,7 +35,6 @@ export function CreateManifiestoBasuronModal({
   const [showValidation, setShowValidation] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
   const buqueSelectRef = useRef<HTMLSelectElement | null>(null);
-  const horaInputRef = useRef<HTMLInputElement | null>(null);
   
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
@@ -214,19 +214,16 @@ export function CreateManifiestoBasuronModal({
 
                 {/* HORA */}
                 <div 
-                  className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 cursor-pointer ${activeField === 'horaEntrada' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
-                  onClick={() => horaInputRef.current?.showPicker()}
+                  className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'horaEntrada' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
                 >
-                  <label className="text-base font-bold text-black w-36 flex-shrink-0 cursor-pointer">HORA:</label>
+                  <label className="text-base font-bold text-black w-36 flex-shrink-0">HORA:</label>
                   <div className="flex-1 flex items-center gap-2">
-                    <input
-                      ref={horaInputRef}
-                      type="time"
+                    <TimePicker
                       value={formData.hora_entrada || ''}
-                      onChange={(e) => setFormData({ ...formData, hora_entrada: e.target.value })}
+                      onChange={(time) => setFormData({ ...formData, hora_entrada: time })}
                       onFocus={() => setActiveField('horaEntrada')}
                       onBlur={() => setActiveField(null)}
-                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-lg font-medium transition-all duration-200 cursor-pointer ${
+                      className={`border-b-2 bg-transparent focus:outline-none text-black text-lg font-medium transition-all duration-200 cursor-pointer ${
                         activeField === 'horaEntrada' ? 'border-blue-600' : 'border-gray-400'
                       }`}
                       placeholder="HH:MM"

@@ -309,27 +309,89 @@ body {
   background-color: #ef4444 !important;
 }
 
-/* Dropdowns de mes y año */
+/* ============================================
+   DROPDOWNS DE MES Y AÑO - Minimalista
+   ============================================ */
+
+.react-datepicker__header--has-month-dropdown,
+.react-datepicker__header--has-year-dropdown {
+  padding-top: 16px !important;
+}
+
 .react-datepicker__month-dropdown-container,
 .react-datepicker__year-dropdown-container {
-  margin: 0 8px !important;
+  margin: 0 4px !important;
+}
+
+.react-datepicker__month-dropdown-container--select,
+.react-datepicker__year-dropdown-container--select {
+  margin: 0 4px !important;
+}
+
+.react-datepicker__current-month {
+  display: none !important;
+}
+
+.react-datepicker__month-read-view,
+.react-datepicker__year-read-view {
+  visibility: visible !important;
 }
 
 .react-datepicker__month-select,
 .react-datepicker__year-select {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
   border-radius: 8px !important;
-  padding: 4px 8px !important;
+  padding: 8px 28px 8px 12px !important;
+  font-size: 0.95rem !important;
   font-weight: 600 !important;
   cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 8px center !important;
+  background-size: 16px !important;
+}
+
+.react-datepicker__month-select:hover,
+.react-datepicker__year-select:hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+.react-datepicker__month-select:focus,
+.react-datepicker__year-select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
 }
 
 .react-datepicker__month-select option,
 .react-datepicker__year-select option {
-  background-color: #1e40af !important;
-  color: white !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  padding: 8px !important;
+}
+
+/* Botón Hoy */
+.react-datepicker__today-button {
+  display: block !important;
+  background: #f9fafb !important;
+  color: #3b82f6 !important;
+  font-weight: 600 !important;
+  padding: 12px !important;
+  border-top: 1px solid #f3f4f6 !important;
+  border-radius: 0 0 18px 18px !important;
+  transition: all 0.15s ease !important;
+  font-size: 0.9rem !important;
+}
+
+.react-datepicker__today-button:hover {
+  background: #eff6ff !important;
+  color: #2563eb !important;
 }
 
 /* ============================================
@@ -513,3 +575,100 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
   color: #2563eb;
   outline: none;
 }
+
+/* ============================================
+   CUSTOM TIMEPICKER COMPONENT - Estilo DatePicker
+   ============================================ */
+
+.timepicker-popup {
+  animation: timepicker-fade-in 0.2s ease-out;
+}
+
+@keyframes timepicker-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.timepicker-select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 10px !important;
+  padding: 10px 36px 10px 16px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  min-width: 80px !important;
+  text-align: center !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  background-size: 16px !important;
+}
+
+.timepicker-select:hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+.timepicker-select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+.timepicker-select option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  padding: 12px !important;
+  font-size: 1rem !important;
+}
+
+/* TimePicker Select Grande */
+.timepicker-select-large {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 12px !important;
+  padding: 14px 44px 14px 20px !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  min-width: 90px !important;
+  text-align: center !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 18px !important;
+}
+
+.timepicker-select-large:hover {
+  background-color: #e5e7eb !important;
+  border-color: #d1d5db !important;
+}
+
+.timepicker-select-large:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+.timepicker-select-large option {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  padding: 12px !important;
+  font-size: 1.1rem !important;
+}
+

@@ -1401,6 +1401,9 @@ export default function ManifiestosPage() {
                   placeholderText="Seleccionar fecha"
                   className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
                   isClearable
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
                 />
               </div>
               <div className="flex items-center gap-3">
@@ -1419,6 +1422,9 @@ export default function ManifiestosPage() {
                   className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
                   isClearable
                   minDate={fechaFiltroInicio || undefined}
+                  showMonthDropdown
+                  showYearDropdown
+                  dropdownMode="select"
                 />
               </div>
             </div>
