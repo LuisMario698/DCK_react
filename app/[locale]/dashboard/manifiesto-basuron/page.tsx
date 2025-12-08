@@ -34,6 +34,24 @@ export default function ManifiestoBasuronPage() {
     }
   }
 
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      window.open(url, '_blank');
+    }
+  };
+
   const handleDelete = async (id: number) => {
     if (confirm('¿Eliminar?')) {
       try {
@@ -92,19 +110,17 @@ export default function ManifiestoBasuronPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50/50 border-b border-gray-200">
                     <tr>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Horario</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pesaje (kg)</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]"># Ticket</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Fecha</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Hora</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]">Total Depositado</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {manifiestos.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                        <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
                           <div className="flex flex-col items-center gap-3">
                             <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -123,56 +139,47 @@ export default function ManifiestoBasuronPage() {
                               {m.numero_ticket && <span className="text-xs text-gray-400">ID: {m.id}</span>}
                             </div>
                           </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <span className="font-medium text-gray-900 truncate">{m.buque?.nombre_buque || '—'}</span>
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
+                            <span className="font-medium text-gray-900 whitespace-nowrap">{new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                           </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden sm:table-cell">
-                            <span className="text-gray-600 whitespace-nowrap">{new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
+                            <span className="text-gray-600 font-mono">{m.hora_entrada}</span>
                           </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden md:table-cell">
-                            <div className="flex flex-col text-xs text-gray-600">
-                              <span>E: {m.hora_entrada}</span>
-                              <span>S: {m.hora_salida || '—'}</span>
-                            </div>
+                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
+                            <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">{Number(m.total_depositado || 0).toFixed(2)} kg</span>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <div className="flex flex-col text-sm">
-                              <span className="text-gray-500 text-xs">Ent: {m.peso_entrada.toFixed(2)}</span>
-                              {m.peso_salida && <span className="text-gray-500 text-xs">Sal: {m.peso_salida.toFixed(2)}</span>}
-                              <span className="font-bold text-blue-600 mt-1">
-                                Neto: {Number(m.total_depositado || 0).toFixed(2)}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${m.estado === 'Completado'
-                              ? 'bg-green-100 text-green-800'
-                              : m.estado === 'En Proceso'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
-                              }`}>
-                              {m.estado || 'En Proceso'}
-                            </span>
-                          </td>
-
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <div className="flex gap-1 sm:gap-2 min-w-[100px]">
+                            <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => setSelectedManifiesto(m)}
-                                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap bg-white"
                                 title="Ver Detalles"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                <span className="hidden sm:inline">Ver</span>
+                              </button>
+                              <button
+                                onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
+                                disabled={!m.pdf_manifiesto_url}
+                                className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 shadow-sm ${m.pdf_manifiesto_url
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  }`}
+                                title="Descargar Imagen"
+                              >
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                 </svg>
                               </button>
                               <button
                                 onClick={() => handleDelete(m.id)}
-                                className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0 shadow-sm"
                                 title="Eliminar"
                               >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                               </button>

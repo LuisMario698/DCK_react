@@ -68,7 +68,7 @@ export default function ManifiestosPage() {
   const [showMotoristaSuggestions, setShowMotoristaSuggestions] = useState(false);
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  
+
   // Estados para filtros y búsqueda de manifiestos
   const [searchQuery, setSearchQuery] = useState('');
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'buque' | 'motorista' | 'cocinero' | 'fecha' | 'numero'>('todos');
@@ -78,7 +78,7 @@ export default function ManifiestosPage() {
   const [filtroSeleccionBuque, setFiltroSeleccionBuque] = useState<number | null>(null);
   const [filtroSeleccionMotorista, setFiltroSeleccionMotorista] = useState<number | null>(null);
   const [filtroSeleccionCocinero, setFiltroSeleccionCocinero] = useState<number | null>(null);
-  
+
   // Estados para autocompletado de embarcaciones
   const [buqueNombre, setBuqueNombre] = useState('');
   const [showBuqueSuggestions, setShowBuqueSuggestions] = useState(false);
@@ -342,25 +342,25 @@ export default function ManifiestosPage() {
   const manifiestosFiltrados = useMemo(() => {
     return manifiestos.filter((manifiesto) => {
       // Obtener nombres para búsqueda
-      const buqueNombreManifiesto = manifiesto.buque?.nombre_buque || 
+      const buqueNombreManifiesto = manifiesto.buque?.nombre_buque ||
         buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || '';
-      
-      const motoristaNombreManifiesto = manifiesto.responsable_principal?.nombre || 
+
+      const motoristaNombreManifiesto = manifiesto.responsable_principal?.nombre ||
         personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre || '';
-      
-      const cocineroNombreManifiesto = manifiesto.responsable_secundario?.nombre || 
-        (manifiesto.responsable_secundario_id ? 
+
+      const cocineroNombreManifiesto = manifiesto.responsable_secundario?.nombre ||
+        (manifiesto.responsable_secundario_id ?
           personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre : '') || '';
 
       // Filtro por selección específica
       if (filtroActivo === 'buque' && filtroSeleccionBuque !== null) {
         if (manifiesto.buque_id !== filtroSeleccionBuque) return false;
       }
-      
+
       if (filtroActivo === 'motorista' && filtroSeleccionMotorista !== null) {
         if (manifiesto.responsable_principal_id !== filtroSeleccionMotorista) return false;
       }
-      
+
       if (filtroActivo === 'cocinero' && filtroSeleccionCocinero !== null) {
         if (manifiesto.responsable_secundario_id !== filtroSeleccionCocinero) return false;
       }
@@ -368,12 +368,12 @@ export default function ManifiestosPage() {
       // Búsqueda general
       if (searchQuery) {
         const query = searchQuery.toLowerCase().trim();
-        const matchesSearch = 
+        const matchesSearch =
           manifiesto.numero_manifiesto?.toLowerCase().includes(query) ||
           buqueNombreManifiesto.toLowerCase().includes(query) ||
           motoristaNombreManifiesto.toLowerCase().includes(query) ||
           cocineroNombreManifiesto.toLowerCase().includes(query);
-        
+
         // Si hay filtro activo específico, combinar con búsqueda
         if (filtroActivo !== 'todos') {
           switch (filtroActivo) {
@@ -1239,65 +1239,59 @@ export default function ManifiestosPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => { setFiltroActivo('todos'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'todos'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'todos'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               📋 Todos
             </button>
             <button
               onClick={() => { setFiltroActivo('buque'); setShowFiltroFecha(false); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'buque'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'buque'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               🚢 Por Buque
             </button>
             <button
               onClick={() => { setFiltroActivo('motorista'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'motorista'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'motorista'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               👨‍🔧 Por Motorista
             </button>
             <button
               onClick={() => { setFiltroActivo('cocinero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'cocinero'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'cocinero'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               👨‍🍳 Por Cocinero
             </button>
             <button
               onClick={() => { setFiltroActivo('numero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'numero'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'numero'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               🔢 Por Número
             </button>
             <button
               onClick={() => { setFiltroActivo('fecha'); setShowFiltroFecha(!showFiltroFecha); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                filtroActivo === 'fecha'
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'fecha'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               📅 Por Fecha
             </button>
-            
+
             {/* Limpiar filtros */}
             {(searchQuery || filtroActivo !== 'todos' || fechaFiltroInicio || fechaFiltroFin || filtroSeleccionBuque || filtroSeleccionMotorista || filtroSeleccionCocinero) && (
               <button
@@ -1449,54 +1443,53 @@ export default function ManifiestosPage() {
         </div>
 
         {loading ? (
-            <div className="flex justify-center items-center py-8 sm:py-12">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : (
-            <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
-                  <table className="w-full">
-                    <thead className="bg-gray-50/50 border-b border-gray-200">
-                      <tr>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Resp. Principal</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Resp. Secundario</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Estado</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
-                      </tr>
-                    </thead>
-                <tbody>
-                  {manifiestos.length === 0 ? (
+          <div className="flex justify-center items-center py-8 sm:py-12">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
+                <table className="w-full">
+                  <thead className="bg-gray-50/50 border-b border-gray-200">
                     <tr>
-                      <td colSpan={7} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
-                        <div className="flex flex-col items-center gap-3">
-                          <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <p className="text-lg font-semibold">No hay manifiestos registrados</p>
-                          <p className="text-sm">Complete el formulario arriba para crear uno nuevo</p>
-                        </div>
-                      </td>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Motorista</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Cocinero</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
-                  ) : (
-                    manifiestosFiltrados.map((manifiesto) => {
-                      // Buscar el buque por ID si no viene en la relación
-                      const buqueNombre = manifiesto.buque?.nombre_buque || 
-                        buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || 
-                        'N/A';
-                      
-                      // Buscar responsables por ID si no vienen en la relación
-                      const respPrincipal = manifiesto.responsable_principal?.nombre || 
-                        personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre || 
-                        'N/A';
-                      
-                      const respSecundario = manifiesto.responsable_secundario?.nombre || 
-                        (manifiesto.responsable_secundario_id ? 
-                          personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre : 
-                          null);
+                  </thead>
+                  <tbody>
+                    {manifiestos.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                          <div className="flex flex-col items-center gap-3">
+                            <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <p className="text-lg font-semibold">No hay manifiestos registrados</p>
+                            <p className="text-sm">Complete el formulario arriba para crear uno nuevo</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      manifiestosFiltrados.map((manifiesto) => {
+                        // Buscar el buque por ID si no viene en la relación
+                        const buqueNombre = manifiesto.buque?.nombre_buque ||
+                          buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque ||
+                          'N/A';
+
+                        // Buscar responsables por ID si no vienen en la relación
+                        const respPrincipal = manifiesto.responsable_principal?.nombre ||
+                          personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre ||
+                          'N/A';
+
+                        const respSecundario = manifiesto.responsable_secundario?.nombre ||
+                          (manifiesto.responsable_secundario_id ?
+                            personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre :
+                            null);
 
                         return (
                           <tr key={manifiesto.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
@@ -1511,24 +1504,6 @@ export default function ManifiestosPage() {
                             </td>
                             <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
                               <span className="text-gray-600">{respSecundario || '—'}</span>
-                            </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
-                              <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${manifiesto.estado_digitalizacion === 'completado'
-                                ? 'bg-green-100 text-green-800'
-                                : manifiesto.estado_digitalizacion === 'en_proceso'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : manifiesto.estado_digitalizacion === 'aprobado'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : manifiesto.estado_digitalizacion === 'rechazado'
-                                      ? 'bg-red-100 text-red-800'
-                                      : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {manifiesto.estado_digitalizacion === 'completado' && 'Completado'}
-                                {manifiesto.estado_digitalizacion === 'en_proceso' && 'En Proceso'}
-                                {manifiesto.estado_digitalizacion === 'pendiente' && 'Pendiente'}
-                                {manifiesto.estado_digitalizacion === 'aprobado' && 'Aprobado'}
-                                {manifiesto.estado_digitalizacion === 'rechazado' && 'Rechazado'}
-                              </span>
                             </td>
                             <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden sm:table-cell">
                               <span className="text-gray-600 whitespace-nowrap">
