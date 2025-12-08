@@ -309,9 +309,20 @@ export async function getDashboardStats(supabase: SupabaseClient, filters?: Repo
  * Genera un reporte detallado usando RPC
  */
 export async function getReporteComplejo(supabase: SupabaseClient, filters: ReportFilters): Promise<ReporteDetalladoItem[]> {
+    // Ajustar la fecha fin para incluir todo el día (agregar un día)
+    let fechaFinAjustada = filters.fechaFin;
+    if (filters.fechaFin) {
+        const fecha = new Date(filters.fechaFin + 'T00:00:00');
+        fecha.setDate(fecha.getDate() + 1);
+        const year = fecha.getFullYear();
+        const month = String(fecha.getMonth() + 1).padStart(2, '0');
+        const day = String(fecha.getDate()).padStart(2, '0');
+        fechaFinAjustada = `${year}-${month}-${day}`;
+    }
+
     const { data, error } = await supabase.rpc('get_reporte_detallado', {
         p_fecha_inicio: filters.fechaInicio || null,
-        p_fecha_fin: filters.fechaFin || null,
+        p_fecha_fin: fechaFinAjustada || null,
         p_buque_id: filters.buqueId || null,
         p_estado: filters.estado || null
     });

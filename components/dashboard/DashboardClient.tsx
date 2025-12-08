@@ -1126,7 +1126,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Resumen de resultados */}
                     {reportData.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
                                 <p className="text-gray-400 text-sm mb-1">Total Registros</p>
                                 <p className="text-3xl font-bold text-gray-800">{reportData.length}</p>
@@ -1141,12 +1141,6 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <p className="text-gray-400 text-sm mb-1">Buques Únicos</p>
                                 <p className="text-3xl font-bold text-violet-600">
                                     {new Set(reportData.map(item => item.buque)).size}
-                                </p>
-                            </div>
-                            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
-                                <p className="text-gray-400 text-sm mb-1">Completados</p>
-                                <p className="text-3xl font-bold text-emerald-600">
-                                    {reportData.filter(item => item.estado === 'completado').length}
                                 </p>
                             </div>
                         </div>
@@ -1179,13 +1173,12 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         <th className="px-6 py-4">Buque</th>
                                         <th className="px-6 py-4">Tipo de Residuo</th>
                                         <th className="px-6 py-4 text-right">Cantidad</th>
-                                        <th className="px-6 py-4 text-center">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {reportData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={6} className="px-6 py-16 text-center">
+                                            <td colSpan={5} className="px-6 py-16 text-center">
                                                 <div className="flex flex-col items-center gap-4">
                                                     <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center">
                                                         <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1229,18 +1222,6 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                 <td className="px-6 py-4 text-right">
                                                     <span className="font-bold text-gray-800">{item.cantidad.toLocaleString()}</span>
                                                     <span className="text-sm text-gray-400 ml-1">{item.unidad}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${
-                                                        item.estado === 'completado'
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-amber-100 text-amber-700'
-                                                    }`}>
-                                                        <span className={`w-2 h-2 rounded-full ${
-                                                            item.estado === 'completado' ? 'bg-emerald-500' : 'bg-amber-500'
-                                                        }`}></span>
-                                                        {item.estado === 'completado' ? 'Completado' : 'Pendiente'}
-                                                    </span>
                                                 </td>
                                             </tr>
                                         ))
@@ -1330,21 +1311,21 @@ function ExpandableImpactCard({ emoji, value, unit, label, comparisons }: Expand
             {/* Tarjeta base - tamaño fijo */}
             <div 
                 className={`
-                    bg-white/10 backdrop-blur-sm rounded-2xl p-5 cursor-pointer
+                    bg-white/10 backdrop-blur-sm rounded-2xl p-6 cursor-pointer
                     transition-all duration-200
                     ${isOpen ? 'bg-white/25 shadow-lg shadow-black/20' : 'hover:bg-white/15'}
                 `}
             >
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="text-4xl">{emoji}</div>
+                    <div className="flex items-center gap-5">
+                        <div className="text-5xl">{emoji}</div>
                         <div>
-                            <p className="text-2xl font-bold text-white">{value} {unit}</p>
-                            <p className="text-emerald-100 text-sm">{label}</p>
+                            <p className="text-3xl font-bold text-white">{value} {unit}</p>
+                            <p className="text-emerald-100 text-base mt-1">{label}</p>
                         </div>
                     </div>
                     <div className={`
-                        w-8 h-8 rounded-full flex items-center justify-center text-base
+                        w-9 h-9 rounded-full flex items-center justify-center text-lg
                         transition-all duration-300
                         ${isOpen ? 'bg-white/40' : 'bg-white/15'}
                         ${isOpen && openUpward ? 'rotate-0' : isOpen ? 'rotate-180' : ''}
