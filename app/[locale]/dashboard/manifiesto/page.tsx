@@ -475,75 +475,51 @@ export default function ManifiestosPage() {
       }
 
       setSaving(true);
+      setGenerandoPDF('iniciando'); // Indicador visual temporal
 
-      // Auto-registrar embarcación si es nueva
-      let buqueId = formData.buque_id;
-      if (!buqueId && buqueNombre.trim()) {
-        const nuevaBuque = await createBuqueAutomatico(buqueNombre.trim());
-        buqueId = nuevaBuque.id.toString();
-      }
+      // 1. Paralelizar creación de entidades y generación de número
+      const [buqueResult, motoristaResult, cocineroResult, numeroManifiesto] = await Promise.all([
+        // Buque
+        (!formData.buque_id && buqueNombre.trim())
+          ? createBuqueAutomatico(buqueNombre.trim())
+          : Promise.resolve(null),
+        // Motorista
+        (!formData.responsable_principal_id && motoristaNombre.trim())
+          ? getOrCreateTipoPersona('Motorista').then(tipo => createPersonaAutomatica(motoristaNombre.trim(), tipo.id))
+          : Promise.resolve(null),
+        // Cocinero
+        (!formData.responsable_secundario_id && cocineroNombre.trim())
+          ? getOrCreateTipoPersona('Cocinero').then(tipo => createPersonaAutomatica(cocineroNombre.trim(), tipo.id))
+          : Promise.resolve(null),
+        // Generar número anticipadamente
+        generarNumeroManifiesto(formData.fecha_emision)
+      ]);
 
-      // Auto-registrar motorista si es nuevo
-      let motoristaId = formData.responsable_principal_id;
-      if (!motoristaId && motoristaNombre.trim()) {
-        const tipoMotorista = await getOrCreateTipoPersona('Motorista');
-        const nuevoMotorista = await createPersonaAutomatica(motoristaNombre.trim(), tipoMotorista.id);
-        motoristaId = nuevoMotorista.id.toString();
-      }
+      const buqueId = buqueResult ? buqueResult.id.toString() : formData.buque_id;
+      const motoristaId = motoristaResult ? motoristaResult.id.toString() : formData.responsable_principal_id;
+      const cocineroId = cocineroResult ? cocineroResult.id.toString() : formData.responsable_secundario_id;
 
-      // Auto-registrar cocinero si es nuevo
-      let cocineroId = formData.responsable_secundario_id;
-      if (!cocineroId && cocineroNombre.trim()) {
-        const tipoCocinero = await getOrCreateTipoPersona('Cocinero');
-        const nuevoCocinero = await createPersonaAutomatica(cocineroNombre.trim(), tipoCocinero.id);
-        cocineroId = nuevoCocinero.id.toString();
-      }
+      let pdfBlob: Blob | null = null;
 
-      const manifiestoData = {
-        fecha_emision: formData.fecha_emision,
-        buque_id: parseInt(buqueId),
-        responsable_principal_id: parseInt(motoristaId),
-        responsable_secundario_id: cocineroId ? parseInt(cocineroId) : null,
-        estado_digitalizacion: 'completado' as any,
-        observaciones: formData.observaciones || null,
-        imagen_manifiesto_url: null,
-        pdf_manifiesto_url: null,
-      };
-
-      const resultado = await createManifiesto(manifiestoData, residuos, archivo);
-
-      // --- Generar y subir PDF Automáticamente (Solo si NO se adjuntó archivo) ---
+      // 2. Generar PDF en el cliente (si no se adjuntó archivo)
       if (!archivo) {
         try {
-          setGenerandoPDF(resultado.id.toString());
+          // Construir objetos completos para el PDF
+          const buqueObj = buqueResult || buques.find(b => b.id === Number(buqueId)) || { id: Number(buqueId), nombre_buque: buqueNombre.trim() } as any;
+          const respPrincObj = motoristaResult || personas.find(p => p.id === Number(motoristaId)) || { id: Number(motoristaId), nombre: motoristaNombre.trim() } as any;
+          const respSecObj = cocineroResult || personas.find(p => p.id === Number(cocineroId)) || (cocineroNombre.trim() ? { id: Number(cocineroId || 0), nombre: cocineroNombre.trim() } as any : undefined);
 
-          // 1. Preparar datos completos para el PDF (Relaciones)
-          // Intentar encontrar en el estado (existentes).
-          let buqueObj = buques.find(b => b.id === resultado.buque_id);
-          let respPrincObj = personas.find(p => p.id === resultado.responsable_principal_id);
-          let respSecObj = personas.find(p => p.id === resultado.responsable_secundario_id);
-
-          // FALLBACK: Si no existe en el estado (acaba de crearse), construir objeto manual
-          if (!buqueObj && resultado.buque_id) {
-            buqueObj = { id: resultado.buque_id, nombre_buque: buqueNombre.trim() } as any;
-          }
-          if (!respPrincObj && resultado.responsable_principal_id) {
-            respPrincObj = { id: resultado.responsable_principal_id, nombre: motoristaNombre.trim() } as any;
-          }
-          if (!respSecObj && resultado.responsable_secundario_id) {
-            respSecObj = { id: resultado.responsable_secundario_id, nombre: cocineroNombre.trim() } as any;
-          }
-
-          // Construir objeto con la estructura que espera el generador
           const manifestoCompleto = {
-            ...resultado,
-            buque: buqueObj, // El generador suele esperar el objeto o { nombre_buque }
+            id: 0, // ID temporal
+            created_at: new Date().toISOString(),
+            numero_manifiesto: numeroManifiesto,
+            fecha_emision: formData.fecha_emision,
+            buque: buqueObj,
             responsable_principal: respPrincObj,
             responsable_secundario: respSecObj,
-            residuos: { ...residuos } // Pasamos los valores actuales
+            residuos: { ...residuos }
           } as unknown as ManifiestoConRelaciones;
 
-          // 2. Preparar Firmas
           const firmasPDF: FirmasManifiesto = {
             motoristaFirma: motoristaSignature,
             motoristaNombre: motoristaNombre || respPrincObj?.nombre,
@@ -552,28 +528,31 @@ export default function ManifiestosPage() {
             oficialFirma: oficialSignature
           };
 
-          // 3. Generar PDF Blob
-          const pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
-
-          // 4. Subir PDF
-          console.log("Subiendo PDF generado...");
-          const pdfUrl = await uploadManifiestoPDF(pdfBlob, resultado.numero_manifiesto);
-
-          // 5. Actualizar Manifiesto con URL
-          if (pdfUrl) {
-            await updateManifiesto(resultado.id, { pdf_manifiesto_url: pdfUrl });
-            console.log("✅ PDF vinculado exitosamente");
-          }
-
-        } catch (pdfError) {
-          console.error("⚠️ Error generando/subiendo PDF automático:", pdfError);
-          // No bloqueamos el flujo principal, pero avisamos en consola
-        } finally {
-          setGenerandoPDF(null);
+          pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
+        } catch (e) {
+          console.error("Error generando PDF preliminar:", e);
         }
-      } else {
-        console.log("ℹ️ Se omitió generación automática de PDF porque se adjuntó archivo.");
       }
+
+      // 3. Crear Manifiesto (Subida + Insert en un paso optimizado)
+      const manifiestoData = {
+        fecha_emision: formData.fecha_emision,
+        buque_id: parseInt(buqueId),
+        responsable_principal_id: parseInt(motoristaId),
+        responsable_secundario_id: cocineroId ? parseInt(cocineroId) : null,
+        estado_digitalizacion: 'completado' as any, // Se asumirá completado si hay PDF
+        observaciones: formData.observaciones || null,
+        imagen_manifiesto_url: null,
+        pdf_manifiesto_url: null,
+      };
+
+      const resultado = await createManifiesto(
+        manifiestoData,
+        residuos,
+        archivo,
+        pdfBlob,
+        numeroManifiesto // Pasamos el número generado
+      );
 
       alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
 
@@ -606,6 +585,7 @@ export default function ManifiestosPage() {
       alert('❌ Error al guardar el manifiesto: ' + (error.message || 'Error desconocido'));
     } finally {
       setSaving(false);
+      setGenerandoPDF(null);
     }
   };
 

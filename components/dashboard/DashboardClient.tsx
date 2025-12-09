@@ -219,7 +219,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value">${statsData.totalResiduosReciclados.toLocaleString()} kg</div>
-                        <div class="stat-label">Total Reciclado</div>
+                        <div class="stat-label">Total Procesado</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${statsData.totalManifiestos}</div>
@@ -337,7 +337,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Total Reciclado - Azul */}
                         <SimpleKpiCard
-                            title="Total Reciclado"
+                            title="Total Procesado"
                             value={`${stats.totalResiduosReciclados.toLocaleString()} kg`}
                             subtitle={`${trendTotal.valor} vs anterior`}
                             icon="recycle"
@@ -737,7 +737,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <div className="space-y-5">
                                     {/* Total Reciclado */}
                                     <ComparisonBar
-                                        label="Total Reciclado"
+                                        label="Total Procesado"
                                         actual={stats.totalResiduosReciclados}
                                         anterior={comparaciones.totalAnterior}
                                         unit="kg"
