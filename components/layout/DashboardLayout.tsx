@@ -32,7 +32,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar />
       <div className={`flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${getSidebarPadding()}`}>
         <Header />
@@ -56,3 +56,4 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     </SidebarProvider>
   );
 }
+

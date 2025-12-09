@@ -106,7 +106,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-800">Tipos de Persona</h3>
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Tipos de Persona</h3>
         <Button onClick={() => handleOpenModal()} variant="secondary" className="text-sm">
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -122,18 +122,18 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {tipos.map((tipo) => (
-            <div key={tipo.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={tipo.id} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{tipo.nombre_tipo}</h4>
+                  <h4 className="font-semibold text-gray-900 dark:text-white">{tipo.nombre_tipo}</h4>
                   {tipo.descripcion && (
-                    <p className="text-xs text-gray-500 mt-1">{tipo.descripcion}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{tipo.descripcion}</p>
                   )}
                 </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleOpenModal(tipo)}
-                    className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
                     title="Editar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   </button>
                   <button
                     onClick={() => handleDelete(tipo.id)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                    className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
                     title="Eliminar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   </button>
                 </div>
               </div>
-              <div className="text-xs text-gray-400">ID: {tipo.id}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">ID: {tipo.id}</div>
             </div>
           ))}
         </div>
@@ -159,13 +159,13 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                 {editingTipo ? 'Editar Tipo de Persona' : 'Nuevo Tipo de Persona'}
               </h3>
-              <button onClick={handleCloseModal} className="text-gray-400 hover:text-gray-600">
+              <button onClick={handleCloseModal} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -174,7 +174,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Nombre del Tipo *
                 </label>
                 <input
@@ -182,27 +182,27 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   required
                   value={formData.nombre_tipo}
                   onChange={(e) => setFormData({ ...formData, nombre_tipo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                   placeholder="Ej: Capitán, Tripulante, Inspector"
                   disabled={saving}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Descripción
                 </label>
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white text-gray-900"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                   placeholder="Descripción opcional del tipo de persona"
                   rows={3}
                   disabled={saving}
                 />
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t">
+              <div className="flex gap-3 justify-end pt-4 border-t dark:border-slate-700">
                 <Button type="button" variant="secondary" onClick={handleCloseModal} disabled={saving}>
                   Cancelar
                 </Button>

@@ -38,7 +38,7 @@ export default function EmbarcacionesPage() {
 
   const totalItems = buques.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-  
+
   const handleEdit = (id: number) => {
     console.log('🚢 handleEdit llamado con id:', id);
     const buque = buques.find(b => b.id === id);
@@ -105,14 +105,14 @@ export default function EmbarcacionesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
         <div className="mb-4 sm:mb-6 md:mb-8">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 flex items-center gap-2 sm:gap-3">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l5.12-5.12A3 3 0 0110.24 9H13a2 2 0 012 2v5.5M3 15v3a3 3 0 003 3h12a3 3 0 003-3v-3M3 15h18" />
-            </svg>
-          </div>
-          <div>
-            <span className="text-xl sm:text-2xl font-bold text-gray-800">{t('titulo')}</span>
-            <p className="text-gray-600 text-sm sm:text-base md:text-lg">{t('subtitulo')}</p>
+            <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-9 md:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l5.12-5.12A3 3 0 0110.24 9H13a2 2 0 012 2v5.5M3 15v3a3 3 0 003 3h12a3 3 0 003-3v-3M3 15h18" />
+              </svg>
+            </div>
+            <div>
+              <span className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white">{t('titulo')}</span>
+              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base md:text-lg">{t('subtitulo')}</p>
             </div>
           </h1>
         </div>
@@ -122,108 +122,108 @@ export default function EmbarcacionesPage() {
         </Button>
       </div>
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Total Buques</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-0.5 sm:mt-1">{estadisticas.total}</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
+      {/* Estadísticas */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Total Buques</p>
+              <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mt-0.5 sm:mt-1">{estadisticas.total}</p>
             </div>
-          </div>
-
-          <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Activos</p>
-                <p className="text-xl sm:text-2xl font-bold text-green-600 mt-0.5 sm:mt-1">{estadisticas.activos}</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-gray-500 font-medium">Mantenimiento</p>
-                <p className="text-xl sm:text-2xl font-bold text-yellow-600 mt-0.5 sm:mt-1">{estadisticas.mantenimiento}</p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-xl border border-gray-200 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 font-medium">Inactivos</p>
-                <p className="text-2xl font-bold text-gray-600 mt-1">{estadisticas.inactivos}</p>
-              </div>
-              <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              </div>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-50 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
           </div>
         </div>
 
-        {/* Alerta de registros incompletos */}
-        {estadisticas.incompletos > 0 && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center gap-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Activos</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mt-0.5 sm:mt-1">{estadisticas.activos}</p>
+            </div>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Mantenimiento</p>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1">{estadisticas.mantenimiento}</p>
+            </div>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
-            <div>
-              <p className="font-semibold text-orange-800">
-                {estadisticas.incompletos} embarcación{estadisticas.incompletos > 1 ? 'es' : ''} con registro incompleto
-              </p>
-              <p className="text-sm text-orange-600">
-                Fueron creadas automáticamente desde manifiestos. Haz clic en "Editar" para completar sus datos.
-              </p>
-            </div>
           </div>
-        )}
-
-        <div className="space-y-4">
-          <EmbarcacionesTable 
-            embarcaciones={buques}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
-          />
         </div>
 
-        {isModalOpen && (
-          <CreateEmbarcacionModal
-            onCreate={handleCreate}
-            onClose={handleCloseModal}
-            buqueToEdit={buqueToEdit}
-          />
-        )}
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Inactivos</p>
+              <p className="text-2xl font-bold text-gray-600 dark:text-gray-300 mt-1">{estadisticas.inactivos}</p>
+            </div>
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Alerta de registros incompletos */}
+      {estadisticas.incompletos > 0 && (
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-700 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-100 dark:bg-orange-800 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <div>
+            <p className="font-semibold text-orange-800 dark:text-orange-300">
+              {estadisticas.incompletos} embarcación{estadisticas.incompletos > 1 ? 'es' : ''} con registro incompleto
+            </p>
+            <p className="text-sm text-orange-600 dark:text-orange-400">
+              Fueron creadas automáticamente desde manifiestos. Haz clic en "Editar" para completar sus datos.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <EmbarcacionesTable
+          embarcaciones={buques}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+        />
+      </div>
+
+      {isModalOpen && (
+        <CreateEmbarcacionModal
+          onCreate={handleCreate}
+          onClose={handleCloseModal}
+          buqueToEdit={buqueToEdit}
+        />
+      )}
+    </div>
   );
 }

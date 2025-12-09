@@ -51,17 +51,17 @@ export function Sidebar() {
           fixed inset-y-0 left-0 
           h-full
           ${isCollapsed ? 'w-20' : 'w-64'}
-          bg-white border-r border-gray-200
+          bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
           z-50 
           transition-all duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          shadow-lg
+          shadow-lg dark:shadow-gray-950/50
           flex flex-col
           overflow-x-hidden
         `}
       >
         {/* Header */}
-        <div className={`h-28 flex items-center ${isCollapsed ? 'justify-center' : 'justify-center relative'} border-b border-gray-100 bg-white`}>
+        <div className={`h-28 flex items-center ${isCollapsed ? 'justify-center' : 'justify-center relative'} border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : 'w-full flex justify-center'}`}>
             {isCollapsed ? (
               <div className="flex-shrink-0 w-16 h-16 relative">
@@ -86,7 +86,7 @@ export function Sidebar() {
             )}
           </div>
           {/* Botón cerrar solo visible en móvil */}
-          <button onClick={closeSidebar} className="lg:hidden absolute right-4 text-gray-400 hover:text-gray-900">
+          <button onClick={closeSidebar} className="lg:hidden absolute right-4 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -102,8 +102,8 @@ export function Sidebar() {
                   className={`
                     group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
                     ${isActive(item.href)
-                      ? 'bg-blue-50 text-blue-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
                   title={isCollapsed ? item.label : ''}
@@ -119,7 +119,7 @@ export function Sidebar() {
             </div>
 
             <div className="space-y-1">
-              {!isCollapsed && <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Externos</p>}
+              {!isCollapsed && <p className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Externos</p>}
               {externosItems.map((item) => (
                 <Link
                   key={item.href}
@@ -127,8 +127,8 @@ export function Sidebar() {
                   className={`
                     group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
                     ${isActive(item.href)
-                      ? 'bg-blue-50 text-blue-600 font-semibold'
-                      : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
                   title={isCollapsed ? item.label : ''}
@@ -146,10 +146,10 @@ export function Sidebar() {
         </div>
 
         {/* Footer / Collapse Toggle (Solo Desktop) */}
-        <div className="hidden lg:block p-4 border-t border-gray-100 bg-gray-50/50">
+        <div className="hidden lg:block p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
           <button
             onClick={toggleCollapse}
-            className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center w-full gap-2'} p-2 rounded-lg bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm`}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center w-full gap-2'} p-2 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white transition-colors shadow-sm`}
           >
             <svg
               className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
@@ -166,3 +166,4 @@ export function Sidebar() {
     </>
   );
 }
+

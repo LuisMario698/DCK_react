@@ -23,7 +23,7 @@ export interface PersonaFormData {
 export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }: CreatePersonaModalProps) {
   const t = useTranslations('Personas.modal');
   const tm = useTranslations('Personas.mensajes');
-  
+
   const [formData, setFormData] = useState<PersonaFormData>({
     nombre: '',
     tipo_persona_id: null,
@@ -75,7 +75,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.tipo_persona_id) {
       alert(t('seleccioneTipo'));
       return;
@@ -83,7 +83,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
 
     try {
       setLoading(true);
-      
+
       if (personaToEdit) {
         // Editar persona existente
         await updatePersona(personaToEdit.id, formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
@@ -93,7 +93,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
         await createPersona(formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
         alert(tm('personaCreada'));
       }
-      
+
       resetForm();
       onCreate?.();
       onClose();
@@ -108,15 +108,15 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
             {personaToEdit ? t('tituloEditar') : t('tituloCrear')}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -133,7 +133,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
             <>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('nombre')} *
                   </label>
                   <input
@@ -141,21 +141,21 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                     required
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                     placeholder={t('nombre')}
                     disabled={loading}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('tipo')} *
                   </label>
                   <select
                     required
                     value={formData.tipo_persona_id || ''}
                     onChange={(e) => setFormData({ ...formData, tipo_persona_id: Number(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                     disabled={loading}
                   >
                     <option value="">{t('seleccioneTipo')}</option>
@@ -168,13 +168,13 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {t('email')} / {t('telefono')}
                   </label>
                   <textarea
                     value={formData.info_contacto}
                     onChange={(e) => setFormData({ ...formData, info_contacto: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white text-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
                     placeholder={`${t('email')}, ${t('telefono')}`}
                     rows={4}
                     disabled={loading}
@@ -182,17 +182,17 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
                 </div>
               </div>
 
-              <div className="flex gap-3 justify-end mt-6 pt-4 border-t">
-                <Button 
-                  type="button" 
-                  variant="secondary" 
+              <div className="flex gap-3 justify-end mt-6 pt-4 border-t dark:border-slate-700">
+                <Button
+                  type="button"
+                  variant="secondary"
                   onClick={onClose}
                   disabled={loading}
                 >
                   {t('cancelar')}
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   variant="primary"
                   disabled={loading}
                 >

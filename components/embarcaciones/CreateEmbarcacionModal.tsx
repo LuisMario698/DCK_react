@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -15,7 +15,7 @@ interface Props {
 export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props) {
   const t = useTranslations('Embarcaciones.modal');
   const tm = useTranslations('Embarcaciones.mensajes');
-  
+
   const [loading, setLoading] = useState(false);
   const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('Barco');
@@ -83,33 +83,33 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/60 backdrop-blur-sm">
+      <div className="w-full max-w-2xl bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-lg font-semibold dark:text-white">
             {buqueToEdit ? t('tituloEditar') : t('tituloCrear')}
           </h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">✖</button>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">✖</button>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="text-sm text-gray-600">{t('nombreBuque')} *</label>
-            <input 
-              required 
-              value={nombre} 
-              onChange={(e) => setNombre(e.target.value)} 
+            <label className="text-sm text-gray-600 dark:text-gray-300">{t('nombreBuque')} *</label>
+            <input
+              required
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej: La Perla Negra"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Tipo de Buque</label>
-            <select 
-              value={tipo} 
-              onChange={(e) => setTipo(e.target.value)} 
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+            <label className="text-sm text-gray-600 dark:text-gray-300">Tipo de Buque</label>
+            <select
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value)}
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             >
               <option value="Barco">Barco</option>
               <option value="Lancha">Lancha</option>
@@ -121,43 +121,43 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Matrícula</label>
-            <input 
-              value={matricula} 
-              onChange={(e) => setMatricula(e.target.value)} 
+            <label className="text-sm text-gray-600 dark:text-gray-300">Matrícula</label>
+            <input
+              value={matricula}
+              onChange={(e) => setMatricula(e.target.value)}
               placeholder="Ej: ABC-1234"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Puerto Base</label>
-            <input 
-              value={puerto} 
-              onChange={(e) => setPuerto(e.target.value)} 
+            <label className="text-sm text-gray-600 dark:text-gray-300">Puerto Base</label>
+            <input
+              value={puerto}
+              onChange={(e) => setPuerto(e.target.value)}
               placeholder="Ej: Puerto Limón"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <div>
-            <label className="text-sm text-gray-600">Capacidad (Toneladas)</label>
-            <input 
-              type="number" 
+            <label className="text-sm text-gray-600 dark:text-gray-300">Capacidad (Toneladas)</label>
+            <input
+              type="number"
               step="0.01"
-              value={capacidad} 
-              onChange={(e) => setCapacidad(e.target.value)} 
+              value={capacidad}
+              onChange={(e) => setCapacidad(e.target.value)}
               placeholder="Ej: 500"
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900" 
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             />
           </div>
 
           <div className="md:col-span-2">
-            <label className="text-sm text-gray-600">Estado</label>
-            <select 
-              value={estado} 
-              onChange={(e) => setEstado(e.target.value as 'Activo' | 'Inactivo' | 'En Mantenimiento')} 
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900"
+            <label className="text-sm text-gray-600 dark:text-gray-300">Estado</label>
+            <select
+              value={estado}
+              onChange={(e) => setEstado(e.target.value as 'Activo' | 'Inactivo' | 'En Mantenimiento')}
+              className="mt-1 block w-full border border-gray-300 dark:border-slate-600 rounded-md px-3 py-2 bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
             >
               <option value="Activo">Activo</option>
               <option value="Inactivo">Inactivo</option>

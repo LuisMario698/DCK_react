@@ -1,22 +1,23 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
+
+/* Configuración de Dark Mode para Tailwind v4 - Selector-based */
+@variant dark (&:is(.dark *));
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
+.dark {
+  --background: #030712;
+  --foreground: #f3f4f6;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-mono: var(--font-mono);
 }
 
 body {
@@ -115,7 +116,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   border: none !important;
   border-radius: 20px !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   overflow: hidden;
@@ -186,7 +187,7 @@ body {
   -webkit-backdrop-filter: blur(8px) !important;
   color: white !important;
   font-weight: 600 !important;
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(59, 130, 246, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
   transform: none !important;
@@ -441,7 +442,7 @@ body {
   -webkit-backdrop-filter: blur(8px) !important;
   color: white !important;
   font-weight: 600 !important;
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(59, 130, 246, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
 }
@@ -468,7 +469,7 @@ body {
 .react-datepicker--time-only {
   border: none !important;
   border-radius: 16px !important;
-  box-shadow: 
+  box-shadow:
     0 10px 40px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(0, 0, 0, 0.05) !important;
   overflow: hidden;
@@ -589,6 +590,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -672,3 +674,102 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
   font-size: 1.1rem !important;
 }
 
+/* ============================================
+   DARK MODE PARA REACT-DATEPICKER
+   ============================================ */
+
+.dark .react-datepicker {
+  background: #1f2937 !important;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__header {
+  background: #1f2937 !important;
+  border-bottom: 1px solid #374151 !important;
+}
+
+.dark .react-datepicker__current-month {
+  color: #f9fafb !important;
+}
+
+.dark .react-datepicker__day-name {
+  color: #9ca3af !important;
+}
+
+.dark .react-datepicker__month {
+  background: #1f2937 !important;
+}
+
+.dark .react-datepicker__day {
+  color: #e5e7eb !important;
+}
+
+.dark .react-datepicker__day:hover {
+  background: #374151 !important;
+  color: #ffffff !important;
+}
+
+.dark .react-datepicker__day--selected,
+.dark .react-datepicker__day--keyboard-selected {
+  background: rgba(59, 130, 246, 0.9) !important;
+  color: white !important;
+}
+
+.dark .react-datepicker__day--today {
+  background: transparent !important;
+  color: #60a5fa !important;
+  border: 2px solid #3b82f6 !important;
+}
+
+.dark .react-datepicker__day--outside-month {
+  color: #6b7280 !important;
+}
+
+.dark .react-datepicker__day--outside-month:hover {
+  background: #374151 !important;
+  color: #9ca3af !important;
+}
+
+.dark .react-datepicker__navigation:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .react-datepicker__navigation-icon::before {
+  border-color: #9ca3af !important;
+}
+
+.dark .react-datepicker__navigation:hover *::before {
+  border-color: #60a5fa !important;
+}
+
+.dark .react-datepicker__month-select,
+.dark .react-datepicker__year-select {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+  border: 1px solid #4b5563 !important;
+}
+
+.dark .react-datepicker__month-select:hover,
+.dark .react-datepicker__year-select:hover {
+  background-color: #4b5563 !important;
+  border-color: #6b7280 !important;
+}
+
+.dark .react-datepicker__month-select option,
+.dark .react-datepicker__year-select option {
+  background-color: #374151 !important;
+  color: #f9fafb !important;
+}
+
+.dark .react-datepicker__today-button {
+  background: #374151 !important;
+  color: #60a5fa !important;
+  border-top: 1px solid #4b5563 !important;
+}
+
+.dark .react-datepicker__today-button:hover {
+  background: #4b5563 !important;
+  color: #93c5fd !important;
+}

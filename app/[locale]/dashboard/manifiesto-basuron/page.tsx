@@ -93,10 +93,10 @@ export default function ManifiestoBasuronPage() {
         </button>
       </div>
 
-      <div id="lista-registros" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+      <div id="lista-registros" className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
         <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Recibos del Relleno Sanitario</h2>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Recibos del Relleno Sanitario</h2>
+          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
         </div>
 
         {loading ? (
@@ -106,9 +106,9 @@ export default function ManifiestoBasuronPage() {
         ) : (
           <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
             <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
+              <div className="overflow-hidden border border-gray-200 dark:border-gray-700 sm:rounded-xl">
                 <table className="w-full">
-                  <thead className="bg-gray-50/50 border-b border-gray-200">
+                  <thead className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
                     <tr>
                       <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]"># Ticket</th>
                       <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Fecha</th>
@@ -122,17 +122,17 @@ export default function ManifiestoBasuronPage() {
                       <tr>
                         <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
                           <div className="flex flex-col items-center gap-3">
-                            <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p className="text-lg font-semibold">No hay recibos registrados</p>
-                            <p className="text-sm">Crea uno nuevo con el formulario superior</p>
+                            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">No hay recibos registrados</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Crea uno nuevo con el formulario superior</p>
                           </div>
                         </td>
                       </tr>
                     ) : (
                       manifiestos.map((m) => (
-                        <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                        <tr key={m.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
                             <div className="flex flex-col">
                               <span className="font-semibold text-blue-600 whitespace-nowrap">#{m.numero_ticket || m.id}</span>
@@ -140,19 +140,19 @@ export default function ManifiestoBasuronPage() {
                             </div>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="font-medium text-gray-900 whitespace-nowrap">{new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">{new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="text-gray-600 font-mono">{m.hora_entrada}</span>
+                            <span className="text-gray-600 dark:text-gray-300 font-mono">{m.hora_entrada}</span>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">{Number(m.total_depositado || 0).toFixed(2)} kg</span>
+                            <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">{Number(m.total_depositado || 0).toFixed(2)} kg</span>
                           </td>
                           <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
                             <div className="flex justify-center gap-2">
                               <button
                                 onClick={() => setSelectedManifiesto(m)}
-                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap bg-white"
+                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-gray-800"
                                 title="Ver Detalles"
                               >
                                 <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,8 +165,8 @@ export default function ManifiestoBasuronPage() {
                                 onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
                                 disabled={!m.pdf_manifiesto_url}
                                 className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 shadow-sm ${m.pdf_manifiesto_url
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                                   }`}
                                 title="Descargar Imagen"
                               >

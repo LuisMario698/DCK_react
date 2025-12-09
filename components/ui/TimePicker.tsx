@@ -21,7 +21,7 @@ export function TimePicker({
 }: TimePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Parsear el valor actual
   const [selectedHour, setSelectedHour] = useState<number>(() => {
     if (value) {
@@ -30,7 +30,7 @@ export function TimePicker({
     }
     return new Date().getHours();
   });
-  
+
   const [selectedMinute, setSelectedMinute] = useState<number>(() => {
     if (value) {
       const [, m] = value.split(':');
@@ -111,12 +111,12 @@ export function TimePicker({
       {/* Popup */}
       {isOpen && (
         <div className="absolute top-full left-0 mt-2 z-50 timepicker-popup">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden" style={{ minWidth: '240px' }}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden" style={{ minWidth: '240px' }}>
             {/* Header con selectores grandes */}
-            <div className="flex items-center justify-center gap-3 p-5 bg-white">
+            <div className="flex items-center justify-center gap-3 p-5 bg-white dark:bg-gray-800">
               {/* Selector de Hora */}
               <div className="flex flex-col items-center">
-                <span className="text-xs text-gray-500 font-medium mb-2">Hora</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Hora</span>
                 <select
                   value={selectedHour}
                   onChange={(e) => handleHourChange(parseInt(e.target.value, 10))}
@@ -130,11 +130,11 @@ export function TimePicker({
                 </select>
               </div>
 
-              <span className="text-3xl font-bold text-gray-400 mt-5">:</span>
+              <span className="text-3xl font-bold text-gray-400 dark:text-gray-500 mt-5">:</span>
 
               {/* Selector de Minutos */}
               <div className="flex flex-col items-center">
-                <span className="text-xs text-gray-500 font-medium mb-2">Minutos</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Minutos</span>
                 <select
                   value={selectedMinute}
                   onChange={(e) => handleMinuteChange(parseInt(e.target.value, 10))}
@@ -153,7 +153,7 @@ export function TimePicker({
             <button
               type="button"
               onClick={setCurrentTime}
-              className="w-full py-3 text-blue-500 font-semibold hover:bg-blue-50 transition-colors border-t border-gray-100"
+              className="w-full py-3 text-blue-500 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border-t border-gray-100 dark:border-gray-700"
             >
               Ahora
             </button>

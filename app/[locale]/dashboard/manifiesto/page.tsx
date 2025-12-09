@@ -812,23 +812,23 @@ export default function ManifiestosPage() {
   return (
     <div className="space-y-4">
       {/* Formulario estilo documento físico - Dos columnas */}
-      <div className="bg-white border-2 border-gray-800 rounded-lg overflow-hidden max-w-6xl mx-auto">
+      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-6xl mx-auto shadow-lg">
         {/* Encabezado del documento */}
-        <div className="bg-gray-50 px-6 py-4 border-b-2 border-gray-800">
-          <p className="text-base font-medium text-black">Puerto Peñasco, Sonora a {new Date(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
+          <p className="text-base font-medium text-gray-700 dark:text-gray-300">Puerto Peñasco, Sonora a {new Date(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
 
         {/* Contenido del formulario - Layout de dos columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
+        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-slate-700">
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
           <div className="p-6 space-y-4">
-            <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Datos del Manifiesto</h3>
+            <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Datos del Manifiesto</h3>
 
             {/* FECHA */}
             <div
-              className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50'}`}
+              className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
-              <label className="text-base font-bold text-black w-36 flex-shrink-0">FECHA:</label>
+              <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">FECHA:</label>
               <div className="flex-1 flex items-center gap-2">
                 <DatePicker
                   selected={formData.fecha_emision ? new Date(formData.fecha_emision + 'T00:00:00') : null}
@@ -845,7 +845,7 @@ export default function ManifiestosPage() {
                   dateFormat="dd/MM/yyyy"
                   locale="es"
                   showPopperArrow={false}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400'
+                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:!text-white text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
                     }`}
                   calendarClassName="custom-datepicker"
                   wrapperClassName="flex-1"
@@ -863,7 +863,7 @@ export default function ManifiestosPage() {
 
             {/* NOMBRE DEL BARCO */}
             <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'buque' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-              <label className="text-base font-bold text-black w-36 flex-shrink-0">BARCO:</label>
+              <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">BARCO:</label>
               <div className="flex-1 relative">
                 <input
                   ref={buqueInputRef}
@@ -906,11 +906,11 @@ export default function ManifiestosPage() {
                       handleKeyDown(e, 1);
                     }
                   }}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium transition-all duration-200 ${showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
+                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium transition-all duration-200 ${showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
                     }`}
                 />
                 {showBuqueSuggestions && (
-                  <div className="absolute z-50 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1">
+                  <div className="absolute z-50 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1">
                     {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).map((buque, index) => (
                       <div
                         key={buque.id}
@@ -919,7 +919,7 @@ export default function ManifiestosPage() {
                           setFormData({ ...formData, buque_id: buque.id.toString() });
                           setShowBuqueSuggestions(false);
                         }}
-                        className={`px-3 py-2 cursor-pointer text-base ${index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'
+                        className={`px-3 py-2 cursor-pointer text-base ${index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'
                           }`}
                       >
                         {buque.nombre_buque}
@@ -936,13 +936,13 @@ export default function ManifiestosPage() {
             </div>
 
             {/* Línea divisoria */}
-            <div className="border-t border-gray-200 my-2"></div>
+            <div className="border-t border-gray-200 dark:border-slate-700 my-2"></div>
 
             {/* RESIDUOS - Grid compacto */}
             <div className="grid grid-cols-2 gap-3">
               {/* ACEITE USADO */}
               <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'aceite' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black block mb-1">ACEITE USADO</label>
+                <label className="text-sm font-bold text-black dark:text-white block mb-1">ACEITE USADO</label>
                 <div className="flex items-center gap-1">
                   <input
                     ref={aceiteRef}
@@ -955,16 +955,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 2)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'aceite' ? 'border-blue-600' : 'border-gray-300'
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'aceite' ? 'border-blue-600' : 'border-gray-300'
                       }`}
                   />
-                  <span className="text-sm font-medium text-black">Lt</span>
+                  <span className="text-sm font-medium text-black dark:text-gray-300">Lt</span>
                 </div>
               </div>
 
               {/* FILTROS DE ACEITE */}
               <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosAceite' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black block mb-1">FILTROS ACEITE</label>
+                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS ACEITE</label>
                 <div className="flex items-center gap-1">
                   <input
                     ref={filtrosAceiteRef}
@@ -976,16 +976,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 3)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAceite' ? 'border-blue-600' : 'border-gray-300'
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAceite' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                       }`}
                   />
-                  <span className="text-sm font-medium text-black">Pza</span>
+                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
                 </div>
               </div>
 
               {/* FILTROS DE DIESEL */}
               <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosDiesel' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black block mb-1">FILTROS DIESEL</label>
+                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS DIESEL</label>
                 <div className="flex items-center gap-1">
                   <input
                     ref={filtrosDieselRef}
@@ -997,16 +997,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 4)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosDiesel' ? 'border-blue-600' : 'border-gray-300'
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosDiesel' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                       }`}
                   />
-                  <span className="text-sm font-medium text-black">Pza</span>
+                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
                 </div>
               </div>
 
               {/* FILTROS DE AIRE */}
               <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosAire' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black block mb-1">FILTROS AIRE</label>
+                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS AIRE</label>
                 <div className="flex items-center gap-1">
                   <input
                     ref={filtrosAireRef}
@@ -1018,16 +1018,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 5)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAire' ? 'border-blue-600' : 'border-gray-300'
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAire' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                       }`}
                   />
-                  <span className="text-sm font-medium text-black">Pza</span>
+                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
                 </div>
               </div>
 
               {/* BASURA - Ocupa 2 columnas */}
               <div className={`col-span-2 py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'basura' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black block mb-1">BASURA</label>
+                <label className="text-sm font-bold text-black dark:text-white block mb-1">BASURA</label>
                 <div className="flex items-center gap-1">
                   <input
                     ref={basuraRef}
@@ -1040,17 +1040,17 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 6)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'basura' ? 'border-blue-600' : 'border-gray-300'
+                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'basura' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                       }`}
                   />
-                  <span className="text-sm font-medium text-black">Kg</span>
+                  <span className="text-sm font-medium text-black dark:text-gray-300">Kg</span>
                 </div>
               </div>
             </div>
 
             {/* Observaciones */}
             <div className={`mt-4 transition-all duration-200 ${activeField === 'observaciones' ? 'bg-blue-100/60 border-l-4 border-l-blue-600 rounded-lg p-3 -mx-3' : 'border-l-4 border-l-transparent'}`}>
-              <label className="block text-sm font-bold text-black mb-1">OBSERVACIONES (opcional)</label>
+              <label className="block text-sm font-bold text-black dark:text-white mb-1">OBSERVACIONES (opcional)</label>
               <textarea
                 value={formData.observaciones}
                 onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
@@ -1058,19 +1058,19 @@ export default function ManifiestosPage() {
                 onBlur={() => setActiveField(null)}
                 rows={2}
                 placeholder="Notas adicionales..."
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none text-black text-base"
+                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none resize-none text-black dark:text-white text-base dark:placeholder:text-gray-500"
               />
             </div>
           </div>
 
           {/* COLUMNA DERECHA - Firmas */}
-          <div className="p-6 bg-gray-50/50 space-y-4">
-            <h3 className="text-base font-bold text-black uppercase tracking-wide mb-4">Firmas</h3>
+          <div className="p-6 bg-gray-50 dark:bg-slate-700/30 space-y-4">
+            <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Firmas</h3>
 
             {/* FIRMA OFICIAL COMISIONADO */}
-            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-              <p className="text-base font-bold text-black">RECIBE: Oficial Comisionado</p>
-              <p className="text-sm text-black mb-3">Recolección de Basura y Residuos Aceitosos (MARPOL ANEXO V)</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-base font-bold text-black dark:text-white">RECIBE: Oficial Comisionado</p>
+              <p className="text-sm text-black dark:text-gray-300 mb-3">Recolección de Basura y Residuos Aceitosos (MARPOL ANEXO V)</p>
 
               {!oficialSignature ? (
                 <button
@@ -1099,9 +1099,9 @@ export default function ManifiestosPage() {
             </div>
 
             {/* FIRMA MOTORISTA */}
-            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-              <p className="text-base font-bold text-black mb-1">MOTORISTA</p>
-              <p className="text-sm text-black mb-2">Responsable de entrega de líquidos</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-base font-bold text-black dark:text-white mb-1">MOTORISTA</p>
+              <p className="text-sm text-black dark:text-gray-300 mb-2">Responsable de entrega de líquidos</p>
               <input
                 ref={motoristaRef}
                 type="text"
@@ -1141,14 +1141,14 @@ export default function ManifiestosPage() {
                     setShowMotoristaSuggestions(false);
                   }
                 }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${showValidation && !formData.responsable_principal_id ? 'border-red-500' : activeField === 'motorista' ? 'border-blue-600' : 'border-gray-300'
+                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 ${showValidation && !formData.responsable_principal_id ? 'border-red-500' : activeField === 'motorista' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
               />
               {showMotoristaSuggestions && (
-                <div className="bg-white border border-gray-300 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
+                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
                   {personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase())).map((persona, index) => (
                     <div key={persona.id} onClick={() => { setMotoristaNombre(persona.nombre); setFormData({ ...formData, responsable_principal_id: persona.id.toString() }); setShowMotoristaSuggestions(false); }}
-                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'}`}>
+                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'}`}>
                       {persona.nombre}
                     </div>
                   ))}
@@ -1180,8 +1180,8 @@ export default function ManifiestosPage() {
             </div>
 
             {/* FIRMA COCINERO */}
-            <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-              <p className="text-base font-bold text-black mb-1">COCINERO <span className="font-normal text-gray-600">(Opcional)</span></p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-base font-bold text-black dark:text-white mb-1">COCINERO <span className="font-normal text-gray-600 dark:text-gray-400">(Opcional)</span></p>
               <input
                 ref={cocineroRef}
                 type="text"
@@ -1220,14 +1220,14 @@ export default function ManifiestosPage() {
                     setShowCocineroSuggestions(false);
                   }
                 }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 rounded-t-lg focus:outline-none text-base font-semibold text-black placeholder:text-black ${activeField === 'cocinero' ? 'border-blue-600' : 'border-gray-300'
+                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 ${activeField === 'cocinero' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
                   }`}
               />
               {showCocineroSuggestions && (
-                <div className="bg-white border border-gray-300 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
+                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
                   {personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase())).map((persona, index) => (
                     <div key={persona.id} onClick={() => { setCocineroNombre(persona.nombre); setFormData({ ...formData, responsable_secundario_id: persona.id.toString() }); setShowCocineroSuggestions(false); }}
-                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 text-black'}`}>
+                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'}`}>
                       {persona.nombre}
                     </div>
                   ))}
@@ -1260,7 +1260,7 @@ export default function ManifiestosPage() {
         </div>
 
         {/* Sección de Digitalización y Botón Guardar */}
-        <div className="border-t-2 border-gray-800 p-4 bg-gray-50">
+        <div className="border-t border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-slate-700/30">
           <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
             {/* Adjuntar documento */}
             <div>
@@ -1271,8 +1271,8 @@ export default function ManifiestosPage() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">Adjuntar documento</h3>
-                  <p className="text-xs text-gray-500">Opcional - documento escaneado</p>
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Adjuntar documento</h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Opcional - documento escaneado</p>
                 </div>
               </div>
 
@@ -1280,10 +1280,10 @@ export default function ManifiestosPage() {
               <button
                 type="button"
                 onClick={handleDescargarBorrador}
-                className="w-full mb-4 py-2 px-3 bg-white border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 rounded-lg transition-all flex items-center justify-center gap-2 group"
+                className="w-full mb-4 py-2 px-3 bg-white dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all flex items-center justify-center gap-2 group"
                 title="Descargar datos actuales para firmar"
               >
-                <div className="bg-gray-100 p-1.5 rounded-md group-hover:bg-blue-100 transition-colors">
+                <div className="bg-gray-100 dark:bg-gray-600 p-1.5 rounded-md group-hover:bg-blue-100 dark:group-hover:bg-blue-800 transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
@@ -1299,7 +1299,7 @@ export default function ManifiestosPage() {
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
-                className={`relative rounded-lg p-3 text-center transition-all ${dragActive ? 'bg-blue-50 border-2 border-blue-500 border-dashed' : archivo ? 'bg-green-50 border-2 border-green-500' : 'bg-white border-2 border-gray-300 border-dashed'
+                className={`relative rounded-lg p-3 text-center transition-all ${dragActive ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 border-dashed' : archivo ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-500' : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 border-dashed'
                   }`}
               >
                 <input type="file" id="file-upload" onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
@@ -1315,7 +1315,7 @@ export default function ManifiestosPage() {
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
                       <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-sm font-medium text-gray-900 truncate">{archivo.name}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{archivo.name}</span>
                     </div>
                     <button type="button" onClick={() => setArchivo(null)} className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded hover:bg-red-200">Quitar</button>
                   </div>
@@ -1361,13 +1361,13 @@ export default function ManifiestosPage() {
       </div>
 
       {/* Tabla de Manifiestos */}
-      <div id="registros-list" className="bg-white rounded-lg sm:rounded-xl border border-gray-200 p-4 sm:p-6">
+      <div id="registros-list" className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
         <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 sm:gap-3">
             <span className="text-2xl sm:text-3xl"></span>
             <span className="break-words">Manifiestos Registrados</span>
           </h2>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">Lista de todos los manifiestos creados en el sistema</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los manifiestos creados en el sistema</p>
         </div>
 
         {/* Barra de búsqueda y filtros */}
@@ -1384,7 +1384,7 @@ export default function ManifiestosPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por número, buque, motorista, cocinero..."
-              className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-gray-900 placeholder-gray-400"
+              className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
             />
             {searchQuery && (
               <button
@@ -1612,28 +1612,28 @@ export default function ManifiestosPage() {
         ) : (
           <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
             <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden border border-gray-200 sm:rounded-xl">
+              <div className="overflow-hidden border border-gray-200 dark:border-slate-700 sm:rounded-xl">
                 <table className="w-full">
-                  <thead className="bg-gray-50/50 border-b border-gray-200">
+                  <thead className="bg-gray-50/50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-600">
                     <tr>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Número</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Buque</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Motorista</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Cocinero</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Número</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Buque</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">Motorista</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">Cocinero</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {manifiestos.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                        <td colSpan={6} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 dark:text-gray-300 text-center py-8">
                           <div className="flex flex-col items-center gap-3">
-                            <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p className="text-lg font-semibold">No hay manifiestos registrados</p>
-                            <p className="text-sm">Complete el formulario arriba para crear uno nuevo</p>
+                            <p className="text-lg font-semibold dark:text-gray-300">No hay manifiestos registrados</p>
+                            <p className="text-sm dark:text-gray-400">Complete el formulario arriba para crear uno nuevo</p>
                           </div>
                         </td>
                       </tr>
@@ -1655,21 +1655,21 @@ export default function ManifiestosPage() {
                             null);
 
                         return (
-                          <tr key={manifiesto.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                              <span className="font-semibold text-blue-600 whitespace-nowrap">{manifiesto.numero_manifiesto}</span>
+                          <tr key={manifiesto.id} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
+                              <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">{manifiesto.numero_manifiesto}</span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                              <span className="font-medium text-gray-900 truncate">{buqueNombre}</span>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
+                              <span className="font-medium text-gray-900 dark:text-gray-100 truncate">{buqueNombre}</span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden md:table-cell">
-                              <span className="font-medium text-gray-900">{respPrincipal}</span>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden md:table-cell">
+                              <span className="font-medium text-gray-900 dark:text-gray-100">{respPrincipal}</span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden lg:table-cell">
-                              <span className="text-gray-600">{respSecundario || '—'}</span>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden lg:table-cell">
+                              <span className="text-gray-600 dark:text-gray-400">{respSecundario || '—'}</span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 hidden sm:table-cell">
-                              <span className="text-gray-600 whitespace-nowrap">
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden sm:table-cell">
+                              <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
                                 {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', {
                                   day: '2-digit',
                                   month: 'short',
@@ -1677,11 +1677,11 @@ export default function ManifiestosPage() {
                                 })}
                               </span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
                               <div className="flex gap-1 sm:gap-2 min-w-[160px]">
                                 <button
                                   onClick={() => setViewingManifiesto(manifiesto)}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 whitespace-nowrap bg-white"
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-slate-800"
                                   title="Ver detalles"
                                 >
                                   <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1749,17 +1749,17 @@ export default function ManifiestosPage() {
               </div>
 
               {/* Card 1: Información General */}
-              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8">
                 <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
                       <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div>
                       Detalles del Manifiesto
-                      <span className="block text-sm font-normal text-gray-500 mt-1">#{viewingManifiesto.numero_manifiesto}</span>
+                      <span className="block text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">#{viewingManifiesto.numero_manifiesto}</span>
                     </div>
                   </h3>
                   {/* Status Badge */}
@@ -1780,8 +1780,8 @@ export default function ManifiestosPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {/* Fecha */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Fecha de Emisión</p>
-                    <p className="text-gray-900 font-medium text-lg">
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Fecha de Emisión</p>
+                    <p className="text-gray-900 dark:text-white font-medium text-lg">
                       {new Date(viewingManifiesto.fecha_emision + 'T12:00:00').toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'long',
@@ -1792,24 +1792,24 @@ export default function ManifiestosPage() {
 
                   {/* Buque */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Buque</p>
-                    <p className="text-gray-900 font-medium text-lg">
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Buque</p>
+                    <p className="text-gray-900 dark:text-white font-medium text-lg">
                       {viewingManifiesto.buque?.nombre_buque || buques.find(b => b.id === viewingManifiesto.buque_id)?.nombre_buque || 'N/A'}
                     </p>
                   </div>
 
                   {/* Motorista */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Motorista</p>
-                    <p className="text-gray-900 font-medium text-lg truncate" title={viewingManifiesto.responsable_principal?.nombre}>
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Motorista</p>
+                    <p className="text-gray-900 dark:text-white font-medium text-lg truncate" title={viewingManifiesto.responsable_principal?.nombre}>
                       {viewingManifiesto.responsable_principal?.nombre || personas.find(p => p.id === viewingManifiesto.responsable_principal_id)?.nombre || 'N/A'}
                     </p>
                   </div>
 
                   {/* Cocinero (Optional) */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Cocinero</p>
-                    <p className="text-gray-900 font-medium text-lg truncate">
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Cocinero</p>
+                    <p className="text-gray-900 dark:text-white font-medium text-lg truncate">
                       {viewingManifiesto.responsable_secundario?.nombre || (viewingManifiesto.responsable_secundario_id ? personas.find(p => p.id === viewingManifiesto.responsable_secundario_id)?.nombre : 'N/A')}
                     </p>
                   </div>
@@ -1817,8 +1817,8 @@ export default function ManifiestosPage() {
                   {/* Observaciones */}
                   {(viewingManifiesto.observaciones) && (
                     <div className="space-y-1 md:col-span-2">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Observaciones</p>
-                      <p className="text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm leading-relaxed">
+                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Observaciones</p>
+                      <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 p-3 rounded-lg border border-gray-100 dark:border-slate-600 text-sm leading-relaxed">
                         {viewingManifiesto.observaciones}
                       </p>
                     </div>
@@ -1826,24 +1826,24 @@ export default function ManifiestosPage() {
                 </div>
 
                 {/* Residuos Section - Styled as Highlighted Stats */}
-                <div className="mt-8 pt-8 border-t border-gray-100">
-                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Residuos Recolectados</h4>
+                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-700">
+                  <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Residuos Recolectados</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-blue-700 mb-1">{viewingManifiesto.residuos?.aceite_usado || 0}</p>
-                      <p className="text-xs font-bold text-blue-400 uppercase">Aceite (L)</p>
+                    <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl border border-blue-100 dark:border-blue-700 text-center transition-transform hover:scale-105">
+                      <p className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-1">{viewingManifiesto.residuos?.aceite_usado || 0}</p>
+                      <p className="text-xs font-bold text-blue-400 dark:text-blue-500 uppercase">Aceite (L)</p>
                     </div>
-                    <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-indigo-700 mb-1">{viewingManifiesto.residuos?.filtros_aceite || 0}</p>
-                      <p className="text-xs font-bold text-indigo-400 uppercase">F. Aceite (U)</p>
+                    <div className="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-700 text-center transition-transform hover:scale-105">
+                      <p className="text-3xl font-bold text-indigo-700 dark:text-indigo-400 mb-1">{viewingManifiesto.residuos?.filtros_aceite || 0}</p>
+                      <p className="text-xs font-bold text-indigo-400 dark:text-indigo-500 uppercase">F. Aceite (U)</p>
                     </div>
-                    <div className="bg-violet-50 p-4 rounded-xl border border-violet-100 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-violet-700 mb-1">{viewingManifiesto.residuos?.filtros_diesel || 0}</p>
-                      <p className="text-xs font-bold text-violet-400 uppercase">F. Diesel (U)</p>
+                    <div className="bg-violet-50 dark:bg-violet-900/30 p-4 rounded-xl border border-violet-100 dark:border-violet-700 text-center transition-transform hover:scale-105">
+                      <p className="text-3xl font-bold text-violet-700 dark:text-violet-400 mb-1">{viewingManifiesto.residuos?.filtros_diesel || 0}</p>
+                      <p className="text-xs font-bold text-violet-400 dark:text-violet-500 uppercase">F. Diesel (U)</p>
                     </div>
-                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-gray-700 mb-1">{viewingManifiesto.residuos?.basura || 0}</p>
-                      <p className="text-xs font-bold text-gray-400 uppercase">Basura (Kg)</p>
+                    <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-xl border border-gray-200 dark:border-slate-600 text-center transition-transform hover:scale-105">
+                      <p className="text-3xl font-bold text-gray-700 dark:text-gray-300 mb-1">{viewingManifiesto.residuos?.basura || 0}</p>
+                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Basura (Kg)</p>
                     </div>
                     {/* Extras if needed */}
                   </div>
@@ -1851,10 +1851,10 @@ export default function ManifiestosPage() {
               </div>
 
               {/* Card 2: Documento Digitalizado */}
-              <div className="bg-white rounded-2xl shadow-2xl overflow-hidden flex-col">
-                <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                  <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden flex-col">
+                <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700/50">
+                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Documento Digitalizado
@@ -1864,7 +1864,7 @@ export default function ManifiestosPage() {
                       href={viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition-colors"
+                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-bold flex items-center gap-1 transition-colors"
                     >
                       Abrir original
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1874,7 +1874,7 @@ export default function ManifiestosPage() {
                   )}
                 </div>
 
-                <div className="bg-gray-100 min-h-[500px] p-4 flex justify-center items-center">
+                <div className="bg-gray-100 dark:bg-slate-900 min-h-[500px] p-4 flex justify-center items-center">
                   {(viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url) ? (
                     (() => {
                       const url = viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url;
@@ -1884,7 +1884,7 @@ export default function ManifiestosPage() {
                         return (
                           <iframe
                             src={url}
-                            className="w-full min-h-[1200px] rounded-lg border border-gray-300 shadow-md"
+                            className="w-full min-h-[1200px] rounded-lg border border-gray-300 dark:border-slate-600 shadow-md"
                             title="Documento PDF"
                             style={{ height: '1200px' }}
                           />
@@ -1901,7 +1901,7 @@ export default function ManifiestosPage() {
                       }
                     })()
                   ) : (
-                    <div className="text-center text-gray-400">
+                    <div className="text-center text-gray-400 dark:text-gray-500">
                       <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                       </svg>
@@ -1921,14 +1921,14 @@ export default function ManifiestosPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Fondo oscuro sin blur para mejor rendimiento */}
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 dark:bg-black/70"
             onClick={closeSignatureModal}
           />
 
           {/* Panel de firma */}
-          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-slate-700 dark:to-slate-800 px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
                   <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1937,7 +1937,7 @@ export default function ManifiestosPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-white">{getSignatureModalTitle()}</h3>
-                  <p className="text-blue-100 text-sm">Dibuje su firma en el área de abajo</p>
+                  <p className="text-blue-100 dark:text-gray-300 text-sm">Dibuje su firma en el área de abajo</p>
                 </div>
               </div>
               <button
@@ -1952,7 +1952,7 @@ export default function ManifiestosPage() {
 
             {/* Área de firma */}
             <div className="p-6">
-              <div className="relative border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 overflow-hidden">
+              <div className="relative border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-700 overflow-hidden">
                 <canvas
                   ref={signatureModalCanvasRef}
                   width={600}
@@ -1967,11 +1967,11 @@ export default function ManifiestosPage() {
                   onTouchEnd={stopModalDrawing}
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <p className="text-gray-300 text-lg">Firme aquí</p>
+                  <p className="text-gray-300 dark:text-gray-500 text-lg">Firme aquí</p>
                 </div>
                 {/* Línea de firma */}
-                <div className="absolute bottom-8 left-8 right-8 border-b-2 border-gray-300 pointer-events-none" />
-                <div className="absolute bottom-2 left-8 text-xs text-gray-400 pointer-events-none">Firma</div>
+                <div className="absolute bottom-8 left-8 right-8 border-b-2 border-gray-300 dark:border-gray-600 pointer-events-none" />
+                <div className="absolute bottom-2 left-8 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">Firma</div>
               </div>
 
               {/* Botones */}
@@ -1979,7 +1979,7 @@ export default function ManifiestosPage() {
                 <button
                   type="button"
                   onClick={clearModalSignature}
-                  className="px-5 py-2.5 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg flex items-center gap-2 transition-colors"
+                  className="px-5 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg flex items-center gap-2 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1991,7 +1991,7 @@ export default function ManifiestosPage() {
                   <button
                     type="button"
                     onClick={closeSignatureModal}
-                    className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
                   >
                     Cancelar
                   </button>
