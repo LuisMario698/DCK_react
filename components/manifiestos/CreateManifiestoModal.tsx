@@ -28,7 +28,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
   const [selectedBuque, setSelectedBuque] = useState<Buque | null>(null);
   const [archivo, setArchivo] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     numero_manifiesto: '',
     fecha_emision: new Date().toISOString().split('T')[0],
@@ -92,7 +92,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setArchivo(e.dataTransfer.files[0]);
     }
@@ -106,7 +106,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validar campos requeridos ANTES de setLoading
     if (!formData.numero_manifiesto.trim()) {
       alert('❌ El número de manifiesto es obligatorio');
@@ -139,6 +139,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
         estado_digitalizacion: archivo ? 'completado' : 'pendiente' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
+        pdf_manifiesto_url: null,
       };
 
       if (manifiestoToEdit) {
@@ -185,26 +186,29 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-8 py-6 rounded-t-3xl z-10">
+        {/* Header estilo Recibo */}
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center animate-pulse">
-                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              {/* Icono Documento */}
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <div>
-                <h2 className="text-3xl font-bold text-white">
-                  {manifiestoToEdit ? '✏️ Editar Manifiesto' : '📋 Nuevo Manifiesto'}
-                </h2>
-                <p className="text-blue-100 text-sm mt-1">Complete toda la información del manifiesto de residuos</p>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">MANIFIESTO DE ENTREGA-RECEPCIÓN</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             </div>
-            <button onClick={onClose} className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-all">
-              <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="text-right">
+              {formData.numero_manifiesto && (
+                <>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Folio No.</p>
+                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formData.numero_manifiesto}</p>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -534,13 +538,12 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
               onDrop={handleDrop}
-              className={`relative border-4 border-dashed rounded-2xl p-12 text-center transition-all ${
-                dragActive
-                  ? 'border-orange-500 bg-orange-100'
-                  : archivo
+              className={`relative border-4 border-dashed rounded-2xl p-12 text-center transition-all ${dragActive
+                ? 'border-orange-500 bg-orange-100'
+                : archivo
                   ? 'border-green-500 bg-green-50'
                   : 'border-gray-300 bg-white hover:border-orange-400 hover:bg-orange-50'
-              }`}
+                }`}
             >
               <input
                 type="file"
@@ -549,7 +552,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
                 className="hidden"
                 accept="image/*,.pdf"
               />
-              
+
               {!archivo ? (
                 <div>
                   <svg className="w-20 h-20 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

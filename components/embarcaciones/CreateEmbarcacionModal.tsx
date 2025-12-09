@@ -45,7 +45,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
         matricula: null,
         puerto_base: null,
         capacidad_toneladas: null,
-        estado: 'Activo' as const,
+        estado: estado,
         propietario_id: null,
         fecha_registro: fechaRegistro,
         registro_completo: true
@@ -101,13 +101,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
               placeholder="Ej: La Perla Negra"
               className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
-            <input
-              type="date"
-              required
-              value={fechaRegistro}
-              onChange={(e) => setFechaRegistro(e.target.value)}
-              className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all mt-4"
-            />
+
 
             {buqueToEdit && (
               <div className="mt-4">

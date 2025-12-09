@@ -25,6 +25,9 @@ export default function EmbarcacionesPage() {
   const [buqueToDelete, setBuqueToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'Todos' | 'Activo' | 'Inactivo' | 'En Mantenimiento'>('Todos');
+
   useEffect(() => {
     loadBuques();
   }, []);
@@ -42,19 +45,28 @@ export default function EmbarcacionesPage() {
     }
   }
 
-  const totalItems = buques.length;
+  // Lógica de Filtrado y Búsqueda
+  const filteredBuques = buques.filter(buque => {
+    const matchesSearch =
+      buque.nombre_buque.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (buque.matricula && buque.matricula.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesStatus = filterStatus === 'Todos' || buque.estado === filterStatus;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Lógica de Paginación
+  const totalItems = filteredBuques.length;
   const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedBuques = filteredBuques.slice(startIndex, startIndex + itemsPerPage);
 
   const handleEdit = (id: number) => {
-    console.log('🚢 handleEdit llamado con id:', id);
     const buque = buques.find(b => b.id === id);
-    console.log('🚢 Buque encontrado:', buque);
     if (buque) {
       setBuqueToEdit(buque);
       setIsModalOpen(true);
-      console.log('🚢 Modal abierto con buque:', buque);
-    } else {
-      console.error('❌ No se encontró buque con id:', id);
     }
   };
 
@@ -72,10 +84,9 @@ export default function EmbarcacionesPage() {
       await loadBuques();
       setDeleteModalOpen(false);
       setBuqueToDelete(null);
-      // Opcional: Mostrar un toast o mensaje sutil de éxito si es necesario
     } catch (error: any) {
       console.error('❌ Error eliminando buque:', error);
-      setDeleteModalOpen(false); // Cerramos el modal para mostrar la alerta
+      setDeleteModalOpen(false);
       if (error?.code === '23503' || error?.message?.includes('violates foreign key constraint') || error?.details?.includes('is still referenced')) {
         alert('No se puede eliminar porque esta embarcación tiene manifiestos o registros asociados.\n\nSugerencia: Edítala y cambia su estado a "Inactivo".');
       } else {
@@ -202,12 +213,49 @@ export default function EmbarcacionesPage() {
         </div>
       )}
 
+      {/* Controles de búsqueda y filtro */}
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+        {/* Barra de búsqueda */}
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre o matrícula..."
+            className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+          />
+        </div>
+
+        {/* Filtros de estado */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+          {(['Todos', 'Activo', 'Inactivo'] as const).map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filterStatus === status
+                  ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-800'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                }`}
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-4">
-        <EmbarcacionesTable
-          embarcaciones={buques}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <EmbarcacionesTable
+            embarcaciones={paginatedBuques}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
 
         <Pagination
           currentPage={currentPage}
