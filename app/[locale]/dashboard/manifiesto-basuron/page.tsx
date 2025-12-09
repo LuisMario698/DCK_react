@@ -9,11 +9,19 @@ import { ManifiestoBasuronDetails } from '@/components/manifiestos/ManifiestoBas
 import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
 import { getBuques } from '@/lib/services/buques';
 
+import { Pagination } from '@/components/embarcaciones/Pagination';
+
 export default function ManifiestoBasuronPage() {
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
   const [buques, setBuques] = useState<any[]>([]);
   const [selectedManifiesto, setSelectedManifiesto] = useState<ManifiestoBasuronConRelaciones | null>(null);
+
+  // Estados para búsqueda y paginación
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchCriteria, setSearchCriteria] = useState<'ticket' | 'fecha' | 'total'>('ticket');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     loadData();
@@ -33,6 +41,38 @@ export default function ManifiestoBasuronPage() {
       setLoading(false);
     }
   }
+
+  // Lógica de Filtrado
+  const filteredManifiestos = manifiestos.filter(m => {
+    const query = searchQuery.toLowerCase();
+
+    if (query === '') {
+      return true;
+    }
+
+    switch (searchCriteria) {
+      case 'ticket':
+        return (
+          (m.numero_ticket && m.numero_ticket.toLowerCase().includes(query)) ||
+          m.id.toString().includes(query) ||
+          (m.buque?.nombre_buque && m.buque.nombre_buque.toLowerCase().includes(query))
+        );
+      case 'fecha':
+        // Búsqueda por fecha (formato legible o ISO)
+        const fechaLegible = new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase();
+        return m.fecha.includes(query) || fechaLegible.includes(query);
+      case 'total':
+        return m.total_depositado?.toString().includes(query) || false;
+      default:
+        return true;
+    }
+  });
+
+  // Lógica de Paginación
+  const totalItems = filteredManifiestos.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedManifiestos = filteredManifiestos.slice(startIndex, startIndex + itemsPerPage);
 
   const handleDownload = async (url: string, filename: string) => {
     try {
@@ -93,10 +133,46 @@ export default function ManifiestoBasuronPage() {
         </button>
       </div>
 
-      <div id="lista-registros" className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-        <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Recibos del Relleno Sanitario</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
+      <div id="lista-registros" className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Recibos del Relleno Sanitario</h2>
+            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
+          </div>
+        </div>
+
+        {/* Controles de búsqueda */}
+        <div className="flex bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+          {/* Barra de búsqueda con selector */}
+          <div className="flex w-full gap-2">
+            <select
+              value={searchCriteria}
+              onChange={(e) => setSearchCriteria(e.target.value as any)}
+              className="px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="ticket">Ticket / Buque</option>
+              <option value="fecha">Fecha</option>
+              <option value="total">Total</option>
+            </select>
+            <div className="relative flex-1">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={
+                  searchCriteria === 'ticket' ? 'Buscar ticket o buque...' :
+                    searchCriteria === 'fecha' ? 'Buscar por fecha...' :
+                      'Buscar por peso total...'
+                }
+                className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              />
+            </div>
+          </div>
         </div>
 
         {loading ? (
@@ -104,94 +180,120 @@ export default function ManifiestoBasuronPage() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
-          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden border border-gray-200 dark:border-gray-700 sm:rounded-xl">
-                <table className="w-full">
-                  <thead className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
-                    <tr>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]"># Ticket</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Fecha</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Hora</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]">Total Depositado</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {manifiestos.length === 0 ? (
+          <div className="space-y-4">
+            <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <div className="overflow-hidden border border-gray-200 dark:border-gray-700 sm:rounded-xl">
+                  <table className="w-full">
+                    <thead className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
                       <tr>
-                        <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
-                          <div className="flex flex-col items-center gap-3">
-                            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">No hay recibos registrados</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Crea uno nuevo con el formulario superior</p>
-                          </div>
-                        </td>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]"># Ticket</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Fecha</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Hora</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Total</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Acciones</th>
                       </tr>
-                    ) : (
-                      manifiestos.map((m) => (
-                        <tr key={m.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-blue-600 whitespace-nowrap">#{m.numero_ticket || m.id}</span>
-                              {m.numero_ticket && <span className="text-xs text-gray-400">ID: {m.id}</span>}
-                            </div>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">{new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="text-gray-600 dark:text-gray-300 font-mono">{m.hora_entrada}</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center">
-                            <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">{Number(m.total_depositado || 0).toFixed(2)} kg</span>
-                          </td>
-                          <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                            <div className="flex justify-center gap-2">
-                              <button
-                                onClick={() => setSelectedManifiesto(m)}
-                                className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-gray-800"
-                                title="Ver Detalles"
-                              >
-                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <span className="hidden sm:inline">Ver</span>
-                              </button>
-                              <button
-                                onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
-                                disabled={!m.pdf_manifiesto_url}
-                                className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 shadow-sm ${m.pdf_manifiesto_url
-                                  ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                  }`}
-                                title="Descargar Imagen"
-                              >
-                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => handleDelete(m.id)}
-                                className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0 shadow-sm"
-                                title="Eliminar"
-                              >
-                                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
+                    </thead>
+                    <tbody>
+                      {paginatedManifiestos.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                            <div className="flex flex-col items-center gap-3">
+                              <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">No se encontraron recibos</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Intenta ajustar los filtros de búsqueda</p>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        paginatedManifiestos.map((m) => (
+                          <tr key={m.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-semibold text-blue-600 whitespace-nowrap">#{m.numero_ticket || m.id}</span>
+                                  {m.estado && (
+                                    <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-sm ${m.estado === 'Completado' ? 'bg-green-100 text-green-700' :
+                                      m.estado === 'En Proceso' ? 'bg-yellow-100 text-yellow-700' :
+                                        m.estado === 'Cancelado' ? 'bg-red-100 text-red-700' :
+                                          'bg-gray-100 text-gray-600'
+                                      }`}>
+                                      {m.estado}
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate max-w-[180px]">
+                                  {m.buque?.nombre_buque || 'Sin buque'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-white text-center whitespace-nowrap font-medium">
+                              {new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-300 text-center font-mono">
+                              {m.hora_entrada}
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-center">
+                              <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full whitespace-nowrap">
+                                {Number(m.total_depositado || 0).toFixed(2)} kg
+                              </span>
+                            </td>
+                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                              <div className="flex justify-center gap-2">
+                                <button
+                                  onClick={() => setSelectedManifiesto(m)}
+                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-gray-800"
+                                  title="Ver Detalles"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                  </svg>
+                                  <span className="hidden sm:inline">Ver</span>
+                                </button>
+                                <button
+                                  onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
+                                  disabled={!m.pdf_manifiesto_url}
+                                  className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 shadow-sm ${m.pdf_manifiesto_url
+                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                    }`}
+                                  title="Descargar Imagen"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(m.id)}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0 shadow-sm"
+                                  title="Eliminar"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
+
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+            />
           </div>
         )}
       </div>
