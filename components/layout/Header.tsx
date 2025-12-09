@@ -1,19 +1,20 @@
-'use client';
-
-import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
-import LanguageSwitcher from './LanguageSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
+import { useTheme } from '@/components/layout/ThemeContext';
 import logoMobile from '@/Contexto-DCK/logo_DCK.png';
+import logoWhite from '@/assets/logo_DCK_blanco.png';
 
 export function Header() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
+  const { theme } = useTheme();
 
   // Extract locale from pathname (e.g., "/es/dashboard" -> "es")
   const locale = (pathname.split('/')[1] || 'es') as 'es' | 'en';
+
+  const logoSrcMobile = theme === 'dark' ? logoWhite : logoMobile;
 
   return (
     <header className="h-14 sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 lg:px-6 sticky top-0 z-30 shadow-sm dark:shadow-gray-950/50">
@@ -28,14 +29,15 @@ export function Header() {
         </svg>
       </button>
 
-      {/* Logo/Title en móvil */}
-      <div className="flex items-center gap-2 sm:hidden">
-        <div className="relative w-24 h-8">
+      {/* Logo - Solo móvil (Centrado) */}
+      <div className="flex-1 lg:hidden flex justify-center">
+        <div className="relative w-32 h-10">
           <Image
-            src={logoMobile}
+            src={logoSrcMobile}
             alt="DCK Logo"
             fill
-            className="object-contain object-left"
+            className="object-contain"
+            priority
           />
         </div>
       </div>
@@ -43,14 +45,6 @@ export function Header() {
       <div className="flex items-center gap-1 sm:gap-2">
         {/* Theme Toggle */}
         <ThemeToggle />
-
-        {/* Language Switcher */}
-        <LanguageSwitcher currentLocale={locale} />
-
-        {/* Settings */}
-        <button className="flex items-center gap-2 p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
-          <Icons.Settings />
-        </button>
       </div>
     </header>
   );

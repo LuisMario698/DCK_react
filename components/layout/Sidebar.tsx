@@ -4,15 +4,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
+import { useTheme } from '@/components/layout/ThemeContext';
 import logoExpanded from '@/Contexto-DCK/logo_DCK.png';
 import logoCollapsed from '@/Contexto-DCK/logo_DCK_no_letras.png';
+import logoWhite from '@/assets/logo_DCK_blanco.png';
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();
   const { isOpen, closeSidebar, isCollapsed, toggleCollapse } = useSidebar();
+  const { theme } = useTheme();
 
   const locale = pathname.split('/')[1] || 'es';
 
@@ -35,6 +39,8 @@ export function Sidebar() {
     const Icon = Icons[iconName as keyof typeof Icons];
     return Icon ? <Icon /> : null;
   };
+
+  const logoSrcExpanded = theme === 'dark' ? logoWhite : logoExpanded;
 
   return (
     <>
@@ -76,7 +82,7 @@ export function Sidebar() {
             ) : (
               <div className="relative w-60 h-24 transition-all duration-300">
                 <Image
-                  src={logoExpanded}
+                  src={logoSrcExpanded}
                   alt="DCK Logo"
                   fill
                   className="object-contain object-center"

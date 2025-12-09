@@ -115,7 +115,7 @@ export async function createBuqueAutomatico(nombre: string) {
       nombre_buque: nombre,
       fecha_registro: new Date().toISOString().split('T')[0],
       estado: 'Activo',
-      registro_completo: false
+      registro_completo: true
     })
     .select()
     .single()

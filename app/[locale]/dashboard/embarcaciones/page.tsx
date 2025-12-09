@@ -9,6 +9,7 @@ import { Icons } from '@/components/ui/Icons';
 import { getBuques, deleteBuque } from '@/lib/services/buques';
 import { CreateEmbarcacionModal } from '@/components/embarcaciones/CreateEmbarcacionModal';
 import { Buque } from '@/types/database';
+import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function EmbarcacionesPage() {
   const t = useTranslations('Embarcaciones');
@@ -18,6 +19,11 @@ export default function EmbarcacionesPage() {
   const [buques, setBuques] = useState<Buque[]>([]);
   const [loading, setLoading] = useState(true);
   const [buqueToEdit, setBuqueToEdit] = useState<Buque | null>(null);
+
+  // Estados para el modal de confirmación
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [buqueToDelete, setBuqueToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadBuques();
@@ -52,21 +58,31 @@ export default function EmbarcacionesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    console.log('🔴 handleDelete llamado con id:', id);
-    if (confirm(t('mensajes.confirmEliminar'))) {
-      try {
-        console.log('🔴 Eliminando buque...');
-        await deleteBuque(id);
-        await loadBuques();
-        alert(t('mensajes.embarcacionEliminada'));
-        console.log('🔴 Buque eliminado exitosamente');
-      } catch (error) {
-        console.error('❌ Error eliminando buque:', error);
+  const handleDelete = (id: number) => {
+    setBuqueToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!buqueToDelete) return;
+
+    try {
+      setIsDeleting(true);
+      await deleteBuque(buqueToDelete);
+      await loadBuques();
+      setDeleteModalOpen(false);
+      setBuqueToDelete(null);
+      // Opcional: Mostrar un toast o mensaje sutil de éxito si es necesario
+    } catch (error: any) {
+      console.error('❌ Error eliminando buque:', error);
+      setDeleteModalOpen(false); // Cerramos el modal para mostrar la alerta
+      if (error?.code === '23503' || error?.message?.includes('violates foreign key constraint') || error?.details?.includes('is still referenced')) {
+        alert('No se puede eliminar porque esta embarcación tiene manifiestos o registros asociados.\n\nSugerencia: Edítala y cambia su estado a "Inactivo".');
+      } else {
         alert(t('mensajes.errorEliminar'));
       }
-    } else {
-      console.log('🔴 Eliminación cancelada por el usuario');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -123,7 +139,7 @@ export default function EmbarcacionesPage() {
       </div>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
@@ -152,21 +168,7 @@ export default function EmbarcacionesPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Mantenimiento</p>
-              <p className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-0.5 sm:mt-1">{estadisticas.mantenimiento}</p>
-            </div>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow">
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow col-span-2 md:col-span-1">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Inactivos</p>
@@ -224,6 +226,18 @@ export default function EmbarcacionesPage() {
           buqueToEdit={buqueToEdit}
         />
       )}
+
+      {/* Modal de confirmación para eliminar */}
+      <ConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="¿Eliminar embarcación?"
+        message={t('mensajes.confirmEliminar')}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

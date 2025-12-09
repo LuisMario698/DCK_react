@@ -51,7 +51,8 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
   const resetForm = () => {
     setFormData({
       nombre: '',
-      tipo_persona_id: tiposPersona.find(t => t.nombre_tipo === 'Tripulante')?.id || null,
+      // Seleccionar por defecto el primer tipo disponible (Motorista o Cocinero)
+      tipo_persona_id: tiposPersona.length > 0 ? tiposPersona[0].id : null,
       info_contacto: '',
     });
   };
@@ -60,11 +61,13 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     try {
       setLoadingTipos(true);
       const tipos = await getTiposPersona();
-      setTiposPersona(tipos);
-      // Seleccionar por defecto "Tripulante" si existe
-      const tripulante = tipos.find(t => t.nombre_tipo === 'Tripulante');
-      if (tripulante && !formData.tipo_persona_id) {
-        setFormData(prev => ({ ...prev, tipo_persona_id: tripulante.id }));
+      // Filtrar solo Motorista y Cocinero como solicitó el usuario
+      const tiposPermitidos = tipos.filter(t => ['Motorista', 'Cocinero'].includes(t.nombre_tipo));
+      setTiposPersona(tiposPermitidos);
+
+      // Seleccionar por defecto el primero disponible si existe
+      if (tiposPermitidos.length > 0 && !formData.tipo_persona_id) {
+        setFormData(prev => ({ ...prev, tipo_persona_id: tiposPermitidos[0].id }));
       }
     } catch (error) {
       console.error('Error cargando tipos de persona:', error);
@@ -84,13 +87,26 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     try {
       setLoading(true);
 
+      // El registro está completo si tiene todos los campos requeridos populados (especialmente info_contacto/teléfono)
+      const isRegistroCompleto = Boolean(formData.nombre && formData.tipo_persona_id && formData.info_contacto && formData.info_contacto.trim() !== '');
+
       if (personaToEdit) {
         // Editar persona existente
-        await updatePersona(personaToEdit.id, formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
+        await updatePersona(personaToEdit.id, {
+          nombre: formData.nombre,
+          tipo_persona_id: formData.tipo_persona_id,
+          info_contacto: formData.info_contacto,
+          registro_completo: isRegistroCompleto
+        });
         alert(tm('personaEditada'));
       } else {
         // Crear nueva persona
-        await createPersona(formData as { nombre: string; tipo_persona_id: number; info_contacto: string });
+        await createPersona({
+          nombre: formData.nombre,
+          tipo_persona_id: formData.tipo_persona_id,
+          info_contacto: formData.info_contacto,
+          registro_completo: isRegistroCompleto,
+        });
         alert(tm('personaCreada'));
       }
 
@@ -169,7 +185,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('email')} / {t('telefono')}
+                    {t('telefono')}
                   </label>
                   <textarea
                     value={formData.info_contacto}

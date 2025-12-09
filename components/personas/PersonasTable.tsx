@@ -54,7 +54,7 @@ export function PersonasTable({
               <TableHead className="hidden sm:table-cell">ID</TableHead>
               <TableHead>{t('tabla.nombre')}</TableHead>
               <TableHead className="hidden md:table-cell">{t('tabla.tipo')}</TableHead>
-              <TableHead className="hidden lg:table-cell">{t('tabla.email')} / {t('tabla.telefono')}</TableHead>
+              <TableHead className="hidden lg:table-cell">{t('tabla.telefono')}</TableHead>
               <TableHead className="hidden md:table-cell">Registro</TableHead>
               <TableHead>{t('tabla.acciones')}</TableHead>
             </TableHeader>
@@ -76,9 +76,7 @@ export function PersonasTable({
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 sm:gap-3 min-w-[150px]">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm uppercase flex-shrink-0">
-                            {iniciales}
-                          </div>
+
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <p className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">{persona.nombre}</p>
@@ -108,7 +106,7 @@ export function PersonasTable({
                       <TableCell className="hidden md:table-cell">
                         <div className="flex flex-col">
                           <span className="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                            {formatFechaRelativa(persona.created_at)}
+                            {new Date(persona.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                           </span>
                         </div>
                       </TableCell>

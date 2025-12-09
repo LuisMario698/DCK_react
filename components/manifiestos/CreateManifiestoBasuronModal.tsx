@@ -154,32 +154,32 @@ export function CreateManifiestoBasuronModal({
       <div className={inline ? 'w-full' : 'bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto'}>
 
         {/* Formulario estilo documento físico - Recibo Relleno Sanitario */}
-        <div className="bg-white dark:bg-gray-900 border-2 border-gray-800 dark:border-gray-700 rounded-lg overflow-hidden max-w-6xl mx-auto">
-          {/* Encabezado del recibo - Estilo azul */}
-          <div className="bg-gradient-to-r from-blue-700 via-blue-800 to-blue-700 text-white px-6 py-4">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-6xl mx-auto shadow-lg">
+          {/* Encabezado del recibo - Estilo sutil */}
+          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {/* Logo camión */}
-                <div className="w-14 h-14 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Logo camión - Version sutil */}
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17h8M8 17a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 104 0 2 2 0 00-4 0zM9 12V7a2 2 0 012-2h6a2 2 0 012 2v5m-4 0H5a2 2 0 00-2 2v3h2" />
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold tracking-wider">RECIBO RELLENO SANITARIO</h2>
-                  <p className="text-blue-200 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">RECIBO RELLENO SANITARIO</h2>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                 </div>
               </div>
-              <div className="text-right bg-white/10 rounded-xl px-4 py-2">
-                <p className="text-xs text-blue-200">Total depositado:</p>
-                <p className="text-2xl font-bold text-white">{calcularTotalDepositado().toFixed(0)} kg</p>
+              <div className="text-right">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Total depositado</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{calcularTotalDepositado().toFixed(0)} kg</p>
               </div>
             </div>
           </div>
 
           {/* Contenido del formulario - Layout de dos columnas */}
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-300">
+            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-slate-700">
 
               {/* COLUMNA IZQUIERDA - Datos generales */}
               <div className="p-6 space-y-4">
@@ -324,7 +324,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* COLUMNA DERECHA - Pesaje (# KILOS) */}
-              <div className="p-6 bg-gradient-to-b from-blue-50/50 to-indigo-50/50 dark:from-gray-800 dark:to-gray-900 space-y-4">
+              <div className="p-6 bg-gray-50 dark:bg-slate-700/30 space-y-4">
                 <h3 className="text-lg font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wide mb-4 flex items-center gap-2">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
@@ -333,16 +333,16 @@ export function CreateManifiestoBasuronModal({
                 </h3>
 
                 {/* PESO DE ENTRADA */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-green-200 dark:border-green-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
                       </svg>
                     </div>
                     <div>
                       <p className="text-base font-bold text-black dark:text-white">PESO ENTRADA</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Vehículo con carga</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Vehículo con carga</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -355,25 +355,25 @@ export function CreateManifiestoBasuronModal({
                       onFocus={() => setActiveField('pesoEntrada')}
                       onBlur={() => setActiveField(null)}
                       placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black dark:text-white bg-white dark:bg-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-200 dark:ring-green-800' : 'border-gray-300 dark:border-gray-600'
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border rounded-xl focus:outline-none text-black dark:text-white bg-gray-50 dark:bg-slate-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-100 dark:ring-green-900/30' : 'border-gray-200 dark:border-slate-600'
                         }`}
                     />
-                    <span className="text-lg font-bold text-gray-600 dark:text-gray-300 px-3 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg">kg</span>
+                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400 px-3 py-3 bg-gray-100 dark:bg-slate-700 rounded-lg">kg</span>
                   </div>
                   {showValidation && !formData.peso_entrada && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
                 </div>
 
                 {/* PESO DE SALIDA */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-red-200 dark:border-red-800 shadow-sm">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                       </svg>
                     </div>
                     <div>
                       <p className="text-base font-bold text-black dark:text-white">PESO SALIDA</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Vehículo sin carga</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Vehículo sin carga</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -386,42 +386,42 @@ export function CreateManifiestoBasuronModal({
                       onFocus={() => setActiveField('pesoSalida')}
                       onBlur={() => setActiveField(null)}
                       placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border-2 rounded-xl focus:outline-none text-black dark:text-white bg-white dark:bg-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-200 dark:ring-red-800' : 'border-gray-300 dark:border-gray-600'
+                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border rounded-xl focus:outline-none text-black dark:text-white bg-gray-50 dark:bg-slate-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-100 dark:ring-red-900/30' : 'border-gray-200 dark:border-slate-600'
                         }`}
                     />
-                    <span className="text-lg font-bold text-gray-600 dark:text-gray-300 px-3 py-3 bg-gray-100 dark:bg-gray-700 rounded-lg">kg</span>
+                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400 px-3 py-3 bg-gray-100 dark:bg-slate-700 rounded-lg">kg</span>
                   </div>
                   {showValidation && !formData.peso_salida && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
                 </div>
 
                 {/* TOTAL DEPOSITADO */}
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-5 shadow-lg">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-blue-100 dark:border-blue-900/30">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white/80">= TOTAL DEPOSITADO</p>
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase">Total Depositado</p>
                       </div>
                     </div>
                   </div>
-                  <div className="text-center py-3 bg-white dark:bg-gray-900 rounded-lg">
-                    <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{calcularTotalDepositado().toFixed(0)} <span className="text-xl">kg</span></p>
+                  <div className="text-center py-2">
+                    <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{calcularTotalDepositado().toFixed(0)} <span className="text-xl text-gray-400">kg</span></p>
                   </div>
                 </div>
 
                 {/* Botones rápidos */}
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">Rápido:</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Rápido:</span>
                   {[500, 1000, 1500, 2000, 2500, 3000].map(peso => (
                     <button
                       key={peso}
                       type="button"
                       onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
-                      className="px-3 py-1 text-sm bg-blue-200 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-lg hover:bg-blue-300 dark:hover:bg-blue-800 font-medium transition-colors"
+                      className="px-3 py-1 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors border border-transparent hover:border-blue-200"
                     >
                       {peso >= 1000 ? `${peso / 1000}T` : `${peso}kg`}
                     </button>
@@ -430,15 +430,15 @@ export function CreateManifiestoBasuronModal({
 
                 {/* Info de embarcación seleccionada */}
                 {selectedBuque && (
-                  <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 border border-green-200 dark:border-green-800">
+                  <div className="bg-green-50 dark:bg-green-900/10 rounded-xl p-4 border border-green-200 dark:border-green-900/30">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-green-800 dark:text-green-400">Embarcación seleccionada</p>
+                        <p className="text-sm font-bold text-green-700 dark:text-green-400">Embarcación seleccionada</p>
                         <p className="text-base font-bold text-black dark:text-white">{selectedBuque.nombre_buque}</p>
                         {selectedBuque.matricula && (
                           <p className="text-sm text-gray-600 dark:text-gray-400">Matrícula: {selectedBuque.matricula}</p>

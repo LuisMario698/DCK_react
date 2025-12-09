@@ -3,7 +3,7 @@ import { Persona, PersonaConTipo } from '@/types/database'
 
 export async function getPersonas() {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .select(`
@@ -11,14 +11,14 @@ export async function getPersonas() {
       tipo_persona:tipos_persona(*)
     `)
     .order('nombre')
-  
+
   if (error) throw error
   return data as PersonaConTipo[]
 }
 
 export async function getPersonaById(id: number) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .select(`
@@ -27,53 +27,53 @@ export async function getPersonaById(id: number) {
     `)
     .eq('id', id)
     .single()
-  
+
   if (error) throw error
   return data as PersonaConTipo
 }
 
 export async function createPersona(persona: Omit<Persona, 'id' | 'created_at' | 'updated_at'>) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .insert(persona)
     .select()
     .single()
-  
+
   if (error) throw error
   return data as Persona
 }
 
 export async function updatePersona(id: number, persona: Partial<Persona>) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .update(persona)
     .eq('id', id)
     .select()
     .single()
-  
+
   if (error) throw error
   return data as Persona
 }
 
 export async function deletePersona(id: number) {
   const supabase = createClient()
-  
+
   const { error } = await supabase
     .from('personas')
     .delete()
     .eq('id', id)
-  
+
   if (error) throw error
 }
 
 // Buscar personas
 export async function searchPersonas(searchTerm: string) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .select(`
@@ -82,7 +82,7 @@ export async function searchPersonas(searchTerm: string) {
     `)
     .ilike('nombre', `%${searchTerm}%`)
     .order('nombre')
-  
+
   if (error) throw error
   return data as PersonaConTipo[]
 }
@@ -90,7 +90,7 @@ export async function searchPersonas(searchTerm: string) {
 // Filtrar por tipo de persona
 export async function getPersonasByTipo(tipoPersonaId: number) {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .select(`
@@ -99,7 +99,7 @@ export async function getPersonasByTipo(tipoPersonaId: number) {
     `)
     .eq('tipo_persona_id', tipoPersonaId)
     .order('nombre')
-  
+
   if (error) throw error
   return data as PersonaConTipo[]
 }
@@ -137,7 +137,7 @@ export async function createPersonaAutomatica(nombre: string, tipoPersonaId: num
 // Obtener personas con registro incompleto
 export async function getPersonasIncompletas() {
   const supabase = createClient()
-  
+
   const { data, error } = await supabase
     .from('personas')
     .select(`
@@ -146,7 +146,7 @@ export async function getPersonasIncompletas() {
     `)
     .eq('registro_completo', false)
     .order('nombre')
-  
+
   if (error) throw error
   return data as PersonaConTipo[]
 }
