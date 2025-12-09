@@ -25,6 +25,9 @@ export default function PersonasPage() {
   const [personaToDelete, setPersonaToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState('Todos');
+
   useEffect(() => {
     loadPersonas();
   }, []);
@@ -42,8 +45,22 @@ export default function PersonasPage() {
     }
   }
 
-  const totalItems = personas.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  // Lógica de Filtrado y Búsqueda
+  const filteredPersonas = personas.filter(persona => {
+    const matchesSearch =
+      persona.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (persona.info_contacto && persona.info_contacto.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesRole = filterRole === 'Todos' || persona.tipo_persona?.nombre_tipo === filterRole;
+
+    return matchesSearch && matchesRole;
+  });
+
+  // Lógica de Paginación
+  const totalItems = filteredPersonas.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedPersonas = filteredPersonas.slice(startIndex, startIndex + itemsPerPage);
 
   const handleEdit = (id: number) => {
     console.log('🔵 handleEdit llamado con id:', id);
@@ -101,6 +118,8 @@ export default function PersonasPage() {
     incompletos: personas.filter(p => p.registro_completo === false).length,
   };
 
+  const roles = ['Todos', 'Motorista', 'Cocinero'];
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
@@ -118,12 +137,11 @@ export default function PersonasPage() {
           </h1>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
-          <Button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none">
-            <svg className="w-3 h-3 sm:w-4 sm:h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <Button onClick={() => setIsModalOpen(true)} className="flex-1 sm:flex-none gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span className="hidden sm:inline">{t('nuevaPersona')}</span>
-            <span className="sm:hidden">{t('nuevaPersona')}</span>
+            <span>{t('nuevaPersona')}</span>
           </Button>
         </div>
       </div>
@@ -193,12 +211,49 @@ export default function PersonasPage() {
         </div>
       )}
 
+      {/* Controles de búsqueda y filtro */}
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+        {/* Barra de búsqueda */}
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre o matrícula..."
+            className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+          />
+        </div>
+
+        {/* Filtros de Roles */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+          {roles.map((role) => (
+            <button
+              key={role}
+              onClick={() => setFilterRole(role)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filterRole === role
+                  ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-800'
+                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                }`}
+            >
+              {role}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-4">
-        <PersonasTable
-          personas={personas}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+        <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
+          <PersonasTable
+            personas={paginatedPersonas}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        </div>
 
         <Pagination
           currentPage={currentPage}
