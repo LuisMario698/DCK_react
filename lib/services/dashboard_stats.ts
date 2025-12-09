@@ -95,10 +95,10 @@ export async function getDashboardKPIs(supabase: SupabaseClient): Promise<Dashbo
  * Obtiene KPIs filtrados por período de tiempo
  */
 export async function getDashboardKPIsFiltered(
-    supabase: SupabaseClient, 
+    supabase: SupabaseClient,
     filtros: FiltrosDashboard
-): Promise<DashboardKPIs & { 
-    totalBasuron: number; 
+): Promise<DashboardKPIs & {
+    totalBasuron: number;
     entregasBasuron: number;
     filtrosAceite: number;
     filtrosDiesel: number;
@@ -114,7 +114,7 @@ export async function getDashboardKPIsFiltered(
             .select('id, estado_digitalizacion')
             .gte('fecha_emision', inicio)
             .lte('fecha_emision', fin),
-        
+
         // Residuos en el período (join con manifiestos)
         supabase
             .from('manifiestos')
@@ -130,12 +130,12 @@ export async function getDashboardKPIsFiltered(
             `)
             .gte('fecha_emision', inicio)
             .lte('fecha_emision', fin),
-        
+
         // Buques totales y activos
         supabase
             .from('buques')
             .select('id, estado'),
-        
+
         // Basurón en el período
         supabase
             .from('manifiesto_basuron')
@@ -202,16 +202,16 @@ export async function getComparacionPeriodoAnterior(
     filtros: FiltrosDashboard
 ): Promise<{ [key: string]: number }> {
     const { inicio, fin } = calcularRangoFechas(filtros.periodo, filtros.fechaInicio, filtros.fechaFin);
-    
+
     // Calcular duración del período actual
     const fechaInicio = new Date(inicio);
     const fechaFin = new Date(fin);
     const duracionMs = fechaFin.getTime() - fechaInicio.getTime();
-    
+
     // Calcular período anterior
     const finAnterior = new Date(fechaInicio.getTime() - 1); // Un día antes del inicio actual
     const inicioAnterior = new Date(finAnterior.getTime() - duracionMs);
-    
+
     const inicioAnteriorStr = inicioAnterior.toISOString().split('T')[0];
     const finAnteriorStr = finAnterior.toISOString().split('T')[0];
 
@@ -222,7 +222,7 @@ export async function getComparacionPeriodoAnterior(
             .select('id', { count: 'exact' })
             .gte('fecha_emision', inicioAnteriorStr)
             .lte('fecha_emision', finAnteriorStr),
-        
+
         supabase
             .from('manifiestos')
             .select(`
@@ -230,7 +230,7 @@ export async function getComparacionPeriodoAnterior(
             `)
             .gte('fecha_emision', inicioAnteriorStr)
             .lte('fecha_emision', finAnteriorStr),
-        
+
         supabase
             .from('manifiesto_basuron')
             .select('total_depositado')
@@ -239,7 +239,7 @@ export async function getComparacionPeriodoAnterior(
     ]);
 
     const manifestosAnterior = manifestosRes.count || 0;
-    
+
     let aceiteAnterior = 0;
     let basuraAnterior = 0;
     (residuosRes.data || []).forEach((m: any) => {
@@ -310,19 +310,23 @@ export async function getDashboardStats(supabase: SupabaseClient, filters?: Repo
  */
 export async function getReporteComplejo(supabase: SupabaseClient, filters: ReportFilters): Promise<ReporteDetalladoItem[]> {
     // Ajustar la fecha fin para incluir todo el día (agregar un día)
-    let fechaFinAjustada = filters.fechaFin;
+    // Convertir fechas a ISO strings (UTC) preservando el inicio y fin del día local
+    // Esto evita problemas de zona horaria donde registros de "ieri" (local) aparecen hoy (UTC)
+    let fechaInicioISO = undefined;
+    if (filters.fechaInicio) {
+        // Inicio del día local: 00:00:00
+        fechaInicioISO = new Date(filters.fechaInicio + 'T00:00:00').toISOString();
+    }
+
+    let fechaFinISO = undefined;
     if (filters.fechaFin) {
-        const fecha = new Date(filters.fechaFin + 'T00:00:00');
-        fecha.setDate(fecha.getDate() + 1);
-        const year = fecha.getFullYear();
-        const month = String(fecha.getMonth() + 1).padStart(2, '0');
-        const day = String(fecha.getDate()).padStart(2, '0');
-        fechaFinAjustada = `${year}-${month}-${day}`;
+        // Fin del día local: 23:59:59.999
+        fechaFinISO = new Date(filters.fechaFin + 'T23:59:59.999').toISOString();
     }
 
     const { data, error } = await supabase.rpc('get_reporte_detallado', {
-        p_fecha_inicio: filters.fechaInicio || null,
-        p_fecha_fin: fechaFinAjustada || null,
+        p_fecha_inicio: fechaInicioISO || null,
+        p_fecha_fin: fechaFinISO || null,
         p_buque_id: filters.buqueId || null,
         p_estado: filters.estado || null
     });

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Icons } from '@/components/ui/Icons';
+import { LoginForm } from '@/components/auth/LoginForm';
 
 const MEDIA = [
     { type: 'image', src: 'https://images.unsplash.com/photo-1516937941348-c09645f8b927?auto=format&fit=crop&q=80' }, // Port container
@@ -16,6 +17,7 @@ export function VariantCinematic() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [prevIndex, setPrevIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -129,12 +131,14 @@ export function VariantCinematic() {
                         Transformando la gestión marítima con trazabilidad digital y compromiso ecológico.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-                        <Link
-                            href="/dashboard"
-                            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-wide transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 rounded-sm"
-                        >
-                            PLATAFORMA DIGITAL <Icons.ArrowRight className="w-5 h-5" />
-                        </Link>
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+                            <button
+                                onClick={() => setShowLoginModal(true)}
+                                className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold tracking-wide transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2 rounded-sm cursor-pointer hover:scale-105 active:scale-95"
+                            >
+                                PLATAFORMA DIGITAL <Icons.ArrowRight className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -276,6 +280,37 @@ export function VariantCinematic() {
                     © 2025 DCK / ITSPP. Todos los derechos reservados.
                 </div>
             </footer>
+
+            {/* Login Modal */}
+            {showLoginModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    {/* Backdrop with Blur */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-all animate-fade-in"
+                        onClick={() => setShowLoginModal(false)}
+                    ></div>
+
+                    {/* Modal Content */}
+                    <div className="relative bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in border border-white/10 dark">
+                        {/* Close Button */}
+                        <button
+                            onClick={() => setShowLoginModal(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+
+                        <div className="p-8">
+                            <LoginForm
+                                showLogo={true}
+                                onSuccess={() => setShowLoginModal(false)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );

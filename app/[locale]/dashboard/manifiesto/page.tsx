@@ -648,19 +648,19 @@ export default function ManifiestosPage() {
         buque_id: Number(formData.buque_id),
         responsable_principal_id: Number(formData.responsable_principal_id) || 0,
         responsable_secundario_id: Number(formData.responsable_secundario_id) || null,
+        estado_digitalizacion: 'pendiente',
         observaciones: formData.observaciones || null,
         pdf_manifiesto_url: null,
         imagen_manifiesto_url: null,
-        estado: 'borrador',
+        updated_at: new Date().toISOString(),
         buque: buqueSeleccionado,
-        responsable_principal: motoristaSeleccionado ? { ...motoristaSeleccionado, rol: 'motorista' } : undefined,
-        responsable_secundario: cocineroSeleccionado ? { ...cocineroSeleccionado, rol: 'cocinero' } : undefined,
-        rol_responsable_principal: 'motorista',
-        rol_responsable_secundario: 'cocinero',
+        responsable_principal: motoristaSeleccionado,
+        responsable_secundario: cocineroSeleccionado,
         residuos: {
           id: 0,
           manifiesto_id: 0,
           created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
           ...residuos
         }
       };

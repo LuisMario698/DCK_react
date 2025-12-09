@@ -8,15 +8,19 @@ import { useEffect, useState } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
 import { useTheme } from '@/components/layout/ThemeContext';
+import { useAuth } from '@/components/layout/AuthProvider';
 import logoExpanded from '@/Contexto-DCK/logo_DCK.png';
 import logoCollapsed from '@/Contexto-DCK/logo_DCK_no_letras.png';
 import logoWhite from '@/assets/logo_DCK_blanco.png';
+import { UserProfileModal } from '@/components/layout/UserProfileModal';
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();
-  const { isOpen, closeSidebar, isCollapsed, toggleCollapse } = useSidebar();
+  const { isCollapsed, isOpen, closeSidebar, toggleCollapse } = useSidebar();
   const { theme } = useTheme();
+  const { signOut, user } = useAuth(); // Get user
+  const [isProfileOpen, setIsProfileOpen] = useState(false); // Modal State
 
   const locale = pathname.split('/')[1] || 'es';
 
@@ -51,6 +55,9 @@ export function Sidebar() {
           onClick={closeSidebar}
         />
       )}
+
+      {/* Modal Perfil */}
+      <UserProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
 
       <aside
         className={`
@@ -151,11 +158,43 @@ export function Sidebar() {
           </nav>
         </div>
 
-        {/* Footer / Collapse Toggle (Solo Desktop) */}
-        <div className="hidden lg:block p-4 border-t border-slate-800 bg-slate-900">
+        {/* Footer / Collapse Toggle & Logout */}
+        <div className="p-4 border-t border-slate-800 bg-slate-900 space-y-2">
+          {/* User Profile Button */}
+          <button
+            onClick={() => setIsProfileOpen(true)}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-gray-300 hover:bg-slate-800 hover:text-white transition-colors group relative`}
+            title={isCollapsed ? (user?.user_metadata?.full_name || 'Mi Perfil') : ''}
+          >
+            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-xs border border-blue-500">
+              {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col items-start truncate overflow-hidden">
+                <span className="text-sm font-medium truncate w-full text-left">{user?.user_metadata?.full_name || 'Usuario'}</span>
+                <span className="text-xs text-gray-500 truncate w-full text-left">{user?.email}</span>
+              </div>
+            )}
+          </button>
+
+          {/* Botón Cerrar Sesión */}
+          <button
+            onClick={signOut}
+            className={`flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-red-400 hover:bg-red-900/20 hover:text-red-300 transition-colors group relative`}
+            title={isCollapsed ? t('menu.logout') : ''}
+          >
+            <div className="flex-shrink-0">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </div>
+            {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
+          </button>
+
+          {/* Botón Colapsar (Solo Desktop) */}
           <button
             onClick={toggleCollapse}
-            className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-center w-full gap-2'} p-2 rounded-lg bg-slate-800 border border-slate-700 text-gray-300 hover:bg-slate-700 hover:text-white transition-colors shadow-sm`}
+            className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-gray-400 hover:bg-slate-800 hover:text-white transition-colors`}
           >
             <svg
               className={`w-5 h-5 transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}

@@ -26,7 +26,7 @@ CREATE TABLE public.bitacora (
 );
 CREATE TABLE public.buques (
   id bigint NOT NULL DEFAULT nextval('buques_id_seq'::regclass),
-  nombre_buque text NOT NULL,
+  nombre_buque text NOT NULL UNIQUE,
   tipo_buque text,
   propietario_id bigint,
   fecha_registro date DEFAULT CURRENT_DATE,
@@ -46,13 +46,17 @@ CREATE TABLE public.manifiesto_basuron (
   peso_entrada numeric NOT NULL DEFAULT '0'::numeric CHECK (peso_entrada >= 0::numeric),
   peso_salida numeric DEFAULT '0'::numeric CHECK (peso_salida >= 0::numeric),
   total_depositado numeric DEFAULT (peso_entrada - COALESCE(peso_salida, (0)::numeric)),
-  buque_id bigint NOT NULL,
+  buque_id bigint,
   observaciones text DEFAULT ''::text,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   hora_entrada time without time zone,
   hora_salida time without time zone,
   nombre_usuario text DEFAULT ''::text,
+  pdf_manifiesto_url text,
+  recibimos_de text,
+  direccion text,
+  recibido_por text,
   CONSTRAINT manifiesto_basuron_pkey PRIMARY KEY (id),
   CONSTRAINT manifiesto_basuron_buque_id_fkey FOREIGN KEY (buque_id) REFERENCES public.buques(id)
 );
@@ -70,6 +74,7 @@ CREATE TABLE public.manifiestos (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   responsable_secundario_id bigint,
+  pdf_manifiesto_url text,
   CONSTRAINT manifiestos_pkey PRIMARY KEY (id),
   CONSTRAINT manifiestos_responsable_secundario_id_fkey FOREIGN KEY (responsable_secundario_id) REFERENCES public.personas(id),
   CONSTRAINT manifiestos_buque_id_fkey FOREIGN KEY (buque_id) REFERENCES public.buques(id),

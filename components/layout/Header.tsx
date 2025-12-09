@@ -3,6 +3,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/components/layout/ThemeContext';
+
 import logoMobile from '@/Contexto-DCK/logo_DCK.png';
 import logoWhite from '@/assets/logo_DCK_blanco.png';
 
