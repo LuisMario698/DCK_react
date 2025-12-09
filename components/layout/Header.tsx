@@ -1,5 +1,4 @@
 import { useSidebar } from './SidebarContext';
-import { ThemeToggle } from './ThemeToggle';
 import { usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/components/layout/ThemeContext';
@@ -18,7 +17,7 @@ export function Header() {
   const logoSrcMobile = theme === 'dark' ? logoWhite : logoMobile;
 
   return (
-    <header className="h-14 sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 lg:px-6 sticky top-0 z-30 shadow-sm dark:shadow-gray-950/50">
+    <header className=" lg:hidden h-14 sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 lg:px-6 sticky top-0 z-30 shadow-sm dark:shadow-gray-950/50">
       {/* Botón hamburguesa para abrir el sidebar - Solo móvil */}
       <button
         onClick={toggleSidebar}
@@ -44,8 +43,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
-        {/* Theme Toggle */}
-        <ThemeToggle />
+        {/* Theme Toggle removed - now floating */}
       </div>
     </header>
   );

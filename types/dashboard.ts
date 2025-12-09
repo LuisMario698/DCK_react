@@ -55,3 +55,11 @@ export interface ReporteDetalladoItem {
     estado: string;
     responsable: string;
 }
+
+export interface Comparaciones {
+    manifestosAnterior: number;
+    aceiteAnterior: number;
+    basuraAnterior: number;
+    basuronAnterior: number;
+    totalAnterior: number;
+}

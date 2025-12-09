@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { locales } from '@/i18n';
 import { ThemeProvider } from '@/components/layout/ThemeContext';
 import { AuthProvider } from "@/components/layout/AuthProvider";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export const metadata: Metadata = {
   title: "CIAD - Sistema de Manifiestos",
@@ -36,6 +37,7 @@ export default async function LocaleLayout({
           <AuthProvider>
             <NextIntlClientProvider messages={messages}>
               {children}
+              <ThemeToggle />
             </NextIntlClientProvider>
           </AuthProvider>
         </ThemeProvider>

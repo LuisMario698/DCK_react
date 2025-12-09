@@ -213,12 +213,16 @@ export default function EmbarcacionesPage() {
         </div>
       )}
 
-      {/* Controles de búsqueda y filtro */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm space-y-4 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-4">
+      {/* Controles de búsqueda y filtro - Premium Glassmorphism Design */}
+      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl p-6 rounded-2xl border border-white/20 dark:border-slate-700/50 shadow-lg space-y-6 sm:space-y-0 sm:flex sm:items-center sm:justify-between gap-6 relative overflow-hidden group">
+
+        {/* Decorative background gradient */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 dark:bg-blue-400/5 rounded-full blur-3xl -z-10 group-hover:bg-blue-500/10 transition-colors duration-700"></div>
+
         {/* Barra de búsqueda */}
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="relative flex-1 max-w-xl">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400 dark:text-gray-500 transition-colors group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -227,19 +231,19 @@ export default function EmbarcacionesPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nombre o matrícula..."
-            className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            className="block w-full pl-11 pr-4 py-3 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white/50 dark:bg-slate-900/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-all shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-700 font-medium"
           />
         </div>
 
-        {/* Filtros de estado */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
+        {/* Filtros de estado - Segmented Control */}
+        <div className="flex bg-gray-100/80 dark:bg-slate-900/80 p-1.5 rounded-xl border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-sm">
           {(['Todos', 'Activo', 'Inactivo'] as const).map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${filterStatus === status
-                  ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-800'
-                  : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-300 relative overflow-hidden ${filterStatus === status
+                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-[0_2px_8px_rgba(0,0,0,0.08)] ring-1 ring-black/5 dark:ring-white/5'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-200/50 dark:hover:bg-slate-800/50'
                 }`}
             >
               {status}

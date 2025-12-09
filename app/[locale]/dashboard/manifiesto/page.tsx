@@ -604,38 +604,88 @@ export default function ManifiestosPage() {
 
   const handleDescargarBorrador = async () => {
     try {
-      // 1. Validar datos mínimos
-      if (!formData.buque_id) {
-        alert('Por favor selecciona un buque primero');
+      // 1. Validar datos mínimos (Nombre de buque requerido, aunque no esté registrado)
+      if (!formData.buque_id && !buqueNombre.trim()) {
+        alert('Por favor ingresa un nombre de buque');
         return;
       }
 
-      // 2. Construir objeto Manifiesto temporal
-      const buqueSeleccionado = buques.find(b => b.id === Number(formData.buque_id));
-      const motoristaSeleccionado = personas.find(p => p.id === Number(formData.responsable_principal_id));
-      const cocineroSeleccionado = personas.find(p => p.id === Number(formData.responsable_secundario_id));
+      setGenerandoPDF('borrador'); // Indicador visual
 
-      if (!buqueSeleccionado) {
-        alert('Error: Buque no encontrado');
+      // 2. Auto-registro o recuperación de IDs (Paralelizado)
+      const [buqueResult, motoristaResult, cocineroResult] = await Promise.all([
+        // Buque
+        (!formData.buque_id && buqueNombre.trim())
+          ? createBuqueAutomatico(buqueNombre.trim())
+          : Promise.resolve(null),
+        // Motorista
+        (!formData.responsable_principal_id && motoristaNombre.trim())
+          ? getOrCreateTipoPersona('Motorista').then(tipo => createPersonaAutomatica(motoristaNombre.trim(), tipo.id))
+          : Promise.resolve(null),
+        // Cocinero
+        (!formData.responsable_secundario_id && cocineroNombre.trim())
+          ? getOrCreateTipoPersona('Cocinero').then(tipo => createPersonaAutomatica(cocineroNombre.trim(), tipo.id))
+          : Promise.resolve(null)
+      ]);
+
+      // 3. Obtener objetos completos para el PDF
+      // Usar el resultado del auto-registro O buscar en el estado existente O crear objeto temporal
+      const buqueIdFinal = buqueResult ? buqueResult.id : formData.buque_id;
+      const motoristaIdFinal = motoristaResult ? motoristaResult.id : formData.responsable_principal_id;
+      const cocineroIdFinal = cocineroResult ? cocineroResult.id : formData.responsable_secundario_id;
+
+      let buqueObj = buqueResult || buques.find(b => b.id === Number(buqueIdFinal));
+      if (!buqueObj && buqueNombre.trim()) {
+        // Fallback visual si por alguna razón no tenemos objeto DB aún
+        buqueObj = { id: 0, nombre_buque: buqueNombre.trim(), estado: 'Activo' } as any;
+      }
+
+      let motoristaObj = motoristaResult || personas.find(p => p.id === Number(motoristaIdFinal));
+      if (!motoristaObj && motoristaNombre.trim()) {
+        motoristaObj = { id: 0, nombre: motoristaNombre.trim() } as any;
+      }
+
+      let cocineroObj = cocineroResult || personas.find(p => p.id === Number(cocineroIdFinal));
+      if (!cocineroObj && cocineroNombre.trim()) {
+        cocineroObj = { id: 0, nombre: cocineroNombre.trim() } as any;
+      }
+
+      // Actualizar el formulario con los nuevos IDs para que el usuario no tenga que volver a seleccionarlos
+      // si decide guardar el manifiesto después de descargar el borrador.
+      const newFormData = { ...formData };
+      if (buqueResult) newFormData.buque_id = buqueResult.id.toString();
+      if (motoristaResult) newFormData.responsable_principal_id = motoristaResult.id.toString();
+      if (cocineroResult) newFormData.responsable_secundario_id = cocineroResult.id.toString();
+      setFormData(newFormData);
+
+      // Si hubo nuevos registros, recargar listas para que aparezcan en los selectores
+      if (buqueResult || motoristaResult || cocineroResult) {
+        loadData();
+      }
+
+      if (!buqueObj) {
+        alert('Error: No se pudo determinar el buque. verifica los datos.');
+        setGenerandoPDF(null);
         return;
       }
 
+      // 4. Construir objeto Manifiesto temporal
       const borradorManifiesto: ManifiestoConRelaciones = {
         id: 0, // ID temporal
         created_at: new Date().toISOString(),
         numero_manifiesto: formData.numero_manifiesto || 'BORRADOR',
         fecha_emision: formData.fecha_emision,
-        buque_id: Number(formData.buque_id),
-        responsable_principal_id: Number(formData.responsable_principal_id) || 0,
-        responsable_secundario_id: Number(formData.responsable_secundario_id) || null,
+        buque_id: Number(buqueIdFinal),
+        responsable_principal_id: Number(motoristaIdFinal) || 0,
+        responsable_secundario_id: Number(cocineroIdFinal) || null,
         estado_digitalizacion: 'pendiente',
         observaciones: formData.observaciones || null,
         pdf_manifiesto_url: null,
         imagen_manifiesto_url: null,
         updated_at: new Date().toISOString(),
-        buque: buqueSeleccionado,
-        responsable_principal: motoristaSeleccionado,
-        responsable_secundario: cocineroSeleccionado,
+        buque: buqueObj,
+        responsable_principal: motoristaObj as any, // Cast para evitar conflictos estrictos de tipo en borrador
+        responsable_secundario: cocineroObj as any,
         residuos: {
           id: 0,
           manifiesto_id: 0,
@@ -645,18 +695,18 @@ export default function ManifiestosPage() {
         }
       };
 
-      // 3. Generar PDF SIN firmas
+      // 5. Generar PDF SIN firmas (Solo nombres escritos)
       const firmasVacias: FirmasManifiesto = {
         motoristaFirma: null,
-        motoristaNombre: motoristaNombre, // Usar nombre escrito si existe
+        motoristaNombre: motoristaNombre || motoristaObj?.nombre,
         cocineroFirma: null,
-        cocineroNombre: cocineroNombre, // Usar nombre escrito si existe
+        cocineroNombre: cocineroNombre || cocineroObj?.nombre,
         oficialFirma: null
       };
 
       const pdfBlob = await generarPDFManifiesto(borradorManifiesto, firmasVacias);
 
-      // 4. Descargar
+      // 6. Descargar
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -669,6 +719,8 @@ export default function ManifiestosPage() {
     } catch (error) {
       console.error('Error generando borrador:', error);
       alert('Error al generar el borrador');
+    } finally {
+      setGenerandoPDF(null);
     }
   };
 
