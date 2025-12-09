@@ -6,7 +6,8 @@
       "personas": "Personas",
       "embarcaciones": "Embarcaciones",
       "manifiesto": "Manifiesto",
-      "manifiestoBasuron": "Recibo Relleno Sanitario"
+      "manifiestoBasuron": "Recibo Relleno Sanitario",
+      "logout": "Cerrar sesión"
     },
     "externos": {
       "titulo": "Gestión Externa",
