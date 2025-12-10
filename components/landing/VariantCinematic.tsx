@@ -5,12 +5,20 @@ import Link from 'next/link';
 import { Icons } from '@/components/ui/Icons';
 import { LoginForm } from '@/components/auth/LoginForm';
 
-const MEDIA = [
-    { type: 'image', src: 'https://images.unsplash.com/photo-1516937941348-c09645f8b927?auto=format&fit=crop&q=80' }, // Port container
-    { type: 'video', src: 'https://cdn.pixabay.com/video/2020/05/25/40139-424930032_large.mp4', poster: 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b0?auto=format&fit=crop&q=80' }, // Ocean waves video
-    { type: 'image', src: 'https://images.unsplash.com/photo-1621451537084-482c73073a0f?auto=format&fit=crop&q=80' }, // Ship
-    { type: 'video', src: 'https://cdn.pixabay.com/video/2019/04/23/23011-332483109_large.mp4', poster: 'https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&q=80' }, // Aerial sea video
-    { type: 'image', src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80' }, // Beach/Ocean generic
+interface MediaItem {
+    type: 'image' | 'video';
+    src: string;
+    poster?: string;
+}
+
+const MEDIA: MediaItem[] = [
+    { type: 'image', src: '/assets/images/img1.jpeg' },
+    { type: 'image', src: '/assets/images/img2.jpeg' },
+    { type: 'image', src: '/assets/images/img3.jpeg' },
+    { type: 'image', src: '/assets/images/img4.jpeg' },
+    { type: 'image', src: '/assets/images/img5.jpeg' },
+    { type: 'image', src: '/assets/images/img6.jpeg' },
+    { type: 'image', src: '/assets/images/img7.jpeg' },
 ];
 
 export function VariantCinematic() {
@@ -124,8 +132,8 @@ export function VariantCinematic() {
                         <span className="text-blue-300 text-sm font-medium tracking-widest uppercase">Puerto Peñasco, Sonora</span>
                     </div>
                     <h1 className="text-6xl md:text-9xl font-bold leading-none tracking-tighter text-white drop-shadow-2xl">
-                        CONCIENCIA <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">AZUL</span>
+                        DCK <br />
+                        <span className="text-4xl md:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Conciencia y Cultura</span>
                     </h1>
                     <p className="text-xl md:text-2xl text-gray-200 font-light max-w-2xl mx-auto leading-relaxed">
                         Transformando la gestión marítima con trazabilidad digital y compromiso ecológico.
@@ -169,10 +177,8 @@ export function VariantCinematic() {
                         </div>
                         <div className="grid grid-cols-2 gap-8 pt-8 border-t border-white/10">
                             <div>
-                                <div className="text-3xl font-bold text-white mb-1">SEMARNAT</div>
-                                <div className="text-sm text-gray-500 uppercase tracking-widest">Colaboración Estratégica</div>
-                            </div>
-                            <div>
+
+
                                 <div className="text-3xl font-bold text-white mb-1">MARPOL</div>
                                 <div className="text-sm text-gray-500 uppercase tracking-widest">Cumplimiento Anexo V</div>
                             </div>
@@ -203,7 +209,7 @@ export function VariantCinematic() {
                         {[
                             { title: 'Registro Digital', desc: 'Digitalización de manifiestos de entrega-recepción de residuos (aceites, filtros, basura).', icon: Icons.Document },
                             { title: 'Trazabilidad Total', desc: 'Seguimiento completo del ciclo de vida del residuo, desde la embarcación hasta su disposición final.', icon: Icons.Dashboard },
-                            { title: 'Estadísticas Ambientales', desc: 'Generación automática de reportes y KPIs para la toma de decisiones estratégicas.', icon: Icons.Chart },
+                            { title: 'Estadísticas Ambientales', desc: 'Generación automática de reportes para la toma de decisiones estratégicas.', icon: Icons.Chart },
                         ].map((service, i) => (
                             <div key={i} className="group p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all hover:-translate-y-2">
                                 <div className="w-14 h-14 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-400 mb-6 group-hover:scale-110 transition-transform">
@@ -268,11 +274,10 @@ export function VariantCinematic() {
                     </div>
 
                     <div>
-                        <h4 className="text-lg font-bold mb-6">Institucional</h4>
+                        <h4 className="text-lg font-bold mb-6">Instituciones</h4>
                         <ul className="space-y-4 text-gray-400">
                             <li><a href="#" className="hover:text-white">ITSPP</a></li>
                             <li><a href="#" className="hover:text-white">DCK Conciencia y Cultura</a></li>
-                            <li><a href="#" className="hover:text-white">SEMARNAT</a></li>
                         </ul>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
-import { DashboardStats, ReporteDetalladoItem } from '@/types/dashboard';
+import { DashboardStats, ReporteDetalladoItem, Comparaciones } from '@/types/dashboard';
 
 // Registrar locale español para el DatePicker
 registerLocale('es', es);
@@ -38,13 +38,7 @@ interface StatsFiltered {
     filtrosAire: number;
 }
 
-interface Comparaciones {
-    manifestosAnterior: number;
-    aceiteAnterior: number;
-    basuraAnterior: number;
-    basuronAnterior: number;
-    totalAnterior: number;
-}
+
 
 export function DashboardClient({ initialStats, buques }: DashboardClientProps) {
     const [activeTab, setActiveTab] = useState<'general' | 'reportes'>('general');
@@ -185,6 +179,51 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
         link.click();
     };
 
+    // Función para exportar a Excel
+    const exportToExcel = async (data: ReporteDetalladoItem[]) => {
+        try {
+            const XLSX = await import('xlsx');
+
+            // Preparar datos para Excel
+            const exportData = data.map(item => ({
+                'Fecha': new Date(item.fecha).toLocaleDateString(),
+                'Folio': item.folio,
+                'Buque': item.buque,
+                'Tipo Residuo': item.tipoResiduo,
+                'Cantidad': item.cantidad,
+                'Unidad': item.unidad,
+                'Estado': item.estado,
+                'Responsable': item.responsable
+            }));
+
+            // Crear libro y hoja
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+
+            // Ajustar ancho de columnas
+            const wscols = [
+                { wch: 12 }, // Fecha
+                { wch: 15 }, // Folio
+                { wch: 25 }, // Buque
+                { wch: 20 }, // Tipo
+                { wch: 10 }, // Cantidad
+                { wch: 8 },  // Unidad
+                { wch: 12 }, // Estado
+                { wch: 25 }, // Responsable
+            ];
+            ws['!cols'] = wscols;
+
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte Residuos");
+
+            // Descargar archivo
+            XLSX.writeFile(wb, `Reporte_Residuos_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+        } catch (error) {
+            console.error("Error exportando a Excel:", error);
+            alert("Error al generar el archivo Excel");
+        }
+    };
+
     // Función para exportar a PDF (genera HTML imprimible)
     const exportToPDF = (data: ReporteDetalladoItem[], statsData: StatsFiltered) => {
         const printWindow = window.open('', '_blank');
@@ -212,14 +251,14 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                 </style>
             </head>
             <body>
-                <h1>📊 Reporte de Residuos</h1>
+                <h1>Reporte de Residuos</h1>
                 <p>Generado el ${new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 
                 <h2>Resumen General</h2>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-value">${statsData.totalResiduosReciclados.toLocaleString()} kg</div>
-                        <div class="stat-label">Total Reciclado</div>
+                        <div class="stat-label">Total Procesado</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-value">${statsData.totalManifiestos}</div>
@@ -287,7 +326,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white'
                             }`}
                     >
-                        Dashboard
+                        Estadísticas
                     </button>
                     <button
                         onClick={() => setActiveTab('reportes')}
@@ -337,7 +376,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Total Reciclado - Azul */}
                         <SimpleKpiCard
-                            title="Total Reciclado"
+                            title="Total Procesado"
                             value={`${stats.totalResiduosReciclados.toLocaleString()} kg`}
                             subtitle={`${trendTotal.valor} vs anterior`}
                             icon="recycle"
@@ -737,7 +776,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <div className="space-y-5">
                                     {/* Total Reciclado */}
                                     <ComparisonBar
-                                        label="Total Reciclado"
+                                        label="Total Procesado"
                                         actual={stats.totalResiduosReciclados}
                                         anterior={comparaciones.totalAnterior}
                                         unit="kg"
@@ -1160,6 +1199,30 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </p>
                                 </div>
                             </div>
+
+                            <div className="flex gap-3"> {/* Increased gap */}
+                                <button
+                                    onClick={() => exportToExcel(reportData)}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                                >
+                                    <Icons.Document className="w-5 h-5" />
+                                    <span>Excel</span>
+                                </button>
+                                <button
+                                    onClick={() => exportToCSV(reportData)}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 hover:border-transparent"
+                                >
+                                    <Icons.Document className="w-5 h-5" />
+                                    <span>CSV</span>
+                                </button>
+                                <button
+                                    onClick={() => exportToPDF(reportData, stats!)}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
+                                >
+                                    <Icons.Document className="w-5 h-5" />
+                                    <span>PDF</span>
+                                </button>
+                            </div>
                         </div>
 
                         <div className="overflow-x-auto">
@@ -1229,8 +1292,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 

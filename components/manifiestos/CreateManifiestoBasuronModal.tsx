@@ -150,11 +150,11 @@ export function CreateManifiestoBasuronModal({
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
 
   return (
-    <div className={inline ? '' : 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'}>
-      <div className={inline ? 'w-full' : 'bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto'}>
+    <div className={inline ? '' : 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50'}>
+      <div className={inline ? 'w-full' : 'bg-white dark:bg-gray-900 shadow-2xl max-w-7xl w-full h-full overflow-y-auto'}>
 
         {/* Formulario estilo documento físico - Recibo Relleno Sanitario */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-6xl mx-auto shadow-lg">
+        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-7xl mx-auto shadow-lg">
           {/* Encabezado del recibo - Estilo sutil */}
           <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
             <div className="flex items-center justify-between">

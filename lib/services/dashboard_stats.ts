@@ -6,7 +6,8 @@ import {
     ReporteDetalladoItem,
     ResiduosPorMes,
     ResiduosPorBuque,
-    ChartDataPoint
+    ChartDataPoint,
+    Comparaciones
 } from '@/types/dashboard';
 
 export type PeriodoFiltro = 'semana' | 'mes' | 'trimestre' | 'anio' | 'todo' | 'personalizado';
@@ -200,7 +201,7 @@ export async function getDashboardKPIsFiltered(
 export async function getComparacionPeriodoAnterior(
     supabase: SupabaseClient,
     filtros: FiltrosDashboard
-): Promise<{ [key: string]: number }> {
+): Promise<Comparaciones> {
     const { inicio, fin } = calcularRangoFechas(filtros.periodo, filtros.fechaInicio, filtros.fechaFin);
 
     // Calcular duración del período actual
