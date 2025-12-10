@@ -1,9 +1,16 @@
 'use client';
 
 import { useTheme } from './ThemeContext';
+import { usePathname } from 'next/navigation';
 
 export function ThemeToggle() {
     const { theme, toggleTheme } = useTheme();
+    const pathname = usePathname();
+
+    // Ocultar en landing page (/es o /en)
+    if (pathname === '/es' || pathname === '/en' || pathname === '/') {
+        return null;
+    }
 
     return (
         <button
