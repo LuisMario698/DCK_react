@@ -1,290 +1,215 @@
-import { createClient } from '@/lib/supabase/client'
-import { ManifiestoBasuron, ManifiestoBasuronConRelaciones } from '@/types/database'
-import { generarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron'
+import { prisma } from '@/lib/prisma';
+import { ManifiestoBasuron, ManifiestoBasuronConRelaciones } from '@/types/database';
+import { uploadBasuronPDF } from '@/lib/services/storage';
 
-export async function getManifiestosBasuron() {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buque_id(id, nombre_buque)
-    `)
-    .order('fecha', { ascending: false })
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones[]
+function mapDate(d: any): string | null {
+  if (!d) return null;
+  return d instanceof Date ? d.toISOString() : d;
 }
 
-export async function getManifiestoBasuronById(id: number) {
-  const supabase = createClient()
+function mapBasuron(b: any): ManifiestoBasuron {
+  return {
+    ...b,
+    fecha: b.fecha instanceof Date ? b.fecha.toISOString().split('T')[0] : b.fecha,
+    peso_entrada: b.peso_entrada !== null ? Number(b.peso_entrada) : b.peso_entrada,
+    peso_salida: b.peso_salida !== null ? Number(b.peso_salida) : null,
+    total_depositado: b.total_depositado !== null ? Number(b.total_depositado) : null,
+    created_at: mapDate(b.created_at),
+    updated_at: mapDate(b.updated_at),
+  };
+}
 
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buque_id(id, nombre_buque)
-    `)
-    .eq('id', id)
-    .single()
+function mapBasuronConRelaciones(b: any): ManifiestoBasuronConRelaciones {
+  const base = mapBasuron(b);
+  return {
+    ...base,
+    buque: b.buque
+      ? {
+          ...b.buque,
+          fecha_registro: b.buque.fecha_registro instanceof Date ? b.buque.fecha_registro.toISOString().split('T')[0] : b.buque.fecha_registro,
+          capacidad_toneladas: b.buque.capacidad_toneladas !== null ? Number(b.buque.capacidad_toneladas) : null,
+          created_at: mapDate(b.buque.created_at) ?? '',
+          updated_at: mapDate(b.buque.updated_at) ?? '',
+        }
+      : undefined,
+  };
+}
 
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones
+export async function generarNumeroTicket(id: number, fecha: string): Promise<string> {
+  const fechaObj = new Date(fecha);
+  const dateStr = `${String(fechaObj.getFullYear()).slice(2)}${String(fechaObj.getMonth() + 1).padStart(2, '0')}${String(fechaObj.getDate()).padStart(2, '0')}`;
+  return `TKT-${dateStr}-${String(id).padStart(4, '0')}`;
+}
+
+export async function getManifiestosBasuron(): Promise<ManifiestoBasuronConRelaciones[]> {
+  const data = await prisma.manifiesto_basuron.findMany({
+    include: { buque: true },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map(mapBasuronConRelaciones);
+}
+
+export async function getManifiestoBasuronById(id: number): Promise<ManifiestoBasuronConRelaciones> {
+  const data = await prisma.manifiesto_basuron.findUniqueOrThrow({
+    where: { id },
+    include: { buque: true },
+  });
+  return mapBasuronConRelaciones(data);
 }
 
 export async function createManifiestoBasuron(
-  manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'total_depositado'>,
-  file?: File
-) {
-  const supabase = createClient()
+  manifiesto: Omit<ManifiestoBasuron, 'id' | 'created_at' | 'updated_at' | 'numero_ticket' | 'total_depositado'>,
+  archivo?: File
+): Promise<ManifiestoBasuron> {
+  const { fecha, peso_entrada, peso_salida, nombre_usuario: _nombre_usuario, ...rest } = manifiesto as any;
+  const pesoEntrada = Number(peso_entrada);
+  const pesoSalida = peso_salida !== null && peso_salida !== undefined ? Number(peso_salida) : null;
+  const totalDepositado = pesoSalida !== null ? pesoSalida - pesoEntrada : null;
 
-  let pdfUrl = manifiesto.pdf_manifiesto_url
+  const data = await prisma.manifiesto_basuron.create({
+    data: {
+      ...rest,
+      fecha: new Date(fecha),
+      peso_entrada: pesoEntrada,
+      peso_salida: pesoSalida,
+      total_depositado: totalDepositado,
+      numero_ticket: null, // generated after insert
+    },
+  });
 
-  if (file) {
-    const fileExt = file.name.split('.').pop()
-    const fileName = `Scan_${Date.now()}.${fileExt}`
+  const numero_ticket = await generarNumeroTicket(data.id, fecha);
 
-    const { error: uploadError } = await supabase
-      .storage
-      .from('manifiestos_basuron_pdf')
-      .upload(fileName, file)
-
-    if (uploadError) throw uploadError
-
-    const { data: publicUrlData } = supabase
-      .storage
-      .from('manifiestos_basuron_pdf')
-      .getPublicUrl(fileName)
-
-    pdfUrl = publicUrlData.publicUrl
+  let comprobante_url: string | null = null;
+  if (archivo) {
+    comprobante_url = await uploadBasuronPDF(archivo, numero_ticket);
   }
 
-  const payload = {
-    ...manifiesto,
-    pdf_manifiesto_url: pdfUrl
-  }
+  const updated = await prisma.manifiesto_basuron.update({
+    where: { id: data.id },
+    data: { numero_ticket, ...(comprobante_url && { comprobante_url }) },
+  });
 
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .insert(payload)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as ManifiestoBasuron
+  return mapBasuron(updated);
 }
 
-export async function updateManifiestoBasuron(id: number, manifiesto: Partial<ManifiestoBasuron>) {
-  const supabase = createClient()
+export async function updateManifiestoBasuron(
+  id: number,
+  manifiesto: Partial<ManifiestoBasuron>
+): Promise<ManifiestoBasuron> {
+  const { created_at, updated_at, fecha, peso_entrada, peso_salida, total_depositado, numero_ticket, ...rest } = manifiesto as any;
 
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .update(manifiesto)
-    .eq('id', id)
-    .select()
-    .single()
+  const updateData: any = { ...rest };
+  if (fecha) updateData.fecha = new Date(fecha);
+  if (peso_entrada !== undefined) updateData.peso_entrada = Number(peso_entrada);
+  if (peso_salida !== undefined) updateData.peso_salida = peso_salida !== null ? Number(peso_salida) : null;
 
-  if (error) throw error
-  return data as ManifiestoBasuron
+  // Recalculate total_depositado if weights changed
+  const current = await prisma.manifiesto_basuron.findUniqueOrThrow({ where: { id } });
+  const newPesoEntrada = updateData.peso_entrada ?? Number(current.peso_entrada);
+  const newPesoSalida = updateData.peso_salida !== undefined ? updateData.peso_salida : (current.peso_salida !== null ? Number(current.peso_salida) : null);
+  updateData.total_depositado = newPesoSalida !== null ? newPesoSalida - newPesoEntrada : null;
+
+  const data = await prisma.manifiesto_basuron.update({ where: { id }, data: updateData });
+  return mapBasuron(data);
 }
 
-export async function deleteManifiestoBasuron(id: number) {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from('manifiesto_basuron')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw error
+export async function deleteManifiestoBasuron(id: number): Promise<void> {
+  await prisma.manifiesto_basuron.delete({ where: { id } });
 }
 
-// Completar manifiesto (agregar peso de salida) y generar PDF
 export async function completarManifiestoBasuron(
   id: number,
-  pesoSalida: number
-) {
-  const supabase = createClient()
+  pesoSalida: number,
+  horaSalida?: string,
+  observaciones?: string,
+  pdfUrl?: string
+): Promise<ManifiestoBasuron> {
+  const current = await prisma.manifiesto_basuron.findUniqueOrThrow({ where: { id } });
+  const pesoEntrada = Number(current.peso_entrada);
+  const totalDepositado = pesoSalida - pesoEntrada;
 
-  // 1. Actualizar datos
-  const { data: updatedData, error: updateError } = await supabase
-    .from('manifiesto_basuron')
-    .update({
+  const data = await prisma.manifiesto_basuron.update({
+    where: { id },
+    data: {
       peso_salida: pesoSalida,
-      estado: 'Completado'
-    })
-    .eq('id', id)
-    .select(`
-      *,
-      buque:buque_id(id, nombre_buque)
-    `)
-    .single()
-
-  if (updateError) throw updateError
-
-  if (!updatedData) throw new Error('No se pudo actualizar el manifiesto')
-
-  let finalData = updatedData as ManifiestoBasuronConRelaciones;
-
-  // 2. Generar y Subir PDF
-  try {
-    const pdfBlob = await generarPDFBasuron(finalData)
-
-    const fileName = `Manifiesto_Basuron_${finalData.id}_${Date.now()}.pdf`
-    const { data: uploadData, error: uploadError } = await supabase
-      .storage
-      .from('manifiestos_basuron_pdf')
-      .upload(fileName, pdfBlob, {
-        contentType: 'application/pdf',
-        upsert: true
-      })
-
-    if (uploadError) {
-      console.error('Error subiendo PDF:', uploadError)
-    } else {
-      // 3. Guardar URL del PDF
-      const { data: publicUrlData } = supabase
-        .storage
-        .from('manifiestos_basuron_pdf')
-        .getPublicUrl(fileName)
-
-      if (publicUrlData) {
-        const { error: urlUpdateError } = await supabase
-          .from('manifiesto_basuron')
-          .update({ pdf_manifiesto_url: publicUrlData.publicUrl })
-          .eq('id', id)
-
-        if (!urlUpdateError) {
-          finalData.pdf_manifiesto_url = publicUrlData.publicUrl
-        }
-      }
-    }
-  } catch (pdfError) {
-    console.error('Error en proceso de generación de PDF:', pdfError)
-  }
-
-  return finalData
+      total_depositado: totalDepositado,
+      hora_salida: horaSalida ?? null,
+      estado: 'Completado',
+      observaciones: observaciones ?? current.observaciones,
+      pdf_manifiesto_url: pdfUrl ?? current.pdf_manifiesto_url,
+    },
+  });
+  return mapBasuron(data);
 }
 
-// Obtener manifiestos por buque
-export async function getManifiestosBasuronByBuque(buqueId: number) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
-    `)
-    .eq('buque_id', buqueId)
-    .order('fecha', { ascending: false })
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones[]
+export async function getManifiestosBasuronByBuque(buqueId: number): Promise<ManifiestoBasuronConRelaciones[]> {
+  const data = await prisma.manifiesto_basuron.findMany({
+    where: { buque_id: buqueId },
+    include: { buque: true },
+    orderBy: { fecha: 'desc' },
+  });
+  return data.map(mapBasuronConRelaciones);
 }
 
-// Obtener manifiestos por fecha
-export async function getManifiestosBasuronByFecha(fecha: string) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
-    `)
-    .eq('fecha', fecha)
-    .order('hora_entrada')
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones[]
+export async function getManifiestosBasuronByFecha(fecha: string): Promise<ManifiestoBasuronConRelaciones[]> {
+  const data = await prisma.manifiesto_basuron.findMany({
+    where: { fecha: new Date(fecha) },
+    include: { buque: true },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map(mapBasuronConRelaciones);
 }
 
-// Obtener manifiestos por rango de fechas
-export async function getManifiestosBasuronByRangoFechas(fechaInicio: string, fechaFin: string) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
-    `)
-    .gte('fecha', fechaInicio)
-    .lte('fecha', fechaFin)
-    .order('fecha', { ascending: false })
-    .order('hora_entrada', { ascending: false })
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones[]
+export async function getManifiestosBasuronByRangoFechas(
+  fechaInicio: string,
+  fechaFin: string
+): Promise<ManifiestoBasuronConRelaciones[]> {
+  const data = await prisma.manifiesto_basuron.findMany({
+    where: { fecha: { gte: new Date(fechaInicio), lte: new Date(fechaFin) } },
+    include: { buque: true },
+    orderBy: { fecha: 'desc' },
+  });
+  return data.map(mapBasuronConRelaciones);
 }
 
-// Obtener manifiestos en proceso (sin hora de salida)
-export async function getManifiestosEnProceso() {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
-    `)
-    .eq('estado', 'En Proceso')
-    .order('hora_entrada')
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones[]
+export async function getManifiestosEnProceso(): Promise<ManifiestoBasuronConRelaciones[]> {
+  const data = await prisma.manifiesto_basuron.findMany({
+    where: { estado: 'En Proceso' },
+    include: { buque: true },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map(mapBasuronConRelaciones);
 }
 
-// Estadísticas de manifiestos basurón
-export async function getEstadisticasManifiestosBasuron(fecha?: string) {
-  const supabase = createClient()
-
-  let query = supabase
-    .from('manifiesto_basuron')
-    .select('peso_entrada, peso_salida, total_depositado')
-
-  if (fecha) {
-    query = query.eq('fecha', fecha)
-  }
-
-  const { data, error } = await query
-
-  if (error) throw error
-
-  const stats = {
-    total: data.length,
-    completados: 0,
-    enProceso: 0,
-    pesoTotalDepositado: data.reduce((sum, m) => sum + Number(m.total_depositado || 0), 0),
-    pesoPromedioDepositado: data.length > 0
-      ? data.reduce((sum, m) => sum + Number(m.total_depositado || 0), 0) / data.length
-      : 0,
-  }
-
-  return stats
+export async function getEstadisticasManifiestosBasuron(): Promise<{
+  total: number;
+  enProceso: number;
+  completados: number;
+  cancelados: number;
+  totalDepositado: number;
+}> {
+  const [total, enProceso, completados, cancelados, agg] = await Promise.all([
+    prisma.manifiesto_basuron.count(),
+    prisma.manifiesto_basuron.count({ where: { estado: 'En Proceso' } }),
+    prisma.manifiesto_basuron.count({ where: { estado: 'Completado' } }),
+    prisma.manifiesto_basuron.count({ where: { estado: 'Cancelado' } }),
+    prisma.manifiesto_basuron.aggregate({ _sum: { total_depositado: true } }),
+  ]);
+  return {
+    total,
+    enProceso,
+    completados,
+    cancelados,
+    totalDepositado: Number(agg._sum.total_depositado ?? 0),
+  };
 }
 
-// Buscar por número de ticket
-export async function getManifiestoBasuronByTicket(numeroTicket: string) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
-      *,
-      buque:buques(*),
-      usuario_sistema:usuarios_sistema(*),
-      tipo_residuo:tipos_residuos(*)
-    `)
-    .eq('numero_ticket', numeroTicket)
-    .single()
-
-  if (error) throw error
-  return data as ManifiestoBasuronConRelaciones
+export async function getManifiestoBasuronByTicket(
+  numeroTicket: string
+): Promise<ManifiestoBasuronConRelaciones | null> {
+  const data = await prisma.manifiesto_basuron.findFirst({
+    where: { numero_ticket: numeroTicket },
+    include: { buque: true },
+  });
+  return data ? mapBasuronConRelaciones(data) : null;
 }

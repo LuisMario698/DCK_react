@@ -6,7 +6,7 @@ import { PersonasTable } from '@/components/personas/PersonasTable';
 import { CreatePersonaModal } from '@/components/personas/CreatePersonaModal';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
-import { getPersonas, deletePersona } from '@/lib/services/personas';
+import { getPersonas, deletePersona } from '@/lib/api-client';
 import { PersonaConTipo } from '@/types/database';
 
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';

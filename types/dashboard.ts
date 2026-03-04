@@ -1,3 +1,11 @@
+export type PeriodoFiltro = 'semana' | 'mes' | 'trimestre' | 'anio' | 'todo' | 'personalizado';
+
+export interface FiltrosDashboard {
+  periodo: PeriodoFiltro;
+  fechaInicio?: string;
+  fechaFin?: string;
+}
+
 export interface DashboardKPIs {
     totalManifiestos: number;
     manifiestosPendientes: number;

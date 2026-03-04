@@ -1,203 +1,144 @@
-import { createClient } from '@/lib/supabase/client';
+import { prisma } from '@/lib/prisma';
 import { ManifiestoNoFirmado, ManifiestoNoFirmadoConRelaciones } from '@/types/database';
+import { uploadNoFirmadoPDF, deleteFile } from './storage';
 
-const supabase = createClient();
+function mapDate(d: any): string {
+  return d instanceof Date ? d.toISOString() : d;
+}
 
-/**
- * Obtener todos los manifiestos no firmados
- */
+function mapNoFirmado(n: any): ManifiestoNoFirmado {
+  return {
+    ...n,
+    fecha_generacion: mapDate(n.fecha_generacion),
+    descargado_en: n.descargado_en ? mapDate(n.descargado_en) : null,
+    firmado_en: n.firmado_en ? mapDate(n.firmado_en) : null,
+    created_at: mapDate(n.created_at),
+    updated_at: mapDate(n.updated_at),
+  };
+}
+
+function mapNoFirmadoConRelaciones(n: any): ManifiestoNoFirmadoConRelaciones {
+  const base = mapNoFirmado(n);
+  return {
+    ...base,
+    manifiesto: n.manifiesto
+      ? {
+          ...n.manifiesto,
+          fecha_emision: n.manifiesto.fecha_emision instanceof Date
+            ? n.manifiesto.fecha_emision.toISOString().split('T')[0]
+            : n.manifiesto.fecha_emision,
+          created_at: mapDate(n.manifiesto.created_at),
+          updated_at: mapDate(n.manifiesto.updated_at),
+        }
+      : undefined,
+  };
+}
+
 export async function getManifiestosNoFirmados(): Promise<ManifiestoNoFirmadoConRelaciones[]> {
-  const { data, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .select(`
-      *,
-      manifiesto:manifiestos(
-        *,
-        buque:buques(*),
-        responsable_principal:personas!manifiestos_responsable_principal_id_fkey(*),
-        responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(*)
-      )
-    `)
-    .order('fecha_generacion', { ascending: false });
-
-  if (error) throw error;
-  return data as ManifiestoNoFirmadoConRelaciones[];
+  const data = await prisma.manifiestos_no_firmados.findMany({
+    include: { manifiesto: true },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map((n) => mapNoFirmadoConRelaciones({ ...n, manifiesto: n.manifiesto }));
 }
 
-/**
- * Obtener manifiestos no firmados por estado
- */
-export async function getManifiestosNoFirmadosPorEstado(
-  estado: 'pendiente' | 'descargado' | 'firmado' | 'cancelado'
-): Promise<ManifiestoNoFirmadoConRelaciones[]> {
-  const { data, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .select(`
-      *,
-      manifiesto:manifiestos(
-        *,
-        buque:buques(*),
-        responsable_principal:personas!manifiestos_responsable_principal_id_fkey(*),
-        responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(*)
-      )
-    `)
-    .eq('estado', estado)
-    .order('fecha_generacion', { ascending: false });
-
-  if (error) throw error;
-  return data as ManifiestoNoFirmadoConRelaciones[];
-}
-
-/**
- * Obtener un manifiesto no firmado por ID
- */
 export async function getManifiestoNoFirmadoById(id: number): Promise<ManifiestoNoFirmadoConRelaciones> {
-  const { data, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .select(`
-      *,
-      manifiesto:manifiestos(
-        *,
-        buque:buques(*),
-        responsable_principal:personas!manifiestos_responsable_principal_id_fkey(*),
-        responsable_secundario:personas!manifiestos_responsable_secundario_id_fkey(*)
-      )
-    `)
-    .eq('id', id)
-    .single();
-
-  if (error) throw error;
-  return data as ManifiestoNoFirmadoConRelaciones;
+  const data = await prisma.manifiestos_no_firmados.findUniqueOrThrow({
+    where: { id },
+    include: { manifiesto: true },
+  });
+  return mapNoFirmadoConRelaciones({ ...data, manifiesto: data.manifiesto });
 }
 
-/**
- * Obtener manifiesto no firmado por manifiesto_id
- */
-export async function getManifiestoNoFirmadoByManifiestoId(
-  manifiestoId: number
-): Promise<ManifiestoNoFirmado | null> {
-  const { data, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .select('*')
-    .eq('manifiesto_id', manifiestoId)
-    .order('fecha_generacion', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data as ManifiestoNoFirmado | null;
+export async function getManifiestosNoFirmadosByManifiesto(manifiestoId: number): Promise<ManifiestoNoFirmado[]> {
+  const data = await prisma.manifiestos_no_firmados.findMany({
+    where: { manifiesto_id: manifiestoId },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map(mapNoFirmado);
 }
 
-/**
- * Crear registro de manifiesto no firmado
- */
+export async function getManifiestosNoFirmadosByEstado(
+  estado: 'pendiente' | 'descargado' | 'firmado' | 'cancelado'
+): Promise<ManifiestoNoFirmado[]> {
+  const data = await prisma.manifiestos_no_firmados.findMany({
+    where: { estado },
+    orderBy: { created_at: 'desc' },
+  });
+  return data.map(mapNoFirmado);
+}
+
 export async function createManifiestoNoFirmado(
-  data: Omit<ManifiestoNoFirmado, 'id' | 'created_at' | 'updated_at'>
+  manifiestoId: number,
+  numeroManifiesto: string,
+  pdfFile: File | Blob,
+  nombreArchivo: string
 ): Promise<ManifiestoNoFirmado> {
-  const { data: result, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .insert(data)
-    .select()
-    .single();
+  const url = await uploadNoFirmadoPDF(pdfFile, nombreArchivo);
+  const rutaArchivo = url.replace('/api/files/', '');
 
-  if (error) throw error;
-  return result as ManifiestoNoFirmado;
+  const data = await prisma.manifiestos_no_firmados.create({
+    data: {
+      manifiesto_id: manifiestoId,
+      nombre_archivo: nombreArchivo,
+      ruta_archivo: rutaArchivo,
+      url_descarga: url,
+      numero_manifiesto: numeroManifiesto,
+      fecha_generacion: new Date(),
+      estado: 'pendiente',
+    },
+  });
+  return mapNoFirmado(data);
 }
 
-/**
- * Actualizar manifiesto no firmado
- */
-export async function updateManifiestoNoFirmado(
-  id: number,
-  updates: Partial<Omit<ManifiestoNoFirmado, 'id' | 'created_at' | 'updated_at'>>
-): Promise<ManifiestoNoFirmado> {
-  const { data, error } = await supabase
-    .from('manifiestos_no_firmados')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data as ManifiestoNoFirmado;
-}
-
-/**
- * Marcar manifiesto como descargado
- */
 export async function marcarComoDescargado(
   id: number,
-  descargadoPor: string
+  descargadoPor?: string
 ): Promise<ManifiestoNoFirmado> {
-  return updateManifiestoNoFirmado(id, {
-    estado: 'descargado',
-    descargado_en: new Date().toISOString(),
-    descargado_por: descargadoPor,
+  const data = await prisma.manifiestos_no_firmados.update({
+    where: { id },
+    data: {
+      estado: 'descargado',
+      descargado_en: new Date(),
+      descargado_por: descargadoPor ?? null,
+    },
   });
+  return mapNoFirmado(data);
 }
 
-/**
- * Marcar manifiesto como firmado
- */
-export async function marcarComoFirmado(id: number): Promise<ManifiestoNoFirmado> {
-  return updateManifiestoNoFirmado(id, {
-    estado: 'firmado',
-    firmado_en: new Date().toISOString(),
+export async function marcarComoFirmado(
+  id: number,
+  observaciones?: string
+): Promise<ManifiestoNoFirmado> {
+  const data = await prisma.manifiestos_no_firmados.update({
+    where: { id },
+    data: {
+      estado: 'firmado',
+      firmado_en: new Date(),
+      observaciones: observaciones ?? null,
+    },
   });
+  return mapNoFirmado(data);
 }
 
-/**
- * Eliminar manifiesto no firmado
- */
+export async function cancelarManifiestoNoFirmado(
+  id: number,
+  observaciones?: string
+): Promise<ManifiestoNoFirmado> {
+  const data = await prisma.manifiestos_no_firmados.update({
+    where: { id },
+    data: {
+      estado: 'cancelado',
+      observaciones: observaciones ?? null,
+    },
+  });
+  return mapNoFirmado(data);
+}
+
 export async function deleteManifiestoNoFirmado(id: number): Promise<void> {
-  const { error } = await supabase
-    .from('manifiestos_no_firmados')
-    .delete()
-    .eq('id', id);
-
-  if (error) throw error;
-}
-
-/**
- * Subir PDF al bucket de storage
- */
-export async function uploadPDFToStorage(
-  file: Blob,
-  fileName: string,
-  folder: string = new Date().getFullYear().toString()
-): Promise<string> {
-  const filePath = `${folder}/${fileName}`;
-  
-  const { data, error } = await supabase.storage
-    .from('manifiestos-no-firmados')
-    .upload(filePath, file, {
-      contentType: 'application/pdf',
-      upsert: true,
-    });
-
-  if (error) throw error;
-  return data.path;
-}
-
-/**
- * Obtener URL de descarga temporal (válida por 1 hora)
- */
-export async function getDownloadURL(filePath: string): Promise<string> {
-  const { data, error } = await supabase.storage
-    .from('manifiestos-no-firmados')
-    .createSignedUrl(filePath, 3600); // 1 hora
-
-  if (error) throw error;
-  return data.signedUrl;
-}
-
-/**
- * Eliminar PDF del storage
- */
-export async function deletePDFFromStorage(filePath: string): Promise<void> {
-  const { error } = await supabase.storage
-    .from('manifiestos-no-firmados')
-    .remove([filePath]);
-
-  if (error) throw error;
+  const record = await prisma.manifiestos_no_firmados.findUnique({ where: { id } });
+  if (record?.url_descarga) {
+    await deleteFile(record.url_descarga).catch(() => {});
+  }
+  await prisma.manifiestos_no_firmados.delete({ where: { id } });
 }

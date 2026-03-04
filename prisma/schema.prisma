@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model tipos_persona {
+  id          Int       @id @default(autoincrement())
+  nombre_tipo String    @unique
+  descripcion String?
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @default(now()) @updatedAt
+  personas    personas[]
+}
+
+model personas {
+  id                              Int            @id @default(autoincrement())
+  nombre                          String
+  tipo_persona_id                 Int?
+  info_contacto                   String?
+  registro_completo               Boolean        @default(true)
+  created_at                      DateTime       @default(now())
+  updated_at                      DateTime       @default(now()) @updatedAt
+  tipo_persona                    tipos_persona? @relation(fields: [tipo_persona_id], references: [id], onDelete: SetNull)
+  buques                          buques[]
+  manifiestos_principal           manifiestos[]  @relation("responsable_principal")
+  manifiestos_secundario          manifiestos[]  @relation("responsable_secundario")
+}
+
+model buques {
+  id                   Int                    @id @default(autoincrement())
+  nombre_buque         String
+  tipo_buque           String?
+  propietario_id       Int?
+  fecha_registro       DateTime               @default(now()) @db.Date
+  matricula            String?                @unique
+  puerto_base          String?
+  capacidad_toneladas  Decimal?               @db.Decimal(10, 2)
+  estado               String                 @default("Activo")
+  registro_completo    Boolean                @default(true)
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @default(now()) @updatedAt
+  propietario          personas?              @relation(fields: [propietario_id], references: [id], onDelete: SetNull)
+  manifiestos          manifiestos[]
+  manifiesto_basuron   manifiesto_basuron[]
+}
+
+model tipos_residuos {
+  id             Int                  @id @default(autoincrement())
+  nombre_tipo    String               @unique
+  metrica        String               @default("kg")
+  descripcion    String?
+  categoria      String?
+  peligrosidad   String               @default("Baja")
+  created_at     DateTime             @default(now())
+  updated_at     DateTime             @default(now()) @updatedAt
+  manifiesto_basuron manifiesto_basuron[]
+}
+
+model usuarios_sistema {
+  id                 Int                  @id @default(autoincrement())
+  nombre_usuario     String               @unique
+  rol                String               @default("Usuario")
+  contacto_usuario   String?
+  email              String               @unique
+  hash_contrasena    String
+  estado             String               @default("Activo")
+  ultimo_acceso      DateTime?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @default(now()) @updatedAt
+  manifiesto_basuron manifiesto_basuron[]
+}
+
+model asociaciones_recolectoras {
+  id                   Int      @id @default(autoincrement())
+  nombre_asociacion    String   @unique
+  tipo_asociacion      String?
+  contacto_asociacion  String?
+  email                String?
+  telefono             String?
+  direccion            String?
+  certificaciones      String[]
+  especialidad         String[]
+  estado               String   @default("Activo")
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now()) @updatedAt
+}
+
+model manifiestos {
+  id                        Int                    @id @default(autoincrement())
+  numero_manifiesto         String                 @unique
+  fecha_emision             DateTime               @default(now()) @db.Date
+  buque_id                  Int
+  responsable_principal_id  Int?
+  responsable_secundario_id Int?
+  imagen_manifiesto_url     String?
+  pdf_manifiesto_url        String?
+  estado_digitalizacion     String                 @default("pendiente")
+  observaciones             String?
+  created_at                DateTime               @default(now())
+  updated_at                DateTime               @default(now()) @updatedAt
+  buque                     buques                 @relation(fields: [buque_id], references: [id], onDelete: SetNull)
+  responsable_principal     personas?              @relation("responsable_principal", fields: [responsable_principal_id], references: [id], onDelete: SetNull)
+  responsable_secundario    personas?              @relation("responsable_secundario", fields: [responsable_secundario_id], references: [id], onDelete: SetNull)
+  residuos                  manifiestos_residuos?
+  manifiestos_no_firmados   manifiestos_no_firmados[]
+}
+
+model manifiestos_residuos {
+  id             Int         @id @default(autoincrement())
+  manifiesto_id  Int         @unique
+  aceite_usado   Decimal     @default(0) @db.Decimal(10, 2)
+  filtros_aceite Int         @default(0)
+  filtros_diesel Int         @default(0)
+  filtros_aire   Int         @default(0)
+  basura         Decimal     @default(0) @db.Decimal(10, 2)
+  observaciones  String?
+  created_at     DateTime    @default(now())
+  updated_at     DateTime    @default(now()) @updatedAt
+  manifiesto     manifiestos @relation(fields: [manifiesto_id], references: [id], onDelete: Cascade)
+}
+
+model manifiesto_basuron {
+  id                Int               @id @default(autoincrement())
+  fecha             DateTime          @default(now()) @db.Date
+  hora_entrada      String
+  hora_salida       String?
+  peso_entrada      Decimal           @db.Decimal(10, 2)
+  peso_salida       Decimal?          @db.Decimal(10, 2)
+  total_depositado  Decimal?          @db.Decimal(10, 2)
+  observaciones     String?
+  buque_id          Int
+  usuario_sistema_id Int?
+  estado            String            @default("En Proceso")
+  numero_ticket     String?           @unique
+  tipo_residuo_id   Int?
+  comprobante_url   String?
+  pdf_manifiesto_url String?
+  recibimos_de      String?
+  direccion         String?
+  recibido_por      String?
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @default(now()) @updatedAt
+  buque             buques            @relation(fields: [buque_id], references: [id], onDelete: Cascade)
+  usuario_sistema   usuarios_sistema? @relation(fields: [usuario_sistema_id], references: [id], onDelete: SetNull)
+  tipo_residuo      tipos_residuos?   @relation(fields: [tipo_residuo_id], references: [id], onDelete: SetNull)
+}
+
+model manifiestos_no_firmados {
+  id                 Int          @id @default(autoincrement())
+  manifiesto_id      Int
+  nombre_archivo     String
+  ruta_archivo       String
+  url_descarga       String?
+  numero_manifiesto  String
+  fecha_generacion   DateTime     @default(now())
+  estado             String       @default("pendiente")
+  descargado_en      DateTime?
+  descargado_por     String?
+  firmado_en         DateTime?
+  observaciones      String?
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @default(now()) @updatedAt
+  manifiesto         manifiestos  @relation(fields: [manifiesto_id], references: [id], onDelete: Cascade)
+}

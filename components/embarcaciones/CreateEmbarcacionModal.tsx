@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
-import { createBuque, updateBuque } from '@/lib/services/buques';
+import { createBuque, updateBuque } from '@/lib/api-client';
 import { Buque } from '@/types/database';
 
 interface Props {

@@ -1,181 +1,108 @@
-import { createClient } from '@/lib/supabase/client'
-import { Persona, PersonaConTipo } from '@/types/database'
+import { prisma } from '@/lib/prisma';
+import { Persona, PersonaConTipo } from '@/types/database';
 
-export async function getPersonas() {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
-      *,
-      tipo_persona:tipos_persona(*)
-    `)
-    .order('nombre')
-
-  if (error) throw error
-  return data as PersonaConTipo[]
+function mapPersona(p: any): Persona {
+  return {
+    ...p,
+    created_at: p.created_at instanceof Date ? p.created_at.toISOString() : p.created_at,
+    updated_at: p.updated_at instanceof Date ? p.updated_at.toISOString() : p.updated_at,
+  };
 }
 
-export async function getPersonaById(id: number) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
-      *,
-      tipo_persona:tipos_persona(*)
-    `)
-    .eq('id', id)
-    .single()
-
-  if (error) throw error
-  return data as PersonaConTipo
+function mapPersonaConTipo(p: any): PersonaConTipo {
+  const base = mapPersona(p);
+  return {
+    ...base,
+    tipo_persona: p.tipo_persona
+      ? {
+          ...p.tipo_persona,
+          created_at: p.tipo_persona.created_at instanceof Date ? p.tipo_persona.created_at.toISOString() : p.tipo_persona.created_at,
+          updated_at: p.tipo_persona.updated_at instanceof Date ? p.tipo_persona.updated_at.toISOString() : p.tipo_persona.updated_at,
+        }
+      : undefined,
+  };
 }
 
-export async function createPersona(persona: Omit<Persona, 'id' | 'created_at' | 'updated_at'>) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .insert(persona)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Persona
+export async function getPersonas(): Promise<PersonaConTipo[]> {
+  const data = await prisma.personas.findMany({
+    include: { tipo_persona: true },
+    orderBy: { nombre: 'asc' },
+  });
+  return data.map(mapPersonaConTipo);
 }
 
-export async function updatePersona(id: number, persona: Partial<Persona>) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .update(persona)
-    .eq('id', id)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Persona
+export async function getPersonaById(id: number): Promise<PersonaConTipo> {
+  const data = await prisma.personas.findUniqueOrThrow({
+    where: { id },
+    include: { tipo_persona: true },
+  });
+  return mapPersonaConTipo(data);
 }
 
-export async function deletePersona(id: number) {
-  const supabase = createClient()
-
-  const { error } = await supabase
-    .from('personas')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw error
+export async function createPersona(persona: Omit<Persona, 'id' | 'created_at' | 'updated_at'>): Promise<Persona> {
+  const { tipo_persona_id, ...rest } = persona;
+  const data = await prisma.personas.create({
+    data: { ...rest, tipo_persona_id: tipo_persona_id ?? null },
+  });
+  return mapPersona(data);
 }
 
-// Buscar personas
-export async function searchPersonas(searchTerm: string) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
-      *,
-      tipo_persona:tipos_persona(*)
-    `)
-    .ilike('nombre', `%${searchTerm}%`)
-    .order('nombre')
-
-  if (error) throw error
-  return data as PersonaConTipo[]
+export async function updatePersona(id: number, persona: Partial<Persona>): Promise<Persona> {
+  const { created_at, updated_at, ...rest } = persona as any;
+  const data = await prisma.personas.update({ where: { id }, data: rest });
+  return mapPersona(data);
 }
 
-// Filtrar por tipo de persona
-export async function getPersonasByTipo(tipoPersonaId: number) {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
-      *,
-      tipo_persona:tipos_persona(*)
-    `)
-    .eq('tipo_persona_id', tipoPersonaId)
-    .order('nombre')
-
-  if (error) throw error
-  return data as PersonaConTipo[]
+export async function deletePersona(id: number): Promise<void> {
+  await prisma.personas.delete({ where: { id } });
 }
 
-// Crear persona automáticamente desde manifiesto (registro incompleto)
-export async function createPersonaAutomatica(nombre: string, tipoPersonaId: number) {
-  const supabase = createClient()
-
-  // Primero verificar si ya existe con ese nombre
-  const { data: existente } = await supabase
-    .from('personas')
-    .select('id, nombre')
-    .ilike('nombre', nombre)
-    .single()
-
-  if (existente) {
-    return existente as Persona
-  }
-
-  // Crear nueva persona con datos mínimos
-  const { data, error } = await supabase
-    .from('personas')
-    .insert({
-      nombre: nombre,
-      tipo_persona_id: tipoPersonaId,
-      registro_completo: false
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data as Persona
+export async function searchPersonas(searchTerm: string): Promise<PersonaConTipo[]> {
+  const data = await prisma.personas.findMany({
+    where: { nombre: { contains: searchTerm, mode: 'insensitive' } },
+    include: { tipo_persona: true },
+    orderBy: { nombre: 'asc' },
+  });
+  return data.map(mapPersonaConTipo);
 }
 
-// Obtener personas con registro incompleto
-export async function getPersonasIncompletas() {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
-      *,
-      tipo_persona:tipos_persona(*)
-    `)
-    .eq('registro_completo', false)
-    .order('nombre')
-
-  if (error) throw error
-  return data as PersonaConTipo[]
+export async function getPersonasByTipo(tipoPersonaId: number): Promise<PersonaConTipo[]> {
+  const data = await prisma.personas.findMany({
+    where: { tipo_persona_id: tipoPersonaId },
+    include: { tipo_persona: true },
+    orderBy: { nombre: 'asc' },
+  });
+  return data.map(mapPersonaConTipo);
 }
 
-// Obtener o crear tipo de persona por nombre
+export async function createPersonaAutomatica(nombre: string, tipoPersonaId: number): Promise<Persona> {
+  const existente = await prisma.personas.findFirst({
+    where: { nombre: { equals: nombre, mode: 'insensitive' } },
+  });
+  if (existente) return mapPersona(existente);
+
+  const data = await prisma.personas.create({
+    data: { nombre, tipo_persona_id: tipoPersonaId, registro_completo: false },
+  });
+  return mapPersona(data);
+}
+
+export async function getPersonasIncompletas(): Promise<PersonaConTipo[]> {
+  const data = await prisma.personas.findMany({
+    where: { registro_completo: false },
+    include: { tipo_persona: true },
+    orderBy: { nombre: 'asc' },
+  });
+  return data.map(mapPersonaConTipo);
+}
+
 export async function getOrCreateTipoPersona(nombreTipo: string) {
-  const supabase = createClient()
+  const existente = await prisma.tipos_persona.findFirst({
+    where: { nombre_tipo: { equals: nombreTipo, mode: 'insensitive' } },
+  });
+  if (existente) return existente;
 
-  // Buscar tipo existente
-  const { data: existente } = await supabase
-    .from('tipos_persona')
-    .select('*')
-    .ilike('nombre_tipo', nombreTipo)
-    .single()
-
-  if (existente) {
-    return existente
-  }
-
-  // Crear nuevo tipo
-  const { data, error } = await supabase
-    .from('tipos_persona')
-    .insert({
-      nombre_tipo: nombreTipo,
-      descripcion: `Tipo creado automáticamente`
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
+  return prisma.tipos_persona.create({
+    data: { nombre_tipo: nombreTipo, descripcion: 'Tipo creado automáticamente' },
+  });
 }

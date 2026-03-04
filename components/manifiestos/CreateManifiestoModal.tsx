@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
-import { getBuques } from '@/lib/services/buques';
-import { getPersonas } from '@/lib/services/personas';
+import { createManifiesto, updateManifiesto } from '@/lib/api-client';
+import { getBuques } from '@/lib/api-client';
+import { getPersonas } from '@/lib/api-client';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 
 interface CreateManifiestoModalProps {

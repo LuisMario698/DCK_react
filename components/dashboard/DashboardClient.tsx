@@ -12,11 +12,12 @@ import {
     getReporteComplejo,
     getDashboardKPIsFiltered,
     getComparacionPeriodoAnterior,
+} from '@/lib/api-client';
+import type {
     PeriodoFiltro,
     FiltrosDashboard
-} from '@/lib/services/dashboard_stats';
+} from '@/types/dashboard';
 import { Icons } from '@/components/ui/Icons';
-import { createClient } from '@/lib/supabase/client';
 
 interface DashboardClientProps {
     initialStats: DashboardStats;
@@ -45,7 +46,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     const [reportData, setReportData] = useState<ReporteDetalladoItem[]>([]);
     const [loadingReport, setLoadingReport] = useState(false);
     const [loadingStats, setLoadingStats] = useState(false);
-    const supabase = createClient();
+
 
     // Estado para período seleccionado
     const [periodoSeleccionado, setPeriodoSeleccionado] = useState<PeriodoFiltro>('mes');
@@ -79,8 +80,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                 };
 
                 const [kpisData, comparacionData] = await Promise.all([
-                    getDashboardKPIsFiltered(supabase, filtros),
-                    getComparacionPeriodoAnterior(supabase, filtros)
+                    getDashboardKPIsFiltered(filtros),
+                    getComparacionPeriodoAnterior(filtros)
                 ]);
 
                 setStatsFiltered(kpisData);
@@ -141,7 +142,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     const loadReport = async () => {
         setLoadingReport(true);
         try {
-            const data = await getReporteComplejo(supabase, {
+            const data = await getReporteComplejo({
                 fechaInicio: filters.fechaInicio || undefined,
                 fechaFin: filters.fechaFin || undefined,
                 buqueId: filters.buqueId ? Number(filters.buqueId) : undefined,

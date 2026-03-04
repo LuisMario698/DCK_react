@@ -1,20 +1,17 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter, usePathname } from 'next/navigation';
-import { User, Session } from '@supabase/supabase-js';
+import { useRouter } from 'next/navigation';
+import type { SessionUser } from '@/lib/auth';
 
 interface AuthContextType {
-    user: User | null;
-    session: Session | null;
+    user: SessionUser | null;
     signOut: () => Promise<void>;
     loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
-    session: null,
     signOut: async () => { },
     loading: true,
 });
@@ -22,20 +19,16 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [session, setSession] = useState<Session | null>(null);
+    const [user, setUser] = useState<SessionUser | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
-    const supabase = createClient();
-    const pathname = usePathname();
 
-    // INACTIVIDAD (30 minutos)
+    // Inactividad: 30 minutos
     useEffect(() => {
-        // Solo aplicar timeout si hay usuario logueado
         if (!user) return;
 
         let timeoutId: NodeJS.Timeout;
-        const TIMEOUT_DURATION = 30 * 60 * 1000; // 30 minutos
+        const TIMEOUT_DURATION = 30 * 60 * 1000;
 
         const resetTimer = () => {
             clearTimeout(timeoutId);
@@ -45,44 +38,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }, TIMEOUT_DURATION);
         };
 
-        // Eventos a escuchar
         const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+        events.forEach(event => document.addEventListener(event, resetTimer));
+        resetTimer();
 
-        // Configurar listeners
-        const setupListeners = () => {
-            events.forEach(event => document.addEventListener(event, resetTimer));
-            resetTimer(); // Iniciar timer
-        };
-
-        setupListeners();
-
-        // Limpiar
         return () => {
             clearTimeout(timeoutId);
             events.forEach(event => document.removeEventListener(event, resetTimer));
         };
     }, [user]);
 
-    // OBSEVAR ESTADO DE AUTH
+    // Cargar sesión al montar
     useEffect(() => {
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [supabase]);
+        fetch('/api/auth/session')
+            .then(res => res.ok ? res.json() : { user: null })
+            .then(data => {
+                setUser(data.user ?? null);
+                setLoading(false);
+            })
+            .catch(() => setLoading(false));
+    }, []);
 
     const signOut = async () => {
-        await supabase.auth.signOut();
+        await fetch('/api/auth/logout', { method: 'POST' });
+        setUser(null);
         router.push('/');
     };
 
     return (
-        <AuthContext.Provider value={{ user, session, signOut, loading }}>
+        <AuthContext.Provider value={{ user, signOut, loading }}>
             {children}
         </AuthContext.Provider>
     );

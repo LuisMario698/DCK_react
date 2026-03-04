@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getManifiestosBasuron } from '@/lib/services/manifiesto_basuron';
-import { getManifiestos } from '@/lib/services/manifiestos';
+import { getManifiestosBasuron } from '@/lib/api-client';
+import { getManifiestos } from '@/lib/api-client';
 import { ManifiestoBasuronConRelaciones, ManifiestoConRelaciones } from '@/types/database';
 
 interface SimpleEstadisticasProps {

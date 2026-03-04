@@ -5,11 +5,11 @@ import { useTranslations } from 'next-intl';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
-import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
-import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
-import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
+import { getBuques, createBuqueAutomatico } from '@/lib/api-client';
+import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/api-client';
+import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/api-client';
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
-import { uploadManifiestoPDF } from '@/lib/services/storage';
+import { uploadManifiestoPDF } from '@/lib/api-client';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 
 // Registrar locale español

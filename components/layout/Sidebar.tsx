@@ -165,14 +165,14 @@ export function Sidebar() {
           <button
             onClick={() => setIsProfileOpen(true)}
             className={`flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors group relative`}
-            title={isCollapsed ? (user?.user_metadata?.full_name || 'Mi Perfil') : ''}
+            title={isCollapsed ? ((user as any)?.nombre_usuario || 'Mi Perfil') : ''}
           >
             <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs border border-blue-200 dark:border-blue-800">
-              {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+              {(user as any)?.nombre_usuario?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col items-start truncate overflow-hidden">
-                <span className="text-sm font-medium truncate w-full text-left text-gray-900 dark:text-white">{user?.user_metadata?.full_name || 'Usuario'}</span>
+                <span className="text-sm font-medium truncate w-full text-left text-gray-900 dark:text-white">{(user as any)?.nombre_usuario || 'Usuario'}</span>
                 <span className="text-xs text-gray-500 dark:text-gray-400 truncate w-full text-left">{user?.email}</span>
               </div>
             )}

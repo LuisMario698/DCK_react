@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
-import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
+import { createManifiestoBasuron } from '@/lib/api-client';
 import { TimePicker } from '@/components/ui/TimePicker';
 
 // Registrar locale español

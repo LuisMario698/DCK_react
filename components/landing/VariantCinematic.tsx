@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Icons } from '@/components/ui/Icons';
 import { LoginForm } from '@/components/auth/LoginForm';
 
@@ -24,11 +23,9 @@ const MEDIA: MediaItem[] = [
 export function VariantCinematic() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [prevIndex, setPrevIndex] = useState(0);
-    const [mounted, setMounted] = useState(false);
     const [showLoginModal, setShowLoginModal] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
         const interval = setInterval(() => {
             setPrevIndex(currentIndex);
             setCurrentIndex((prev) => (prev + 1) % MEDIA.length);
@@ -186,7 +183,7 @@ export function VariantCinematic() {
                     </div>
                     <div className="relative h-[600px] rounded-2xl overflow-hidden shadow-2xl">
                         <img
-                            src="https://images.unsplash.com/photo-1468581264429-2548ef9eb732?auto=format&fit=crop&q=80"
+                            src="/assets/images/img1.jpeg"
                             alt="Ocean"
                             className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700"
                         />
@@ -225,7 +222,7 @@ export function VariantCinematic() {
 
             {/* Impact Section (Stats) */}
             <section id="impact" className="py-32 px-6 bg-blue-900 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('/assets/images/img2.jpeg')] bg-cover bg-center opacity-10 mix-blend-overlay"></div>
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
                     <h2 className="text-4xl md:text-5xl font-bold mb-16 text-white">Impacto del Proyecto</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">

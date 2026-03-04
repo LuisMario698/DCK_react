@@ -1,5 +1,3 @@
-
-import { createServerClient } from '@/lib/supabase/server';
 import { getDashboardStats } from '@/lib/services/dashboard_stats';
 import { getBuques } from '@/lib/services/buques';
 import { DashboardClient } from '@/components/dashboard/DashboardClient';
@@ -9,13 +7,11 @@ export default async function StatisticsPage({
 }: {
     params: Promise<{ locale: string }>;
 }) {
-    const { locale } = await params;
-    const supabase = await createServerClient();
+    await params;
 
-    // Obtener datos iniciales en paralelo
     const [dashboardStats, buques] = await Promise.all([
-        getDashboardStats(supabase),
-        getBuques(supabase)
+        getDashboardStats(),
+        getBuques(),
     ]);
 
     return (

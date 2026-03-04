@@ -6,7 +6,7 @@ import { EmbarcacionesTable } from '@/components/embarcaciones/EmbarcacionesTabl
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
 import { Icons } from '@/components/ui/Icons';
-import { getBuques, deleteBuque } from '@/lib/services/buques';
+import { getBuques, deleteBuque } from '@/lib/api-client';
 import { CreateEmbarcacionModal } from '@/components/embarcaciones/CreateEmbarcacionModal';
 import { Buque } from '@/types/database';
 import { ConfirmationModal } from '@/components/ui/ConfirmationModal';

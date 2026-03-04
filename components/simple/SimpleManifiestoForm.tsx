@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
-import { getBuques } from '@/lib/services/buques';
-import { getPersonas } from '@/lib/services/personas';
-import { createManifiesto } from '@/lib/services/manifiestos';
+import { getBuques } from '@/lib/api-client';
+import { getPersonas } from '@/lib/api-client';
+import { createManifiesto } from '@/lib/api-client';
 import { Buque, PersonaConTipo } from '@/types/database';
 
 interface FormData {

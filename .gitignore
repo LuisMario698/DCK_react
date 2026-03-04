@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# docker release output
+/dist/
+/uploads/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

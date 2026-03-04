@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
-import { createPersona, updatePersona } from '@/lib/services/personas';
-import { getTiposPersona } from '@/lib/services/tipos_persona';
+import { createPersona, updatePersona } from '@/lib/api-client';
+import { getTiposPersona } from '@/lib/api-client';
 import { TipoPersona, PersonaConTipo } from '@/types/database';
 
 interface CreatePersonaModalProps {

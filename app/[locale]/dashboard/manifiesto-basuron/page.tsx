@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
+import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/api-client';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
 import { descargarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron';
 import { ManifiestoBasuronDetails } from '@/components/manifiestos/ManifiestoBasuronDetails';
 import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
-import { getBuques } from '@/lib/services/buques';
+import { getBuques } from '@/lib/api-client';
 
 import { Pagination } from '@/components/embarcaciones/Pagination';
 

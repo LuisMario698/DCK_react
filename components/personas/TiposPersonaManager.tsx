@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/Button';
-import { getTiposPersona, createTipoPersona, updateTipoPersona, deleteTipoPersona } from '@/lib/services/tipos_persona';
+import { getTiposPersona, createTipoPersona, updateTipoPersona, deleteTipoPersona } from '@/lib/api-client';
 import { TipoPersona } from '@/types/database';
 
 interface TiposPersonaManagerProps {
