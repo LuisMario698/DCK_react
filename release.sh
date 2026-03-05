@@ -4,6 +4,23 @@ set -e
 VERSION=$(date +%Y%m%d)
 DIST="dist/dck-$VERSION"
 
+# ── Verificar que Docker esté corriendo ──────────────────────────
+if ! docker info &>/dev/null; then
+    echo "⚠️  Docker no está corriendo. Iniciando Docker Desktop..."
+    open -a Docker 2>/dev/null || true
+    echo -n "   Esperando que Docker arranque"
+    for i in $(seq 1 30); do
+        sleep 3
+        if docker info &>/dev/null; then echo " listo!"; break; fi
+        echo -n "."
+        if [ $i -eq 30 ]; then
+            echo ""
+            echo "❌ Docker no respondió. Ábrelo manualmente y vuelve a ejecutar."
+            exit 1
+        fi
+    done
+fi
+
 # Si ya existe la imagen, saltar el build (mucho más rápido)
 if docker image inspect dck-app:latest &>/dev/null && [[ "$1" != "--build" ]]; then
     echo "✅ [1/4] Imagen existente encontrada (omitiendo build)."
@@ -15,7 +32,10 @@ fi
 
 echo "💾 [2/4] Guardando imagen..."
 mkdir -p "$DIST"
-docker save dck-app:latest -o "$DIST/dck-image.tar"
+# Asegurarse de tener la imagen de postgres localmente
+docker pull postgres:16-alpine
+# Guardar ambas imágenes en un solo tar (instalación offline completa)
+docker save dck-app:latest postgres:16-alpine -o "$DIST/dck-image.tar"
 
 echo "📄 [3/4] Copiando archivos de configuración..."
 cat > "$DIST/docker-compose.yml" << 'EOF'
@@ -249,17 +269,36 @@ Write-Host "DCK corriendo en http://localhost:3000" -ForegroundColor Green
 Read-Host "Presiona Enter para cerrar"
 EOF
 
-echo "📦 [4/4] Creando paquete zip..."
+echo "📦 [4/4] Empaquetando..."
+
+# ── Generar instalador .exe para Windows (si NSIS está instalado) ──
+if command -v makensis &>/dev/null; then
+    echo "   🔨 Compilando instalador .exe (NSIS)..."
+    cp "$DIST/dck-image.tar" installer/
+    cp "$DIST/docker-compose.yml" installer/
+    makensis installer/dck.nsi
+    rm -f installer/dck-image.tar installer/docker-compose.yml
+    echo "   ✅ Instalador Windows: dist/DCK-Installer.exe"
+else
+    echo "   ⚠️  NSIS no instalado — solo se generará .zip"
+    echo "      Para generar el .exe: brew install nsis && ./release.sh"
+fi
+
+# ── Generar .zip para Mac/Linux y fallback Windows ─────────────────
 cd dist && zip -r "dck-$VERSION.zip" "dck-$VERSION/" && cd ..
 
 echo ""
-echo "✅ Paquete listo: dist/dck-$VERSION.zip"
+echo "✅ Paquetes listos:"
 echo ""
-echo "   Para instalar en Mac/Linux:"
-echo "   1. Descomprimir el zip"
-echo "   2. Ejecutar: ./instalar.sh"
+echo "   📦 dist/dck-$VERSION.zip       → Mac / Linux / Windows (zip)"
+if [ -f "dist/DCK-Installer.exe" ]; then
+echo "   🖥️  dist/DCK-Installer.exe     → Windows (instalador gráfico)"
+fi
 echo ""
-echo "   Para instalar en Windows:"
-echo "   1. Descomprimir el zip"
-echo "   2. Click derecho en instalar.ps1 -> Ejecutar con PowerShell"
-echo "      (Docker se instala automaticamente si no esta)"
+echo "   Windows (instalador .exe):"
+echo "   → Doble clic en DCK-Installer.exe"
+echo "   → Instala Docker automáticamente con winget"
+echo "   → Crea acceso directo en escritorio"
+echo ""
+echo "   Mac/Linux (zip):"
+echo "   → Descomprimir + ./instalar.sh"

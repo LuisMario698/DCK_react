@@ -3,5 +3,10 @@ node_modules
 .git
 .env
 .env.local
+.env.docker
 uploads
 *.log
+dist
+*.tar
+*.tar.gz
+*.zip

@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
-import { createPersona, updatePersona } from '@/lib/api-client';
-import { getTiposPersona } from '@/lib/api-client';
+import { createPersona, updatePersona, getTiposPersona, getOrCreateTipoPersona } from '@/lib/api-client';
 import { TipoPersona, PersonaConTipo } from '@/types/database';
 
 interface CreatePersonaModalProps {
@@ -60,12 +59,14 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
   const loadTiposPersona = async () => {
     try {
       setLoadingTipos(true);
+      // Garantizar que Motorista y Cocinero existen en la BD
+      await Promise.all([
+        getOrCreateTipoPersona('Motorista'),
+        getOrCreateTipoPersona('Cocinero'),
+      ]);
       const tipos = await getTiposPersona();
-      // Filtrar solo Motorista y Cocinero como solicitó el usuario
       const tiposPermitidos = tipos.filter(t => ['Motorista', 'Cocinero'].includes(t.nombre_tipo));
       setTiposPersona(tiposPermitidos);
-
-      // Seleccionar por defecto el primero disponible si existe
       if (tiposPermitidos.length > 0 && !formData.tipo_persona_id) {
         setFormData(prev => ({ ...prev, tipo_persona_id: tiposPermitidos[0].id }));
       }
