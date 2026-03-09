@@ -63,6 +63,23 @@ npx prisma db seed
 npx prisma generate
 ```
 
+### Flujo DBeaver → schema.prisma (BD primero)
+
+Si prefieres modificar la estructura desde DBeaver y luego sincronizar Prisma:
+
+```bash
+# 1. Haz tus cambios en DBeaver (agregar columna, tabla, etc.)
+
+# 2. Sincroniza schema.prisma desde la BD actual
+npx prisma db pull
+
+# 3. Regenera el cliente TypeScript con los nuevos tipos
+npx prisma generate
+```
+
+> ⚠️ Si usas este flujo, evita correr `prisma db push` después,
+> ya que sobreescribiría los cambios que hiciste en DBeaver.
+
 ## Distribución / Release
 
 ```bash
