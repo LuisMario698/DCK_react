@@ -61,8 +61,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     try {
       setLoadingTipos(true);
       const tipos = await getTiposPersona();
-      // Filtrar solo Motorista y Cocinero como solicitó el usuario
-      const tiposPermitidos = tipos.filter(t => ['Motorista', 'Cocinero'].includes(t.nombre_tipo));
+      const tiposPermitidos = tipos.filter(t => ['Motorista', 'Cocinero', 'Responsable de Líquidos'].includes(t.nombre_tipo));
       setTiposPersona(tiposPermitidos);
 
       // Seleccionar por defecto el primero disponible si existe

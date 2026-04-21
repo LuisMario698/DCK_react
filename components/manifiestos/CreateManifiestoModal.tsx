@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
+import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
 
 interface CreateManifiestoModalProps {
   isOpen: boolean;
@@ -29,11 +30,17 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
   const [archivo, setArchivo] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
 
+  const firmaCocineroRef = useRef<SignaturePadRef>(null);
+  const firmaMotoristRef = useRef<SignaturePadRef>(null);
+  const firmaLiquidosRef = useRef<SignaturePadRef>(null);
+
   const [formData, setFormData] = useState({
     numero_manifiesto: '',
     fecha_emision: new Date().toISOString().split('T')[0],
     buque_id: '',
-    persona_id: '',
+    cocinero_id: '',
+    motorista_id: '',
+    liquidos_id: '',
     observaciones: '',
   });
 
@@ -120,22 +127,25 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
       alert('❌ Selecciona una embarcación');
       return;
     }
-    if (!formData.persona_id) {
-      alert('❌ Selecciona una persona responsable');
+    if (!formData.cocinero_id) {
+      alert('❌ Selecciona el cocinero responsable');
       return;
     }
-    // Los residuos pueden ser >= 0, no requieren validación extra
+    if (!formData.motorista_id) {
+      alert('❌ Selecciona el motorista responsable');
+      return;
+    }
 
     setLoading(true);
 
     try {
-      // Aquí puedes agregar la lógica para subir el archivo si es necesario
       const manifiestoData = {
         numero_manifiesto: formData.numero_manifiesto,
         fecha_emision: formData.fecha_emision,
         buque_id: parseInt(formData.buque_id),
-        responsable_principal_id: parseInt(formData.persona_id),
-        responsable_secundario_id: null,
+        responsable_principal_id: parseInt(formData.cocinero_id),
+        responsable_secundario_id: parseInt(formData.motorista_id),
+        responsable_liquidos_id: formData.liquidos_id ? parseInt(formData.liquidos_id) : null,
         estado_digitalizacion: archivo ? 'completado' : 'pendiente' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
@@ -166,7 +176,9 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
       numero_manifiesto: '',
       fecha_emision: new Date().toISOString().split('T')[0],
       buque_id: '',
-      persona_id: '',
+      cocinero_id: '',
+      motorista_id: '',
+      liquidos_id: '',
       observaciones: '',
     });
     setSelectedBuque(null);
@@ -473,49 +485,102 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
             </div>
           </section>
 
-          {/* Sección 3: Persona */}
+          {/* Sección 3: Responsables */}
           <section className="bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 border-2 border-purple-300 rounded-2xl p-8 shadow-lg">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-gray-900">👤 3. Persona Responsable</h3>
-                <p className="text-gray-600">Seleccione la persona responsable del manifiesto</p>
+                <h3 className="text-2xl font-bold text-gray-900">👥 3. Responsables y Firmas</h3>
+                <p className="text-gray-600">Seleccione los responsables y capture sus firmas</p>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Seleccionar Persona <span className="text-red-500">*</span></label>
-              <select
-                required
-                value={formData.persona_id}
-                onChange={(e) => setFormData({ ...formData, persona_id: e.target.value })}
-                className="w-full px-5 py-4 text-lg font-medium border-2 border-purple-400 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all hover:border-purple-500 bg-white shadow-md"
-                disabled={loading}
-              >
-                <option value="">🔍 Seleccionar persona...</option>
-                {personas.map((persona) => (
-                  <option key={persona.id} value={persona.id}>
-                    👤 {persona.nombre} {persona.tipo_persona?.nombre_tipo ? `(${persona.tipo_persona.nombre_tipo})` : ''}
-                  </option>
-                ))}
-              </select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-              {formData.persona_id && (
-                <div className="mt-4 p-6 bg-white border-2 border-purple-400 rounded-xl shadow-md animate-fadeIn">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-bold text-purple-700 uppercase tracking-wide">✅ Persona Seleccionada</p>
+              {/* Cocinero */}
+              <div className="bg-white border-2 border-purple-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">👨‍🍳 Cocinero <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    value={formData.cocinero_id}
+                    onChange={(e) => setFormData({ ...formData, cocinero_id: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white text-gray-800"
+                    disabled={loading}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {personas.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} {p.tipo_persona?.nombre_tipo ? `(${p.tipo_persona.nombre_tipo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">✍️ Firma</label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden" style={{height: '120px'}}>
+                    <SignaturePad ref={firmaCocineroRef} label="" responsive={true} onSave={() => {}} />
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Motorista */}
+              <div className="bg-white border-2 border-purple-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">🔧 Motorista <span className="text-red-500">*</span></label>
+                  <select
+                    required
+                    value={formData.motorista_id}
+                    onChange={(e) => setFormData({ ...formData, motorista_id: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white text-gray-800"
+                    disabled={loading}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {personas.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} {p.tipo_persona?.nombre_tipo ? `(${p.tipo_persona.nombre_tipo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">✍️ Firma</label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden" style={{height: '120px'}}>
+                    <SignaturePad ref={firmaMotoristRef} label="" responsive={true} onSave={() => {}} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Responsable de Líquidos */}
+              <div className="bg-white border-2 border-purple-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">💧 Resp. de Líquidos</label>
+                  <select
+                    value={formData.liquidos_id}
+                    onChange={(e) => setFormData({ ...formData, liquidos_id: e.target.value })}
+                    className="w-full px-3 py-2 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none bg-white text-gray-800"
+                    disabled={loading}
+                  >
+                    <option value="">Seleccionar...</option>
+                    {personas.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.nombre} {p.tipo_persona?.nombre_tipo ? `(${p.tipo_persona.nombre_tipo})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold text-gray-500 mb-1">✍️ Firma</label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden" style={{height: '120px'}}>
+                    <SignaturePad ref={firmaLiquidosRef} label="" responsive={true} onSave={() => {}} />
+                  </div>
+                </div>
+              </div>
+
             </div>
           </section>
 
