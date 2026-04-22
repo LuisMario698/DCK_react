@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 /* Configuración de Dark Mode para Tailwind v4 - Selector-based */
 @variant dark (&:is(.dark *));
@@ -772,4 +772,126 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
 .dark .react-datepicker__today-button:hover {
   background: #4b5563 !important;
   color: #93c5fd !important;
+}
+
+/* ============================================
+   ANIMACIONES INFORMATIVA (MARÍTIMAS)
+   ============================================ */
+
+@keyframes float-particle {
+  0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) scale(1.5) rotate(360deg); opacity: 0; }
+}
+
+@keyframes water-ripple {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-glow-soft {
+  0%, 100% { box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); }
+  50% { box-shadow: 0 0 30px rgba(34, 211, 238, 0.5); }
+}
+
+.animate-gentle-float {
+  animation: gentle-float 4s ease-in-out infinite;
+}
+
+.animate-pulse-glow-soft {
+  animation: pulse-glow-soft 3s ease-in-out infinite;
+}
+
+/* Ola horizontal deslizante (para divisores) */
+@keyframes wave-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-wave-slide {
+  animation: wave-slide 18s linear infinite;
+}
+.animate-wave-slide-slow {
+  animation: wave-slide 30s linear infinite;
+}
+.animate-wave-slide-reverse {
+  animation: wave-slide 22s linear infinite reverse;
+}
+
+/* Línea que se dibuja (paths SVG) */
+@keyframes draw-line {
+  to { stroke-dashoffset: 0; }
+}
+.animate-draw-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: draw-line 3s ease-out forwards;
+}
+
+/* Flujo de puntos a lo largo de un trayecto (dashed) */
+@keyframes dash-flow {
+  to { stroke-dashoffset: -200; }
+}
+.animate-dash-flow {
+  stroke-dasharray: 4 8;
+  animation: dash-flow 4s linear infinite;
+}
+
+/* Shimmer de texto (titulares) */
+@keyframes text-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-text-shimmer {
+  background-size: 200% auto;
+  animation: text-shimmer 4s linear infinite;
+}
+
+/* Cursor blink para typewriter */
+@keyframes caret-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.animate-caret {
+  animation: caret-blink 1s step-end infinite;
+}
+
+/* Entrada tipo "pop-scale" */
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in {
+  animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Rotación lenta (orbital) */
+@keyframes slow-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-slow-spin {
+  animation: slow-spin 40s linear infinite;
+}
+
+/* Subida suave continua (burbujas/partículas de info) */
+@keyframes drift-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  20% { opacity: 0.8; }
+  100% { transform: translateY(-40px); opacity: 0; }
+}
+
+/* Barra que se llena */
+@keyframes fill-bar {
+  from { width: 0%; }
+  to { width: var(--fill-to, 100%); }
+}
+.animate-fill-bar {
+  animation: fill-bar 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
