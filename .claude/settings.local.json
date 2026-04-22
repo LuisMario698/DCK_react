@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find ./messages -type f -name \"*.json\" -exec wc -l {} \\\\;)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}
