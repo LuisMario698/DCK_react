@@ -78,26 +78,16 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
 
   // Logo SEMARNAT (Izquierda)
   if (logoSemarnat) {
-    let h = 16; 
+    let h = 60; 
     let w = h * logoSemarnat.ratio;
-    // Límite de ancho para que no choque con el centro
-    if (w > 65) {
-      w = 65;
+    // Límite de ancho más holgado ahora que no hay escudo central
+    if (w > 130) {
+      w = 180;
       h = w / logoSemarnat.ratio;
     }
     // Centrar verticalmente en su espacio
     const yOffset = y + ((32 - h) / 2);
     doc.addImage(logoSemarnat.data, 'PNG', margin + 3, yOffset, w, h);
-  }
-
-  // Escudo de México (Centro-Arriba junto a SEMARNAT)
-  if (escudoInfo) {
-    const h = 22;
-    const w = h * escudoInfo.ratio;
-    // Centrado exacto respecto al ancho total menos un pequeño offset hacia la izquierda
-    const xCenter = (width / 2) - (w / 2) - 10;
-    const yOffset = y + ((32 - h) / 2);
-    doc.addImage(escudoInfo.data, 'PNG', xCenter, yOffset, w, h);
   }
 
   // Texto Institucional (Derecha)
@@ -126,7 +116,7 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
 
   // --- 3. CAJA PRINCIPAL ---
   const mainBoxY = y;
-  const mainBoxHeight = 185;
+  const mainBoxHeight = 215;
 
   // Marca de Agua (Escudo PNG) - CORREGIDO PROPORCIONALMENTE
   if (escudoInfo) {
@@ -184,7 +174,7 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
   drawCampoForm('BASURA:', `${manifiesto.residuos?.basura || '0'} kg`);
 
   // --- 4. SECCIÓN RECIBE (COMISIONADO) ---
-  const recibeY = mainBoxY + mainBoxHeight - 65;
+  const recibeY = mainBoxY + 132;
   doc.setLineWidth(0.8);
   doc.line(margin, recibeY, width - margin, recibeY);
 
@@ -195,14 +185,14 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
 
   // Espacio para la firma del comisionado
   if (firmas?.oficialFirma) {
-    doc.addImage(firmas.oficialFirma, 'PNG', width / 2 - 25, recibeY + 18, 50, 20);
+    doc.addImage(firmas.oficialFirma, 'PNG', width / 2 - 25, recibeY + 18, 50, 18);
   }
   doc.setLineWidth(0.4);
-  doc.line(width / 2 - 40, recibeY + 40, width / 2 + 40, recibeY + 40);
+  doc.line(width / 2 - 40, recibeY + 38, width / 2 + 40, recibeY + 38);
   doc.setFontSize(9);
-  doc.text('Francisco Javier Bojórquez Ochoa', width / 2, recibeY + 45, { align: 'center' });
+  doc.text('Francisco Javier Bojórquez Ochoa', width / 2, recibeY + 42, { align: 'center' });
   doc.setFontSize(7);
-  doc.text('Oficial de líquidos y sólidos', width / 2, recibeY + 49, { align: 'center' });
+  doc.text('Oficial de líquidos y sólidos', width / 2, recibeY + 46, { align: 'center' });
 
   // --- 5. FIRMAS DE PIE (3 Columnas) ---
   const footerSignY = mainBoxY + mainBoxHeight - 15;
@@ -212,7 +202,7 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
     const x = margin + (index * colW);
     const centerX = x + (colW / 2);
     
-    if (firma) doc.addImage(firma, 'PNG', centerX - 20, footerSignY - 20, 40, 15);
+    if (firma) doc.addImage(firma, 'PNG', centerX - 20, footerSignY - 18, 40, 15);
     
     doc.setLineWidth(0.4);
     doc.line(x + 5, footerSignY, x + colW - 5, footerSignY);
