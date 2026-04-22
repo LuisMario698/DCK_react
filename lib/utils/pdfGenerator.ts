@@ -1,39 +1,33 @@
 import jsPDF from 'jspdf';
 import { ManifiestoConRelaciones } from '@/types/database';
 import logoDck from '@/Contexto-DCK/logo_DCK.png';
+import escudoMexico from '@/Contexto-DCK/escudo_mexico.png';
 
 // URLs de las imágenes en Supabase
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const LOGO_SEMARNAT_URL = `${SUPABASE_URL}/storage/v1/object/public/images/logoSemarnat.png`;
 
-// Configuración de Colores
 const COLORS = {
-  primary: '#1e3a8a', // Azul oscuro oficial
-  secondary: '#4b5563', // Gris texto secundario
-  accent: '#f3f4f6', // Gris fondo suave
-  text: '#111827', // Negro suave
-  white: '#ffffff'
+  text: '#000000',
+  border: '#000000',
+  secondary: '#4b5563'
 };
 
-// Interfaz para las firmas opcionales
 export interface FirmasManifiesto {
   motoristaFirma?: string | null;
   motoristaNombre?: string;
   cocineroFirma?: string | null;
   cocineroNombre?: string;
   oficialFirma?: string | null;
+  liquidosFirma?: string | null;
+  liquidosNombre?: string;
 }
 
 interface ImageInfo {
   data: string;
-  width: number;
-  height: number;
   ratio: number;
 }
 
-/**
- * Cargar imagen y obtener sus dimensiones/base64
- */
 async function cargarImagen(url: string | any): Promise<ImageInfo | null> {
   if (!url) return null;
   const src = typeof url === 'string' ? url : url.src;
@@ -50,317 +44,208 @@ async function cargarImagen(url: string | any): Promise<ImageInfo | null> {
         ctx.drawImage(img, 0, 0);
         resolve({
           data: canvas.toDataURL('image/png'),
-          width: img.width,
-          height: img.height,
-          ratio: img.width / img.height
+          ratio: img.width / img.height // Ancho / Alto
         });
       } else {
         resolve(null);
       }
     };
-    img.onerror = () => {
-      console.error('Error cargando imagen para PDF:', src);
-      resolve(null);
-    };
+    img.onerror = () => resolve(null);
     img.src = src;
   });
 }
 
-/**
- * Cargar imagen desde URL y convertirla a base64 (Legacy fallback)
- */
-async function cargarImagenBase64(url: string): Promise<string> {
-  const info = await cargarImagen(url);
-  return info ? info.data : '';
-}
-
-
-/**
- * Generar PDF con diseño MODERNO y FORMAL
- */
 export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, firmas?: FirmasManifiesto): Promise<Blob> {
   const doc = new jsPDF();
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
-  const margin = 20;
+  const margin = 12;
+  const contentWidth = width - (margin * 2);
 
-  // -- HELPERS --
-  const drawSectionTitle = (text: string, y: number) => {
-    // DISEÑO IMPRESIÓN AMIGABLE (Sin rellenos sólidos)
-    // Texto en negrita + Línea inferior
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(COLORS.primary);
-    doc.text(text.toUpperCase(), margin, y + 6);
+  const [logoSemarnat, logoDckInfo, escudoInfo] = await Promise.all([
+    cargarImagen(LOGO_SEMARNAT_URL),
+    cargarImagen(logoDck),
+    cargarImagen(escudoMexico)
+  ]);
 
-    doc.setLineWidth(1.5); // Línea gruesa
-    doc.setDrawColor(COLORS.primary);
-    doc.line(margin, y + 8, width - margin, y + 8);
+  let y = margin;
 
-    doc.setTextColor(COLORS.text); // Reset
-  };
+  // --- 1. ENCABEZADO (Caja Doble) ---
+  doc.setLineWidth(0.7);
+  doc.roundedRect(margin, y, contentWidth, 32, 3, 3);
+  doc.setLineWidth(0.2);
+  doc.roundedRect(margin + 1, y + 1, contentWidth - 2, 30, 2, 2);
 
-  const drawRow = (label: string, value: string, y: number) => {
-    const rowHeight = 10;
-    // Sin fondo gris para ahorrar tinta
-
-    // Label Column (30% width)
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(COLORS.secondary);
-    doc.text(label, margin + 5, y + 6.5);
-
-    // Value Column
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(COLORS.text);
-    doc.text(value, margin + 60, y + 6.5);
-
-    // Bottom Line (más fina)
-    doc.setLineWidth(0.2);
-    doc.setDrawColor(200, 200, 200); // Gris claro para guiar vista
-    doc.line(margin, y + rowHeight, width - margin, y + rowHeight);
-  };
-
-  // --- 1. ENCABEZADO ---
-  let y = 15; // Ajuste solicitado: 5 puntos más arriba (margin era 20)
-
-  // Load Logos
-  const logoSemarnat = await cargarImagen(LOGO_SEMARNAT_URL);
-  const logoDckInfo = await cargarImagen(logoDck);
-
-  let currentHeaderX = margin;
-  const logoHeight = 25; // Altura fija para logos
-
-  // Logo SEMARNAT
+  // Logo SEMARNAT (Izquierda)
   if (logoSemarnat) {
-    try {
-      const w = logoHeight + 40 * logoSemarnat.ratio;
-      doc.addImage(logoSemarnat.data, 'PNG', currentHeaderX, y - 10, w, logoHeight + 30);
-      currentHeaderX += w + 0; // Espacio entre logos
-    } catch (e) { }
+    let h = 16; 
+    let w = h * logoSemarnat.ratio;
+    // Límite de ancho para que no choque con el centro
+    if (w > 65) {
+      w = 65;
+      h = w / logoSemarnat.ratio;
+    }
+    // Centrar verticalmente en su espacio
+    const yOffset = y + ((32 - h) / 2);
+    doc.addImage(logoSemarnat.data, 'PNG', margin + 3, yOffset, w, h);
   }
 
-  // Logo DCK
-  if (logoDckInfo) {
-    try {
-      const w = logoHeight * logoDckInfo.ratio;
-      doc.addImage(logoDckInfo.data, 'PNG', currentHeaderX, y, w, logoHeight);
-    } catch (e) { }
+  // Escudo de México (Centro-Arriba junto a SEMARNAT)
+  if (escudoInfo) {
+    const h = 22;
+    const w = h * escudoInfo.ratio;
+    // Centrado exacto respecto al ancho total menos un pequeño offset hacia la izquierda
+    const xCenter = (width / 2) - (w / 2) - 10;
+    const yOffset = y + ((32 - h) / 2);
+    doc.addImage(escudoInfo.data, 'PNG', xCenter, yOffset, w, h);
   }
 
-  // Info Institucional (Derecha)
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.secondary);
-  doc.setFont('helvetica', 'bold');
-  const headerTextX = width - margin;
-  doc.text('CENTRO DE ACOPIO 2024 AL 2034', headerTextX, y + 5, { align: 'right' });
-  doc.setFont('helvetica', 'normal');
-  doc.text('Registro Ambiental: BOO2604804813', headerTextX, y + 10, { align: 'right' });
-  doc.text('Autorización: 26-30-P5-11-10-13', headerTextX, y + 15, { align: 'right' });
-  doc.text('Puerto Peñasco, Sonora C.P 83500', headerTextX, y + 20, { align: 'right' });
-
-  // Título del Documento
-  y += 35;
-  doc.setFontSize(16);
-  doc.setTextColor(COLORS.primary);
-  doc.setFont('helvetica', 'bold');
-
-  // Línea decorativa superior título
-  doc.setLineWidth(0.5);
-  doc.setDrawColor(COLORS.primary);
-  doc.line(width / 2 - 40, y - 6, width / 2 + 40, y - 6);
-
-  doc.text('MANIFIESTO DE ENTREGA-RECEPCIÓN', width / 2, y, { align: 'center' });
-
+  // Texto Institucional (Derecha)
   doc.setFontSize(10);
-  doc.setTextColor(COLORS.secondary);
-  doc.setFont('helvetica', 'normal');
-  doc.text('DE RESIDUOS PELIGROSOS Y DE MANEJO ESPECIAL', width / 2, y + 6, { align: 'center' });
-
-  // --- 2. DATOS GENERALES ---
-  y += 15;
-  drawSectionTitle('1. DATOS GENERALES', y);
-  y += 10; // Más espacio después del título
-
-  // Preparar datos
-  const fecha = new Date(manifiesto.fecha_emision).toLocaleDateString('es-MX', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC'
-  });
-  const folio = manifiesto.numero_manifiesto;
-  const barco = manifiesto.buque?.nombre_buque || 'N/A';
-
-  drawRow('FOLIO:', folio, y); y += 10;
-  drawRow('FECHA DE EMISIÓN:', fecha.charAt(0).toUpperCase() + fecha.slice(1), y); y += 10;
-  drawRow('NOMBRE DEL BARCO:', barco, y); y += 10;
-
-  // --- 3. RESIDUOS ENTREGADOS ---
-  y += 10;
-  drawSectionTitle('2. DETALLE DE RESIDUOS', y);
-  y += 10;
-
-  // Header Table (Sin relleno de fondo)
-  // Línea superior del header
-  doc.setLineWidth(0.5);
-  doc.setDrawColor(COLORS.primary);
-  doc.line(margin, y, width - margin, y);
-
-  doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(COLORS.primary);
-  doc.text('TIPO DE RESIDUO', margin + 5, y + 5.5);
-  doc.text('CANTIDAD', width - margin - 40, y + 5.5);
+  const headerTextX = width - margin - 3;
+  doc.text('SEMARNAT', headerTextX, y + 8, { align: 'right' });
+  doc.setFontSize(7.5);
+  doc.text('CENTRO DE ACOPIO 2024 AL 2034', headerTextX, y + 14, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Número de Registro Ambiental: ${manifiesto.numero_manifiesto || 'BOO2604804813'}`, headerTextX, y + 19, { align: 'right' });
+  doc.text('Autorización 26-30-PS-11-10-13', headerTextX, y + 24, { align: 'right' });
+  doc.text('Puerto Peñasco, Sonora C.P 83500', headerTextX, y + 28, { align: 'right' });
 
-  // Línea inferior del header
-  doc.line(margin, y + 8, width - margin, y + 8);
+  y += 42;
 
+  // --- 2. LUGAR Y FECHA ---
+  const fecha = new Date(manifiesto.fecha_emision + 'T00:00:00');
+  const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  
+  doc.setFontSize(10);
+  const textoFecha = `Puerto Peñasco, Sonora a ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+  doc.text(textoFecha, width / 2, y, { align: 'center' });
+  
   y += 8;
 
-  // Items
-  const residuosList = [
-    { label: 'ACEITE USADO', val: `${manifiesto.residuos?.aceite_usado || 0} litros` },
-    { label: 'FILTROS DE ACEITE', val: `${manifiesto.residuos?.filtros_aceite || 0} piezas` },
-    { label: 'FILTROS DE DIESEL', val: `${manifiesto.residuos?.filtros_diesel || 0} piezas` },
-    { label: 'FILTROS DE AIRE', val: `${manifiesto.residuos?.filtros_aire || 0} piezas` },
-    { label: 'BASURA (MARPOL)', val: `${manifiesto.residuos?.basura || 0} kg` },
-  ];
+  // --- 3. CAJA PRINCIPAL ---
+  const mainBoxY = y;
+  const mainBoxHeight = 185;
 
-  residuosList.forEach((r) => {
-    // Sin alternancia de colores
-    // Sobreescribir estilo de texto para la tabla si se desea específico (opcional, drawRow ya lo hace bien)
-    // Para la columna cantidad alineada a la derecha o fija? 
-    // drawRow pone valores en margin + 60. Para tabla queremos alinear mejor.
-    // Reescribimos 'drawRow' logic in-place para la tabla para mejor alineación si es necesario, 
-    // pero drawRow actual funciona. Solo ajustemos la posición de Cantidad si queremos que coincida con Header.
+  // Marca de Agua (Escudo PNG) - CORREGIDO PROPORCIONALMENTE
+  if (escudoInfo) {
+    const watermarkH = 140; // Alto fijo
+    const watermarkW = watermarkH * escudoInfo.ratio; // Ancho proporcional (para no estirar)
+    
+    // @ts-ignore
+    const gstate = doc.GState ? new doc.GState({ opacity: 0.05 }) : null;
+    if (gstate) doc.setGState(gstate);
+    
+    const xWatermark = (width - watermarkW) / 2;
+    const yWatermark = mainBoxY + ((mainBoxHeight - watermarkH) / 2) - 10;
+    
+    doc.addImage(escudoInfo.data, 'PNG', xWatermark, yWatermark, watermarkW, watermarkH);
+    
+    // @ts-ignore
+    if (doc.GState) doc.setGState(new doc.GState({ opacity: 1 }));
+  }
 
-    // Borrar lo que hizo drawRow arriba? No, no lo llamé. 
-    // Hack: llamamos drawRow con value "" y ponemos el value manualmente.
-    // O mejor, no llamamos drawRow y dibujamos directo.
+  doc.setLineWidth(0.8);
+  doc.rect(margin, mainBoxY, contentWidth, mainBoxHeight);
 
-    // -- Row drawing manual --
-    const rowHeight = 10;
-    doc.setFontSize(10);
-    doc.setTextColor(COLORS.text);
+  // Campos del Formulario
+  let campoY = mainBoxY + 15;
+  const drawCampoForm = (label: string, value: string, isFullWidth = true) => {
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text(r.label, margin + 5, y + 6.5);
-
+    doc.text(label, margin + 8, campoY);
+    
+    const labelW = doc.getTextWidth(label);
     doc.setFont('helvetica', 'normal');
-    doc.text(r.val, width - margin - 40, y + 6.5); // Alineado con header
+    doc.text(value, margin + 12 + labelW, campoY - 0.5);
+    
+    doc.setLineWidth(0.3);
+    const lineEnd = isFullWidth ? width - margin - 10 : margin + 80;
+    doc.line(margin + 10 + labelW, campoY + 1, lineEnd, campoY + 1);
+    campoY += 18;
+  };
 
-    doc.setLineWidth(0.2);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(margin, y + rowHeight, width - margin, y + rowHeight);
-    // --
+  const fFormateada = fecha.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+  
+  // Fecha a la derecha
+  doc.setFont('helvetica', 'bold');
+  doc.text('FECHA:', width - 65, mainBoxY + 15);
+  doc.setFont('helvetica', 'normal');
+  doc.text(fFormateada, width - 45, mainBoxY + 15);
+  doc.line(width - 48, mainBoxY + 16, width - margin - 10, mainBoxY + 16);
+  campoY += 5;
 
-    y += 10;
-  });
+  drawCampoForm('NOMBRE DEL BARCO:', (manifiesto.buque?.nombre_buque || '').toUpperCase());
+  drawCampoForm('ACEITE USADO:', `${manifiesto.residuos?.aceite_usado || '0'} litros`);
+  drawCampoForm('FILTROS DE ACEITE:', `${manifiesto.residuos?.filtros_aceite || '0'} piezas`);
+  drawCampoForm('FILTROS DE DIESEL:', `${manifiesto.residuos?.filtros_diesel || '0'} piezas`);
+  drawCampoForm('FILTROS DE AIRE:', `${manifiesto.residuos?.filtros_aire || '0'} piezas`);
+  drawCampoForm('BASURA:', `${manifiesto.residuos?.basura || '0'} kg`);
 
-  // --- 4. FIRMAS ---
-  y += 20; // Espacio antes de firmas
+  // --- 4. SECCIÓN RECIBE (COMISIONADO) ---
+  const recibeY = mainBoxY + mainBoxHeight - 65;
+  doc.setLineWidth(0.8);
+  doc.line(margin, recibeY, width - margin, recibeY);
 
-  drawSectionTitle('3. VALIDACIÓN Y FIRMAS', y);
-  y += 15;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RECIBE: Comisionado para elección de...', margin + 5, recibeY + 8);
+  doc.text('Basura y Residuos Aceitosos (MARPOL - ANEXO)', margin + 5, recibeY + 15);
 
-  const colWidth = (width - (margin * 2)) / 3;
-  const signatureHeight = 25;
-  const signatureLineY = y + 35;
-
-  // --- COL 1: OFICIAL (RECIBE) ---
-  const x1 = margin;
-  const center1 = x1 + (colWidth / 2);
-
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.secondary);
-  doc.text('RECIBE (Oficial Comisionado)', center1, y, { align: 'center' });
-
+  // Espacio para la firma del comisionado
   if (firmas?.oficialFirma) {
-    try { doc.addImage(firmas.oficialFirma, 'PNG', x1 + 10, y + 5, colWidth - 20, signatureHeight); } catch (e) { }
+    doc.addImage(firmas.oficialFirma, 'PNG', width / 2 - 25, recibeY + 18, 50, 20);
   }
-
-  doc.setDrawColor(COLORS.text);
-  doc.line(x1 + 5, signatureLineY, x1 + colWidth - 5, signatureLineY);
-
+  doc.setLineWidth(0.4);
+  doc.line(width / 2 - 40, recibeY + 40, width / 2 + 40, recibeY + 40);
   doc.setFontSize(9);
-  doc.setTextColor(COLORS.text);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Sr. Francisco Javier Bojórquez', center1, signatureLineY + 5, { align: 'center' });
+  doc.text('Francisco Javier Bojórquez Ochoa', width / 2, recibeY + 45, { align: 'center' });
+  doc.setFontSize(7);
+  doc.text('Oficial de líquidos y sólidos', width / 2, recibeY + 49, { align: 'center' });
+
+  // --- 5. FIRMAS DE PIE (3 Columnas) ---
+  const footerSignY = mainBoxY + mainBoxHeight - 15;
+  const colW = contentWidth / 3;
+
+  const drawFirmaCol = (index: number, label: string, subLabel: string, nombre: string, firma?: string | null) => {
+    const x = margin + (index * colW);
+    const centerX = x + (colW / 2);
+    
+    if (firma) doc.addImage(firma, 'PNG', centerX - 20, footerSignY - 20, 40, 15);
+    
+    doc.setLineWidth(0.4);
+    doc.line(x + 5, footerSignY, x + colW - 5, footerSignY);
+    
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.text(label, centerX, footerSignY + 4, { align: 'center' });
+    if (subLabel) doc.text(subLabel, centerX, footerSignY + 8, { align: 'center' });
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(nombre.toUpperCase(), centerX, footerSignY + 14, { align: 'center' });
+  };
+
+  drawFirmaCol(0, 'RESPONSABLE DE ENTREGA DE', 'LIQUIDOS (ACEITE USADO)', (firmas?.liquidosNombre || manifiesto.responsable_liquidos?.nombre || ''), firmas?.liquidosFirma);
+  drawFirmaCol(1, 'MOTORISTA:', '', (firmas?.motoristaNombre || manifiesto.responsable_principal?.nombre || ''), firmas?.motoristaFirma);
+  drawFirmaCol(2, 'COCINERO:', '', (firmas?.cocineroNombre || manifiesto.responsable_secundario?.nombre || ''), firmas?.cocineroFirma);
+
+  // --- 6. PIE DE PÁGINA ---
+  const footerY = height - 10;
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text('Responsable DCK', center1, signatureLineY + 9, { align: 'center' });
-
-
-  // --- COL 2: MOTORISTA (ENTREGA) ---
-  const x2 = margin + colWidth;
-  const center2 = x2 + (colWidth / 2);
-
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.secondary);
-  doc.text('ENTREGA (Motorista)', center2, y, { align: 'center' });
-
-  if (firmas?.motoristaFirma) {
-    try { doc.addImage(firmas.motoristaFirma, 'PNG', x2 + 10, y + 5, colWidth - 20, signatureHeight); } catch (e) { }
-  }
-
-  doc.line(x2 + 5, signatureLineY, x2 + colWidth - 5, signatureLineY);
-
-  const nombreMot = firmas?.motoristaNombre || manifiesto.responsable_principal?.nombre || 'NO ESPECIFICADO';
-  doc.setFontSize(9);
-  doc.setTextColor(COLORS.text);
-  doc.setFont('helvetica', 'bold');
-  doc.text(nombreMot.toUpperCase(), center2, signatureLineY + 5, { align: 'center' });
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Responsable a Bordo', center2, signatureLineY + 9, { align: 'center' });
-
-
-  // --- COL 3: COCINERO (TESTIGO) ---
-  const x3 = margin + (colWidth * 2);
-  const center3 = x3 + (colWidth / 2);
-
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.secondary);
-  doc.text('TESTIGO (Cocinero)', center3, y, { align: 'center' });
-
-  if (firmas?.cocineroFirma) {
-    try { doc.addImage(firmas.cocineroFirma, 'PNG', x3 + 10, y + 5, colWidth - 20, signatureHeight); } catch (e) { }
-  }
-
-  doc.line(x3 + 5, signatureLineY, x3 + colWidth - 5, signatureLineY);
-
-  const nombreCoc = firmas?.cocineroNombre || manifiesto.responsable_secundario?.nombre || '----------------';
-  doc.setFontSize(9);
-  doc.setTextColor(COLORS.text);
-  doc.setFont('helvetica', 'bold');
-  doc.text(nombreCoc.toUpperCase(), center3, signatureLineY + 5, { align: 'center' });
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Personal de Apoyo', center3, signatureLineY + 9, { align: 'center' });
-
-
-  // --- FOOTER ---
-  const footerY = height - 15;
-  doc.setLineWidth(0.5);
-  doc.setDrawColor(COLORS.primary);
-  doc.line(margin, footerY - 5, width - margin, footerY - 5);
-
-  doc.setFontSize(8);
-  doc.setTextColor(COLORS.secondary);
-  doc.text('Documento generado digitalmente por DCK Conciencia y Cultura.', margin, footerY);
-  doc.text(`Pag. 1 de 1`, width - margin, footerY, { align: 'right' });
+  doc.text('Av. La Dársena entre 7 y 8 recinto portuario tel.: 638 105 6039. Comisionado de líquidos y sólidos 1er.', width / 2, footerY - 3, { align: 'center' });
+  doc.text('oficial líquidos y sólidos. Francisco Javier Bojórquez Ochoa.', width / 2, footerY, { align: 'center' });
 
   return doc.output('blob');
 }
 
-/**
- * Generar nombre de archivo para el PDF
- */
 export function generarNombreArchivoPDF(numeroManifiesto: string): string {
   const fecha = new Date().toISOString().split('T')[0];
   return `manifiesto_${numeroManifiesto}_${fecha}.pdf`;
 }
 
-/**
- * Descargar PDF directamente en el navegador
- */
 export async function descargarPDFManifiesto(manifiesto: ManifiestoConRelaciones, firmas?: FirmasManifiesto): Promise<void> {
   const pdfBlob = await generarPDFManifiesto(manifiesto, firmas);
   const url = URL.createObjectURL(pdfBlob);

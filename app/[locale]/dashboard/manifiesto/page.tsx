@@ -537,7 +537,9 @@ export default function ManifiestosPage() {
             motoristaNombre: motoristaNombre || respPrincObj?.nombre,
             cocineroFirma: cocineroSignature,
             cocineroNombre: cocineroNombre || respSecObj?.nombre,
-            oficialFirma: oficialSignature
+            oficialFirma: oficialSignature,
+            liquidosFirma: liquidosSignature,
+            liquidosNombre: liquidosNombre || personas.find(p => p.id === parseInt(formData.responsable_liquidos_id))?.nombre
           };
 
           pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
@@ -717,7 +719,9 @@ export default function ManifiestosPage() {
         motoristaNombre: motoristaNombre || motoristaObj?.nombre,
         cocineroFirma: null,
         cocineroNombre: cocineroNombre || cocineroObj?.nombre,
-        oficialFirma: null
+        oficialFirma: null,
+        liquidosFirma: null,
+        liquidosNombre: liquidosNombre || personas.find(p => p.id === parseInt(formData.responsable_liquidos_id))?.nombre
       };
 
       const pdfBlob = await generarPDFManifiesto(borradorManifiesto, firmasVacias);
@@ -762,7 +766,11 @@ export default function ManifiestosPage() {
             cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
               ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
               : undefined),
-            oficialFirma: oficialSignature
+            oficialFirma: oficialSignature,
+            liquidosFirma: liquidosSignature,
+            liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+              ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+              : undefined)
           };
           pdfBlob = await generarPDFManifiesto(manifiesto, firmasPDF);
         }
@@ -775,7 +783,11 @@ export default function ManifiestosPage() {
           cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
             ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
             : undefined),
-          oficialFirma: oficialSignature
+          oficialFirma: oficialSignature,
+          liquidosFirma: liquidosSignature,
+          liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+            ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+            : undefined)
         };
         pdfBlob = await generarPDFManifiesto(manifiesto, firmasPDF);
       }
@@ -824,7 +836,11 @@ export default function ManifiestosPage() {
           cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
             ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
             : undefined),
-          oficialFirma: oficialSignature
+          oficialFirma: oficialSignature,
+          liquidosFirma: liquidosSignature,
+          liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+            ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+            : undefined)
         };
         blobParaImprimir = await generarPDFManifiesto(manifiesto, firmasPDF);
         urlParaImprimir = URL.createObjectURL(blobParaImprimir);
