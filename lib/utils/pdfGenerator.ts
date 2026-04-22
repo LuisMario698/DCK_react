@@ -85,8 +85,8 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
       w = 180;
       h = w / logoSemarnat.ratio;
     }
-    // Centrar verticalmente en su espacio
-    const yOffset = y + ((32 - h) / 2);
+    // Centrar verticalmente en su espacio (con ajuste visual hacia abajo)
+    const yOffset = y + ((32 - h) / 2) + 4; // Bajarlo 4 puntos para centrar visualmente
     doc.addImage(logoSemarnat.data, 'PNG', margin + 3, yOffset, w, h);
   }
 
@@ -175,6 +175,12 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
 
   // --- 4. SECCIÓN RECIBE (COMISIONADO) ---
   const recibeY = mainBoxY + 132;
+  
+  // Espacio para la firma del comisionado (apoyada sobre la línea principal que cubre casi toda la hoja)
+  if (firmas?.oficialFirma) {
+    doc.addImage(firmas.oficialFirma, 'PNG', margin + 15, recibeY - 18, 50, 18);
+  }
+
   doc.setLineWidth(0.8);
   doc.line(margin, recibeY, width - margin, recibeY);
 
@@ -183,19 +189,8 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
   doc.text('RECIBE: Comisionado para elección de...', margin + 5, recibeY + 8);
   doc.text('Basura y Residuos Aceitosos (MARPOL - ANEXO)', margin + 5, recibeY + 15);
 
-  // Espacio para la firma del comisionado
-  if (firmas?.oficialFirma) {
-    doc.addImage(firmas.oficialFirma, 'PNG', width / 2 - 25, recibeY + 18, 50, 18);
-  }
-  doc.setLineWidth(0.4);
-  doc.line(width / 2 - 40, recibeY + 38, width / 2 + 40, recibeY + 38);
-  doc.setFontSize(9);
-  doc.text('Francisco Javier Bojórquez Ochoa', width / 2, recibeY + 42, { align: 'center' });
-  doc.setFontSize(7);
-  doc.text('Oficial de líquidos y sólidos', width / 2, recibeY + 46, { align: 'center' });
-
   // --- 5. FIRMAS DE PIE (3 Columnas) ---
-  const footerSignY = mainBoxY + mainBoxHeight - 15;
+  const footerSignY = mainBoxY + mainBoxHeight - 30;
   const colW = contentWidth / 3;
 
   const drawFirmaCol = (index: number, label: string, subLabel: string, nombre: string, firma?: string | null) => {
