@@ -12,6 +12,7 @@ interface FormData {
   buqueId: number | null;
   responsableCocineroId: number | null;
   responsableMotoristaid: number | null;
+  responsableLiquidosId: number | null;
   aceiteUsado: number;
   filtrosAceite: number;
   filtrosDiesel: number;
@@ -32,6 +33,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
   const [showBuqueList, setShowBuqueList] = useState(false);
   const [showCocineroList, setShowCocineroList] = useState(false);
   const [showMotoristaList, setShowMotoristaList] = useState(false);
+  const [showLiquidosList, setShowLiquidosList] = useState(false);
   const firmaRef = useRef<SignaturePadRef>(null);
   
   // Refs para los inputs de residuos (para navegación con Enter)
@@ -46,6 +48,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
     buqueId: null,
     responsableCocineroId: null,
     responsableMotoristaid: null,
+    responsableLiquidosId: null,
     aceiteUsado: 0,
     filtrosAceite: 0,
     filtrosDiesel: 0,
@@ -75,6 +78,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
   const selectedBuque = buques.find(b => b.id === formData.buqueId);
   const selectedCocinero = personas.find(p => p.id === formData.responsableCocineroId);
   const selectedMotorista = personas.find(p => p.id === formData.responsableMotoristaid);
+  const selectedLiquidos = personas.find(p => p.id === formData.responsableLiquidosId);
 
   const filteredBuques = buques.filter(b => 
     b.nombre_buque.toLowerCase().includes(search.toLowerCase())
@@ -114,6 +118,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           buque_id: formData.buqueId,
           responsable_principal_id: formData.responsableCocineroId,
           responsable_secundario_id: formData.responsableMotoristaid,
+          responsable_liquidos_id: formData.responsableLiquidosId,
           observaciones: formData.observaciones || null,
           imagen_manifiesto_url: null,
           pdf_manifiesto_url: null,
@@ -206,9 +211,9 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
   return (
     <div className="h-full w-full">
       <div className="h-full grid grid-cols-12 gap-4">
-        
-        {/* COLUMNA 1: Info + Observaciones (4 cols) */}
-        <div className="col-span-4 flex flex-col gap-2">
+
+        {/* COLUMNA 1: Info + Observaciones (5 cols) */}
+        <div className="col-span-5 flex flex-col gap-2">
           <div className="bg-white rounded-xl p-3 shadow-sm border">
             <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
               <span className="w-7 h-7 bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
@@ -266,6 +271,20 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                   <span className="text-slate-500 text-2xl">›</span>
                 </button>
               </div>
+              <div>
+                <label className="block text-base font-semibold text-gray-700 mb-0.5">💧 Resp. Líquidos</label>
+                <button
+                  onClick={() => setShowLiquidosList(true)}
+                  className={`w-full p-2 rounded-lg border text-left flex items-center justify-between ${
+                    selectedLiquidos ? 'bg-slate-50 border-slate-400' : 'bg-white border-gray-300'
+                  }`}
+                >
+                  <span className={`truncate text-lg ${selectedLiquidos ? 'font-bold text-slate-700' : 'text-gray-500'}`}>
+                    {selectedLiquidos?.nombre || 'Seleccionar...'}
+                  </span>
+                  <span className="text-slate-500 text-2xl">›</span>
+                </button>
+              </div>
             </div>
           </div>
           
@@ -282,7 +301,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
         </div>
 
         {/* COLUMNA 2: Residuos en grid vertical (3 cols - centro) */}
-        <div className="col-span-3 bg-white rounded-xl p-3 shadow-sm border flex flex-col">
+        <div className="col-span-3 bg-white rounded-xl p-3 shadow-sm border flex flex-col" style={{minWidth: 0}}>
           <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
             <span className="w-7 h-7 bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
             Residuos
@@ -365,8 +384,8 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           </div>
         </div>
 
-        {/* COLUMNA 3: Firma + Botones (5 cols) */}
-        <div className="col-span-5 flex flex-col gap-2">
+        {/* COLUMNA 3: Firma + Botones (4 cols) */}
+        <div className="col-span-4 flex flex-col gap-2">
           {/* Firma */}
           <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border flex flex-col min-h-0">
             <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
@@ -455,6 +474,26 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           items={filteredPersonas}
           onSelect={(id) => setFormData(prev => ({ ...prev, responsableMotoristaid: id }))}
           onClose={() => setShowMotoristaList(false)}
+          renderItem={(p) => (
+            <>
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xl text-slate-600">
+                {p.nombre.charAt(0)}
+              </div>
+              <div>
+                <p className="font-bold text-lg text-gray-800">{p.nombre}</p>
+                <p className="text-base text-gray-600">{p.tipo_persona?.nombre_tipo || ''}</p>
+              </div>
+            </>
+          )}
+        />
+      )}
+
+      {showLiquidosList && (
+        <SelectModal<PersonaConTipo>
+          title="Seleccionar Resp. de Líquidos"
+          items={filteredPersonas}
+          onSelect={(id) => setFormData(prev => ({ ...prev, responsableLiquidosId: id }))}
+          onClose={() => setShowLiquidosList(false)}
           renderItem={(p) => (
             <>
               <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xl text-slate-600">

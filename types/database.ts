@@ -55,6 +55,7 @@ export interface Manifiesto {
   buque_id: number;
   responsable_principal_id: number | null;
   responsable_secundario_id: number | null;
+  responsable_liquidos_id?: number | null;
   imagen_manifiesto_url: string | null;
   pdf_manifiesto_url: string | null;
   estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado' | 'aprobado' | 'rechazado';
@@ -108,6 +109,7 @@ export interface ManifiestoConRelaciones extends Manifiesto {
   buque?: Buque;
   responsable_principal?: Persona;
   responsable_secundario?: Persona;
+  responsable_liquidos?: Persona;
   residuos?: ManifiestoResiduo;
 }
 

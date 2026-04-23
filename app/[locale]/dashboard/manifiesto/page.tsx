@@ -34,6 +34,7 @@ export default function ManifiestosPage() {
     buque_id: '',
     responsable_principal_id: '',
     responsable_secundario_id: '',
+    responsable_liquidos_id: '',
     observaciones: '',
   });
 
@@ -54,10 +55,11 @@ export default function ManifiestosPage() {
   const [motoristaSignature, setMotoristaSignature] = useState<string | null>(null);
   const [cocineroSignature, setCocineroSignature] = useState<string | null>(null);
   const [oficialSignature, setOficialSignature] = useState<string | null>(null);
-  const [activeSignature, setActiveSignature] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
+  const [liquidosSignature, setLiquidosSignature] = useState<string | null>(null);
+  const [activeSignature, setActiveSignature] = useState<'motorista' | 'cocinero' | 'oficial' | 'liquidos' | null>(null);
 
   // Estado para el modal de firma flotante
-  const [signatureModalType, setSignatureModalType] = useState<'motorista' | 'cocinero' | 'oficial' | null>(null);
+  const [signatureModalType, setSignatureModalType] = useState<'motorista' | 'cocinero' | 'oficial' | 'liquidos' | null>(null);
   const signatureModalCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPointRef = useRef<{ x: number; y: number } | null>(null);
@@ -65,8 +67,10 @@ export default function ManifiestosPage() {
   // Estados para autocompletado de nombres
   const [motoristaNombre, setMotoristaNombre] = useState('');
   const [cocineroNombre, setCocineroNombre] = useState('');
+  const [liquidosNombre, setLiquidosNombre] = useState('');
   const [showMotoristaSuggestions, setShowMotoristaSuggestions] = useState(false);
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
+  const [showLiquidosSuggestions, setShowLiquidosSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   // Estados para filtros y búsqueda de manifiestos
@@ -98,6 +102,7 @@ export default function ManifiestosPage() {
   const motoristaCanvasRef = useRef<HTMLCanvasElement>(null);
   const cocineroCanvasRef = useRef<HTMLCanvasElement>(null);
   const oficialCanvasRef = useRef<HTMLCanvasElement>(null);
+  const liquidosCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
   // Lista de referencias en orden para navegación
@@ -120,8 +125,8 @@ export default function ManifiestosPage() {
     return null;
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, type: 'motorista' | 'cocinero' | 'oficial') => {
-    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, type: 'motorista' | 'cocinero' | 'oficial' | 'liquidos') => {
+    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : type === 'liquidos' ? liquidosCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -145,9 +150,9 @@ export default function ManifiestosPage() {
     ctx.moveTo(x, y);
   };
 
-  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, type: 'motorista' | 'cocinero' | 'oficial') => {
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>, type: 'motorista' | 'cocinero' | 'oficial' | 'liquidos') => {
     if (!isDrawing || activeSignature !== type) return;
-    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
+    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : type === 'liquidos' ? liquidosCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -173,10 +178,10 @@ export default function ManifiestosPage() {
     ctx.stroke();
   };
 
-  const stopDrawing = (type: 'motorista' | 'cocinero' | 'oficial') => {
+  const stopDrawing = (type: 'motorista' | 'cocinero' | 'oficial' | 'liquidos') => {
     if (activeSignature !== type) return;
     setIsDrawing(false);
-    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
+    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : type === 'liquidos' ? liquidosCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (canvas) {
       const data = canvas.toDataURL();
@@ -184,6 +189,8 @@ export default function ManifiestosPage() {
         setMotoristaSignature(data);
       } else if (type === 'cocinero') {
         setCocineroSignature(data);
+      } else if (type === 'liquidos') {
+        setLiquidosSignature(data);
       } else {
         setOficialSignature(data);
       }
@@ -191,8 +198,8 @@ export default function ManifiestosPage() {
     setActiveSignature(null);
   };
 
-  const clearSignature = (type: 'motorista' | 'cocinero' | 'oficial') => {
-    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : oficialCanvasRef;
+  const clearSignature = (type: 'motorista' | 'cocinero' | 'oficial' | 'liquidos') => {
+    const canvasRef = type === 'motorista' ? motoristaCanvasRef : type === 'cocinero' ? cocineroCanvasRef : type === 'liquidos' ? liquidosCanvasRef : oficialCanvasRef;
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -202,13 +209,15 @@ export default function ManifiestosPage() {
       setMotoristaSignature(null);
     } else if (type === 'cocinero') {
       setCocineroSignature(null);
+    } else if (type === 'liquidos') {
+      setLiquidosSignature(null);
     } else {
       setOficialSignature(null);
     }
   };
 
   // Funciones para el modal de firma flotante
-  const openSignatureModal = (type: 'motorista' | 'cocinero' | 'oficial') => {
+  const openSignatureModal = (type: 'motorista' | 'cocinero' | 'oficial' | 'liquidos') => {
     setSignatureModalType(type);
     // Limpiar refs al abrir
     isDrawingRef.current = false;
@@ -302,6 +311,8 @@ export default function ManifiestosPage() {
       setMotoristaSignature(data);
     } else if (signatureModalType === 'cocinero') {
       setCocineroSignature(data);
+    } else if (signatureModalType === 'liquidos') {
+      setLiquidosSignature(data);
     } else {
       setOficialSignature(data);
     }
@@ -313,6 +324,7 @@ export default function ManifiestosPage() {
       case 'oficial': return 'Firma del Oficial Comisionado';
       case 'motorista': return 'Firma del Motorista';
       case 'cocinero': return 'Firma del Cocinero';
+      case 'liquidos': return 'Firma del Resp. de Líquidos';
       default: return 'Firma';
     }
   };
@@ -525,7 +537,9 @@ export default function ManifiestosPage() {
             motoristaNombre: motoristaNombre || respPrincObj?.nombre,
             cocineroFirma: cocineroSignature,
             cocineroNombre: cocineroNombre || respSecObj?.nombre,
-            oficialFirma: oficialSignature
+            oficialFirma: oficialSignature,
+            liquidosFirma: liquidosSignature,
+            liquidosNombre: liquidosNombre || personas.find(p => p.id === parseInt(formData.responsable_liquidos_id))?.nombre
           };
 
           pdfBlob = await generarPDFManifiesto(manifestoCompleto, firmasPDF);
@@ -540,7 +554,8 @@ export default function ManifiestosPage() {
         buque_id: parseInt(buqueId),
         responsable_principal_id: parseInt(motoristaId),
         responsable_secundario_id: cocineroId ? parseInt(cocineroId) : null,
-        estado_digitalizacion: 'completado' as any, // Se asumirá completado si hay PDF
+        responsable_liquidos_id: formData.responsable_liquidos_id ? parseInt(formData.responsable_liquidos_id) : null,
+        estado_digitalizacion: 'completado' as any,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
         pdf_manifiesto_url: null,
@@ -562,6 +577,7 @@ export default function ManifiestosPage() {
         buque_id: '',
         responsable_principal_id: '',
         responsable_secundario_id: '',
+        responsable_liquidos_id: '',
         observaciones: '',
       });
       setResiduos({
@@ -575,9 +591,11 @@ export default function ManifiestosPage() {
       setBuqueNombre('');
       setMotoristaNombre('');
       setCocineroNombre('');
+      setLiquidosNombre('');
       setMotoristaSignature(null);
       setCocineroSignature(null);
       setOficialSignature(null);
+      setLiquidosSignature(null);
 
       loadData();
     } catch (error: any) {
@@ -701,7 +719,9 @@ export default function ManifiestosPage() {
         motoristaNombre: motoristaNombre || motoristaObj?.nombre,
         cocineroFirma: null,
         cocineroNombre: cocineroNombre || cocineroObj?.nombre,
-        oficialFirma: null
+        oficialFirma: null,
+        liquidosFirma: null,
+        liquidosNombre: liquidosNombre || personas.find(p => p.id === parseInt(formData.responsable_liquidos_id))?.nombre
       };
 
       const pdfBlob = await generarPDFManifiesto(borradorManifiesto, firmasVacias);
@@ -746,7 +766,11 @@ export default function ManifiestosPage() {
             cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
               ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
               : undefined),
-            oficialFirma: oficialSignature
+            oficialFirma: oficialSignature,
+            liquidosFirma: liquidosSignature,
+            liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+              ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+              : undefined)
           };
           pdfBlob = await generarPDFManifiesto(manifiesto, firmasPDF);
         }
@@ -759,7 +783,11 @@ export default function ManifiestosPage() {
           cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
             ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
             : undefined),
-          oficialFirma: oficialSignature
+          oficialFirma: oficialSignature,
+          liquidosFirma: liquidosSignature,
+          liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+            ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+            : undefined)
         };
         pdfBlob = await generarPDFManifiesto(manifiesto, firmasPDF);
       }
@@ -808,7 +836,11 @@ export default function ManifiestosPage() {
           cocineroNombre: cocineroNombre || (manifiesto.responsable_secundario_id
             ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
             : undefined),
-          oficialFirma: oficialSignature
+          oficialFirma: oficialSignature,
+          liquidosFirma: liquidosSignature,
+          liquidosNombre: liquidosNombre || (manifiesto.responsable_liquidos_id
+            ? personas.find(p => p.id === manifiesto.responsable_liquidos_id)?.nombre
+            : undefined)
         };
         blobParaImprimir = await generarPDFManifiesto(manifiesto, firmasPDF);
         urlParaImprimir = URL.createObjectURL(blobParaImprimir);
@@ -873,7 +905,17 @@ export default function ManifiestosPage() {
         {/* Contenido del formulario - Layout de dos columnas */}
         <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-slate-700">
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
-          <div className="p-6 space-y-4">
+          <div className="p-6 space-y-4 relative">
+            {/* Marca de agua - Águila Mexicana */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
+              <img
+                src="https://e7.pngegg.com/pngimages/173/34/png-clipart-coat-of-arms-of-mexico-flag-of-mexico-authentic-mexican-tacos-tattoo-emblem-white.png"
+                alt=""
+                className="w-64 h-64 object-contain opacity-5 select-none"
+                draggable={false}
+              />
+            </div>
+            <div className="relative" style={{ zIndex: 1 }}>
             <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Datos del Manifiesto</h3>
 
             {/* FECHA */}
@@ -1113,6 +1155,7 @@ export default function ManifiestosPage() {
                 className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none resize-none text-black dark:text-white text-base dark:placeholder:text-gray-500"
               />
             </div>
+            </div>{/* cierre div relative zIndex:1 */}
           </div>
 
           {/* COLUMNA DERECHA - Firmas */}
@@ -1308,6 +1351,63 @@ export default function ManifiestosPage() {
                 )}
               </div>
             </div>
+
+            {/* FIRMA RESPONSABLE DE LÍQUIDOS */}
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+              <p className="text-base font-bold text-black dark:text-white mb-1">RESP. DE LÍQUIDOS <span className="font-normal text-gray-600 dark:text-gray-400">(Opcional)</span></p>
+              <p className="text-sm text-black dark:text-gray-300 mb-2">Responsable de entrega de líquidos (Aceite Usado)</p>
+              <input
+                type="text"
+                value={liquidosNombre}
+                placeholder="Nombre"
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setLiquidosNombre(value);
+                  setShowLiquidosSuggestions(value.length > 0);
+                  const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                  if (personaExacta) {
+                    setFormData({ ...formData, responsable_liquidos_id: personaExacta.id.toString() });
+                  } else {
+                    setFormData({ ...formData, responsable_liquidos_id: '' });
+                  }
+                }}
+                onFocus={() => { if (liquidosNombre.length > 0) setShowLiquidosSuggestions(true); }}
+                onBlur={() => { setTimeout(() => setShowLiquidosSuggestions(false), 200); }}
+                className="w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600 focus:border-blue-600"
+              />
+              {showLiquidosSuggestions && (
+                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
+                  {personas.filter(p => p.nombre.toLowerCase().includes(liquidosNombre.toLowerCase())).map((persona) => (
+                    <div key={persona.id} onClick={() => { setLiquidosNombre(persona.nombre); setFormData({ ...formData, responsable_liquidos_id: persona.id.toString() }); setShowLiquidosSuggestions(false); }}
+                      className="px-3 py-2 cursor-pointer text-base hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white">
+                      {persona.nombre}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="mt-3">
+                {!liquidosSignature ? (
+                  <button type="button" onClick={() => openSignatureModal('liquidos')}
+                    className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    Firmar
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
+                      <img src={liquidosSignature} alt="Firma Líquidos" className="w-full h-12 object-contain" />
+                    </div>
+                    <div className="flex items-center justify-center gap-3">
+                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-sm text-green-600 font-medium">Firmado</span>
+                      <button type="button" onClick={() => openSignatureModal('liquidos')} className="text-sm text-blue-600 hover:underline">Editar</button>
+                      <button type="button" onClick={() => setLiquidosSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
 

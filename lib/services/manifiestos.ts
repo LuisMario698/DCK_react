@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { Manifiesto, ManifiestoConRelaciones } from '@/types/database'
-import { uploadManifiestoImage, deleteManifiestoImage, uploadManifiestoPDF } from './storage'
+import { uploadManifiestoImage, uploadManifiestoPDF } from './storage'
 export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   const supabase = createClient()
 
@@ -60,7 +60,8 @@ export async function getManifiestos() {
   *,
   buque: buque_id(id, nombre_buque),
     responsable_principal: responsable_principal_id(id, nombre),
-      responsable_secundario: responsable_secundario_id(id, nombre)
+      responsable_secundario: responsable_secundario_id(id, nombre),
+        responsable_liquidos: responsable_liquidos_id(id, nombre)
         `)
     .order('created_at', { ascending: false })
 
@@ -106,7 +107,8 @@ export async function getManifiestoById(id: number) {
         *,
         buque: buque_id(nombre_buque),
           responsable_principal: responsable_principal_id(nombre),
-            responsable_secundario: responsable_secundario_id(nombre)
+            responsable_secundario: responsable_secundario_id(nombre),
+              responsable_liquidos: responsable_liquidos_id(nombre)
               `)
     .eq('id', id)
     .single()
