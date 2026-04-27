@@ -11,19 +11,27 @@ export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   const anio = fechaObj.getFullYear()
   const fechaFormato = `${dia}${mes}${anio} `
 
-  // Obtener manifiestos del mismo día
+  // Obtener el número más alto registrado para ese día
+  const prefijo = `MAN${fechaFormato}`
   const { data, error } = await supabase
     .from('manifiestos')
     .select('numero_manifiesto')
-    .eq('fecha_emision', fecha)
-    .order('created_at', { ascending: false })
+    .like('numero_manifiesto', `${prefijo}%`)
+    .order('numero_manifiesto', { ascending: false })
+    .limit(1)
 
   if (error) {
     console.error('Error obteniendo manifiestos del día:', error)
   }
 
-  // Calcular el siguiente número del día
-  const numeroDelDia = (data?.length || 0) + 1
+  // Extraer el número secuencial del último manifiesto y sumar 1
+  let numeroDelDia = 1
+  if (data && data.length > 0) {
+    const ultimoNumero = data[0].numero_manifiesto?.trim()
+    const parteSecuencial = ultimoNumero?.slice(-3)
+    const parsed = parseInt(parteSecuencial || '0', 10)
+    if (!isNaN(parsed)) numeroDelDia = parsed + 1
+  }
   const numeroFormateado = String(numeroDelDia).padStart(3, '0')
 
   return `MAN${fechaFormato}${numeroFormateado} `
