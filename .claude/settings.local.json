@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(npm run *)",
+      "Bash(cp \"/c/Users/jesus/AppData/Local/Packages/5319275A.WhatsAppDesktop_cv1g1gvanyjgm/LocalState/sessions/F988F1270E4A3FADB8BD8442E16D7A53329DBB16/transfers/2026-18/MEMORIA TECNICA.docx\" \"/tmp/memoria.docx\")",
+      "Bash(pandoc \"/tmp/memoria.docx\" -o \"/tmp/memoria.md\")",
+      "Read(//tmp/**)",
+      "Read(//c/tmp/**)",
+      "Bash(unzip -o memoria.docx -d memoria_unpacked)"
     ]
   }
 }

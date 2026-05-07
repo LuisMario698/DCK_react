@@ -1,8 +1,9 @@
-
 import { createServerClient } from '@/lib/supabase/server';
 import { getDashboardStats } from '@/lib/services/dashboard_stats';
 import { getBuques } from '@/lib/services/buques';
 import { DashboardClient } from '@/components/dashboard/DashboardClient';
+
+export const dynamic = 'force-dynamic';
 
 export default async function StatisticsPage({
     params

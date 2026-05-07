@@ -60,35 +60,54 @@ export function calcularRangoFechas(periodo: PeriodoFiltro, fechaInicio?: string
 }
 
 /**
- * Obtiene los KPIs principales para el dashboard usando RPC
+ * Obtiene los KPIs principales para el dashboard con queries directas a tablas.
+ * Evita el límite de 1,000 filas de Supabase usando head:true para conteos
+ * y queries directas a las tablas de detalle con limit alto.
  */
 export async function getDashboardKPIs(supabase: SupabaseClient): Promise<DashboardKPIs> {
-    const { data, error } = await supabase.rpc('get_dashboard_kpis');
+    const [totalRes, pendientesRes, residuosRes, buquesRes] = await Promise.all([
+        supabase
+            .from('manifiestos')
+            .select('*', { count: 'exact', head: true }),
 
-    if (error) {
-        console.error('Error fetching KPIs:', error);
-        return {
-            totalManifiestos: 0,
-            manifiestosPendientes: 0,
-            totalBuques: 0,
-            buquesActivos: 0,
-            totalResiduosReciclados: 0,
-            totalBasuraGeneral: 0,
-            totalAceiteUsado: 0
-        };
+        supabase
+            .from('manifiestos')
+            .select('*', { count: 'exact', head: true })
+            .eq('estado_digitalizacion', 'pendiente'),
+
+        supabase
+            .from('manifiestos_residuos')
+            .select('aceite_usado, basura')
+            .limit(100_000),
+
+        supabase
+            .from('buques')
+            .select('id, estado')
+            .limit(10_000),
+    ]);
+
+    const totalManifiestos = totalRes.count ?? 0;
+    const manifiestosPendientes = pendientesRes.count ?? 0;
+
+    let totalAceite = 0;
+    let totalBasura = 0;
+    for (const r of residuosRes.data ?? []) {
+        totalAceite += Number(r.aceite_usado ?? 0);
+        totalBasura  += Number(r.basura ?? 0);
     }
 
-    // El RPC devuelve un array con un solo objeto
-    const kpis = Array.isArray(data) ? data[0] : data;
+    const buques = buquesRes.data ?? [];
+    const totalBuques = buques.length;
+    const buquesActivos = buques.filter((b: any) => b.estado === 'Activo').length;
 
     return {
-        totalManifiestos: Number(kpis?.total_manifiestos || 0),
-        manifiestosPendientes: Number(kpis?.manifiestos_pendientes || 0),
-        totalBuques: Number(kpis?.total_buques || 0),
-        buquesActivos: Number(kpis?.buques_activos || 0),
-        totalResiduosReciclados: Number(kpis?.total_aceite || 0) + Number(kpis?.total_basura || 0),
-        totalBasuraGeneral: Number(kpis?.total_basura || 0),
-        totalAceiteUsado: Number(kpis?.total_aceite || 0)
+        totalManifiestos,
+        manifiestosPendientes,
+        totalBuques,
+        buquesActivos,
+        totalResiduosReciclados: totalAceite + totalBasura,
+        totalBasuraGeneral: totalBasura,
+        totalAceiteUsado: totalAceite,
     };
 }
 
@@ -106,20 +125,18 @@ export async function getDashboardKPIsFiltered(
     filtrosAire: number;
 }> {
     const { inicio, fin } = calcularRangoFechas(filtros.periodo, filtros.fechaInicio, filtros.fechaFin);
+    // Para "todo" no aplicamos filtros de fecha: registros con fecha NULL o pre-2020 quedarían
+    // excluidos con .gte/.lte, produciendo conteos distintos a los del landing.
+    const isTodo = filtros.periodo === 'todo';
 
-    // Ejecutar todas las consultas en paralelo
-    const [manifestosRes, residuosRes, buquesRes, basuronRes] = await Promise.all([
-        // Manifiestos en el período
-        supabase
-            .from('manifiestos')
-            .select('id, estado_digitalizacion')
-            .gte('fecha_emision', inicio)
-            .lte('fecha_emision', fin),
+    const baseManifiestos = supabase
+        .from('manifiestos')
+        .select('id, estado_digitalizacion')
+        .limit(100_000);
 
-        // Residuos en el período (join con manifiestos)
-        supabase
-            .from('manifiestos')
-            .select(`
+    const baseResiduos = supabase
+        .from('manifiestos')
+        .select(`
                 id,
                 residuos:manifiestos_residuos(
                     aceite_usado,
@@ -129,20 +146,27 @@ export async function getDashboardKPIsFiltered(
                     filtros_aire
                 )
             `)
-            .gte('fecha_emision', inicio)
-            .lte('fecha_emision', fin),
+        .limit(100_000);
 
-        // Buques totales y activos
-        supabase
-            .from('buques')
-            .select('id, estado'),
+    const baseBasuron = supabase
+        .from('manifiesto_basuron')
+        .select('id, total_depositado')
+        .limit(100_000);
 
-        // Basurón en el período
-        supabase
-            .from('manifiesto_basuron')
-            .select('id, total_depositado')
-            .gte('fecha', inicio)
-            .lte('fecha', fin)
+    const [manifestosRes, residuosRes, buquesRes, basuronRes] = await Promise.all([
+        isTodo
+            ? baseManifiestos
+            : baseManifiestos.gte('fecha_emision', inicio).lte('fecha_emision', fin),
+
+        isTodo
+            ? baseResiduos
+            : baseResiduos.gte('fecha_emision', inicio).lte('fecha_emision', fin),
+
+        supabase.from('buques').select('id, estado').limit(10_000),
+
+        isTodo
+            ? baseBasuron
+            : baseBasuron.gte('fecha', inicio).lte('fecha', fin),
     ]);
 
     // Calcular totales de manifiestos
@@ -265,45 +289,77 @@ export async function getComparacionPeriodoAnterior(
 }
 
 /**
- * Obtiene estadísticas completas para gráficas usando RPCs optimizados
+ * Obtiene estadísticas completas para gráficas con queries directas a tablas
  */
-export async function getDashboardStats(supabase: SupabaseClient, filters?: ReportFilters): Promise<DashboardStats> {
-    // Ejecutar todas las consultas en paralelo
-    const [kpis, residuosRes, buquesRes] = await Promise.all([
+export async function getDashboardStats(supabase: SupabaseClient, _filters?: ReportFilters): Promise<DashboardStats> {
+    // Rango: últimos 6 meses completos
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const sixMonthsAgoStr = sixMonthsAgo.toISOString().split('T')[0];
+
+    const [kpis, manifestosRes] = await Promise.all([
         getDashboardKPIs(supabase),
-        supabase.rpc('get_monthly_waste_stats', { months_limit: 6 }),
-        supabase.rpc('get_top_buques_waste', { limit_count: 5 })
+        supabase
+            .from('manifiestos')
+            .select(`
+                id,
+                fecha_emision,
+                buque_id,
+                buque:buques(nombre_buque),
+                residuos:manifiestos_residuos(aceite_usado, basura)
+            `)
+            .gte('fecha_emision', sixMonthsAgoStr)
+            .order('fecha_emision', { ascending: true }),
     ]);
 
-    // Procesar Residuos por Mes
-    const residuosPorMes: ResiduosPorMes[] = (residuosRes.data || []).map((r: any) => ({
-        mes: r.mes,
-        aceite: Number(r.aceite),
-        basura: Number(r.basura),
-        filtros: 0, // Por ahora no incluido en RPC
-        otros: 0
+    const manifiestos = manifestosRes.data ?? [];
+
+    // ── Residuos por mes (agrupación client-side) ─────────────────────────
+    const monthlyMap = new Map<string, { aceite: number; basura: number }>();
+    manifiestos.forEach((m: any) => {
+        if (!m.fecha_emision) return;
+        const mes = (m.fecha_emision as string).substring(0, 7); // YYYY-MM
+        const r = Array.isArray(m.residuos) ? m.residuos[0] : m.residuos;
+        const aceite = Number(r?.aceite_usado ?? 0);
+        const basura = Number(r?.basura ?? 0);
+        const prev = monthlyMap.get(mes) ?? { aceite: 0, basura: 0 };
+        monthlyMap.set(mes, { aceite: prev.aceite + aceite, basura: prev.basura + basura });
+    });
+    const residuosPorMes: ResiduosPorMes[] = Array.from(monthlyMap.entries()).map(([mes, d]) => ({
+        mes,
+        aceite: d.aceite,
+        basura: d.basura,
+        filtros: 0,
+        otros: 0,
     }));
 
-    // Procesar Top Buques
-    const topBuques: ResiduosPorBuque[] = (buquesRes.data || []).map((b: any) => ({
-        buqueId: b.buque_id,
-        nombreBuque: b.nombre_buque,
-        totalKg: Number(b.total_kg),
-        cantidadManifiestos: Number(b.cantidad_manifiestos)
-    }));
+    // ── Top 5 buques por volumen (agrupación client-side) ─────────────────
+    const buqueMap = new Map<number, { nombre: string; totalKg: number; count: number }>();
+    manifiestos.forEach((m: any) => {
+        if (!m.buque_id) return;
+        const r = Array.isArray(m.residuos) ? m.residuos[0] : m.residuos;
+        const total = Number(r?.aceite_usado ?? 0) + Number(r?.basura ?? 0);
+        const nombre =
+            (Array.isArray(m.buque) ? m.buque[0]?.nombre_buque : m.buque?.nombre_buque) ?? 'Desconocido';
+        const prev = buqueMap.get(m.buque_id) ?? { nombre, totalKg: 0, count: 0 };
+        buqueMap.set(m.buque_id, { nombre: prev.nombre, totalKg: prev.totalKg + total, count: prev.count + 1 });
+    });
+    const topBuques: ResiduosPorBuque[] = Array.from(buqueMap.entries())
+        .sort((a, b) => b[1].totalKg - a[1].totalKg)
+        .slice(0, 5)
+        .map(([id, d]) => ({
+            buqueId: id,
+            nombreBuque: d.nombre,
+            totalKg: d.totalKg,
+            cantidadManifiestos: d.count,
+        }));
 
-    // Distribución (Calculada de KPIs)
     const distribucionTipos: ChartDataPoint[] = [
         { label: 'Aceite Usado', value: kpis.totalAceiteUsado, color: '#F59E0B' },
         { label: 'Basura General', value: kpis.totalBasuraGeneral, color: '#EF4444' },
     ];
 
-    return {
-        kpis,
-        residuosPorMes,
-        topBuques,
-        distribucionTipos
-    };
+    return { kpis, residuosPorMes, topBuques, distribucionTipos };
 }
 
 /**

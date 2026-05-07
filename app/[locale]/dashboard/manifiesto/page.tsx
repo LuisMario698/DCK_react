@@ -83,6 +83,10 @@ export default function ManifiestosPage() {
   const [filtroSeleccionMotorista, setFiltroSeleccionMotorista] = useState<number | null>(null);
   const [filtroSeleccionCocinero, setFiltroSeleccionCocinero] = useState<number | null>(null);
 
+  // Paginación
+  const PAGE_SIZE = 15;
+  const [currentPage, setCurrentPage] = useState(1);
+
   // Estados para autocompletado de embarcaciones
   const [buqueNombre, setBuqueNombre] = useState('');
   const [showBuqueSuggestions, setShowBuqueSuggestions] = useState(false);
@@ -431,6 +435,14 @@ export default function ManifiestosPage() {
       return true;
     });
   }, [manifiestos, buques, personas, searchQuery, filtroActivo, fechaFiltroInicio, fechaFiltroFin, filtroSeleccionBuque, filtroSeleccionMotorista, filtroSeleccionCocinero]);
+
+  // Volver a página 1 cuando cambia cualquier filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filtroActivo, fechaFiltroInicio, fechaFiltroFin, filtroSeleccionBuque, filtroSeleccionMotorista, filtroSeleccionCocinero]);
+
+  const totalPages = Math.max(1, Math.ceil(manifiestosFiltrados.length / PAGE_SIZE));
+  const manifiestosPagina = manifiestosFiltrados.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   async function loadData() {
     try {
@@ -1740,131 +1752,141 @@ export default function ManifiestosPage() {
           )}
 
           {/* Indicador de resultados */}
-          {(searchQuery || filtroActivo !== 'todos' || fechaFiltroInicio || fechaFiltroFin || filtroSeleccionBuque || filtroSeleccionMotorista || filtroSeleccionCocinero) && (
-            <div className="text-sm text-gray-600 flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-              </svg>
-              <span>
-                Mostrando <strong>{manifiestosFiltrados.length}</strong> de <strong>{manifiestos.length}</strong> manifiestos
-                {filtroActivo === 'buque' && filtroSeleccionBuque && ` - Buque: ${buques.find(b => b.id === filtroSeleccionBuque)?.nombre_buque}`}
-                {filtroActivo === 'motorista' && filtroSeleccionMotorista && ` - Motorista: ${personas.find(p => p.id === filtroSeleccionMotorista)?.nombre}`}
-                {filtroActivo === 'cocinero' && filtroSeleccionCocinero && ` - Cocinero: ${personas.find(p => p.id === filtroSeleccionCocinero)?.nombre}`}
-                {filtroActivo === 'fecha' && ' (filtrado por fecha)'}
-                {filtroActivo === 'numero' && searchQuery && ` (buscando: "${searchQuery}")`}
-              </span>
-            </div>
-          )}
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+            <span>
+              {manifiestosFiltrados.length < manifiestos.length
+                ? <><strong className="text-gray-700 dark:text-gray-200">{manifiestosFiltrados.length}</strong> resultado{manifiestosFiltrados.length !== 1 ? 's' : ''} de {manifiestos.length}</>
+                : <><strong className="text-gray-700 dark:text-gray-200">{manifiestos.length}</strong> manifiestos en total</>
+              }
+            </span>
+            <span className="text-xs">
+              Página <strong className="text-gray-700 dark:text-gray-200">{currentPage}</strong> de {totalPages}
+            </span>
+          </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
             <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-        ) : (
+        ) : (<>
           <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
             <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden border border-gray-200 dark:border-slate-700 sm:rounded-xl">
-                <table className="w-full">
-                  <thead className="bg-gray-50/50 dark:bg-slate-700/50 border-b border-gray-200 dark:border-slate-600">
-                    <tr>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Número</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Buque</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden md:table-cell">Motorista</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden lg:table-cell">Cocinero</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                      <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+              <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-50 dark:bg-slate-700/60 border-b border-gray-200 dark:border-slate-600">
+                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Número</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Buque</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden md:table-cell">Motorista</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden lg:table-cell">Cocinero</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden sm:table-cell">Fecha</th>
+                      <th className="px-4 md:px-5 py-3 text-right text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60">
                     {manifiestos.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 dark:text-gray-300 text-center py-8">
-                          <div className="flex flex-col items-center gap-3">
-                            <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        <td colSpan={6} className="py-16 text-center">
+                          <div className="flex flex-col items-center gap-3 text-gray-400">
+                            <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p className="text-lg font-semibold dark:text-gray-300">No hay manifiestos registrados</p>
-                            <p className="text-sm dark:text-gray-400">Complete el formulario arriba para crear uno nuevo</p>
+                            <p className="text-base font-semibold text-gray-500 dark:text-gray-400">No hay manifiestos registrados</p>
+                            <p className="text-sm text-gray-400">Complete el formulario arriba para crear uno nuevo</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : manifiestosPagina.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-16 text-center">
+                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin resultados para esta búsqueda</p>
                           </div>
                         </td>
                       </tr>
                     ) : (
-                      manifiestosFiltrados.map((manifiesto) => {
-                        // Buscar el buque por ID si no viene en la relación
+                      manifiestosPagina.map((manifiesto, idx) => {
                         const buqueNombre = manifiesto.buque?.nombre_buque ||
-                          buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque ||
-                          'N/A';
-
-                        // Buscar responsables por ID si no vienen en la relación
+                          buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque || 'N/A';
                         const respPrincipal = manifiesto.responsable_principal?.nombre ||
-                          personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre ||
-                          'N/A';
-
+                          personas.find(p => p.id === manifiesto.responsable_principal_id)?.nombre || 'N/A';
                         const respSecundario = manifiesto.responsable_secundario?.nombre ||
-                          (manifiesto.responsable_secundario_id ?
-                            personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre :
-                            null);
+                          (manifiesto.responsable_secundario_id
+                            ? personas.find(p => p.id === manifiesto.responsable_secundario_id)?.nombre
+                            : null);
 
                         return (
-                          <tr key={manifiesto.id} className="border-b border-gray-100 dark:border-slate-700 hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-colors">
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
-                              <span className="font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">{manifiesto.numero_manifiesto}</span>
-                            </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
-                              <span className="font-medium text-gray-900 dark:text-gray-100 truncate">{buqueNombre}</span>
-                            </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden md:table-cell">
-                              <span className="font-medium text-gray-900 dark:text-gray-100">{respPrincipal}</span>
-                            </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden lg:table-cell">
-                              <span className="text-gray-600 dark:text-gray-400">{respSecundario || '—'}</span>
-                            </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm hidden sm:table-cell">
-                              <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap">
-                                {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })}
+                          <tr
+                            key={manifiesto.id}
+                            className="group bg-white dark:bg-slate-800 hover:bg-blue-50/40 dark:hover:bg-slate-700/40 transition-colors duration-150"
+                            style={{ animationDelay: `${idx * 20}ms` }}
+                          >
+                            <td className="px-4 md:px-5 py-3.5">
+                              <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-md whitespace-nowrap">
+                                {manifiesto.numero_manifiesto}
                               </span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm">
-                              <div className="flex gap-1 sm:gap-2 min-w-[160px]">
+                            <td className="px-4 md:px-5 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-3.5 h-3.5 text-slate-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
+                                  </svg>
+                                </div>
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[130px]">{buqueNombre}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 md:px-5 py-3.5 hidden md:table-cell">
+                              <span className="text-sm text-gray-700 dark:text-gray-300">{respPrincipal}</span>
+                            </td>
+                            <td className="px-4 md:px-5 py-3.5 hidden lg:table-cell">
+                              <span className="text-sm text-gray-500 dark:text-gray-400">{respSecundario || <span className="text-gray-300 dark:text-gray-600">—</span>}</span>
+                            </td>
+                            <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
+                              <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              </span>
+                            </td>
+                            <td className="px-4 md:px-5 py-3.5">
+                              <div className="flex items-center justify-end gap-1.5">
                                 <button
                                   onClick={() => setViewingManifiesto(manifiesto)}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-slate-800"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 transition-all whitespace-nowrap"
                                   title="Ver detalles"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                   </svg>
-                                  <span className="hidden sm:inline">Ver Detalles</span>
+                                  <span className="hidden sm:inline">Ver</span>
                                 </button>
                                 <button
                                   onClick={() => handleDescargarPDF(manifiesto)}
                                   disabled={generandoPDF === manifiesto.id.toString()}
-                                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0 shadow-sm disabled:opacity-70 disabled:cursor-wait"
+                                  className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-wait shadow-sm"
                                   title={t('acciones.descargarPDF')}
                                 >
                                   {generandoPDF === manifiesto.id.toString() ? (
-                                    <svg className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                   ) : (
-                                    <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
                                   )}
                                 </button>
                                 <button
                                   onClick={() => handleDelete(manifiesto.id)}
-                                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0"
+                                  className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
                                   title="Eliminar"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
                                 </button>
@@ -1879,7 +1901,66 @@ export default function ManifiestosPage() {
               </div>
             </div>
           </div>
-        )}
+
+          {/* Controles de paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-700">
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, manifiestosFiltrados.length)} de {manifiestosFiltrados.length}
+              </span>
+
+              <div className="flex items-center gap-1">
+                {/* Anterior */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                {/* Números de página */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .reduce<(number | '...')[]>((acc, p, i, arr) => {
+                    if (i > 0 && typeof arr[i - 1] === 'number' && (p as number) - (arr[i - 1] as number) > 1) acc.push('...');
+                    acc.push(p);
+                    return acc;
+                  }, [])
+                  .map((p, i) =>
+                    p === '...' ? (
+                      <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-sm text-gray-400">…</span>
+                    ) : (
+                      <button
+                        key={p}
+                        onClick={() => setCurrentPage(p as number)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                          currentPage === p
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    )
+                  )}
+
+                {/* Siguiente */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+        </>)}
       </div>
 
       {/* Modal de visualización de detalles */}

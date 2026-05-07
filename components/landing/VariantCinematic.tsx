@@ -20,7 +20,24 @@ import {
     Quote,
     Globe2,
     X,
+    ArrowLeft,
 } from 'lucide-react';
+
+type ModalRole = 'admin' | 'recolector';
+
+function saveRole(r: ModalRole) {
+    document.cookie = `dck_user_role=${r}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    localStorage.setItem('dck_user_role', r);
+}
+
+function readSavedRole(): ModalRole | null {
+    try {
+        const v = localStorage.getItem('dck_user_role');
+        return v === 'admin' || v === 'recolector' ? v : null;
+    } catch {
+        return null;
+    }
+}
 
 interface MediaItem {
     type: 'image' | 'video';
@@ -101,6 +118,41 @@ interface EquivalenciaCard {
     glowColor: string;
     accent: string;
     featured?: boolean;
+}
+
+function ModalRoleCard({
+    title,
+    desc,
+    accent,
+    Icon,
+    onClick,
+}: {
+    title: string;
+    desc: string;
+    accent: 'blue' | 'emerald';
+    Icon: React.ComponentType<{ className?: string }>;
+    onClick: () => void;
+}) {
+    const s =
+        accent === 'blue'
+            ? { wrap: 'hover:border-blue-500/60 hover:bg-blue-500/5', icon: 'bg-blue-500/10 text-blue-300', arrow: 'text-blue-400' }
+            : { wrap: 'hover:border-emerald-500/60 hover:bg-emerald-500/5', icon: 'bg-emerald-500/10 text-emerald-300', arrow: 'text-emerald-400' };
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            className={`group text-left w-full border border-white/10 rounded-2xl p-5 transition-all duration-200 ${s.wrap} focus:outline-none`}
+        >
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${s.icon}`}>
+                <Icon className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-bold text-white mb-1">{title}</p>
+            <p className="text-xs text-slate-400 leading-snug">{desc}</p>
+            <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${s.arrow}`}>
+                Continuar <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+        </button>
+    );
 }
 
 function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
@@ -215,7 +267,23 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [prevIndex, setPrevIndex] = useState(0);
     const [showLoginModal, setShowLoginModal] = useState(false);
+    // null = mostrar selector, 'admin'/'recolector' = ir directo al form
+    const [modalRole, setModalRole] = useState<ModalRole | null>(null);
     const [scrolled, setScrolled] = useState(false);
+
+    const openLoginModal = () => {
+        setModalRole(readSavedRole()); // null si no hay guardado → selector
+        setShowLoginModal(true);
+    };
+
+    const selectModalRole = (r: ModalRole) => {
+        saveRole(r);
+        setModalRole(r);
+    };
+
+    const clearModalRole = () => {
+        setModalRole(null);
+    };
 
     const projectRef = useScrollReveal<HTMLElement>();
     const francoRef = useScrollReveal<HTMLElement>();
@@ -290,7 +358,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     </div>
 
                     <button
-                        onClick={() => setShowLoginModal(true)}
+                        onClick={openLoginModal}
                         className="px-5 py-2.5 md:px-6 md:py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm md:text-base font-bold rounded-full transition-all shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
                     >
                         Iniciar sesión
@@ -354,7 +422,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                         <button
-                            onClick={() => setShowLoginModal(true)}
+                            onClick={openLoginModal}
                             className="group px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold tracking-wide transition-all shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2 rounded-full cursor-pointer hover:scale-105 active:scale-95 text-base"
                         >
                             Acceder a la plataforma
@@ -432,7 +500,11 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                     <div className="flex items-center gap-2 mb-2">
                                         <FileCheck className="w-5 h-5 text-cyan-400" />
                                     </div>
-                                    <div className="text-2xl font-bold text-white">5,000+</div>
+                                    <div className="text-2xl font-bold text-white">
+                                        {stats?.totalManifiestos
+                                            ? stats.totalManifiestos.toLocaleString('es-MX') + (stats.totalManifiestos >= 1000 ? '+' : '')
+                                            : '5,000+'}
+                                    </div>
                                     <div className="text-xs text-slate-400 uppercase tracking-wider">
                                         Manifiestos
                                     </div>
@@ -532,7 +604,12 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                     la necesita.
                                 </p>
                                 <p>
-                                    Gracias a su experiencia de décadas cuidando el puerto, hoy más de 5,000
+                                    Gracias a su experiencia de décadas cuidando el puerto, hoy más de{' '}
+                                    <strong className="text-white">
+                                        {stats?.totalManifiestos
+                                            ? stats.totalManifiestos.toLocaleString('es-MX')
+                                            : '5,000'}
+                                    </strong>{' '}
                                     reportes históricos se están recuperando de las hojas que se desgastaban,
                                     convirtiéndose en evidencia digital permanente.
                                 </p>
@@ -810,9 +887,13 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                         {[
                             {
                                 icon: FileCheck,
-                                value: '5,000+',
+                                value: stats?.totalManifiestos
+                                    ? stats.totalManifiestos.toLocaleString('es-MX') + '+'
+                                    : '5,000+',
                                 label: 'Reportes digitalizados',
-                                detail: 'Recuperados de hojas físicas deterioradas.',
+                                detail: stats?.totalManifiestos
+                                    ? `${stats.totalManifiestos.toLocaleString('es-MX')} registros capturados en el sistema.`
+                                    : 'Recuperados de hojas físicas deterioradas.',
                             },
                             {
                                 icon: LineChart,
@@ -891,7 +972,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                         Accede a la plataforma y sé parte del cambio en la gestión de residuos marinos.
                     </p>
                     <button
-                        onClick={() => setShowLoginModal(true)}
+                        onClick={openLoginModal}
                         className="group px-10 py-5 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold tracking-wide transition-all shadow-2xl shadow-cyan-500/30 inline-flex items-center gap-3 rounded-full cursor-pointer hover:scale-105 active:scale-95 text-lg"
                     >
                         Iniciar sesión
@@ -956,18 +1037,83 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                         className="absolute inset-0 bg-black/70 backdrop-blur-md animate-fade-in"
                         onClick={() => setShowLoginModal(false)}
                     />
-                    <div className="relative bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10 dark">
-                        <button
-                            onClick={() => setShowLoginModal(false)}
-                            className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
-                            aria-label="Cerrar"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                        <div className="p-8">
-                            <LoginForm showLogo={true} onSuccess={() => setShowLoginModal(false)} />
+
+                    {/* PASO 1 — Selector de rol */}
+                    {modalRole === null && (
+                        <div className="relative bg-slate-900 w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10">
+                            <button
+                                onClick={() => setShowLoginModal(false)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
+                                aria-label="Cerrar"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-8">
+                                <div className="text-center mb-8">
+                                    <h2 className="text-2xl font-extrabold text-white">¿Cómo deseas ingresar?</h2>
+                                    <p className="text-sm text-slate-400 mt-2">
+                                        Selecciona tu tipo de usuario
+                                    </p>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <ModalRoleCard
+                                        title="Administrador Portuario"
+                                        desc="Manifiestos, embarcaciones y estadísticas del puerto."
+                                        accent="blue"
+                                        Icon={Anchor}
+                                        onClick={() => selectModalRole('admin')}
+                                    />
+                                    <ModalRoleCard
+                                        title="Empresa Recolectora"
+                                        desc="Consulta residuos, solicita recolecciones y mide tu impacto."
+                                        accent="emerald"
+                                        Icon={Recycle}
+                                        onClick={() => selectModalRole('recolector')}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {/* PASO 2 — Formulario de login */}
+                    {modalRole !== null && (
+                        <div className="relative bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10 dark">
+                            <button
+                                onClick={() => setShowLoginModal(false)}
+                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
+                                aria-label="Cerrar"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <div className="p-8">
+                                {/* Badge de rol + botón volver */}
+                                <div className="flex items-center justify-between mb-5">
+                                    <button
+                                        onClick={clearModalRole}
+                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+                                    >
+                                        <ArrowLeft className="w-3.5 h-3.5" />
+                                        Cambiar
+                                    </button>
+                                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${
+                                        modalRole === 'recolector'
+                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                                            : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                                    }`}>
+                                        {modalRole === 'recolector'
+                                            ? <><Recycle className="w-3.5 h-3.5" /> Empresa Recolectora</>
+                                            : <><Anchor className="w-3.5 h-3.5" /> Administrador Portuario</>
+                                        }
+                                    </span>
+                                </div>
+                                <LoginForm
+                                    showLogo={true}
+                                    redirectTo={modalRole === 'recolector' ? '/dashboard-recolector' : '/dashboard'}
+                                    onSuccess={() => setShowLoginModal(false)}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

@@ -9,7 +9,7 @@ export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   const dia = String(fechaObj.getDate()).padStart(2, '0')
   const mes = String(fechaObj.getMonth() + 1).padStart(2, '0')
   const anio = fechaObj.getFullYear()
-  const fechaFormato = `${dia}${mes}${anio} `
+  const fechaFormato = `${dia}${mes}${anio}`
 
   // Obtener manifiestos del mismo día
   const { data, error } = await supabase
@@ -26,7 +26,7 @@ export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   const numeroDelDia = (data?.length || 0) + 1
   const numeroFormateado = String(numeroDelDia).padStart(3, '0')
 
-  return `MAN${fechaFormato}${numeroFormateado} `
+  return `MAN${fechaFormato}${numeroFormateado}`
 }
 
 export async function getManifiestos() {

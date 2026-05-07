@@ -1225,32 +1225,30 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-base text-left">
-                                <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-6 py-4">Fecha</th>
-                                        <th className="px-6 py-4">Folio</th>
-                                        <th className="px-6 py-4">Buque</th>
-                                        <th className="px-6 py-4">Tipo de Residuo</th>
-                                        <th className="px-6 py-4 text-right">Cantidad</th>
+                        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
+                            <table className="w-full border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50 dark:bg-slate-700/60 border-b border-gray-200 dark:border-slate-600">
+                                        <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Fecha</th>
+                                        <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Folio</th>
+                                        <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Buque</th>
+                                        <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-widest hidden sm:table-cell">Tipo</th>
+                                        <th className="px-4 md:px-5 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Cantidad</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
                                     {reportData.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-16 text-center">
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <div className="w-20 h-20 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                                        <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                        </svg>
-                                                    </div>
+                                            <td colSpan={5} className="py-16 text-center">
+                                                <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                    <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                    </svg>
                                                     <div className="text-center">
-                                                        <p className="text-gray-600 dark:text-gray-300 font-medium text-lg">
+                                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                                                             {loadingReport ? 'Procesando datos...' : 'No hay datos para mostrar'}
                                                         </p>
-                                                        <p className="text-gray-400 mt-1">
+                                                        <p className="text-xs text-gray-400 mt-1">
                                                             {!loadingReport && 'Selecciona las fechas y haz clic en "Generar Reporte"'}
                                                         </p>
                                                     </div>
@@ -1259,30 +1257,27 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         </tr>
                                     ) : (
                                         reportData.map((item, idx) => (
-                                            <tr key={idx} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                                                        <span className="text-gray-700 dark:text-gray-300 font-medium">{new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                                                    </div>
+                                            <tr key={idx} className="bg-white dark:bg-slate-800 hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-colors duration-150 group">
+                                                <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                                                    {new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                                                <td className="px-4 md:px-5 py-3.5">
+                                                    <span className="font-mono text-xs bg-gray-100 dark:bg-slate-700 px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-300">
                                                         {item.folio}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 font-semibold text-gray-800 dark:text-white">{item.buque}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                <td className="px-4 md:px-5 py-3.5 text-sm font-semibold text-gray-800 dark:text-white">{item.buque}</td>
+                                                <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
+                                                    <span className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
                                                         {item.tipoResiduo === 'Aceite' && '🛢️'}
                                                         {item.tipoResiduo === 'Basura' && '🗑️'}
                                                         {item.tipoResiduo === 'Basurón' && '♻️'}
                                                         {item.tipoResiduo}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <span className="font-bold text-gray-800 dark:text-white">{item.cantidad.toLocaleString()}</span>
-                                                    <span className="text-sm text-gray-400 ml-1">{item.unidad}</span>
+                                                <td className="px-4 md:px-5 py-3.5 text-right">
+                                                    <span className="text-sm font-bold text-gray-800 dark:text-white">{item.cantidad.toLocaleString()}</span>
+                                                    <span className="text-xs text-gray-400 ml-1">{item.unidad}</span>
                                                 </td>
                                             </tr>
                                         ))
