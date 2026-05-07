@@ -34,7 +34,7 @@ export function Header() {
         <div className="relative w-32 h-10">
           <Image
             src={logoSrcMobile}
-            alt="DCK Logo"
+            alt="SiMAR Logo"
             fill
             className="object-contain"
             priority

@@ -92,7 +92,8 @@ function RoleSelector({ onSelect }: { onSelect: (r: Role) => void }) {
         <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 sm:px-6 lg:px-8 py-12">
             <div className="max-w-3xl w-full">
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-black text-blue-900 dark:text-white tracking-tight">DCK</h1>
+                    <h1 className="text-4xl font-black text-blue-900 dark:text-white tracking-tight">SiMAR</h1>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 tracking-widest uppercase">Sistema Integral de Manejo Ambiental de Residuos</p>
                     <h2 className="mt-4 text-3xl font-extrabold text-gray-900 dark:text-white">
                         ¿Cómo deseas ingresar?
                     </h2>

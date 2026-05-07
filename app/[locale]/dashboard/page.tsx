@@ -81,7 +81,7 @@ export default async function DashboardPage({
               <div className="relative w-48 h-48 md:w-64 md:h-64 transition-transform hover:scale-105 duration-500">
                 <Image
                   src={logoIcon}
-                  alt="DCK Icon"
+                  alt="SiMAR"
                   fill
                   className="object-contain"
                   priority
@@ -91,11 +91,11 @@ export default async function DashboardPage({
               {/* Texto */}
               <div className="text-center md:text-left flex flex-col items-center md:items-start">
                 <h1 className="text-7xl md:text-8xl font-black text-gray-900 dark:text-white leading-none tracking-tighter mb-2">
-                  DCK
+                  SiMAR
                 </h1>
                 <div className="h-1.5 w-24 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full mb-4"></div>
                 <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400 font-medium tracking-[0.25em] uppercase">
-                  Conciencia y Cultura
+                  Sistema Integral de Manejo Ambiental de Residuos
                 </p>
               </div>
             </div>

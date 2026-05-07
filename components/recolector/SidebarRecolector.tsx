@@ -73,7 +73,7 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                         </div>
                         {!isCollapsed && (
                             <div className="flex flex-col">
-                                <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">DCK</span>
+                                <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">SiMAR</span>
                                 <span className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">Recolector</span>
                             </div>
                         )}

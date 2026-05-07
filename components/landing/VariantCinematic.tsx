@@ -331,11 +331,11 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     <a
                         href="#top"
                         className="group flex items-center gap-4 rounded-full px-3 py-2 transition-all duration-300 hover:bg-white/95 hover:shadow-xl cursor-pointer"
-                        aria-label="DCK - Inicio"
+                        aria-label="SiMAR - Inicio"
                     >
                         <img
                             src="/assets/logo_DCK.png"
-                            alt="DCK"
+                            alt="SiMAR"
                             className="h-12 md:h-14 w-auto object-contain drop-shadow-lg"
                         />
                         <div className="h-8 w-px bg-white/30 transition-colors duration-300 group-hover:bg-black/10 hidden sm:block" />
@@ -409,9 +409,9 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     </div>
 
                     <h1 className="text-5xl sm:text-7xl md:text-[7.5rem] font-extrabold leading-[0.95] tracking-tight text-white drop-shadow-2xl">
-                        DCK
+                        SiMAR
                         <span className="block mt-3 text-2xl sm:text-4xl md:text-6xl font-light text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 animate-shimmer-text">
-                            Conciencia y Cultura
+                            Sistema Integral de Manejo Ambiental de Residuos
                         </span>
                     </h1>
 
@@ -987,14 +987,10 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     <div className="md:col-span-2">
                         <img
                             src="/assets/logo_DCK.png"
-                            alt="DCK Logo"
+                            alt="SiMAR Logo"
                             className="h-14 w-auto object-contain mb-6"
                         />
-                        <p className="text-slate-400 max-w-md mb-8 leading-relaxed">
-                            Sistema de Gestión de Residuos Marinos. Desarrollado por estudiantes de
-                            Ingeniería en Sistemas Computacionales del ITSPP en colaboración con SEMARNAT
-                            y DCK Conciencia y Cultura.
-                        </p>
+            
                     </div>
 
                     <div>

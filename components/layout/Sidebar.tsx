@@ -80,7 +80,7 @@ export function Sidebar() {
               <div className="flex-shrink-0 w-16 h-16 relative">
                 <Image
                   src={logoCollapsed}
-                  alt="DCK"
+                  alt="SiMAR"
                   fill
                   className="object-contain"
                   priority
@@ -90,7 +90,7 @@ export function Sidebar() {
               <div className="relative w-60 h-24 transition-all duration-300">
                 <Image
                   src={logoSrcExpanded}
-                  alt="DCK Logo"
+                  alt="SiMAR Logo"
                   fill
                   className="object-contain object-center"
                   priority
