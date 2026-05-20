@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
 import { useTheme } from '@/components/layout/ThemeContext';
@@ -28,9 +28,13 @@ export function Sidebar() {
     { label: t('menu.panel'), href: `/${locale}/dashboard`, icon: 'Dashboard' },
     { label: t('menu.manifiesto'), href: `/${locale}/dashboard/manifiesto`, icon: 'Document' },
     { label: t('menu.manifiestoBasuron'), href: `/${locale}/dashboard/manifiesto-basuron`, icon: 'Recycle' },
-    { label: 'Estadísticas', href: `/${locale}/dashboard/estadisticas`, icon: 'Chart' },
     { label: t('menu.personas'), href: `/${locale}/dashboard/personas`, icon: 'Users' },
     { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: 'Ship' },
+  ];
+
+  const reportesItems = [
+    { label: 'Estadísticas', href: `/${locale}/dashboard/estadisticas`, icon: 'Chart' },
+    { label: 'Reportes', href: `/${locale}/dashboard/reportes`, icon: 'Document' },
   ];
 
   const externosItems = [
@@ -109,6 +113,31 @@ export function Sidebar() {
           <nav className="px-3 space-y-6">
             <div className="space-y-1">
               {menuItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
+                    ${isActive(item.href)
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
+                      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                    }
+                  `}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  <div className={`flex-shrink-0 transition-transform duration-200 ${!isCollapsed && isActive(item.href) ? 'scale-110' : ''}`}>
+                    {IconComponent(item.icon)}
+                  </div>
+                  {!isCollapsed && (
+                    <span className="ml-3 text-sm font-medium truncate">{item.label}</span>
+                  )}
+                </Link>
+              ))}
+            </div>
+
+            <div className="space-y-1">
+              {!isCollapsed && <p className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Reportes</p>}
+              {reportesItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

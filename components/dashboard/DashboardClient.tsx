@@ -21,6 +21,8 @@ import { createClient } from '@/lib/supabase/client';
 interface DashboardClientProps {
     initialStats: DashboardStats;
     buques: { id: number; nombre_buque: string }[];
+    defaultTab?: 'general' | 'reportes';
+    hideTabs?: boolean;
 }
 
 interface StatsFiltered {
@@ -40,8 +42,8 @@ interface StatsFiltered {
 
 
 
-export function DashboardClient({ initialStats, buques }: DashboardClientProps) {
-    const [activeTab, setActiveTab] = useState<'general' | 'reportes'>('general');
+export function DashboardClient({ initialStats, buques, defaultTab = 'general', hideTabs = false }: DashboardClientProps) {
+    const [activeTab, setActiveTab] = useState<'general' | 'reportes'>(defaultTab);
     const [reportData, setReportData] = useState<ReporteDetalladoItem[]>([]);
     const [loadingReport, setLoadingReport] = useState(false);
     const [loadingStats, setLoadingStats] = useState(false);
@@ -56,16 +58,41 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     const [statsFiltered, setStatsFiltered] = useState<StatsFiltered | null>(null);
     const [comparaciones, setComparaciones] = useState<Comparaciones | null>(null);
 
+    // Fecha de hoy formateada YYYY-MM-DD para valores por defecto
+    const hoy = (() => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${dd}`;
+    })();
+
     // Filtros de reporte
     const [filters, setFilters] = useState({
-        fechaInicio: '',
-        fechaFin: '',
+        fechaInicio: hoy,
+        fechaFin: hoy,
         buqueId: '',
         estado: ''
     });
 
     // Acceso rápido seleccionado
     const [accesoRapidoSeleccionado, setAccesoRapidoSeleccionado] = useState<string | null>(null);
+
+    // Input de año para reporte anual
+    const [anoInput, setAnoInput] = useState('');
+    const [anoError, setAnoError] = useState('');
+
+    const aplicarAno = (valor: string) => {
+        const num = parseInt(valor, 10);
+        const anoActual = new Date().getFullYear();
+        if (!valor) { setAnoError(''); return; }
+        if (!/^\d+$/.test(valor)) { setAnoError('Solo se permiten números'); return; }
+        if (num < 2000) { setAnoError('El año debe ser 2000 o posterior'); return; }
+        if (num > anoActual + 1) { setAnoError(`Año máximo: ${anoActual + 1}`); return; }
+        setAnoError('');
+        setFilters({ ...filters, fechaInicio: `${num}-01-01`, fechaFin: `${num}-12-31`, buqueId: '' });
+        setAccesoRapidoSeleccionado(`Año ${num}`);
+    };
 
     // Cargar estadísticas cuando cambia el período
     useEffect(() => {
@@ -314,10 +341,112 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
         printWindow.document.close();
     };
 
+    const exportToPDFAnual = (data: ReporteDetalladoItem[], year: string) => {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+
+        // Tipos de residuos que maneja el sistema (corresponden a get_reporte_detallado)
+        const TODOS_LOS_TIPOS: { nombre: string; metrica: string }[] = [
+            { nombre: 'Aceite Usado',    metrica: 'litros' },
+            { nombre: 'Filtros Aceite',  metrica: 'piezas' },
+            { nombre: 'Filtros Diesel',  metrica: 'piezas' },
+            { nombre: 'Filtros Aire',    metrica: 'piezas' },
+            { nombre: 'Basura General',  metrica: 'kg' },
+            { nombre: 'Basura (Ticket)', metrica: 'kg' },
+        ];
+
+        const porTipoData = data.reduce((acc, item) => {
+            acc[item.tipoResiduo] = (acc[item.tipoResiduo] || 0) + item.cantidad;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const totalGeneral = data.reduce((sum, item) => sum + item.cantidad, 0);
+        const embarcaciones = new Set(data.map(item => item.buque)).size;
+
+        // Combinar tipos del sistema con los datos (0 si no hay registros)
+        const tiposConTotal = TODOS_LOS_TIPOS.map(t => ({
+            ...t,
+            total: porTipoData[t.nombre] || 0,
+        }));
+
+        const totalConRegistros = tiposConTotal.filter(t => t.total > 0).length;
+
+        const tipoRows = tiposConTotal.map(({ nombre, metrica, total }) => {
+            const pct = totalGeneral > 0 ? ((total / totalGeneral) * 100).toFixed(1) : '0.0';
+            const sinDatos = total === 0;
+            return `<tr style="${sinDatos ? 'color:#9ca3af;' : ''}">
+                <td>${nombre}</td>
+                <td style="text-align:right">${sinDatos ? '—' : `${total.toLocaleString()} ${metrica}`}</td>
+                <td style="text-align:right">${sinDatos ? '—' : `${pct}%`}</td>
+            </tr>`;
+        }).join('');
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Reporte Anual ${year} - SiMAR</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
+                    h1 { color: #1e40af; border-bottom: 3px solid #1e40af; padding-bottom: 10px; margin-bottom: 4px; }
+                    .subtitle { color: #6b7280; font-size: 14px; margin-bottom: 30px; }
+                    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 24px 0; }
+                    .kpi { background: #f3f4f6; padding: 18px; border-radius: 10px; text-align: center; }
+                    .kpi-value { font-size: 22px; font-weight: bold; color: #1e40af; }
+                    .kpi-label { font-size: 11px; color: #6b7280; margin-top: 4px; }
+                    .section-title { font-size: 16px; font-weight: bold; color: #374151; margin: 28px 0 10px; border-left: 4px solid #1e40af; padding-left: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+                    th { background: #1e40af; color: white; padding: 10px 14px; text-align: left; font-size: 13px; }
+                    th:not(:first-child) { text-align: right; }
+                    td { padding: 9px 14px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+                    tr:nth-child(even) { background: #f9fafb; }
+                    .total-row td { font-weight: bold; background: #dbeafe; color: #1e40af; }
+                    .footer { margin-top: 40px; text-align: center; color: #9ca3af; font-size: 11px; border-top: 1px solid #e5e7eb; padding-top: 16px; }
+                    @media print { body { padding: 20px; } }
+                </style>
+            </head>
+            <body>
+                <h1>Reporte Anual de Residuos — ${year}</h1>
+                <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · SiMAR — Sistema Integral de Manejo Ambiental de Residuos</p>
+
+                <div class="kpi-grid">
+                    <div class="kpi"><div class="kpi-value">${data.length}</div><div class="kpi-label">Manifiestos</div></div>
+                    <div class="kpi"><div class="kpi-value">${totalGeneral.toLocaleString()}</div><div class="kpi-label">Total Recolectado</div></div>
+                    <div class="kpi"><div class="kpi-value">${embarcaciones}</div><div class="kpi-label">Embarcaciones</div></div>
+                    <div class="kpi"><div class="kpi-value">${totalConRegistros} / ${TODOS_LOS_TIPOS.length}</div><div class="kpi-label">Tipos con registros</div></div>
+                </div>
+
+                <div class="section-title">Residuos por Tipo — ${year}</div>
+                <table>
+                    <thead><tr><th>Tipo de Residuo</th><th>Total recolectado</th><th>% del Total</th></tr></thead>
+                    <tbody>
+                        ${tipoRows}
+                        <tr class="total-row">
+                            <td>TOTAL GENERAL</td>
+                            <td style="text-align:right">${totalGeneral.toLocaleString()}</td>
+                            <td style="text-align:right">100%</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="footer">
+                    <p>SiMAR — Sistema Integral de Manejo Ambiental de Residuos &nbsp;|&nbsp; Puerto Peñasco, Sonora</p>
+                    <p>Documento generado automáticamente — Período: 01/01/${year} al 31/12/${year}</p>
+                </div>
+
+                <script>window.onload = function() { window.print(); }</script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(html);
+        printWindow.document.close();
+    };
+
     return (
         <div className="space-y-8 font-sans text-gray-600 dark:text-gray-300">
             {/* Tabs de Navegación Estilizados */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className={`flex items-center justify-between flex-wrap gap-4 ${hideTabs ? 'hidden' : ''}`}>
                 <div className="flex space-x-2 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                     <button
                         onClick={() => setActiveTab('general')}
@@ -1119,7 +1248,6 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     { label: 'Última semana', days: 7 },
                                     { label: 'Último mes', days: 30 },
                                     { label: 'Últimos 3 meses', days: 90 },
-                                    { label: 'Este año', days: 365 },
                                 ].map((option) => (
                                     <button
                                         key={option.label}
@@ -1127,17 +1255,13 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             const today = new Date();
                                             const startDate = new Date();
                                             startDate.setDate(today.getDate() - option.days);
-                                            const formatDate = (d: Date) => {
-                                                const year = d.getFullYear();
-                                                const month = String(d.getMonth() + 1).padStart(2, '0');
-                                                const day = String(d.getDate()).padStart(2, '0');
-                                                return `${year}-${month}-${day}`;
+                                            const fmt = (d: Date) => {
+                                                const y = d.getFullYear();
+                                                const m = String(d.getMonth() + 1).padStart(2, '0');
+                                                const dd = String(d.getDate()).padStart(2, '0');
+                                                return `${y}-${m}-${dd}`;
                                             };
-                                            setFilters({
-                                                ...filters,
-                                                fechaInicio: formatDate(startDate),
-                                                fechaFin: formatDate(today)
-                                            });
+                                            setFilters({ ...filters, fechaInicio: fmt(startDate), fechaFin: fmt(today) });
                                             setAccesoRapidoSeleccionado(option.label);
                                         }}
                                         className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${accesoRapidoSeleccionado === option.label
@@ -1148,10 +1272,49 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         {option.label}
                                     </button>
                                 ))}
+                                {/* Input de año */}
+                                <div className="flex items-center gap-2">
+                                    <div className="flex flex-col">
+                                        <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm transition-colors ${
+                                            accesoRapidoSeleccionado?.startsWith('Año ')
+                                                ? 'bg-blue-600 border-blue-600 text-white'
+                                                : anoError
+                                                    ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
+                                                    : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
+                                        }`}>
+                                            <svg className={`w-4 h-4 flex-shrink-0 ${accesoRapidoSeleccionado?.startsWith('Año ') ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                pattern="[0-9]*"
+                                                maxLength={4}
+                                                placeholder="Año"
+                                                value={anoInput}
+                                                onChange={e => {
+                                                    const val = e.target.value.replace(/\D/g, '');
+                                                    setAnoInput(val);
+                                                    if (val.length === 4) aplicarAno(val);
+                                                    else { setAnoError(''); setAccesoRapidoSeleccionado(null); }
+                                                }}
+                                                onKeyDown={e => { if (e.key === 'Enter') aplicarAno(anoInput); }}
+                                                className={`w-14 bg-transparent outline-none font-medium text-sm ${
+                                                    accesoRapidoSeleccionado?.startsWith('Año ')
+                                                        ? 'text-white placeholder-blue-200'
+                                                        : 'text-gray-700 dark:text-gray-200 placeholder-gray-400'
+                                                }`}
+                                            />
+                                        </div>
+                                        {anoError && <span className="text-xs text-red-500 mt-1 leading-none">{anoError}</span>}
+                                    </div>
+                                </div>
                                 <button
                                     onClick={() => {
                                         setFilters({ ...filters, fechaInicio: '', fechaFin: '', buqueId: '' });
                                         setAccesoRapidoSeleccionado(null);
+                                        setAnoInput('');
+                                        setAnoError('');
                                     }}
                                     className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 font-medium text-sm transition-colors"
                                 >
@@ -1161,136 +1324,264 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
                     </div>
 
-                    {/* Resumen de resultados */}
-                    {reportData.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                <p className="text-gray-400 text-sm mb-1">Total Registros</p>
-                                <p className="text-3xl font-bold text-gray-800 dark:text-white">{reportData.length}</p>
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                <p className="text-gray-400 text-sm mb-1">Total Residuos</p>
-                                <p className="text-3xl font-bold text-blue-600">
-                                    {reportData.reduce((sum, item) => sum + item.cantidad, 0).toLocaleString()} kg
-                                </p>
-                            </div>
-                            <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
-                                <p className="text-gray-400 text-sm mb-1">Buques Únicos</p>
-                                <p className="text-3xl font-bold text-emerald-600">
-                                    {new Set(reportData.map(item => item.buque)).size}
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                    {/* Resultados: vista resumen anual o detalle */}
+                    {(() => {
+                        const isAnualReport = reportData.length > 0 && (
+                            accesoRapidoSeleccionado?.startsWith('Año ') ||
+                            (filters.fechaInicio && filters.fechaFin &&
+                                filters.fechaInicio.endsWith('-01-01') &&
+                                filters.fechaFin.endsWith('-12-31') &&
+                                filters.fechaInicio.substring(0, 4) === filters.fechaFin.substring(0, 4))
+                        );
 
-                    {/* Tabla de Resultados */}
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                                    <Icons.Document className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-800 dark:text-white">Resultados del Reporte</h3>
-                                    <p className="text-sm text-gray-400">
-                                        {reportData.length > 0
-                                            ? `Mostrando ${reportData.length} registros`
-                                            : 'Aplica filtros para ver resultados'}
-                                    </p>
-                                </div>
-                            </div>
+                        if (isAnualReport) {
+                            const year = filters.fechaInicio.substring(0, 4);
+                            const totalKg = reportData.reduce((sum, item) => sum + item.cantidad, 0);
+                            const porTipo = reportData.reduce((acc, item) => {
+                                acc[item.tipoResiduo] = (acc[item.tipoResiduo] || 0) + item.cantidad;
+                                return acc;
+                            }, {} as Record<string, number>);
+                            const porBuque = reportData.reduce((acc, item) => {
+                                acc[item.buque] = (acc[item.buque] || 0) + item.cantidad;
+                                return acc;
+                            }, {} as Record<string, number>);
 
-                            <div className="flex gap-3"> {/* Increased gap */}
-                                <button
-                                    onClick={() => exportToExcel(reportData)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                                >
-                                    <Icons.Document className="w-5 h-5" />
-                                    <span>Excel</span>
-                                </button>
-                                <button
-                                    onClick={() => exportToCSV(reportData)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 hover:border-transparent"
-                                >
-                                    <Icons.Document className="w-5 h-5" />
-                                    <span>CSV</span>
-                                </button>
-                                <button
-                                    onClick={() => exportToPDF(reportData, stats!)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md"
-                                >
-                                    <Icons.Document className="w-5 h-5" />
-                                    <span>PDF</span>
-                                </button>
-                            </div>
-                        </div>
+                            return (
+                                <>
+                                    {/* KPIs anuales */}
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Manifiestos {year}</p>
+                                            <p className="text-3xl font-bold text-gray-800 dark:text-white">{reportData.length}</p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Total Residuos</p>
+                                            <p className="text-3xl font-bold text-blue-600">{totalKg.toLocaleString()} kg</p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Embarcaciones</p>
+                                            <p className="text-3xl font-bold text-emerald-600">{Object.keys(porBuque).length}</p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Tipos de Residuo</p>
+                                            <p className="text-3xl font-bold text-violet-600">{Object.keys(porTipo).length}</p>
+                                        </div>
+                                    </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-base text-left">
-                                <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-6 py-4">Fecha</th>
-                                        <th className="px-6 py-4">Folio</th>
-                                        <th className="px-6 py-4">Buque</th>
-                                        <th className="px-6 py-4">Tipo de Residuo</th>
-                                        <th className="px-6 py-4 text-right">Cantidad</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
-                                    {reportData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="px-6 py-16 text-center">
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <div className="w-20 h-20 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                                        <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    {/* Tablas resumen */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Por tipo de residuo */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-lg overflow-hidden">
+                                            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                                                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                                                         </svg>
                                                     </div>
-                                                    <div className="text-center">
-                                                        <p className="text-gray-600 dark:text-gray-300 font-medium text-lg">
-                                                            {loadingReport ? 'Procesando datos...' : 'No hay datos para mostrar'}
-                                                        </p>
-                                                        <p className="text-gray-400 mt-1">
-                                                            {!loadingReport && 'Selecciona las fechas y haz clic en "Generar Reporte"'}
-                                                        </p>
-                                                    </div>
+                                                    <h3 className="text-base font-bold text-gray-800 dark:text-white">Por Tipo de Residuo</h3>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        reportData.map((item, idx) => (
-                                            <tr key={idx} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors group">
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                                                        <span className="text-gray-700 dark:text-gray-300 font-medium">{new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{year}</span>
+                                            </div>
+                                            <table className="w-full text-sm">
+                                                <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider">
+                                                    <tr>
+                                                        <th className="px-5 py-3 text-left">Tipo</th>
+                                                        <th className="px-5 py-3 text-right">Total (kg)</th>
+                                                        <th className="px-5 py-3 text-right">% del total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                    {Object.entries(porTipo).sort((a, b) => b[1] - a[1]).map(([tipo, total]) => (
+                                                        <tr key={tipo} className="hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-colors">
+                                                            <td className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">{tipo}</td>
+                                                            <td className="px-5 py-3 text-right font-bold text-gray-800 dark:text-white">{total.toLocaleString()}</td>
+                                                            <td className="px-5 py-3 text-right text-gray-500 dark:text-gray-400">{((total / totalKg) * 100).toFixed(1)}%</td>
+                                                        </tr>
+                                                    ))}
+                                                    <tr className="bg-blue-50 dark:bg-blue-900/20 font-bold">
+                                                        <td className="px-5 py-3 text-blue-700 dark:text-blue-300">Total</td>
+                                                        <td className="px-5 py-3 text-right text-blue-700 dark:text-blue-300">{totalKg.toLocaleString()}</td>
+                                                        <td className="px-5 py-3 text-right text-blue-700 dark:text-blue-300">100%</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Por embarcación */}
+                                        <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-lg overflow-hidden">
+                                            <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
+                                                        <Icons.Ship className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                                     </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
-                                                        {item.folio}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 font-semibold text-gray-800 dark:text-white">{item.buque}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                                                        {item.tipoResiduo === 'Aceite' && '🛢️'}
-                                                        {item.tipoResiduo === 'Basura' && '🗑️'}
-                                                        {item.tipoResiduo === 'Basurón' && '♻️'}
-                                                        {item.tipoResiduo}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <span className="font-bold text-gray-800 dark:text-white">{item.cantidad.toLocaleString()}</span>
-                                                    <span className="text-sm text-gray-400 ml-1">{item.unidad}</span>
-                                                </td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                                    <h3 className="text-base font-bold text-gray-800 dark:text-white">Por Embarcación</h3>
+                                                </div>
+                                                <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{year}</span>
+                                            </div>
+                                            <div className="overflow-y-auto max-h-72">
+                                                <table className="w-full text-sm">
+                                                    <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider sticky top-0">
+                                                        <tr>
+                                                            <th className="px-5 py-3 text-left">Embarcación</th>
+                                                            <th className="px-5 py-3 text-right">Total (kg)</th>
+                                                            <th className="px-5 py-3 text-right">% del total</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                        {Object.entries(porBuque).sort((a, b) => b[1] - a[1]).map(([buque, total]) => (
+                                                            <tr key={buque} className="hover:bg-emerald-50/40 dark:hover:bg-emerald-900/20 transition-colors">
+                                                                <td className="px-5 py-3 font-medium text-gray-700 dark:text-gray-300">{buque}</td>
+                                                                <td className="px-5 py-3 text-right font-bold text-gray-800 dark:text-white">{total.toLocaleString()}</td>
+                                                                <td className="px-5 py-3 text-right text-gray-500 dark:text-gray-400">{((total / totalKg) * 100).toFixed(1)}%</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Botones de exportación para vista anual */}
+                                    <div className="flex justify-end gap-3">
+                                        <button onClick={() => exportToPDFAnual(reportData, year)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-xl text-sm font-medium transition-all shadow-sm hover:shadow-md">
+                                            <Icons.Document className="w-4 h-4" /> PDF resumen
+                                        </button>
+                                        <button onClick={() => exportToExcel(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white rounded-xl text-sm font-medium transition-all">
+                                            <Icons.Document className="w-4 h-4" /> Excel (detalle)
+                                        </button>
+                                        <button onClick={() => exportToCSV(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white rounded-xl text-sm font-medium transition-all border border-gray-200 dark:border-gray-600">
+                                            <Icons.Document className="w-4 h-4" /> CSV (detalle)
+                                        </button>
+                                    </div>
+                                </>
+                            );
+                        }
+
+                        // Vista detallada (períodos no anuales)
+                        return (
+                            <>
+                                {reportData.length > 0 && (
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Total Registros</p>
+                                            <p className="text-3xl font-bold text-gray-800 dark:text-white">{reportData.length}</p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Total Residuos</p>
+                                            <p className="text-3xl font-bold text-blue-600">
+                                                {reportData.reduce((sum, item) => sum + item.cantidad, 0).toLocaleString()} kg
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                                            <p className="text-gray-400 text-sm mb-1">Buques Únicos</p>
+                                            <p className="text-3xl font-bold text-emerald-600">
+                                                {new Set(reportData.map(item => item.buque)).size}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-lg shadow-gray-100/50 dark:shadow-gray-900/50 overflow-hidden">
+                                    <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                                                <Icons.Document className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-800 dark:text-white">Resultados del Reporte</h3>
+                                                <p className="text-sm text-gray-400">
+                                                    {reportData.length > 0
+                                                        ? `Mostrando ${reportData.length} registros`
+                                                        : 'Aplica filtros para ver resultados'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <button onClick={() => exportToExcel(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                                                <Icons.Document className="w-5 h-5" /><span>Excel</span>
+                                            </button>
+                                            <button onClick={() => exportToCSV(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 hover:border-transparent">
+                                                <Icons.Document className="w-5 h-5" /><span>CSV</span>
+                                            </button>
+                                            <button onClick={() => exportToPDF(reportData, stats!)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                                                <Icons.Document className="w-5 h-5" /><span>PDF</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-base text-left">
+                                            <thead className="bg-gray-50/80 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 font-semibold text-sm uppercase tracking-wider">
+                                                <tr>
+                                                    <th className="px-6 py-4">Fecha</th>
+                                                    <th className="px-6 py-4">Folio</th>
+                                                    <th className="px-6 py-4">Buque</th>
+                                                    <th className="px-6 py-4">Tipo de Residuo</th>
+                                                    <th className="px-6 py-4 text-right">Cantidad</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
+                                                {reportData.length === 0 ? (
+                                                    <tr>
+                                                        <td colSpan={5} className="px-6 py-16 text-center">
+                                                            <div className="flex flex-col items-center gap-4">
+                                                                <div className="w-20 h-20 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                                                                    <svg className="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                                    </svg>
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <p className="text-gray-600 dark:text-gray-300 font-medium text-lg">
+                                                                        {loadingReport ? 'Procesando datos...' : 'No hay datos para mostrar'}
+                                                                    </p>
+                                                                    <p className="text-gray-400 mt-1">
+                                                                        {!loadingReport && 'Selecciona las fechas y haz clic en "Generar Reporte"'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ) : (
+                                                    reportData.map((item, idx) => (
+                                                        <tr key={idx} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors group">
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                                                    <span className="text-gray-700 dark:text-gray-300 font-medium">{new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className="font-mono text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
+                                                                    {item.folio}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 font-semibold text-gray-800 dark:text-white">{item.buque}</td>
+                                                            <td className="px-6 py-4">
+                                                                <span className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                                                                    {item.tipoResiduo === 'Aceite Usado' && '🛢️'}
+                                                                    {item.tipoResiduo === 'Filtros Aceite' && '🔧'}
+                                                                    {item.tipoResiduo === 'Filtros Diesel' && '⚙️'}
+                                                                    {item.tipoResiduo === 'Filtros Aire' && '💨'}
+                                                                    {item.tipoResiduo === 'Basura General' && '🗑️'}
+                                                                    {item.tipoResiduo === 'Basura (Ticket)' && '♻️'}
+                                                                    {item.tipoResiduo}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <span className="font-bold text-gray-800 dark:text-white">{item.cantidad.toLocaleString()}</span>
+                                                                <span className="text-sm text-gray-400 ml-1">{item.unidad}</span>
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
+                        );
+                    })()}
                 </div>
             )
             }
