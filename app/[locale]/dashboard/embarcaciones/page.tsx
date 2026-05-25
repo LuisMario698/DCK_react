@@ -267,7 +267,7 @@ export default function EmbarcacionesPage() {
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
+          onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
         />
       </div>
 

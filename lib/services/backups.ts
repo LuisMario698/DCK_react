@@ -157,6 +157,85 @@ export async function descargarBackup(supabase: SupabaseClient, storagePath: str
 }
 
 // ──────────────────────────────────────────
+// Restauración
+// ──────────────────────────────────────────
+
+// Orden de borrado (más dependiente primero, para respetar FK)
+const TABLAS_DELETE_ORDER = [
+    'manifiestos_residuos',
+    'manifiesto_basuron',
+    'manifiestos',
+    'personas',
+    'buques',
+    'tipos_persona',
+    'asociaciones_recolectoras',
+];
+
+// Orden de inserción (menos dependiente primero)
+const TABLAS_INSERT_ORDER = [
+    'tipos_persona',
+    'asociaciones_recolectoras',
+    'buques',
+    'personas',
+    'manifiestos',
+    'manifiestos_residuos',
+    'manifiesto_basuron',
+];
+
+export interface RestaurarProgreso {
+    tabla: string;
+    fase: 'borrando' | 'insertando' | 'listo' | 'error';
+    registros?: number;
+    error?: string;
+}
+
+export interface BackupJSON {
+    version: number;
+    fecha: string;
+    tablas: Record<string, unknown[]>;
+}
+
+export function parsearBackupJSON(blob: Blob): Promise<BackupJSON> {
+    return blob.text().then(text => JSON.parse(text) as BackupJSON);
+}
+
+export async function restaurarDesdeJSON(
+    supabase: SupabaseClient,
+    datos: BackupJSON,
+    onProgreso: (p: RestaurarProgreso) => void
+): Promise<void> {
+    // 1. Borrar en orden de dependencia inversa
+    for (const tabla of TABLAS_DELETE_ORDER) {
+        if (!(tabla in datos.tablas)) continue;
+        onProgreso({ tabla, fase: 'borrando' });
+        const { error } = await supabase.from(tabla).delete().gte('id', 0);
+        if (error) {
+            onProgreso({ tabla, fase: 'error', error: error.message });
+            throw new Error(`Error al borrar ${tabla}: ${error.message}`);
+        }
+    }
+
+    // 2. Insertar en orden correcto, en bloques de 500
+    for (const tabla of TABLAS_INSERT_ORDER) {
+        const filas = datos.tablas[tabla];
+        if (!filas || filas.length === 0) {
+            onProgreso({ tabla, fase: 'listo', registros: 0 });
+            continue;
+        }
+        onProgreso({ tabla, fase: 'insertando', registros: filas.length });
+        const CHUNK = 500;
+        for (let i = 0; i < filas.length; i += CHUNK) {
+            const { error } = await supabase.from(tabla).insert(filas.slice(i, i + CHUNK));
+            if (error) {
+                onProgreso({ tabla, fase: 'error', error: error.message });
+                throw new Error(`Error al insertar en ${tabla}: ${error.message}`);
+            }
+        }
+        onProgreso({ tabla, fase: 'listo', registros: filas.length });
+    }
+}
+
+// ──────────────────────────────────────────
 // Programación
 // ──────────────────────────────────────────
 export async function getSchedule(supabase: SupabaseClient): Promise<BackupSchedule> {

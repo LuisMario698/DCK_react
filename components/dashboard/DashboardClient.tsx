@@ -17,6 +17,7 @@ import {
 } from '@/lib/services/dashboard_stats';
 import { Icons } from '@/components/ui/Icons';
 import { createClient } from '@/lib/supabase/client';
+import { Pagination } from '@/components/embarcaciones/Pagination';
 
 interface DashboardClientProps {
     initialStats: DashboardStats;
@@ -81,6 +82,16 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
     // Input de año para reporte anual
     const [anoInput, setAnoInput] = useState('');
     const [anoError, setAnoError] = useState('');
+
+    // Filtros adicionales sobre los resultados ya cargados
+    const [filtroTipoResiduo, setFiltroTipoResiduo] = useState('');
+    const [filtroResponsable, setFiltroResponsable] = useState('');
+
+    // Paginación de resultados del reporte
+    const [reportPage, setReportPage] = useState(1);
+    const [reportItemsPerPage, setReportItemsPerPage] = useState(10);
+
+    const TIPOS_RESIDUO = ['Aceite Usado', 'Filtros Aceite', 'Filtros Diesel', 'Filtros Aire', 'Basura General', 'Basura (Ticket)'];
 
     const aplicarAno = (valor: string) => {
         const num = parseInt(valor, 10);
@@ -175,12 +186,27 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                 estado: filters.estado || undefined
             });
             setReportData(data);
+            setReportPage(1);
+            setFiltroTipoResiduo('');
+            setFiltroResponsable('');
         } catch (error) {
             console.error('Error cargando reporte:', error);
         } finally {
             setLoadingReport(false);
         }
     };
+
+    // Filtrado y paginación del resultado
+    const reportDataFiltrado = reportData.filter(item => {
+        if (filtroTipoResiduo && item.tipoResiduo !== filtroTipoResiduo) return false;
+        if (filtroResponsable && !item.responsable.toLowerCase().includes(filtroResponsable.toLowerCase())) return false;
+        return true;
+    });
+    const reportTotalPages = Math.max(1, Math.ceil(reportDataFiltrado.length / reportItemsPerPage));
+    const reportDataPaginado = reportDataFiltrado.slice(
+        (reportPage - 1) * reportItemsPerPage,
+        reportPage * reportItemsPerPage
+    );
 
     // Función para exportar a CSV
     const exportToCSV = (data: ReporteDetalladoItem[]) => {
@@ -1109,7 +1135,7 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                             {/* Fecha Desde */}
                             <div className="space-y-2">
                                 <label className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-white">
@@ -1214,9 +1240,53 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                 </div>
                             </div>
 
+                        </div>
+
+                        {/* Segunda fila de filtros */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
+                            {/* Tipo de residuo */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-white">
+                                    <svg className="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                    </svg>
+                                    Tipo de Residuo
+                                </label>
+                                <div className="relative">
+                                    <select
+                                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none text-gray-700 dark:text-white appearance-none cursor-pointer"
+                                        value={filtroTipoResiduo}
+                                        onChange={e => { setFiltroTipoResiduo(e.target.value); setReportPage(1); }}
+                                    >
+                                        <option value="">Todos los tipos</option>
+                                        {TIPOS_RESIDUO.map(t => <option key={t} value={t}>{t}</option>)}
+                                    </select>
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Responsable */}
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-white">
+                                    <svg className="w-4 h-4 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    Responsable
+                                </label>
+                                <input
+                                    type="text"
+                                    placeholder="Buscar por nombre..."
+                                    value={filtroResponsable}
+                                    onChange={e => { setFiltroResponsable(e.target.value); setReportPage(1); }}
+                                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-base focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none text-gray-700 dark:text-white placeholder-gray-400"
+                                />
+                            </div>
+
                             {/* Botón Generar */}
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-transparent">Acción</label>
+                                <label className="text-sm font-bold text-transparent select-none">Acción</label>
                                 <button
                                     onClick={loadReport}
                                     disabled={loadingReport}
@@ -1489,20 +1559,20 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                             <div>
                                                 <h3 className="text-lg font-bold text-gray-800 dark:text-white">Resultados del Reporte</h3>
                                                 <p className="text-sm text-gray-400">
-                                                    {reportData.length > 0
-                                                        ? `Mostrando ${reportData.length} registros`
+                                                    {reportDataFiltrado.length > 0
+                                                        ? `${reportDataFiltrado.length} registros${filtroTipoResiduo || filtroResponsable ? ' (filtrado)' : ''}`
                                                         : 'Aplica filtros para ver resultados'}
                                                 </p>
                                             </div>
                                         </div>
                                         <div className="flex gap-3">
-                                            <button onClick={() => exportToExcel(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                                            <button onClick={() => exportToExcel(reportDataFiltrado)} className="flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
                                                 <Icons.Document className="w-5 h-5" /><span>Excel</span>
                                             </button>
-                                            <button onClick={() => exportToCSV(reportData)} className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 hover:border-transparent">
+                                            <button onClick={() => exportToCSV(reportDataFiltrado)} className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-600 hover:border-transparent">
                                                 <Icons.Document className="w-5 h-5" /><span>CSV</span>
                                             </button>
-                                            <button onClick={() => exportToPDF(reportData, stats!)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
+                                            <button onClick={() => exportToPDF(reportDataFiltrado, stats!)} className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 dark:hover:text-white rounded-xl text-sm font-medium transition-all duration-200 shadow-sm hover:shadow-md">
                                                 <Icons.Document className="w-5 h-5" /><span>PDF</span>
                                             </button>
                                         </div>
@@ -1541,7 +1611,7 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                                         </td>
                                                     </tr>
                                                 ) : (
-                                                    reportData.map((item, idx) => (
+                                                    reportDataPaginado.map((item, idx) => (
                                                         <tr key={idx} className="hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors group">
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-2">
@@ -1576,6 +1646,18 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                             </tbody>
                                         </table>
                                     </div>
+                                    {reportDataFiltrado.length > 0 && (
+                                        <div className="px-4 pb-4">
+                                            <Pagination
+                                                currentPage={reportPage}
+                                                totalPages={reportTotalPages}
+                                                totalItems={reportDataFiltrado.length}
+                                                itemsPerPage={reportItemsPerPage}
+                                                onPageChange={setReportPage}
+                                                onItemsPerPageChange={(n) => { setReportItemsPerPage(n); setReportPage(1); }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </>
                         );

@@ -265,7 +265,7 @@ export default function PersonasPage() {
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
-          onItemsPerPageChange={setItemsPerPage}
+          onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
         />
       </div>
 

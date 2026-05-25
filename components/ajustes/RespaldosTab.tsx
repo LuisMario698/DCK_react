@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { getBackups, crearRespaldo, eliminarBackup, descargarBackup, Backup, FormatoBackup } from '@/lib/services/backups';
+import {
+    getBackups, crearRespaldo, eliminarBackup, descargarBackup,
+    restaurarDesdeJSON, parsearBackupJSON,
+    Backup, FormatoBackup, RestaurarProgreso, BackupJSON,
+} from '@/lib/services/backups';
 import { useAuth } from '@/components/layout/AuthProvider';
 
 const FORMATO_INFO: Record<FormatoBackup, { label: string; desc: string; icon: string }> = {
@@ -17,6 +21,185 @@ const ESTADO_COLORS: Record<string, string> = {
     en_proceso:  'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
 };
 
+const TABLA_LABELS: Record<string, string> = {
+    tipos_persona: 'Tipos de persona',
+    asociaciones_recolectoras: 'Asociaciones',
+    buques: 'Embarcaciones',
+    personas: 'Personas',
+    manifiestos: 'Manifiestos',
+    manifiestos_residuos: 'Residuos de manifiesto',
+    manifiesto_basuron: 'Recibo de relleno sanitario',
+};
+
+// ─── Modal de restauración ─────────────────────────────
+function RestaurarModal({
+    backup,
+    onClose,
+    onDone,
+}: {
+    backup: Backup;
+    onClose: () => void;
+    onDone: () => void;
+}) {
+    const supabase = createClient();
+    const [fase, setFase] = useState<'confirmar' | 'cargando' | 'restaurando' | 'listo' | 'error'>('cargando');
+    const [datosBackup, setDatosBackup] = useState<BackupJSON | null>(null);
+    const [progresos, setProgresos] = useState<RestaurarProgreso[]>([]);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    useEffect(() => {
+        if (!backup.storage_path) { setFase('error'); setErrorMsg('Este respaldo no tiene archivo en storage.'); return; }
+        descargarBackup(supabase, backup.storage_path)
+            .then(blob => parsearBackupJSON(blob))
+            .then(datos => { setDatosBackup(datos); setFase('confirmar'); })
+            .catch(e => { setFase('error'); setErrorMsg(e.message); });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const handleRestaurar = async () => {
+        if (!datosBackup) return;
+        setFase('restaurando');
+        setProgresos([]);
+        try {
+            await restaurarDesdeJSON(supabase, datosBackup, (p) => {
+                setProgresos(prev => {
+                    const idx = prev.findIndex(x => x.tabla === p.tabla);
+                    if (idx >= 0) { const next = [...prev]; next[idx] = p; return next; }
+                    return [...prev, p];
+                });
+            });
+            setFase('listo');
+            setTimeout(onDone, 1500);
+        } catch (e: unknown) {
+            setFase('error');
+            setErrorMsg(e instanceof Error ? e.message : 'Error desconocido');
+        }
+    };
+
+    const iconFase = (p: RestaurarProgreso) => {
+        if (p.fase === 'listo') return <span className="text-emerald-500">✓</span>;
+        if (p.fase === 'error') return <span className="text-red-500">✗</span>;
+        return <div className="w-3 h-3 border-2 border-blue-400/30 border-t-blue-500 rounded-full animate-spin" />;
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col">
+                {/* Header */}
+                <div className="p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                    <div>
+                        <h3 className="font-bold text-gray-800 dark:text-white text-lg">Restaurar respaldo</h3>
+                        <p className="text-sm text-gray-400 truncate max-w-xs">{backup.nombre}</p>
+                    </div>
+                    {fase !== 'restaurando' && (
+                        <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
+
+                {/* Body */}
+                <div className="p-5 space-y-4">
+                    {fase === 'cargando' && (
+                        <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400 py-4 justify-center">
+                            <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                            Descargando respaldo…
+                        </div>
+                    )}
+
+                    {fase === 'confirmar' && datosBackup && (
+                        <>
+                            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300 flex gap-3">
+                                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                                </svg>
+                                <span><strong>Advertencia:</strong> Esta acción reemplazará <strong>todos los datos actuales</strong> del sistema con los del respaldo. La operación no se puede deshacer.</span>
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Tablas que se restaurarán</p>
+                                <div className="space-y-1">
+                                    {Object.entries(datosBackup.tablas).map(([tabla, filas]) => (
+                                        <div key={tabla} className="flex items-center justify-between py-1.5 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                            <span className="text-sm text-gray-700 dark:text-gray-200">{TABLA_LABELS[tabla] ?? tabla}</span>
+                                            <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{(filas as unknown[]).length} registros</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Respaldo creado el {new Date(datosBackup.fecha).toLocaleString('es-MX', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                        </>
+                    )}
+
+                    {fase === 'restaurando' && (
+                        <div className="space-y-2">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Restaurando datos, por favor espera…</p>
+                            {progresos.map(p => (
+                                <div key={p.tabla} className="flex items-center justify-between py-1.5 px-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                    <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+                                        {iconFase(p)}
+                                        {TABLA_LABELS[p.tabla] ?? p.tabla}
+                                        {p.fase === 'borrando' && <span className="text-xs text-gray-400">borrando…</span>}
+                                        {p.fase === 'insertando' && <span className="text-xs text-gray-400">insertando {p.registros} registros…</span>}
+                                    </div>
+                                    {p.fase === 'listo' && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{p.registros} reg.</span>}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {fase === 'listo' && (
+                        <div className="flex flex-col items-center gap-2 py-4">
+                            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <p className="font-semibold text-gray-800 dark:text-white">Restauración completada</p>
+                            <p className="text-sm text-gray-400">Los datos del sistema han sido restaurados correctamente.</p>
+                        </div>
+                    )}
+
+                    {fase === 'error' && (
+                        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
+                            <p className="font-semibold mb-1">Error al restaurar</p>
+                            <p className="text-xs font-mono break-all">{errorMsg}</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer */}
+                {fase === 'confirmar' && (
+                    <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex gap-3 justify-end">
+                        <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleRestaurar}
+                            className="px-4 py-2 text-sm rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold transition-colors flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Confirmar restauración
+                        </button>
+                    </div>
+                )}
+                {fase === 'error' && (
+                    <div className="p-5 border-t border-gray-100 dark:border-gray-800 flex justify-end">
+                        <button onClick={onClose} className="px-4 py-2 text-sm rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                            Cerrar
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
 export function RespaldosTab() {
     const supabase = createClient();
     const { user } = useAuth();
@@ -26,6 +209,7 @@ export function RespaldosTab() {
     const [formato, setFormato] = useState<FormatoBackup>('json');
     const [eliminandoId, setEliminandoId] = useState<number | null>(null);
     const [descargandoId, setDescargandoId] = useState<number | null>(null);
+    const [restaurandoBackup, setRestaurandoBackup] = useState<Backup | null>(null);
     const [toast, setToast] = useState<{ msg: string; tipo: 'ok' | 'err' } | null>(null);
 
     const mostrarToast = (msg: string, tipo: 'ok' | 'err') => {
@@ -94,6 +278,18 @@ export function RespaldosTab() {
 
     return (
         <div className="space-y-5">
+            {restaurandoBackup && (
+                <RestaurarModal
+                    backup={restaurandoBackup}
+                    onClose={() => setRestaurandoBackup(null)}
+                    onDone={() => {
+                        setRestaurandoBackup(null);
+                        mostrarToast('Restauración completada correctamente', 'ok');
+                        cargar();
+                    }}
+                />
+            )}
+
             {/* Toast */}
             {toast && (
                 <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all ${toast.tipo === 'ok' ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
@@ -202,6 +398,18 @@ export function RespaldosTab() {
                                     <td className="px-5 py-3 text-gray-400 text-xs">{b.creado_por ?? '—'}</td>
                                     <td className="px-5 py-3">
                                         <div className="flex items-center justify-center gap-1">
+                                            {/* Restaurar — solo JSON completados */}
+                                            {b.storage_path?.endsWith('.json') && b.estado === 'completado' && (
+                                                <button
+                                                    onClick={() => setRestaurandoBackup(b)}
+                                                    className="p-1.5 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/30 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors"
+                                                    title="Restaurar"
+                                                >
+                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                </button>
+                                            )}
                                             {b.storage_path && (
                                                 <button
                                                     onClick={() => handleDescargar(b)}
