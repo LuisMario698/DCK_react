@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(mkdir -p /Users/mario/Documents/DCK_react/app/\\\\[locale\\\\]/dashboard/ajustes)"
+    ],
+    "additionalDirectories": [
+      "/Users/mario/Documents/DCK_react/app/[locale]/dashboard"
     ]
   }
 }

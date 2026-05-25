@@ -347,11 +347,11 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
 
         // Tipos de residuos que maneja el sistema (corresponden a get_reporte_detallado)
         const TODOS_LOS_TIPOS: { nombre: string; metrica: string }[] = [
-            { nombre: 'Aceite Usado',    metrica: 'litros' },
-            { nombre: 'Filtros Aceite',  metrica: 'piezas' },
-            { nombre: 'Filtros Diesel',  metrica: 'piezas' },
-            { nombre: 'Filtros Aire',    metrica: 'piezas' },
-            { nombre: 'Basura General',  metrica: 'kg' },
+            { nombre: 'Aceite Usado', metrica: 'litros' },
+            { nombre: 'Filtros Aceite', metrica: 'piezas' },
+            { nombre: 'Filtros Diesel', metrica: 'piezas' },
+            { nombre: 'Filtros Aire', metrica: 'piezas' },
+            { nombre: 'Basura General', metrica: 'kg' },
             { nombre: 'Basura (Ticket)', metrica: 'kg' },
         ];
 
@@ -385,7 +385,7 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Reporte Anual ${year} - SiMAR</title>
+                <title>Reporte Anual ${year} - DCK</title>
                 <style>
                     body { font-family: Arial, sans-serif; padding: 40px; color: #333; }
                     h1 { color: #1e40af; border-bottom: 3px solid #1e40af; padding-bottom: 10px; margin-bottom: 4px; }
@@ -407,7 +407,7 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
             </head>
             <body>
                 <h1>Reporte Anual de Residuos — ${year}</h1>
-                <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · SiMAR — Sistema Integral de Manejo Ambiental de Residuos</p>
+                <p class="subtitle">Generado el ${new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} · DCK — Conciencia y Cultura</p>
 
                 <div class="kpi-grid">
                     <div class="kpi"><div class="kpi-value">${data.length}</div><div class="kpi-label">Manifiestos</div></div>
@@ -430,7 +430,7 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                 </table>
 
                 <div class="footer">
-                    <p>SiMAR — Sistema Integral de Manejo Ambiental de Residuos &nbsp;|&nbsp; Puerto Peñasco, Sonora</p>
+                    <p>DCK — Conciencia y Cultura &nbsp;|&nbsp; Puerto Peñasco, Sonora</p>
                     <p>Documento generado automáticamente — Período: 01/01/${year} al 31/12/${year}</p>
                 </div>
 
@@ -1275,13 +1275,12 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                 {/* Input de año */}
                                 <div className="flex items-center gap-2">
                                     <div className="flex flex-col">
-                                        <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                                            accesoRapidoSeleccionado?.startsWith('Año ')
+                                        <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm transition-colors ${accesoRapidoSeleccionado?.startsWith('Año ')
                                                 ? 'bg-blue-600 border-blue-600 text-white'
                                                 : anoError
                                                     ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-700'
                                                     : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600'
-                                        }`}>
+                                            }`}>
                                             <svg className={`w-4 h-4 flex-shrink-0 ${accesoRapidoSeleccionado?.startsWith('Año ') ? 'text-white' : 'text-gray-400 dark:text-gray-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                             </svg>
@@ -1299,11 +1298,10 @@ export function DashboardClient({ initialStats, buques, defaultTab = 'general', 
                                                     else { setAnoError(''); setAccesoRapidoSeleccionado(null); }
                                                 }}
                                                 onKeyDown={e => { if (e.key === 'Enter') aplicarAno(anoInput); }}
-                                                className={`w-14 bg-transparent outline-none font-medium text-sm ${
-                                                    accesoRapidoSeleccionado?.startsWith('Año ')
+                                                className={`w-14 bg-transparent outline-none font-medium text-sm ${accesoRapidoSeleccionado?.startsWith('Año ')
                                                         ? 'text-white placeholder-blue-200'
                                                         : 'text-gray-700 dark:text-gray-200 placeholder-gray-400'
-                                                }`}
+                                                    }`}
                                             />
                                         </div>
                                         {anoError && <span className="text-xs text-red-500 mt-1 leading-none">{anoError}</span>}

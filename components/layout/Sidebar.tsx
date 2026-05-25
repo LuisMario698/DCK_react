@@ -41,6 +41,12 @@ export function Sidebar() {
     { label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: 'Building' },
   ];
 
+  const ajustesItems = [
+    { label: 'Ajustes', href: `/${locale}/dashboard/ajustes`, icon: 'Settings' },
+  ];
+
+  const isAdmin = user?.user_metadata?.role === 'admin' || user?.user_metadata?.role === 'Administrador';
+
   const isActive = (href: string) => pathname === href;
 
   const IconComponent = (iconName: string) => {
@@ -184,6 +190,33 @@ export function Sidebar() {
                 </Link>
               ))}
             </div>
+
+            {isAdmin && (
+              <div className="space-y-1">
+                {!isCollapsed && <p className="px-3 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Sistema</p>}
+                {ajustesItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`
+                      group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-3 rounded-lg transition-all duration-200 relative
+                      ${isActive(item.href)
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold'
+                        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                      }
+                    `}
+                    title={isCollapsed ? item.label : ''}
+                  >
+                    <div className="flex-shrink-0">
+                      {IconComponent(item.icon)}
+                    </div>
+                    {!isCollapsed && (
+                      <span className="ml-3 text-sm font-medium truncate">{item.label}</span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            )}
           </nav>
         </div>
 
