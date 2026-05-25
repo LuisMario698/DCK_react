@@ -97,7 +97,7 @@ export function BitacoraTab() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [selected, setSelected] = useState<AuditLogItem | null>(null);
-    const [filters, setFilters] = useState<AuditLogFilters>({ pageSize: 50 });
+    const [filters, setFilters] = useState<AuditLogFilters>({ pageSize: 10 });
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -112,7 +112,7 @@ export function BitacoraTab() {
 
     useEffect(() => { load(); }, [load]);
 
-    const totalPages = Math.max(1, Math.ceil(total / (filters.pageSize ?? 50)));
+    const totalPages = Math.max(1, Math.ceil(total / (filters.pageSize ?? 10)));
 
     return (
         <div className="space-y-4">

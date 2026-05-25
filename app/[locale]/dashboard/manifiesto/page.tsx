@@ -11,6 +11,7 @@ import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifi
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
+import { Pagination } from '@/components/embarcaciones/Pagination';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -72,6 +73,10 @@ export default function ManifiestosPage() {
   const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
   const [showLiquidosSuggestions, setShowLiquidosSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Estados para filtros y búsqueda de manifiestos
   const [searchQuery, setSearchQuery] = useState('');
@@ -431,6 +436,16 @@ export default function ManifiestosPage() {
       return true;
     });
   }, [manifiestos, buques, personas, searchQuery, filtroActivo, fechaFiltroInicio, fechaFiltroFin, filtroSeleccionBuque, filtroSeleccionMotorista, filtroSeleccionCocinero]);
+
+  const totalManifiestos = manifiestosFiltrados.length;
+  const totalPagesManifiestos = Math.max(1, Math.ceil(totalManifiestos / itemsPerPage));
+  const paginatedManifiestos = manifiestosFiltrados.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Resetear página cuando cambian los filtros
+  useEffect(() => { setCurrentPage(1); }, [searchQuery, filtroActivo, fechaFiltroInicio, fechaFiltroFin, filtroSeleccionBuque, filtroSeleccionMotorista, filtroSeleccionCocinero]);
 
   async function loadData() {
     try {
@@ -1790,7 +1805,7 @@ export default function ManifiestosPage() {
                         </td>
                       </tr>
                     ) : (
-                      manifiestosFiltrados.map((manifiesto) => {
+                      paginatedManifiestos.map((manifiesto) => {
                         // Buscar el buque por ID si no viene en la relación
                         const buqueNombre = manifiesto.buque?.nombre_buque ||
                           buques.find(b => b.id === manifiesto.buque_id)?.nombre_buque ||
@@ -1878,6 +1893,16 @@ export default function ManifiestosPage() {
                 </table>
               </div>
             </div>
+            {!loading && totalManifiestos > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPagesManifiestos}
+                totalItems={totalManifiestos}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onItemsPerPageChange={(n) => { setItemsPerPage(n); setCurrentPage(1); }}
+              />
+            )}
           </div>
         )}
       </div>

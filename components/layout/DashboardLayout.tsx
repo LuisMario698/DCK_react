@@ -3,6 +3,7 @@
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { SidebarProvider, useSidebar } from './SidebarContext';
+import { FontSizeProvider } from './FontSizeContext';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -51,9 +52,11 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <SidebarProvider>
-      <DashboardContent>{children}</DashboardContent>
-    </SidebarProvider>
+    <FontSizeProvider>
+      <SidebarProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </SidebarProvider>
+    </FontSizeProvider>
   );
 }
 
