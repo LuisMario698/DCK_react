@@ -310,24 +310,11 @@ export async function getDashboardStats(supabase: SupabaseClient, filters?: Repo
  * Genera un reporte detallado usando RPC
  */
 export async function getReporteComplejo(supabase: SupabaseClient, filters: ReportFilters): Promise<ReporteDetalladoItem[]> {
-    // Ajustar la fecha fin para incluir todo el día (agregar un día)
-    // Convertir fechas a ISO strings (UTC) preservando el inicio y fin del día local
-    // Esto evita problemas de zona horaria donde registros de "ieri" (local) aparecen hoy (UTC)
-    let fechaInicioISO = undefined;
-    if (filters.fechaInicio) {
-        // Inicio del día local: 00:00:00
-        fechaInicioISO = new Date(filters.fechaInicio + 'T00:00:00').toISOString();
-    }
-
-    let fechaFinISO = undefined;
-    if (filters.fechaFin) {
-        // Fin del día local: 23:59:59.999
-        fechaFinISO = new Date(filters.fechaFin + 'T23:59:59.999').toISOString();
-    }
-
+    // La función SQL espera tipo DATE (YYYY-MM-DD), pasar directo sin convertir a timestamp
+    // Convertir a timestamp UTC causaba desfase de zona horaria (MX = UTC-7)
     const { data, error } = await supabase.rpc('get_reporte_detallado', {
-        p_fecha_inicio: fechaInicioISO || null,
-        p_fecha_fin: fechaFinISO || null,
+        p_fecha_inicio: filters.fechaInicio || null,
+        p_fecha_fin: filters.fechaFin || null,
         p_buque_id: filters.buqueId || null,
         p_estado: filters.estado || null
     });
