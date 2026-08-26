@@ -88,17 +88,20 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
             });
             mapRef.current = map;
 
-            // Dark CartoDBtiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                maxZoom: 18,
-                subdomains: 'abcd',
+            // Teselas de OpenStreetMap: no requieren API key.
+            // El aspecto oscuro se consigue con un filtro CSS sobre la capa
+            // (.mapa-teselas-oscuras en globals.css), porque las teselas
+            // dark_all de CartoDB ahora exigen clave y se marcan con agua.
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                className: 'mapa-teselas-oscuras',
             }).addTo(map);
 
             // Custom zoom control bottom-right
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
             // Attribution minimal
-            L.control.attribution({ position: 'bottomright', prefix: '© OpenStreetMap · CartoDB' }).addTo(map);
+            L.control.attribution({ position: 'bottomright', prefix: '© OpenStreetMap' }).addTo(map);
         };
 
         init();

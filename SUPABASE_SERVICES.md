@@ -7,8 +7,8 @@
 Edita el archivo `.env.local` y agrega tus credenciales de Supabase:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu-anon-key-aqui
+NEXT_PUBLIC_SB_URL=https://tu-proyecto.supabase.co
+NEXT_PUBLIC_SB_ANON_KEY=tu-anon-key-aqui
 ```
 
 ### 2. Obtener Credenciales
@@ -391,8 +391,8 @@ Si tienes problemas de conexión:
 
 ```typescript
 // Verificar credenciales
-console.log('URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-console.log('Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
+console.log('URL:', process.env.NEXT_PUBLIC_SB_URL)
+console.log('Key exists:', !!process.env.NEXT_PUBLIC_SB_ANON_KEY)
 
 // Probar conexión
 import { createClient } from '@/lib/supabase/client'

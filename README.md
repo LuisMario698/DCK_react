@@ -473,8 +473,8 @@ npm install
 Crear `.env.local` en la raíz (el repo ignora `.env*`). El código **sólo lee** dos variables:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://<tu-proyecto>.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<tu-anon-key>
+NEXT_PUBLIC_SB_URL=https://<tu-proyecto>.supabase.co
+NEXT_PUBLIC_SB_ANON_KEY=<tu-anon-key>
 ```
 
 > El `.env` que hay en la raíz también define `DATABASE_URL` y `SESSION_SECRET`, pero **ningún
@@ -513,7 +513,7 @@ npm run dev      # http://localhost:3000  → redirige a /es
 - Plataforma: **Vercel** (framework Next.js).
 - Repositorio: `github.com/LuisMario698/DCK_react`.
 - Rama principal: `main`. **Rama que despliega: `online`.**
-- Configurar `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en el panel de Vercel.
+- Configurar `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY` en el panel de Vercel.
 - Costos recurrentes del ecosistema (ver `ESTRUCTURA_DE_COSTOS.md`): Supabase (plan Pro),
   Vercel (plan Pro comercial) y el dominio. El resto del stack es open source sin costo de
   licencia.

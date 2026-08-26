@@ -20,7 +20,7 @@ npm run build
 npm run lint      # ESLint (eslint-config-next); no hay tests
 ```
 
-Requiere `.env.local` con `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
 (son las **únicas** variables que lee el código).
 
 ## Convenciones del repositorio

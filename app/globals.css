@@ -961,3 +961,9 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
     transition: none;
   }
 }
+/* Teselas de OpenStreetMap en tono oscuro para el mapa del portal recolector.
+   Se invierten y se rota el matiz para que encajen con el tema oscuro sin
+   depender de un proveedor de teselas con API key. */
+.mapa-teselas-oscuras {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.7);
+}

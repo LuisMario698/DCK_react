@@ -183,8 +183,8 @@ WHERE schemaname = 'public';
 
 **Paso 7 — Configurar variables de entorno en Next.js:**
 ```
-NEXT_PUBLIC_SUPABASE_URL=https://[proyecto].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]
+NEXT_PUBLIC_SB_URL=https://[proyecto].supabase.co
+NEXT_PUBLIC_SB_ANON_KEY=[anon-key]
 ```
 
 **Paso 8 — Inicializar cliente Supabase en el frontend (TypeScript):**
@@ -192,8 +192,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon-key]
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SB_URL!,
+  process.env.NEXT_PUBLIC_SB_ANON_KEY!
 )
 ```
 

@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
 
 // URLs de las imágenes en Supabase
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SB_URL || '';
 const LOGO_SEMARNAT_URL = `${SUPABASE_URL}/storage/v1/object/public/images/logoSemarnat.png`;
 
 /**
