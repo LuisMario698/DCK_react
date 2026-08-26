@@ -337,8 +337,7 @@ export async function getManifiestoResiduos(manifiestoId: number) {
   const { data, error } = await supabase
     .from('manifiestos_residuos')
     .select(`
-              *,
-              tipo_residuo: tipos_residuos(*)
+              *
                 `)
     .eq('manifiesto_id', manifiestoId)
 

@@ -175,8 +175,7 @@ export async function getManifiestosBasuronByBuque(buqueId: number) {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buques(*)
     `)
     .eq('buque_id', buqueId)
     .order('fecha', { ascending: false })
@@ -193,8 +192,7 @@ export async function getManifiestosBasuronByFecha(fecha: string) {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buques(*)
     `)
     .eq('fecha', fecha)
     .order('hora_entrada')
@@ -211,8 +209,7 @@ export async function getManifiestosBasuronByRangoFechas(fechaInicio: string, fe
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buques(*)
     `)
     .gte('fecha', fechaInicio)
     .lte('fecha', fechaFin)
@@ -231,8 +228,7 @@ export async function getManifiestosEnProceso() {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buques(*)
     `)
     .eq('estado', 'En Proceso')
     .order('hora_entrada')
@@ -278,9 +274,7 @@ export async function getManifiestoBasuronByTicket(numeroTicket: string) {
     .from('manifiesto_basuron')
     .select(`
       *,
-      buque:buques(*),
-      usuario_sistema:usuarios_sistema(*),
-      tipo_residuo:tipos_residuos(*)
+      buque:buques(*)
     `)
     .eq('numero_ticket', numeroTicket)
     .single()

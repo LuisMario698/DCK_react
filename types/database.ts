@@ -58,7 +58,7 @@ export interface Manifiesto {
   responsable_liquidos_id?: number | null;
   imagen_manifiesto_url: string | null;
   pdf_manifiesto_url: string | null;
-  estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado' | 'aprobado' | 'rechazado';
+  estado_digitalizacion: 'pendiente' | 'en_proceso' | 'completado';
   observaciones: string | null;
   created_at: string;
   updated_at: string;
@@ -72,6 +72,7 @@ export interface ManifiestoResiduo {
   filtros_diesel: number;
   filtros_aire: number;
   basura: number;
+  observaciones: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -90,9 +91,6 @@ export interface ManifiestoBasuron {
   hora_salida: string | null;
   nombre_usuario: string | null;
   estado: 'En Proceso' | 'Completado' | 'Cancelado' | null;
-  usuario_sistema_id: number | null;
-  tipo_residuo_id: number | null;
-  comprobante_url: string | null;
   pdf_manifiesto_url: string | null;
   numero_ticket: string | null;
   recibimos_de: string | null;
