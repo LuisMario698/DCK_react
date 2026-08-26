@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# node_modules y cache fuera de la sincronizacion de iCloud (sufijo .nosync)
+/node_modules.nosync
+/.next.nosync
