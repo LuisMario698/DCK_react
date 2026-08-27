@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { TimePicker } from '@/components/ui/TimePicker';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -167,7 +168,7 @@ export function CreateManifiestoBasuronModal({
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">RECIBO RELLENO SANITARIO</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                 </div>
               </div>
               <div className="text-right">

@@ -17,6 +17,7 @@ import {
 } from '@/lib/services/dashboard_stats';
 import { Icons } from '@/components/ui/Icons';
 import { createClient } from '@/lib/supabase/client';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface DashboardClientProps {
     initialStats: DashboardStats;
@@ -186,7 +187,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
             // Preparar datos para Excel
             const exportData = data.map(item => ({
-                'Fecha': new Date(item.fecha).toLocaleDateString(),
+                'Fecha': parseFechaLocal(item.fecha).toLocaleDateString(),
                 'Folio': item.folio,
                 'Buque': item.buque,
                 'Tipo Residuo': item.tipoResiduo,
@@ -289,7 +290,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <tbody>
                         ${data.map(item => `
                             <tr>
-                                <td>${new Date(item.fecha).toLocaleDateString()}</td>
+                                <td>${parseFechaLocal(item.fecha).toLocaleDateString()}</td>
                                 <td>${item.folio}</td>
                                 <td>${item.buque}</td>
                                 <td>${item.tipoResiduo}</td>
@@ -1053,7 +1054,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         dropdownMode="select"
                                         todayButton="Hoy"
                                         isClearable
-                                        minDate={filters.fechaInicio ? new Date(filters.fechaInicio) : undefined}
+                                        minDate={filters.fechaInicio ? parseFechaLocal(filters.fechaInicio) : undefined}
                                     />
                                 </div>
                             </div>
@@ -1259,7 +1260,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         reportData.map((item, idx) => (
                                             <tr key={idx} className="bg-white dark:bg-slate-800 hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-colors duration-150 group">
                                                 <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                                    {new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    {parseFechaLocal(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
                                                 <td className="px-4 md:px-5 py-3.5">
                                                     <span className="font-mono text-xs bg-gray-100 dark:bg-slate-700 px-2.5 py-1 rounded-md text-gray-600 dark:text-gray-300">

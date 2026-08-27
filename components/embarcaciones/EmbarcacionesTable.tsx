@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Buque } from '@/types/database';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { Icons } from '@/components/ui/Icons';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface EmbarcacionesTableProps {
   embarcaciones: Buque[];
@@ -84,7 +85,7 @@ export function EmbarcacionesTable({
               </TableCell>
               <TableCell className="hidden md:table-cell text-gray-500 dark:text-gray-400 whitespace-nowrap">
                 {buque.fecha_registro
-                  ? new Date(buque.fecha_registro).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })
+                  ? parseFechaLocal(buque.fecha_registro).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })
                   : formatFechaRelativa(buque.created_at)}
               </TableCell>
               <TableCell>

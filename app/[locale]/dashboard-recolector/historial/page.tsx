@@ -3,6 +3,7 @@
 import { Download, FileDown } from 'lucide-react';
 import { HISTORIAL_MOCK, TIPO_RESIDUO_LABEL } from '@/lib/mock/recolector';
 import { toast } from 'sonner';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 export default function HistorialPage() {
     const descargarTodo = () => {
@@ -46,7 +47,7 @@ export default function HistorialPage() {
                             {HISTORIAL_MOCK.map((h) => (
                                 <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                                     <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {new Date(h.fecha).toLocaleDateString('es-MX', {
+                                        {parseFechaLocal(h.fecha).toLocaleDateString('es-MX', {
                                             year: 'numeric',
                                             month: 'short',
                                             day: 'numeric',

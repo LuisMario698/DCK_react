@@ -264,6 +264,12 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
 }
 
 export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
+    // `stats` puede llegar relleno de ceros si la consulta no devolvió filas
+    // (RLS bloquea al visitante anónimo). En ese caso la página debe usar el
+    // texto de referencia, no afirmar que son datos reales de la BD.
+    const hayDatos = stats !== null && stats.totalManifiestos > 0;
+    const statsReales = hayDatos ? stats : null;
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const [prevIndex, setPrevIndex] = useState(0);
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -728,7 +734,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                         <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-400/30 rounded-full backdrop-blur-md mb-6">
                             <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
                             <span className="text-cyan-200 text-xs font-semibold tracking-widest uppercase">
-                                {stats ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
+                                {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
                             </span>
                         </div>
                         <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
@@ -741,7 +747,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                             </span>
                         </h2>
                         <p className="text-lg md:text-xl text-slate-300 leading-relaxed">
-                            {stats
+                            {hayDatos
                                 ? 'Estos números vienen directamente de los registros que se están capturando en el sistema. Cada cifra es real, viva y crece con cada manifiesto que se registra.'
                                 : 'Los números por sí solos dicen poco. Aquí te mostramos lo que realmente significa cada residuo registrado, en cosas que conoces y entiendes.'}
                         </p>
@@ -749,7 +755,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
 
                     {/* Grid asimétrico: 1 card hero + 5 cards secundarios */}
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5 auto-rows-auto">
-                        {buildEquivalencias(stats).map((eq, i) => {
+                        {buildEquivalencias(statsReales).map((eq, i) => {
                             const isFeatured = eq.featured;
                             return (
                                 <article
@@ -888,7 +894,8 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                             {
                                 icon: FileCheck,
                                 value: stats?.totalManifiestos
-                                    ? stats.totalManifiestos.toLocaleString('es-MX') + '+'
+                                    ? stats.totalManifiestos.toLocaleString('es-MX') +
+                                      (stats.totalManifiestos >= 1000 ? '+' : '')
                                     : '5,000+',
                                 label: 'Reportes digitalizados',
                                 detail: stats?.totalManifiestos

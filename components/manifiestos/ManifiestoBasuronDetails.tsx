@@ -1,6 +1,7 @@
 'use client';
 
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface ManifiestoBasuronDetailsProps {
     isOpen: boolean;
@@ -40,7 +41,7 @@ export function ManifiestoBasuronDetails({ isOpen, onClose, manifiesto }: Manifi
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="space-y-1">
                                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Fecha</p>
-                                <p className="text-gray-900 dark:text-white font-medium">{new Date(manifiesto.fecha).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
+                                <p className="text-gray-900 dark:text-white font-medium">{parseFechaLocal(manifiesto.fecha).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Horario</p>

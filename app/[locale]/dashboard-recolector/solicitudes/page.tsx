@@ -7,6 +7,7 @@ import {
     EstadoSolicitud,
     TIPO_RESIDUO_LABEL,
 } from '@/lib/mock/recolector';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 const TABS: { value: EstadoSolicitud | 'todas'; label: string }[] = [
     { value: 'todas', label: 'Todas' },
@@ -78,7 +79,7 @@ export default function SolicitudesPage() {
                                         {s.cantidad} {s.unidad}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {new Date(s.fechaSolicitud).toLocaleDateString('es-MX')}
+                                        {parseFechaLocal(s.fechaSolicitud).toLocaleDateString('es-MX')}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
                                         <EstadoBadge estado={s.estado} />

@@ -11,6 +11,7 @@ import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifi
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -416,17 +417,17 @@ export default function ManifiestosPage() {
 
       // Filtro por rango de fechas
       if (filtroActivo === 'fecha' && (fechaFiltroInicio || fechaFiltroFin)) {
-        const fechaManifiesto = new Date(manifiesto.fecha_emision);
+        const fechaManifiesto = parseFechaLocal(manifiesto.fecha_emision);
         fechaManifiesto.setHours(0, 0, 0, 0);
 
         if (fechaFiltroInicio) {
-          const inicio = new Date(fechaFiltroInicio);
+          const inicio = parseFechaLocal(fechaFiltroInicio);
           inicio.setHours(0, 0, 0, 0);
           if (fechaManifiesto < inicio) return false;
         }
 
         if (fechaFiltroFin) {
-          const fin = new Date(fechaFiltroFin);
+          const fin = parseFechaLocal(fechaFiltroFin);
           fin.setHours(23, 59, 59, 999);
           if (fechaManifiesto > fin) return false;
         }
@@ -721,6 +722,7 @@ export default function ManifiestosPage() {
           manifiesto_id: 0,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          observaciones: null,
           ...residuos
         }
       };
@@ -1848,7 +1850,7 @@ export default function ManifiestosPage() {
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
                               <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                {new Date(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
                             </td>
                             <td className="px-4 md:px-5 py-3.5">
@@ -2000,11 +2002,7 @@ export default function ManifiestosPage() {
                     ? 'bg-green-100 text-green-700'
                     : viewingManifiesto.estado_digitalizacion === 'en_proceso'
                       ? 'bg-yellow-100 text-yellow-700'
-                      : viewingManifiesto.estado_digitalizacion === 'aprobado'
-                        ? 'bg-blue-100 text-blue-700'
-                        : viewingManifiesto.estado_digitalizacion === 'rechazado'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-gray-100 text-gray-700'
+                      : 'bg-gray-100 text-gray-700'
                     }`}>
                     {viewingManifiesto.estado_digitalizacion?.replace('_', ' ') || 'Pendiente'}
                   </span>

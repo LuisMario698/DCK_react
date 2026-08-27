@@ -10,6 +10,7 @@ import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateMan
 import { getBuques } from '@/lib/services/buques';
 
 import { Pagination } from '@/components/embarcaciones/Pagination';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 export default function ManifiestoBasuronPage() {
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
@@ -59,7 +60,7 @@ export default function ManifiestoBasuronPage() {
         );
       case 'fecha':
         // Búsqueda por fecha (formato legible o ISO)
-        const fechaLegible = new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase();
+        const fechaLegible = parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase();
         return m.fecha.includes(query) || fechaLegible.includes(query);
       case 'total':
         return m.total_depositado?.toString().includes(query) || false;
@@ -230,7 +231,7 @@ export default function ManifiestoBasuronPage() {
                               </div>
                             </td>
                             <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-white text-center whitespace-nowrap font-medium">
-                              {new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
                             <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-300 text-center font-mono">
                               {m.hora_entrada}

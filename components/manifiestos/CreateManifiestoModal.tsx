@@ -6,6 +6,7 @@ import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface CreateManifiestoModalProps {
   isOpen: boolean;
@@ -210,7 +211,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">MANIFIESTO DE ENTREGA-RECEPCIÓN</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
               </div>
             </div>
             <div className="text-right">

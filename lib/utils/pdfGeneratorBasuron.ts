@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 // URLs de las imágenes en Supabase
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SB_URL || '';
@@ -65,7 +66,7 @@ export async function generarPDFBasuron(manifiesto: ManifiestoBasuronConRelacion
   yPosition = 55;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  const fechaEmision = new Date(manifiesto.fecha);
+  const fechaEmision = parseFechaLocal(manifiesto.fecha);
   const dia = fechaEmision.getDate();
   const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   const mes = meses[fechaEmision.getMonth()];

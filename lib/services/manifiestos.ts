@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/client'
 import { Manifiesto, ManifiestoConRelaciones } from '@/types/database'
 import { uploadManifiestoImage, uploadManifiestoPDF } from './storage'
+import { parseFechaLocal } from '@/lib/utils/fechas'
+
 export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   const supabase = createClient()
 
   // Convertir fecha a formato ddmmyyyy
-  const fechaObj = new Date(fecha)
+  const fechaObj = parseFechaLocal(fecha)
   const dia = String(fechaObj.getDate()).padStart(2, '0')
   const mes = String(fechaObj.getMonth() + 1).padStart(2, '0')
   const anio = fechaObj.getFullYear()

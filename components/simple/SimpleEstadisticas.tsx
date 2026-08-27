@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { getManifiestosBasuron } from '@/lib/services/manifiesto_basuron';
 import { getManifiestos } from '@/lib/services/manifiestos';
 import { ManifiestoBasuronConRelaciones, ManifiestoConRelaciones } from '@/types/database';
+import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface SimpleEstadisticasProps {
   onBack: () => void;
@@ -63,7 +64,7 @@ export default function SimpleEstadisticas({ onBack }: SimpleEstadisticasProps) 
     return datos.filter((item) => {
       const fechaItem = item.fecha || item.fecha_emision || item.created_at;
       if (!fechaItem) return false;
-      const fecha = new Date(fechaItem);
+      const fecha = parseFechaLocal(fechaItem);
       return fecha >= fechaInicio && fecha <= ahora;
     });
   };
@@ -284,7 +285,7 @@ export default function SimpleEstadisticas({ onBack }: SimpleEstadisticasProps) 
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-gray-800 truncate">{item.buque?.nombre_buque || 'Embarcación'}</p>
-                      <p className="text-[10px] text-gray-500">{new Date(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</p>
+                      <p className="text-[10px] text-gray-500">{parseFechaLocal(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short' })}</p>
                     </div>
                   </div>
                   <span className="text-xs font-bold text-emerald-600 flex-shrink-0 ml-1">
