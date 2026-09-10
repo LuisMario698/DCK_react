@@ -8,8 +8,9 @@ import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 export const metadata: Metadata = {
-  title: "CIAD - Sistema de Manifiestos",
-  description: "Sistema de gestión de manifiestos marítimos",
+  title: "SiMAR — Sistema Integral de Manejo Ambiental de Residuos",
+  description:
+    "Gestión digital de manifiestos de residuos de embarcaciones pesqueras en Puerto Peñasco, Sonora. Formato MARPOL Anexo V.",
 };
 
 export function generateStaticParams() {

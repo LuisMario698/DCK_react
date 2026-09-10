@@ -54,7 +54,7 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
   pero la UI aún no los usa.
 - **No hay RBAC.** El middleware sólo comprueba que exista sesión Supabase y protege cualquier
   ruta que contenga `/dashboard`. El rol `admin`/`recolector` es la cookie de cliente
-  `dck_user_role`, sólo sirve para elegir el redirect post-login.
+  `simar_user_role`, sólo sirve para elegir el redirect post-login.
 - **Recharts** se usa en un solo archivo (`dashboard-recolector/impacto/page.tsx`); el resto de
   "gráficas" son divs/SVG a mano. **Leaflet** en un solo componente
   (`components/recolector/PortMap.tsx`); el mapa de la landing es SVG puro.

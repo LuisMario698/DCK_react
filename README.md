@@ -122,7 +122,7 @@ middleware.ts ──► updateSession()            (utils/supabase/middleware.ts
    │              · refresca la sesión Supabase (cookies)
    │              · si NO hay usuario y la ruta contiene "/dashboard" → redirect /login
    │              · si HAY usuario y la ruta contiene "/login" → redirect a
-   │                /dashboard  ó  /dashboard-recolector  (según cookie dck_user_role)
+   │                /dashboard  ó  /dashboard-recolector  (según cookie simar_user_role)
    │
    ├──► si updateSession devolvió un redirect → se respeta y termina
    │
@@ -219,7 +219,7 @@ DCK_react/
 ├── Contexto-DCK/      # documentación de dominio + logos usados por el código
 │   ├── proyecto.md    # ⭐ reporte de residencia — mejor documento de dominio
 │   ├── contesto-actual.md, guia.md
-│   └── logo_DCK.png, escudo_mexico.png, logo_ITSPP.png, logo_ICS.png
+│   └── logo_simar.png, escudo_mexico.png, logo_ITSPP.png, logo_ICS.png
 ├── *.sql              # ~20 archivos: esquema, buckets, RLS, migraciones (ver §8 y §16)
 └── *.md               # ~15 documentos de diseño / guías / bitácora (ver §16)
 ```
@@ -234,7 +234,7 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 | Ruta | Tipo | Qué hace | Fuente de datos |
 |---|---|---|---|
 | `/[locale]` | Server (`revalidate = 3600`) | **Landing** `VariantCinematic`: hero cinemático, secciones de concientización ("Conciencia Azul"), mapa SVG de México con puertos, equivalencias ambientales con cifras vivas, modal de login con selector de rol. | **Supabase real** — `getLandingStats()` |
-| `/[locale]/login` | Client | Selector de rol (**Administrador Portuario** / **Empresa Recolectora**) → guarda cookie `dck_user_role` → `LoginForm` con `redirectTo` según el rol. | — |
+| `/[locale]/login` | Client | Selector de rol (**Administrador Portuario** / **Empresa Recolectora**) → guarda cookie `simar_user_role` → `LoginForm` con `redirectTo` según el rol. | — |
 | `/[locale]/dashboard` | Server (`force-dynamic`) | Hub con 3 tarjetas grandes (Manifiesto / Basurón / Estadísticas) + accesos rápidos. | Estático |
 | `/[locale]/dashboard/manifiesto` | Client (~2250 líneas) | **Pantalla núcleo.** Alta/lista/edición de manifiestos de embarcación; autocompletado y **auto-creación** de buque/persona/tipo; 4 firmas en `<canvas>` (motorista/cocinero/oficial/líquidos) + modal flotante de firma; subida de imagen del manifiesto físico; genera y sube el PDF; botones "Descargar borrador" e "Imprimir"; filtros (buque, motorista, cocinero, fecha, número) y paginación (15/pág). | **Supabase real** — `buques`, `personas`, `manifiestos`, `storage`, `pdfGenerator` |
 | `/[locale]/dashboard/manifiesto-basuron` | Client | **"Recibo Relleno Sanitario"**: lista + búsqueda (ticket/fecha/total) + paginación + modal de alta + vista de detalle + descarga de PDF. | **Supabase real** — `manifiesto_basuron`, `buques`, `pdfGeneratorBasuron` |
@@ -268,7 +268,7 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 ⚠️ **No es un control de acceso real (RBAC).**
 
 - El rol lo **elige el propio usuario** en `/login` (o en el modal de la landing).
-- Se guarda **sólo** en la cookie `dck_user_role` (no `httpOnly`, `SameSite=Lax`, 1 año) y en
+- Se guarda **sólo** en la cookie `simar_user_role` (no `httpOnly`, `SameSite=Lax`, 1 año) y en
   `localStorage`. **Nunca se guarda ni se valida contra Supabase.**
 - `updateSession()` (en `utils/supabase/middleware.ts`) **sólo comprueba que exista un `user`**
   de Supabase, y protege **cualquier ruta cuyo pathname contenga la subcadena `/dashboard`**
@@ -400,7 +400,7 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
 - **`lib/utils/pdfGenerator.ts`** → `generarPDFManifiesto(manifiesto, firmas?)`. Reproduce el
   formato físico *"MANIFIESTO DE ENTREGA-RECEPCIÓN — Basura y Residuos Aceitosos (MARPOL Anexo
   V)"* del centro de acopio. Logos: SEMARNAT (desde el bucket `images`), DCK
-  (`@/Contexto-DCK/logo_DCK.png`), escudo de México como marca de agua al 5 %
+  (`@/Contexto-DCK/logo_simar.png`), escudo de México como marca de agua al 5 %
   (`@/Contexto-DCK/escudo_mexico.png`). `FirmasManifiesto` = `{ motorista, cocinero, oficial,
   liquidos }` (nombre + imagen). Las firmas llegan como **data URLs base64 PNG** desde
   `SignaturePad` / el `<canvas>` propio de la pantalla, y se insertan con `doc.addImage`.

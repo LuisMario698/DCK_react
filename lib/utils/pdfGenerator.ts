@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { ManifiestoConRelaciones } from '@/types/database';
-import logoDck from '@/Contexto-DCK/logo_DCK.png';
+import logoDck from '@/Contexto-DCK/logo_dck.png';
 import escudoMexico from '@/Contexto-DCK/escudo_mexico.png';
 
 // URLs de las imágenes en Supabase

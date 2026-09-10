@@ -46,7 +46,7 @@ export async function updateSession(request: NextRequest) {
 
     // Usuario autenticado en la página de login: redirigir al panel correcto
     if (user && isLogin) {
-        const role = request.cookies.get('dck_user_role')?.value
+        const role = request.cookies.get('simar_user_role')?.value
         const url = request.nextUrl.clone()
         url.pathname = role === 'recolector' ? '/dashboard-recolector' : '/dashboard'
         return NextResponse.redirect(url)

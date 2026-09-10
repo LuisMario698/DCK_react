@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { createServerClient } from '@/lib/supabase/server';
-import logoIcon from '@/Contexto-DCK/logo_DCK_no_letras.png';
+import logoIcon from '@/Contexto-DCK/logo_dck_no_letras.png';
 import { DashboardBackground } from '@/components/dashboard/DashboardBackground';
 
 export const dynamic = 'force-dynamic';

@@ -9,9 +9,9 @@ import { Icons } from '@/components/ui/Icons';
 import { useSidebar } from './SidebarContext';
 import { useTheme } from '@/components/layout/ThemeContext';
 import { useAuth } from '@/components/layout/AuthProvider';
-import logoExpanded from '@/Contexto-DCK/logo_DCK.png';
-import logoCollapsed from '@/Contexto-DCK/logo_DCK_no_letras.png';
-import logoWhite from '@/assets/logo_DCK_blanco.png';
+import logoExpanded from '@/Contexto-DCK/logo_dck.png';
+import logoCollapsed from '@/Contexto-DCK/logo_dck_no_letras.png';
+import logoWhite from '@/assets/logo_dck_blanco.png';
 import { UserProfileModal } from '@/components/layout/UserProfileModal';
 
 export function Sidebar() {

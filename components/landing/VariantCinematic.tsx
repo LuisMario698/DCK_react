@@ -26,13 +26,13 @@ import {
 type ModalRole = 'admin' | 'recolector';
 
 function saveRole(r: ModalRole) {
-    document.cookie = `dck_user_role=${r}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
-    localStorage.setItem('dck_user_role', r);
+    document.cookie = `simar_user_role=${r}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+    localStorage.setItem('simar_user_role', r);
 }
 
 function readSavedRole(): ModalRole | null {
     try {
-        const v = localStorage.getItem('dck_user_role');
+        const v = localStorage.getItem('simar_user_role');
         return v === 'admin' || v === 'recolector' ? v : null;
     } catch {
         return null;
@@ -340,7 +340,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                         aria-label="SiMAR - Inicio"
                     >
                         <img
-                            src="/assets/logo_DCK.png"
+                            src="/assets/logo_simar.png"
                             alt="SiMAR"
                             className="h-12 md:h-14 w-auto object-contain drop-shadow-lg"
                         />
@@ -993,7 +993,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                 <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
                     <div className="md:col-span-2">
                         <img
-                            src="/assets/logo_DCK.png"
+                            src="/assets/logo_simar.png"
                             alt="SiMAR Logo"
                             className="h-14 w-auto object-contain mb-6"
                         />

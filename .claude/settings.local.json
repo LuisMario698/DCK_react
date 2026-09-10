@@ -8,7 +8,8 @@
       "Bash(pandoc \"/tmp/memoria.docx\" -o \"/tmp/memoria.md\")",
       "Read(//tmp/**)",
       "Read(//c/tmp/**)",
-      "Bash(unzip -o memoria.docx -d memoria_unpacked)"
+      "Bash(unzip -o memoria.docx -d memoria_unpacked)",
+      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha -g format assets/logo_simar.png)"
     ]
   }
 }

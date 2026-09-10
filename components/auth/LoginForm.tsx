@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { toast } from 'sonner';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
+
+import logoSimar from '@/assets/logo_simar.png';
 
 interface LoginFormProps {
     onSuccess?: () => void;
@@ -14,14 +16,20 @@ interface LoginFormProps {
 
 type AuthView = 'login' | 'register' | 'verify' | 'forgot_password' | 'reset_password';
 
+const TITULOS: Record<AuthView, { titulo: string; subtitulo: string }> = {
+    login: { titulo: 'Iniciar sesión', subtitulo: 'Accede al sistema de gestión de residuos' },
+    register: { titulo: 'Crear cuenta', subtitulo: 'Regístrate para comenzar a operar' },
+    verify: { titulo: 'Verifica tu correo', subtitulo: 'Introduce el código de 6 dígitos que te enviamos' },
+    forgot_password: { titulo: 'Recuperar contraseña', subtitulo: 'Te enviaremos un código para restablecerla' },
+    reset_password: { titulo: 'Nueva contraseña', subtitulo: 'Introduce el código y tu nueva contraseña' },
+};
+
 export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = true }: LoginFormProps) {
     const [view, setView] = useState<AuthView>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
-    const [token, setToken] = useState(''); // Código de verificación
-
-    // New states for pass reset
+    const [token, setToken] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +39,12 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
     const router = useRouter();
     const supabase = createClient();
 
+    const cambiarVista = (siguiente: AuthView) => {
+        setView(siguiente);
+        setError(null);
+        setMessage(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -39,10 +53,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
 
         try {
             if (view === 'login') {
-                const { error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
 
                 if (onSuccess) onSuccess();
@@ -53,11 +64,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 const { error, data } = await supabase.auth.signUp({
                     email,
                     password,
-                    options: {
-                        data: {
-                            full_name: fullName,
-                        },
-                    },
+                    options: { data: { full_name: fullName } },
                 });
                 if (error) throw error;
 
@@ -66,16 +73,12 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                     router.push(redirectTo);
                     router.refresh();
                 } else {
-                    setMessage('Registro exitoso. Hemos enviado un código a tu correo.');
-                    setView('verify'); // Cambiar a vista de verificación
+                    setMessage('Registro exitoso. Revisa tu correo para continuar.');
+                    setView('verify');
                 }
 
             } else if (view === 'verify') {
-                const { error, data } = await supabase.auth.verifyOtp({
-                    email,
-                    token,
-                    type: 'signup',
-                });
+                const { error, data } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
                 if (error) throw error;
 
                 if (data.session) {
@@ -83,60 +86,61 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                     router.push(redirectTo);
                     router.refresh();
                 } else {
-                    setMessage('Cuenta verificada correctamente. Inicia sesión.');
+                    setMessage('Cuenta verificada correctamente. Ya puedes iniciar sesión.');
                     setView('login');
                 }
+
             } else if (view === 'forgot_password') {
                 const { error } = await supabase.auth.resetPasswordForEmail(email);
                 if (error) throw error;
-                setMessage('Hemos enviado un código o enlace a tu correo.');
+                setMessage('Te enviamos un código a tu correo.');
                 setView('reset_password');
+
             } else if (view === 'reset_password') {
-                // 1. Verify Passwords match
                 if (password !== confirmPassword) {
-                    throw new Error("Las contraseñas no coinciden.");
+                    throw new Error('Las contraseñas no coinciden.');
                 }
 
-                // 2. Verify OTP for Recovery
                 const { error: verifyError, data: sessionData } = await supabase.auth.verifyOtp({
                     email,
                     token,
                     type: 'recovery',
                 });
-
                 if (verifyError) throw verifyError;
 
-                // 3. Update Password
                 if (sessionData.session) {
-                    const { error: updateError } = await supabase.auth.updateUser({
-                        password: password
-                    });
-
+                    const { error: updateError } = await supabase.auth.updateUser({ password });
                     if (updateError) throw updateError;
 
-                    setMessage('Contraseña actualizada correctamente. Inicia sesión.');
+                    setMessage('Contraseña actualizada. Ya puedes iniciar sesión.');
                     setView('login');
                     setPassword('');
                     setConfirmPassword('');
                     setToken('');
                 } else {
-                    throw new Error("No se pudo verificar la sesión para cambiar la contraseña.");
+                    throw new Error('No se pudo verificar el código para cambiar la contraseña.');
                 }
             }
 
         } catch (err: any) {
-            // Traducir error de usuario duplicado
-            if (err.message === 'User already registered') {
-                setError('Este correo ya está registrado. Por favor inicia sesión.');
-            } else if (err.message?.includes("Password should be")) {
+            const msg: string = err?.message ?? '';
+
+            if (msg === 'User already registered') {
+                setError('Este correo ya está registrado. Inicia sesión.');
+            } else if (msg.includes('Password should be')) {
                 setError('La contraseña debe tener al menos 6 caracteres.');
+            } else if (msg.includes('Invalid login credentials')) {
+                setError('Correo o contraseña incorrectos.');
+            } else if (msg.includes('Token has expired') || msg.includes('invalid')) {
+                setError('El código es incorrecto o ya caducó. Solicita uno nuevo.');
+            } else if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many')) {
+                setError('Demasiados intentos. Espera unos minutos antes de volver a probar.');
             } else {
-                setError(err.message || 'Error en la operación');
+                setError(msg || 'Ocurrió un error. Inténtalo de nuevo.');
             }
 
-            // Si el error es de confirmación en login, sugerir verificar
-            if (view === 'login' && err.message?.includes('Email not confirmed')) {
-                setMessage('Tu correo no ha sido confirmado. Ingresa el código que te enviamos.');
+            if (view === 'login' && msg.includes('Email not confirmed')) {
+                setMessage('Tu correo aún no está confirmado. Introduce el código que te enviamos.');
                 setView('verify');
                 setError(null);
             }
@@ -150,285 +154,267 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
         setError(null);
         setMessage(null);
         try {
-            const { error } = await supabase.auth.resend({
-                type: 'signup',
-                email,
-            });
+            const { error } = await supabase.auth.resend({ type: 'signup', email });
             if (error) throw error;
-            setMessage('Código reenviado. Revisa tu correo (y spam).');
+            setMessage('Código reenviado. Revisa tu bandeja y la carpeta de spam.');
         } catch (err: any) {
-            setError(err.message || 'Error al reenviar código');
+            setError(err?.message || 'No se pudo reenviar el código.');
         } finally {
             setLoading(false);
         }
     };
 
+    const inputBase =
+        'w-full rounded-xl border bg-white/60 dark:bg-slate-900/60 border-slate-300 dark:border-slate-700 ' +
+        'px-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 ' +
+        'outline-none transition-all duration-200 backdrop-blur-sm ' +
+        'focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 dark:focus:border-cyan-400';
+
+    const iconoCampo = 'pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500';
+
+    const { titulo, subtitulo } = TITULOS[view];
+    const esFlujoCodigo = view === 'verify' || view === 'reset_password';
+
     return (
         <div className="w-full">
             {showLogo && (
-                <div className="text-center mb-8">
-                    <div className="mx-auto h-20 w-auto relative mb-4 flex items-center justify-center">
-                        <h1 className="text-4xl font-black text-blue-900 dark:text-white tracking-tight">
-                            DCK
-                        </h1>
-                    </div>
-                    <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-                        {view === 'login' && 'Iniciar Sesión'}
-                        {view === 'register' && 'Crear Cuenta'}
-                        {view === 'verify' && 'Verificar Cuenta'}
-                        {view === 'forgot_password' && 'Recuperar Contraseña'}
-                        {view === 'reset_password' && 'Nueva Contraseña'}
-                    </h2>
-                    <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-                        {view === 'login' && 'Accede al sistema de gestión'}
-                        {view === 'register' && 'Regístrate para comenzar'}
-                        {view === 'verify' && 'Ingresa el código enviado a ' + email}
-                        {view === 'forgot_password' && 'Ingresa tu correo para recibir un código'}
-                        {view === 'reset_password' && 'Ingresa el código y tu nueva contraseña'}
-                    </p>
+                <div className="mb-7 flex flex-col items-center">
+                    <Image
+                        src={logoSimar}
+                        alt="SiMAR"
+                        priority
+                        className="h-20 w-auto object-contain"
+                    />
                 </div>
             )}
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-                {error && (
-                    <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md text-sm">
-                        {error}
-                    </div>
-                )}
-                {message && (
-                    <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md text-sm">
-                        {message}
-                    </div>
-                )}
+            <div className="mb-6 text-center">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{titulo}</h2>
+                <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+                    {view === 'verify' ? (
+                        <>
+                            Enviado a <span className="font-medium text-slate-700 dark:text-slate-300">{email}</span>
+                        </>
+                    ) : (
+                        subtitulo
+                    )}
+                </p>
+            </div>
 
-                {/* VISTA REGISTRO: Nombre */}
+            <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+                <div aria-live="polite" className="space-y-3 empty:hidden">
+                    {error && (
+                        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">
+                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>{error}</span>
+                        </div>
+                    )}
+                    {message && (
+                        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-3 text-sm text-emerald-700 dark:text-emerald-300">
+                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                            <span>{message}</span>
+                        </div>
+                    )}
+                </div>
+
                 {view === 'register' && (
                     <div>
-                        <label htmlFor="fullname" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Nombre Completo
+                        <label htmlFor="fullname" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                            Nombre completo
                         </label>
-                        <div className="mt-1">
+                        <div className="relative">
+                            <User className={iconoCampo} />
                             <input
                                 id="fullname"
                                 name="fullname"
                                 type="text"
                                 autoComplete="name"
-                                required={view === 'register'}
+                                required
+                                placeholder="Juan Pérez"
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
-                                className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white sm:text-sm transition-colors"
+                                className={inputBase}
                             />
                         </div>
                     </div>
                 )}
 
-                {/* EMAIL: Visible en la mayoría de vistas */}
-                {(view === 'login' || view === 'register' || view === 'verify' || view === 'forgot_password' || view === 'reset_password') && (
-                    <div className={(view === 'verify' || view === 'reset_password') ? 'hidden' : ''}>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Correo Electrónico
+                {!esFlujoCodigo && (
+                    <div>
+                        <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                            Correo electrónico
                         </label>
-                        <div className="mt-1">
+                        <div className="relative">
+                            <Mail className={iconoCampo} />
                             <input
                                 id="email"
                                 name="email"
                                 type="email"
                                 autoComplete="email"
                                 required
-                                readOnly={view === 'verify' || view === 'reset_password'}
+                                placeholder="tucorreo@ejemplo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className={`appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white sm:text-sm transition-colors ${(view === 'verify' || view === 'reset_password') ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed opacity-75' : ''}`}
+                                className={inputBase}
                             />
                         </div>
                     </div>
                 )}
 
-                {/* VISTA VERIFY o RESET: Token Input */}
-                {(view === 'verify' || view === 'reset_password') && (
+                {esFlujoCodigo && (
                     <div>
-                        <label htmlFor="token" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Código de Verificación
+                        <label htmlFor="token" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                            Código de verificación
                         </label>
-                        <div className="mt-1">
-                            <input
-                                id="token"
-                                name="token"
-                                type="text"
-                                placeholder="123456"
-                                required={view === 'verify' || view === 'reset_password'}
-                                value={token}
-                                onChange={(e) => setToken(e.target.value)}
-                                className="appearance-none block w-full px-3 py-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white text-center text-2xl tracking-widest transition-colors"
-                            />
-                        </div>
+                        <input
+                            id="token"
+                            name="token"
+                            type="text"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            maxLength={6}
+                            placeholder="000000"
+                            required
+                            value={token}
+                            onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))}
+                            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 px-4 py-3 text-center font-mono text-2xl tracking-[0.5em] text-slate-900 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-700 outline-none backdrop-blur-sm transition-all duration-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 dark:focus:border-cyan-400"
+                        />
                         {view === 'verify' && (
-                            <div className="mt-2 text-right">
+                            <div className="mt-2 flex items-center justify-between text-xs">
+                                <span className="text-slate-400 dark:text-slate-500">¿No llegó? Revisa spam.</span>
                                 <button
                                     type="button"
                                     onClick={handleResend}
                                     disabled={loading}
-                                    className="text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400 hover:underline disabled:opacity-50"
+                                    className="font-medium text-cyan-600 dark:text-cyan-400 hover:underline disabled:opacity-50"
                                 >
-                                    ¿No recibiste el código? Reenviar
+                                    Reenviar código
                                 </button>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* PASSWORD: Login, Register, Reset */}
                 {(view === 'login' || view === 'register' || view === 'reset_password') && (
                     <div>
-                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            {view === 'reset_password' ? 'Nueva Contraseña' : 'Contraseña'}
+                        <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                            {view === 'reset_password' ? 'Nueva contraseña' : 'Contraseña'}
                         </label>
-                        <div className="mt-1 relative">
+                        <div className="relative">
+                            <Lock className={iconoCampo} />
                             <input
                                 id="password"
                                 name="password"
-                                type={showPassword ? "text" : "password"}
-                                autoComplete={view === 'login' ? "current-password" : "new-password"}
+                                type={showPassword ? 'text' : 'password'}
+                                autoComplete={view === 'login' ? 'current-password' : 'new-password'}
                                 required
+                                placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white sm:text-sm transition-colors pr-10"
+                                className={`${inputBase} pr-10`}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none"
+                                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                             >
-                                {showPassword ? (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                    </svg>
-                                ) : (
-                                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                )}
+                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                             </button>
                         </div>
+                        {view === 'register' && (
+                            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">Mínimo 6 caracteres.</p>
+                        )}
                     </div>
                 )}
 
-                {/* CONFIRM PASSWORD: Reset Only */}
                 {view === 'reset_password' && (
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Confirmar Contraseña
+                        <label htmlFor="confirmPassword" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                            Confirmar contraseña
                         </label>
-                        <div className="mt-1 relative">
+                        <div className="relative">
+                            <KeyRound className={iconoCampo} />
                             <input
                                 id="confirmPassword"
                                 name="confirmPassword"
-                                type={showPassword ? "text" : "password"}
+                                type={showPassword ? 'text' : 'password'}
                                 autoComplete="new-password"
                                 required
+                                placeholder="••••••••"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 dark:bg-gray-700 dark:text-white sm:text-sm transition-colors"
+                                className={inputBase}
                             />
                         </div>
                     </div>
                 )}
 
-                {/* Login Extras: Remember Me & Forgot Password */}
                 {view === 'login' && (
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember-me"
-                                name="remember-me"
-                                type="checkbox"
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                            />
-                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
-                                Recordarme
-                            </label>
-                        </div>
-
-                        <div className="text-sm">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setView('forgot_password');
-                                    setError(null);
-                                    setMessage(null);
-                                }}
-                                className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 bg-transparent border-none cursor-pointer"
-                            >
-                                ¿Olvidaste tu contraseña?
-                            </button>
-                        </div>
+                    <div className="flex justify-end -mt-1">
+                        <button
+                            type="button"
+                            onClick={() => cambiarVista('forgot_password')}
+                            className="text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:underline"
+                        >
+                            ¿Olvidaste tu contraseña?
+                        </button>
                     </div>
                 )}
 
-                <div>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
-                    >
-                        {loading ? (
-                            <span className="flex items-center gap-2">
-                                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                {view === 'verify' ? 'Verificando...' : 'Procesando...'}
-                            </span>
-                        ) : (
-                            <>
-                                {view === 'login' && 'Iniciar Sesión'}
-                                {view === 'register' && 'Registrarse'}
-                                {view === 'verify' && 'Confirmar Código'}
-                                {view === 'forgot_password' && 'Enviar Código'}
-                                {view === 'reset_password' && 'Cambiar Contraseña'}
-                            </>
-                        )}
-                    </button>
+                <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all duration-200 hover:from-cyan-500 hover:to-emerald-500 hover:shadow-cyan-500/30 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                    {loading ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            {view === 'verify' ? 'Verificando…' : 'Procesando…'}
+                        </>
+                    ) : (
+                        <>
+                            {view === 'login' && 'Iniciar sesión'}
+                            {view === 'register' && 'Crear cuenta'}
+                            {view === 'verify' && 'Confirmar código'}
+                            {view === 'forgot_password' && 'Enviar código'}
+                            {view === 'reset_password' && 'Cambiar contraseña'}
+                        </>
+                    )}
+                </button>
+
+                <div className="pt-1 text-center">
+                    {view === 'login' && (
+                        <button
+                            type="button"
+                            onClick={() => cambiarVista('register')}
+                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        >
+                            ¿No tienes cuenta?{' '}
+                            <span className="font-semibold text-cyan-600 dark:text-cyan-400">Regístrate</span>
+                        </button>
+                    )}
+                    {view === 'register' && (
+                        <button
+                            type="button"
+                            onClick={() => cambiarVista('login')}
+                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        >
+                            ¿Ya tienes cuenta?{' '}
+                            <span className="font-semibold text-cyan-600 dark:text-cyan-400">Inicia sesión</span>
+                        </button>
+                    )}
+                    {(view === 'verify' || view === 'reset_password' || view === 'forgot_password') && (
+                        <button
+                            type="button"
+                            onClick={() => cambiarVista('login')}
+                            className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            Volver a iniciar sesión
+                        </button>
+                    )}
                 </div>
-
-                {view !== 'verify' && view !== 'reset_password' && (
-                    <div className="mt-4 text-center">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setView(view === 'login' ? 'register' : 'login');
-                                setError(null);
-                                setMessage(null);
-                            }}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 hover:underline"
-                        >
-                            {view === 'login'
-                                ? "¿No tienes cuenta? Regístrate"
-                                : view === 'register'
-                                    ? "¿Ya tienes cuenta? Inicia sesión"
-                                    : "Volver a Iniciar Sesión" // Texto para forgot_password
-                            }
-                        </button>
-                    </div>
-                )}
-
-                {/* Botón para volver atrás desde verificar o reset */}
-                {(view === 'verify' || view === 'reset_password') && (
-                    <div className="mt-4 text-center">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setView('login');
-                                setError(null);
-                                setMessage(null);
-                            }}
-                            className="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 hover:underline"
-                        >
-                            Cancelar y volver
-                        </button>
-                    </div>
-                )}
             </form>
         </div>
     );
