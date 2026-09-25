@@ -3,18 +3,6 @@ Nombre del Proyecto:
 Desarrollo de sistema web para el registro de datos y
 visualización de estadísticas de residuos marinos en embarcaciones de
 Puerto Peñasco, Sonora.
-Datos del (de la) estudiante
-Nombre: Diaz Aguirre Michelle Jacquelinne
-Carrera y Número de
-Control: Ingeniería en Sistemas Computacional - 20303148
-Nombre:
-Verdugo Reyna Darien Alejandro
-Carrera y Número de
-Control: Nombre:
-Ingeniería en Sistemas Computacional - 20303022
-Martinez Corrales Abrham Sayd
-Carrera y Número de
-Control: Ingeniería en Sistemas Computacional - 20303062
 Empresa donde se realizó la residencia
 Nombre:
 SEMARNAT
@@ -48,10 +36,6 @@ Capítulo IV. Presentación y análisis de resultados ..........................
 Capítulo V. Conclusiones y recomendaciones ...............................................................23
 5.1 Conclusiones........................................................................................................23
 5.2 Recomendaciones. ........................................................................................24
-Capítulo VI. Competencias desarrolladas por los estudiantes .......................................25
-6.1 Retroalimentación de (Diaz Aguirre Michelle Jacquelinne). ..................................25
-6.2 Retroalimentación de (Martinez Corrales Abrham Sayd). .....................................26
-6.3 Retroalimentación de (Verdugo Reyna Darien Alejadro). ......................................27
 Referencias bibliográficas. .............................................................................................28
 Anexos y/o apéndices ....................................................................................................30
 ANEXO 1. ...............................................................................................................30
@@ -469,52 +453,6 @@ Plan de sostenibilidad a largo plazo: Desarrollar una estrategia que garantice l
 continuidad del sistema en el tiempo. Esto incluye la búsqueda de recursos financieros, el
 mantenimiento del sistema, la actualización tecnológica y la capacitación constante de los
 usuarios.
-Capítulo VI. Competencias desarrolladas por los estudiantes
-6.1 Retroalimentación de (Diaz Aguirre Michelle Jacquelinne).
-Durante este proceso, estuve personalmente involucrada en la documentación y en la
-recopilación de información clave para el proyecto. Este fue un proyecto muy enriquecedor, no
-solo por los conocimientos técnicos que adquirí, sino también por la experiencia que nos
-brindó. Más allá de los aspectos técnicos, este proyecto me permitió tomar conciencia sobre la
-importancia del cuidado del medio ambiente y la gestión adecuada de los recursos naturales.
-La información recabada y las tareas realizadas me permitieron comprender la relación entre la
-tecnología y el impacto ambiental, lo que me ha llevado a valorar más la importancia de
-generar soluciones que contribuyan al bienestar del entorno.
-6.2 Retroalimentación de (Martinez Corrales Abrham Sayd).
-En el transcurso de las residencias profesionales en este proyecto, desarrollé una
-solución para CDK, enfocada en la digitalización de documentos y la gestión de la información
-sobre el impacto de los desechos generados por las embarcaciones. El sistema incluye la
-creación de una infraestructura robusta que permite la digitalización y el manejo eficiente de
-documentos, además de ofrecer un panel que facilita el acceso a la información relevante para
-los usuarios como graficas acerca del uso de los desechos generados por cierta embarcación.
-A lo largo del proyecto, diseñé la arquitectura de la base de datos y la infraestructura de
-contenedores, como los servicios frontend y backend de CDK, así como la integración con una
-base de datos PostgreSQL. También se implementaron diagramas de interacción y de flujo de
-trabajo que detallan cómo los diferentes actores del sistema interactúan con la plataforma.
-Este proyecto me permitió aplicar mis habilidades técnicas en un contexto práctico,
-resolviendo desafíos reales de gestión de residuos mediante tecnología.
-6.3 Retroalimentación de (Verdugo Reyna Darien Alejadro).
-Durante las residencias profesionales en CDK, trabajé en el desarrollo de un sistema
-integral para la gestión de información ambiental relacionada con los desechos de
-embarcaciones. Este proyecto me permitió aprender y aplicar nuevas tecnologías, además de
-diseñar soluciones personalizadas adaptadas a las necesidades específicas del cliente.
-Uno de los aprendizajes más destacados fue la exploración de tecnologías para el
-frontend, donde opté por Astro para crear una “landing page” y un blog rápidos y optimizados,
-integrando componentes de React para añadir dinamismo en las aplicaciones de registro. En el
-backend, aprendí a trabajar con Go como nuevo lenguaje de programación y configuré
-contenedores con Docker, lo que mejoró la portabilidad y la consistencia del entorno de
-desarrollo. Además, utilicé PostgreSQL como base de datos para garantizar un manejo
-eficiente y seguro de la información.
-Mis aportaciones incluyeron:
-• Diseñar una solución modular que combina un frontend ágil y un backend
-robusto.
-• Implementar procesos automatizados para el análisis y la generación de
-estadísticas ambientales.
-• Asegurar la escalabilidad del sistema mediante herramientas modernas y
-eficientes.
-Este proyecto transformó los procesos manuales en un flujo digital más eficiente y
-confiable, reduciendo tiempos y riesgos de error. La experiencia me ayudó a mejorar mis
-habilidades técnicas, como la búsqueda de soluciones óptimas para casos específicos, y
-reforzó mi capacidad para crear sistemas con impacto real y sustentable.
 Referencias bibliográficas.
 Astro Js. (n.d.). ¿Por qué astro? Astro JS. https://docs.astro.build/es/concepts/why-
 astro/
@@ -601,7 +539,6 @@ recolección y manejo de residuos generados por las embarcaciones. Esta entrevis
 comprender las prácticas actuales en cuanto a la gestión de residuos, así como identificar los
 desafíos que enfrenta el centro de acopio para optimizar estos procesos y mejorar el impacto
 ambiental en Puerto Peñasco.
-Entrevistador(es): Michelle Diaz, Abrham Martinez, Darien Verdugo.
 Entrevistado: Fco Javier Bojorquéz Ochoa.
 Lunes, septiembre 9, 2024
 Objetivo: Obtener información detallada sobre los procesos actuales de recolección y
