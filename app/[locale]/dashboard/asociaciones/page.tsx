@@ -1,35 +1,64 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Package, Inbox, Building2, MessageSquare, Sparkles } from 'lucide-react';
 import { InventarioTab } from '@/components/asociaciones/InventarioTab';
 import { SolicitudesTab } from '@/components/asociaciones/SolicitudesTab';
 import { EmpresasTab } from '@/components/asociaciones/EmpresasTab';
 import { ChatTab } from '@/components/asociaciones/ChatTab';
-import {
-    SOLICITUDES_ENTRANTES_MOCK,
-    EMPRESAS_MOCK,
-    CONVERSACIONES_MOCK,
-} from '@/lib/mock/asociaciones';
+import { getAsociaciones } from '@/lib/services/asociaciones';
+import { contarSolicitudesPendientes } from '@/lib/services/solicitudes';
+import { contarMensajesNoLeidos, suscribirMensajes } from '@/lib/services/mensajes';
+import { suscribirCambios } from '@/lib/services/notificaciones';
 
 type Tab = 'inventario' | 'solicitudes' | 'empresas' | 'chat';
 
-export default function AsociacionesPage() {
-    const [tab, setTab] = useState<Tab>('inventario');
-    const [empresaChat, setEmpresaChat] = useState<string | null>(null);
+async function obtenerStats() {
+    try {
+        const [asociaciones, pendientes, noLeidos] = await Promise.all([
+            getAsociaciones(),
+            contarSolicitudesPendientes(),
+            contarMensajesNoLeidos('recolector'),
+        ]);
+        return {
+            empresas: asociaciones.filter((a) => a.estado === 'Activo').length,
+            pendientes,
+            noLeidos,
+        };
+    } catch (err) {
+        console.error('Error cargando estadísticas de asociaciones:', err);
+        return null;
+    }
+}
 
-    const pendientes = SOLICITUDES_ENTRANTES_MOCK.filter((s) => s.estado === 'pendiente').length;
-    const noLeidos = CONVERSACIONES_MOCK.reduce((s, c) => s + c.noLeidos, 0);
+export default function AsociacionesPage() {
+    const [tab, setTab] = useState<Tab>('solicitudes');
+    const [asociacionChat, setAsociacionChat] = useState<number | null>(null);
+    const [stats, setStats] = useState({ empresas: 0, pendientes: 0, noLeidos: 0 });
+
+    const cargarStats = useCallback(() => {
+        obtenerStats().then((s) => s && setStats(s));
+    }, []);
+
+    useEffect(() => {
+        obtenerStats().then((s) => s && setStats(s));
+        const off1 = suscribirCambios('solicitudes_recoleccion', cargarStats);
+        const off2 = suscribirMensajes(cargarStats);
+        return () => {
+            off1();
+            off2();
+        };
+    }, [cargarStats]);
 
     const tabs: { value: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+        { value: 'solicitudes', label: 'Solicitudes', icon: <Inbox className="w-[18px] h-[18px]" />, badge: stats.pendientes },
         { value: 'inventario', label: 'Inventario', icon: <Package className="w-[18px] h-[18px]" /> },
-        { value: 'solicitudes', label: 'Solicitudes', icon: <Inbox className="w-[18px] h-[18px]" />, badge: pendientes },
-        { value: 'empresas', label: 'Empresas', icon: <Building2 className="w-[18px] h-[18px]" /> },
-        { value: 'chat', label: 'Mensajes', icon: <MessageSquare className="w-[18px] h-[18px]" />, badge: noLeidos },
+        { value: 'empresas', label: 'Asociaciones', icon: <Building2 className="w-[18px] h-[18px]" /> },
+        { value: 'chat', label: 'Mensajes', icon: <MessageSquare className="w-[18px] h-[18px]" />, badge: stats.noLeidos },
     ];
 
-    const abrirChat = (empresaId: string) => {
-        setEmpresaChat(empresaId);
+    const abrirChat = (asociacionId: number) => {
+        setAsociacionChat(asociacionId);
         setTab('chat');
     };
 
@@ -50,14 +79,14 @@ export default function AsociacionesPage() {
                                 Asociaciones recolectoras
                             </h1>
                             <p className="text-xs text-blue-100/80 mt-0.5 hidden sm:block truncate">
-                                Publica residuos, gestiona solicitudes y comunícate con empresas.
+                                Publica residuos, gestiona solicitudes y comunícate con las empresas.
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <HeroStat label="Empresas" value={EMPRESAS_MOCK.length.toString()} />
-                        <HeroStat label="Pendientes" value={pendientes.toString()} highlight={pendientes > 0} />
-                        <HeroStat label="Mensajes" value={noLeidos.toString()} highlight={noLeidos > 0} />
+                        <HeroStat label="Activas" value={stats.empresas.toString()} />
+                        <HeroStat label="Pendientes" value={stats.pendientes.toString()} highlight={stats.pendientes > 0} />
+                        <HeroStat label="Mensajes" value={stats.noLeidos.toString()} highlight={stats.noLeidos > 0} />
                     </div>
                 </div>
             </div>
@@ -95,9 +124,9 @@ export default function AsociacionesPage() {
             {/* Content */}
             <div key={tab} className="animate-fade-in">
                 {tab === 'inventario' && <InventarioTab />}
-                {tab === 'solicitudes' && <SolicitudesTab onAbrirChat={abrirChat} />}
-                {tab === 'empresas' && <EmpresasTab onAbrirChat={abrirChat} />}
-                {tab === 'chat' && <ChatTab empresaIdInicial={empresaChat} />}
+                {tab === 'solicitudes' && <SolicitudesTab onAbrirChat={abrirChat} onCambio={cargarStats} />}
+                {tab === 'empresas' && <EmpresasTab onAbrirChat={abrirChat} onCambio={cargarStats} />}
+                {tab === 'chat' && <ChatTab asociacionIdInicial={asociacionChat} onCambio={cargarStats} />}
             </div>
         </div>
     );
