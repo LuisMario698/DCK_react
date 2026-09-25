@@ -83,7 +83,8 @@ export default function AsociacionesPage() {
                             </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    {/* mr: deja libre la esquina del botón flotante de tema */}
+                    <div className="flex items-center gap-2 sm:mr-12">
                         <HeroStat label="Activas" value={stats.empresas.toString()} />
                         <HeroStat label="Pendientes" value={stats.pendientes.toString()} highlight={stats.pendientes > 0} />
                         <HeroStat label="Mensajes" value={stats.noLeidos.toString()} highlight={stats.noLeidos > 0} />

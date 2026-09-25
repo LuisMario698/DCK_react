@@ -30,7 +30,8 @@ export function HeaderRecolector({ onOpenSidebar }: HeaderRecolectorProps) {
 
     return (
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-            <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+            {/* pr extra: el botón flotante de tema (ThemeToggle) ocupa la esquina superior derecha */}
+            <div className="flex items-center justify-between h-16 pl-4 sm:pl-6 lg:pl-8 pr-20 sm:pr-24">
                 <div className="flex items-center gap-3 min-w-0">
                     <button
                         onClick={onOpenSidebar}
