@@ -1019,25 +1019,14 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
 
             {/* Footer */}
             <footer className="bg-slate-950 py-16 md:py-20 px-6 border-t border-white/10">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
+                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
                     <div className="md:col-span-2">
                         <img
                             src="/assets/logo_simar.png"
                             alt="SiMAR Logo"
                             className="h-14 w-auto object-contain mb-6"
                         />
-            
-                    </div>
 
-                    <div>
-                        <h4 className="text-base font-bold mb-5 text-white uppercase tracking-widest">
-                            Créditos
-                        </h4>
-                        <ul className="space-y-3 text-slate-400 text-sm">
-                            <li>Michelle Jacquelinne Díaz Aguirre</li>
-                            <li>Darien Alejandro Verdugo Reyna</li>
-                            <li>Abrham Sayd Martínez Corrales</li>
-                        </ul>
                     </div>
 
                     <div>
