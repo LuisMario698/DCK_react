@@ -282,6 +282,28 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
         setShowLoginModal(true);
     };
 
+    // El middleware manda aquí con ?login=1 cuando se pide /dashboard sin sesión.
+    // Solo abrimos el modal: NO tocamos la URL aquí, porque un replaceState en el
+    // mismo commit provoca un re-render que descartaba el estado y el modal no salía.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('login') === '1') {
+            setModalRole(readSavedRole());
+            setShowLoginModal(true);
+        }
+    }, []);
+
+    const cerrarLoginModal = () => {
+        setShowLoginModal(false);
+        // Ya con el modal cerrado, quitamos el parámetro para que un refresco no lo reabra.
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('login')) {
+            params.delete('login');
+            const qs = params.toString();
+            window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : ''));
+        }
+    };
+
     const selectModalRole = (r: ModalRole) => {
         saveRole(r);
         setModalRole(r);
@@ -330,7 +352,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                 className={`fixed top-0 w-full z-50 transition-all duration-500 ${
                     scrolled
                         ? 'bg-slate-950/85 backdrop-blur-md border-b border-white/10'
-                        : 'bg-gradient-to-b from-black/80 via-black/30 to-transparent'
+                        : 'bg-gradient-to-b from-black/90 via-black/70 to-black/20'
                 }`}
             >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 md:h-24 flex items-center justify-between">
@@ -400,7 +422,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                     aria-hidden="true"
                                     className="h-full w-full object-cover animate-ken-burns"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/45 to-slate-950/85" />
+                                <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/75 to-slate-950/95" />
                             </div>
                         );
                     })}
@@ -1038,14 +1060,14 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                 >
                     <div
                         className="absolute inset-0 bg-black/70 backdrop-blur-md animate-fade-in"
-                        onClick={() => setShowLoginModal(false)}
+                        onClick={cerrarLoginModal}
                     />
 
                     {/* PASO 1 — Selector de rol */}
                     {modalRole === null && (
                         <div className="relative bg-slate-900 w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10">
                             <button
-                                onClick={() => setShowLoginModal(false)}
+                                onClick={cerrarLoginModal}
                                 className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
                                 aria-label="Cerrar"
                             >
@@ -1068,7 +1090,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                     />
                                     <ModalRoleCard
                                         title="Empresa Recolectora"
-                                        desc="Consulta residuos, solicita recolecciones y mide tu impacto."
+                                        desc="Seguimiento de recolecciones e impacto. Vista previa con datos de demostración."
                                         accent="emerald"
                                         Icon={Recycle}
                                         onClick={() => selectModalRole('recolector')}
@@ -1082,7 +1104,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     {modalRole !== null && (
                         <div className="relative bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10 dark">
                             <button
-                                onClick={() => setShowLoginModal(false)}
+                                onClick={cerrarLoginModal}
                                 className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
                                 aria-label="Cerrar"
                             >
@@ -1112,7 +1134,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                 <LoginForm
                                     showLogo={true}
                                     redirectTo={modalRole === 'recolector' ? '/dashboard-recolector' : '/dashboard'}
-                                    onSuccess={() => setShowLoginModal(false)}
+                                    onSuccess={cerrarLoginModal}
                                 />
                             </div>
                         </div>
