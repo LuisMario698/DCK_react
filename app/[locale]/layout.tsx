@@ -6,6 +6,7 @@ import { locales } from '@/i18n';
 import { ThemeProvider } from '@/components/layout/ThemeContext';
 import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { Avisos } from "@/components/layout/Avisos";
 
 export const metadata: Metadata = {
   title: "SiMAR — Sistema Integral de Manejo Ambiental de Residuos",
@@ -39,6 +40,7 @@ export default async function LocaleLayout({
             <NextIntlClientProvider messages={messages}>
               {children}
               <ThemeToggle />
+              <Avisos />
             </NextIntlClientProvider>
           </AuthProvider>
         </ThemeProvider>
