@@ -3,14 +3,24 @@ import { Recoleccion, SolicitudConAsociacion, SolicitudRecoleccion } from '@/typ
 import type { EstadoSolicitud, TipoResiduo } from '@/lib/constants/residuos'
 
 const SELECT_CON_ASOCIACION =
-  '*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, ubicacion, email, telefono, rfc, estado)'
+  '*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, ubicacion, email, telefono, rfc, estado), recoleccion:recolecciones(folio, cantidad)'
 
 function normalizar<T extends SolicitudRecoleccion>(s: T): T {
-  return {
+  const base = {
     ...s,
     cantidad_solicitada: Number(s.cantidad_solicitada),
     cantidad_aprobada: s.cantidad_aprobada === null ? null : Number(s.cantidad_aprobada),
   }
+  if (!('recoleccion' in s)) return base
+  // Relación 1:1 (solicitud_id es único); según la versión de PostgREST llega como objeto o arreglo
+  const r = (s as { recoleccion?: unknown }).recoleccion
+  const rec = (Array.isArray(r) ? r[0] : r) as { folio: string; cantidad: number } | null | undefined
+  return { ...base, recoleccion: rec ? { folio: rec.folio, cantidad: Number(rec.cantidad) } : null }
+}
+
+/** Cantidad a mostrar: la recolectada si ya se completó, si no la aprobada o la solicitada. */
+export function cantidadVigente(s: SolicitudConAsociacion): number {
+  return s.recoleccion?.cantidad ?? s.cantidad_aprobada ?? s.cantidad_solicitada
 }
 
 /**

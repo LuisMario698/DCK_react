@@ -9,6 +9,7 @@ import { InventarioResiduo, SolicitudConAsociacion } from '@/types/database';
 import {
     aprobarSolicitud,
     cancelarSolicitud,
+    cantidadVigente,
     completarSolicitud,
     getSolicitudes,
     rechazarSolicitud,
@@ -173,7 +174,7 @@ export function SolicitudesTab({
                         <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
                             {filtradas.map((s, idx) => {
                                 const nombre = s.asociacion?.nombre_asociacion ?? 'Asociación';
-                                const cantidad = s.cantidad_aprobada ?? s.cantidad_solicitada;
+                                const cantidad = cantidadVigente(s);
                                 return (
                                     <tr
                                         key={s.id}
@@ -199,8 +200,15 @@ export function SolicitudesTab({
                                         <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap">
                                             <span className="text-sm font-bold text-gray-900 dark:text-white">{formatCantidad(cantidad)}</span>
                                             <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">{s.unidad}</span>
-                                            {s.cantidad_aprobada !== null && s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                <span className="block text-[11px] text-gray-400">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                            {s.recoleccion ? (
+                                                <span className="block text-[11px] text-gray-400">
+                                                    recolectados · {s.recoleccion.folio}
+                                                </span>
+                                            ) : (
+                                                s.cantidad_aprobada !== null &&
+                                                s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                    <span className="block text-[11px] text-gray-400">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                )
                                             )}
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell whitespace-nowrap">
@@ -351,9 +359,15 @@ function DetalleModal({
                     <InfoCard label="Solicitado">
                         <Cantidad valor={s.cantidad_solicitada} unidad={s.unidad} />
                     </InfoCard>
-                    <InfoCard label={s.cantidad_aprobada !== null ? 'Aprobado' : 'Disponible'}>
-                        <Cantidad valor={s.cantidad_aprobada ?? disponible} unidad={s.unidad} />
-                    </InfoCard>
+                    {s.recoleccion ? (
+                        <InfoCard label={`Recolectado · ${s.recoleccion.folio}`}>
+                            <Cantidad valor={s.recoleccion.cantidad} unidad={s.unidad} />
+                        </InfoCard>
+                    ) : (
+                        <InfoCard label={s.cantidad_aprobada !== null ? 'Aprobado' : 'Disponible'}>
+                            <Cantidad valor={s.cantidad_aprobada ?? disponible} unidad={s.unidad} />
+                        </InfoCard>
+                    )}
                     <InfoCard label="Fecha propuesta">
                         <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatearFecha(s.fecha_propuesta)}</span>
                     </InfoCard>

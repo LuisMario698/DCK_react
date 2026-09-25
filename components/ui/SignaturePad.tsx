@@ -135,7 +135,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
 
   return (
     <div className="w-full">
-      <label className="block text-lg font-semibold text-gray-700 mb-3">
+      <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
         {label}
       </label>
       

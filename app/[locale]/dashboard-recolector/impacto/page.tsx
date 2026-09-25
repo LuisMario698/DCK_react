@@ -78,8 +78,9 @@ function resumen(recs: Recoleccion[]) {
     };
 }
 
-function delta(actual: number, anterior: number): number | null {
-    if (anterior === 0) return actual > 0 ? null : 0;
+/** % de cambio; 'nuevo' si antes no había nada y 'sin_datos' si no hay nada en ningún periodo. */
+function delta(actual: number, anterior: number): number | 'nuevo' | 'sin_datos' {
+    if (anterior === 0) return actual > 0 ? 'nuevo' : 'sin_datos';
     return Math.round(((actual - anterior) / anterior) * 100);
 }
 
@@ -197,10 +198,14 @@ export default function ImpactoPage() {
                             </div>
                             <p className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">{c.value}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{c.label}</p>
-                            <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${c.d !== null && c.d < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                <span>{c.d === null ? 'Nuevo' : `${c.d >= 0 ? '↑ +' : '↓ '}${c.d}%`}</span>
-                                <span className="text-gray-400 dark:text-gray-500 font-normal">vs. periodo anterior</span>
-                            </p>
+                            {c.d === 'sin_datos' ? (
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Sin datos en este periodo</p>
+                            ) : (
+                                <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${typeof c.d === 'number' && c.d < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                    <span>{c.d === 'nuevo' ? 'Nuevo' : `${c.d >= 0 ? '↑ +' : '↓ '}${c.d}%`}</span>
+                                    <span className="text-gray-400 dark:text-gray-500 font-normal">vs. periodo anterior</span>
+                                </p>
+                            )}
                         </div>
                     );
                 })}

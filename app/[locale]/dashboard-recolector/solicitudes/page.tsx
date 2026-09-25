@@ -8,7 +8,7 @@ import { Eye, Ban, Plus, Inbox } from 'lucide-react';
 import { PUERTO_PENASCO, formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
 import { SolicitudConAsociacion } from '@/types/database';
-import { cancelarSolicitud, getSolicitudes } from '@/lib/services/solicitudes';
+import { cancelarSolicitud, cantidadVigente, getSolicitudes } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
 import {
     BotonSecundario,
@@ -137,11 +137,16 @@ export default function SolicitudesPage() {
                                         <ResiduoBadge tipo={s.tipo} />
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
-                                        {formatCantidad(s.cantidad_aprobada ?? s.cantidad_solicitada)} {s.unidad}
-                                        {s.cantidad_aprobada !== null && s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                            <span className="block text-[11px] font-normal text-gray-400">
-                                                de {formatCantidad(s.cantidad_solicitada)} solicitados
-                                            </span>
+                                        {formatCantidad(cantidadVigente(s))} {s.unidad}
+                                        {s.recoleccion ? (
+                                            <span className="block text-[11px] font-normal text-gray-400">recolectados</span>
+                                        ) : (
+                                            s.cantidad_aprobada !== null &&
+                                            s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                <span className="block text-[11px] font-normal text-gray-400">
+                                                    de {formatCantidad(s.cantidad_solicitada)} solicitados
+                                                </span>
+                                            )
                                         )}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell whitespace-nowrap">
@@ -203,6 +208,12 @@ export default function SolicitudesPage() {
                                 label="Aprobado"
                                 valor={detalle.cantidad_aprobada !== null ? `${formatCantidad(detalle.cantidad_aprobada)} ${detalle.unidad}` : '—'}
                             />
+                            {detalle.recoleccion && (
+                                <Dato
+                                    label={`Recolectado · ${detalle.recoleccion.folio}`}
+                                    valor={`${formatCantidad(detalle.recoleccion.cantidad)} ${detalle.unidad}`}
+                                />
+                            )}
                             <Dato label="Fecha propuesta" valor={formatearFecha(detalle.fecha_propuesta)} />
                             <Dato label="Enviada" valor={formatearFecha(detalle.created_at)} />
                         </dl>
