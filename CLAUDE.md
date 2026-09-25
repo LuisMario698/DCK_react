@@ -48,22 +48,25 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
 
 ## No asumas
 
-- **`lib/mock/*` NO es real.** Todo `/dashboard-recolector` y `/dashboard/asociaciones`
-  funcionan con datos ficticios (`lib/mock/recolector.ts`, `lib/mock/asociaciones.ts`); las
-  acciones se simulan con `toast`. `asociaciones_recolectoras` tiene tabla y servicio reales,
-  pero la UI aún no los usa.
-- **No hay RBAC.** El middleware sólo comprueba que exista sesión Supabase y protege cualquier
-  ruta que contenga `/dashboard`. El rol `admin`/`recolector` es la cookie de cliente
-  `simar_user_role`, sólo sirve para elegir el redirect post-login.
+- **Roles en BD:** `profiles.rol` ∈ `admin` / `recolector` / `pendiente` (+ `asociacion_id`).
+  El middleware lee ese rol y manda a cada uno a su área; la cookie `simar_user_role` sólo
+  recuerda la opción del modal de login. RLS usa `is_admin()`, `get_my_role()` y
+  `get_my_asociacion_id()`. Ver `Contexto-DCK/fase1-asociaciones.md`.
+- **Solicitudes de recolección sólo se escriben por RPC** (`crear_solicitud`,
+  `aprobar_solicitud`, `rechazar_solicitud`, `cancelar_solicitud`, `completar_solicitud`); la
+  tabla no tiene políticas de escritura. No hagas `insert`/`update` directos.
+- **Migraciones nuevas** van en `supabase/migrations/` (idempotentes). Los `.sql` de la raíz son
+  históricos. El catálogo de residuos está duplicado a propósito: dominio `tipo_residuo` en SQL y
+  `lib/constants/residuos.ts`; si cambias uno, cambia el otro.
 - **Recharts** se usa en un solo archivo (`dashboard-recolector/impacto/page.tsx`); el resto de
   "gráficas" son divs/SVG a mano. **Leaflet** en un solo componente
   (`components/recolector/PortMap.tsx`); el mapa de la landing es SVG puro.
+- Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar).
 - Dependencias instaladas pero **sin usar**: `html2canvas`, `react-leaflet`,
   `react-time-picker`, `react-time-picker-input`, `browser-image-compression`.
-- Algunos `select` en `lib/services/manifiestos.ts` y `manifiesto_basuron.ts` piden tablas
-  **eliminadas** (`tipos_residuos`, `usuarios_sistema`) — esas consultas fallan.
-- El esquema real vive en `estructura_completa.sql` (pg_dump). El mismo Supabase contiene tablas
-  de un sistema POS ajeno (`tenants`, `users`, `products`, `orders`, ...) — ignóralas.
+- `estructura_completa.sql` (pg_dump) está **desactualizado**: aún trae tablas de un POS ajeno
+  (`tenants`, `users`, `products`, ...) y RLS apagado, que ya no existen en el proyecto Supabase
+  real (`SiMAR`). Encima de ese esquema se aplican las migraciones de `supabase/migrations/`.
 - `components/simple/SimpleBasuronForm.tsx` está vacío.
 - La pantalla real de manifiestos es `app/[locale]/dashboard/manifiesto/page.tsx` (~2250
   líneas), que duplica lógica de `components/manifiestos/CreateManifiestoModal.tsx`.

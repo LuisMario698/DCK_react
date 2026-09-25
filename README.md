@@ -78,8 +78,8 @@ distintos** que ambos se llaman "manifiesto"; no confundirlos.
 | **Tipo de Persona** | Catálogo de roles (`tipos_persona`). En el alta de personas se filtra a **Motorista, Cocinero y Responsable de Líquidos** (los tres que firman un manifiesto). El código y la i18n también mencionan Capitán, Tripulante, Administrativo, Inspector. |
 | **Roles que firman un manifiesto** | (a) **Motorista** = `responsable_principal_id`; (b) **Cocinero** = `responsable_secundario_id`; (c) **Responsable de entrega de líquidos (aceite usado)** = `responsable_liquidos_id`; (d) **Oficial / Comisionado** que **recibe** los residuos en el puerto (se imprime con el nombre de Don Francisco). |
 | **Las 5 categorías de residuo** de un manifiesto | `aceite_usado` (litros), `filtros_aceite` (piezas), `filtros_diesel` (piezas), `filtros_aire` (piezas), `basura` (kg). Tipo `ManifiestoResiduo` en `types/database.ts`. |
-| **Asociación recolectora** | Empresa externa autorizada para recolectar y disponer flujos de residuos reciclables (plástico, aceite, cartón, chatarra, vidrio, orgánico). Tabla `asociaciones_recolectoras` + servicio CRUD **existen**, pero la pantalla actual (`/dashboard/asociaciones`) funciona con **datos mock**. |
-| **Recolector** (rol de app) | La contraparte: una **empresa recolectora** que entra a `/dashboard-recolector` para ver un mapa de puertos con residuos disponibles, enviar solicitudes de recolección, seguir su estado y ver su impacto. **Todo ese portal es un prototipo con datos mock.** |
+| **Asociación recolectora** | Empresa externa autorizada para recolectar y disponer flujos de residuos reciclables (plástico, aceite, cartón, chatarra, vidrio, orgánico, filtros). El admin la registra en `/dashboard/asociaciones` (tabla `asociaciones_recolectoras`) y vincula el correo de sus usuarios. |
+| **Recolector** (rol de app) | La contraparte: un usuario de una **empresa recolectora** que entra a `/dashboard-recolector` para ver el inventario publicado por el centro de acopio, enviar solicitudes de recolección, seguir su estado, descargar comprobantes, escribir al centro de acopio y ver su impacto. Ver §7 y [`Contexto-DCK/fase1-asociaciones.md`](./Contexto-DCK/fase1-asociaciones.md). |
 | **Digitalización** | Proceso de convertir los reportes en papel a filas de BD. `estado_digitalizacion` en un manifiesto: `pendiente` / `en_proceso` / `completado` (el tipo TS también admite `aprobado` / `rechazado`, pero el `CHECK` de la BD no). |
 
 ---
@@ -120,9 +120,10 @@ Navegador
    ▼
 middleware.ts ──► updateSession()            (utils/supabase/middleware.ts)
    │              · refresca la sesión Supabase (cookies)
-   │              · si NO hay usuario y la ruta contiene "/dashboard" → redirect /login
-   │              · si HAY usuario y la ruta contiene "/login" → redirect a
-   │                /dashboard  ó  /dashboard-recolector  (según cookie simar_user_role)
+   │              · si NO hay usuario y la ruta contiene "/dashboard" → redirect /?login=1
+   │              · si HAY usuario en /dashboard*: lee profiles.rol y manda a cada rol a su
+   │                área (admin → /dashboard, recolector → /dashboard-recolector,
+   │                pendiente → /acceso-pendiente)
    │
    ├──► si updateSession devolvió un redirect → se respeta y termina
    │
@@ -183,9 +184,10 @@ DCK_react/
 │       │   ├── estadisticas/page.tsx  # → <DashboardClient>
 │       │   ├── personas/page.tsx
 │       │   ├── embarcaciones/page.tsx
-│       │   ├── asociaciones/page.tsx  # MOCK  (+ page.tsx.bak = versión real anterior)
+│       │   ├── asociaciones/page.tsx  # Inventario / Solicitudes / Asociaciones / Mensajes
 │       │   └── simple/page.tsx        # "modo simple" para usuarios no técnicos
-│       └── dashboard-recolector/      # área "Empresa Recolectora" — 100% MOCK
+│       ├── dashboard-recolector/      # portal "Empresa Recolectora" (rol recolector)
+│       └── acceso-pendiente/          # cuentas sin rol asignado
 │           ├── layout.tsx             # layout propio (no usa DashboardLayout)
 │           ├── page.tsx  · mapa/ · solicitudes/ · historial/
 │           ├── impacto/  · notificaciones/ · perfil/ · configuracion/
@@ -200,15 +202,15 @@ DCK_react/
 │   ├── manifiestos/   # CreateManifiestoModal, CreateManifiestoBasuronModal, ManifiestoBasuronDetails
 │   ├── personas/      # PersonasTable, CreatePersonaModal, TiposPersonaManager
 │   ├── embarcaciones/ # EmbarcacionesTable, CreateEmbarcacionModal, Pagination (reusado)
-│   ├── asociaciones/  # ChatTab, EmpresasTab, InventarioTab, SolicitudesTab (mock)
-│   ├── recolector/    # SidebarRecolector, HeaderRecolector, PortMap (único uso de Leaflet)
+│   ├── asociaciones/  # ChatTab, EmpresasTab, InventarioTab, SolicitudesTab, Conversacion, ui
+│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, PortMap (Leaflet)
 │   └── simple/        # SimpleManifiestoForm, SimpleEstadisticas, SimpleBasuronForm (VACÍO)
 │
 ├── lib/
 │   ├── supabase/      # client.ts (browser), server.ts (RSC solo-lectura)
 │   ├── services/      # capa de datos (ver §9)
 │   ├── utils/         # pdfGenerator.ts, pdfGeneratorBasuron.ts
-│   ├── mock/          # recolector.ts, asociaciones.ts  ← datos ficticios AÚN EN USO
+│   ├── constants/     # residuos.ts (catálogo de residuos), impacto.ts (factores CO₂e)
 │   └── data.ts        # datos demo legacy (en desuso)
 │
 ├── types/             # database.ts (autoritativo) + dashboard.ts + tipos legacy
@@ -241,12 +243,12 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 | `/[locale]/dashboard/estadisticas` | Server (`force-dynamic`) | `<DashboardClient>`: KPIs, gráficas **hechas a mano** (barras CSS, donut SVG), comparación contra el período anterior, panel de "Impacto Ambiental" y pestaña **Reportes** (RPC `get_reporte_detallado` → export CSV / Excel / PDF impreso). | **Supabase real** — `dashboard_stats`, `buques` |
 | `/[locale]/dashboard/personas` | Client | CRUD de personas: `PersonasTable`, `CreatePersonaModal`, búsqueda, filtro por tipo, alerta de "registro incompleto", borrado con manejo de violación de FK. | **Supabase real** — `personas`, `tipos_persona` |
 | `/[locale]/dashboard/embarcaciones` | Client | CRUD de buques: `EmbarcacionesTable`, `CreateEmbarcacionModal`, búsqueda, filtro por estado, alerta de registro incompleto. | **Supabase real** — `buques` |
-| `/[locale]/dashboard/asociaciones` | Client | UI de 4 pestañas: **Inventario** / **Solicitudes** / **Empresas** / **Chat**. | ⚠️ **MOCK** — `lib/mock/asociaciones.ts`. `page.tsx.bak` al lado es la versión real anterior (usaba `lib/services/asociaciones`). |
+| `/[locale]/dashboard/asociaciones` | Client | 4 pestañas: **Solicitudes** (aprobar / rechazar / completar con firmas y comprobante PDF) / **Inventario** / **Asociaciones** (CRUD, estado, vincular usuarios) / **Mensajes** (chat en tiempo real). | `inventario`, `solicitudes`, `recolecciones`, `asociaciones`, `mensajes` |
 | `/[locale]/dashboard/simple` | Client | **"Modo simple"** para usuarios no técnicos (Don Francisco): botones grandes, `SimpleManifiestoForm` + `SimpleEstadisticas`, navbar propia. El botón "Basurón" hace `router.push('/dashboard/manifiesto-basuron')` (sin prefijo de locale — el middleware lo re-prefija). | **Supabase real** vía componentes `simple/` |
-| `/[locale]/dashboard-recolector` | Client, **layout propio** | Portal de la empresa recolectora. Sub-rutas: `page` (home con KPIs + `PortMap`), `mapa` (mapa Leaflet con filtros), `solicitudes`, `historial`, `impacto` (gráficas Recharts), `notificaciones`, `perfil`, `configuracion`. | ⚠️ **100% MOCK** — `lib/mock/recolector.ts`; las acciones se "simulan" con `toast`. |
+| `/[locale]/dashboard-recolector` | Client, **layout propio** (`RecolectorProvider`) | Portal de la empresa recolectora. Sub-rutas: `page` (KPIs + mapa + actividad), `mapa` (inventario publicado + crear solicitud), `solicitudes` (seguimiento / cancelar), `historial` (comprobantes PDF + CSV), `impacto` (Recharts), `mensajes`, `notificaciones`, `perfil` (datos de la asociación + contraseña). | `inventario`, `solicitudes`, `recolecciones`, `mensajes`, `notificaciones`, `perfil` |
+| `/[locale]/acceso-pendiente` | Client | Aviso para cuentas con rol `pendiente` (registradas sin invitación). | — |
 
-**Resumen:** el área de administración es real (Supabase) **excepto `asociaciones` (mock)**; el
-**portal recolector completo es un prototipo con datos ficticios**.
+**Resumen:** toda la aplicación trabaja con datos reales de Supabase. Ya no quedan pantallas mock.
 
 ---
 
@@ -265,24 +267,35 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 | `admin` | Administrador Portuario | `/dashboard` |
 | `recolector` | Empresa Recolectora | `/dashboard-recolector` |
 
-⚠️ **No es un control de acceso real (RBAC).**
+| `pendiente` | — | `/acceso-pendiente` |
 
-- El rol lo **elige el propio usuario** en `/login` (o en el modal de la landing).
-- Se guarda **sólo** en la cookie `simar_user_role` (no `httpOnly`, `SameSite=Lax`, 1 año) y en
-  `localStorage`. **Nunca se guarda ni se valida contra Supabase.**
-- `updateSession()` (en `utils/supabase/middleware.ts`) **sólo comprueba que exista un `user`**
-  de Supabase, y protege **cualquier ruta cuyo pathname contenga la subcadena `/dashboard`**
-  (cubre tanto `/dashboard` como `/dashboard-recolector`).
-- La cookie de rol **sólo decide el destino del redirect** tras el login. Cualquier usuario
-  autenticado puede entrar a ambas áreas y la cookie es trivialmente modificable.
+- El rol vive en **`profiles.rol`** (migración `supabase/migrations/20260923000001_roles_y_rls.sql`).
+  La cookie `simar_user_role` sólo recuerda la opción elegida en el modal de login.
+- **Alta por invitación:** el admin vincula un correo a una asociación (RPC `invitar_usuario`).
+  Si el correo ya tiene cuenta, obtiene acceso de inmediato; si no, queda en `invitaciones` y el
+  trigger `handle_new_user()` le asigna rol y asociación al registrarse. Quien se registra sin
+  invitación queda `pendiente` y no ve ningún dato.
+- `updateSession()` (en `utils/supabase/middleware.ts`) lee `profiles.rol` y manda a cada rol a
+  su área; un recolector no puede abrir `/dashboard` ni un admin `/dashboard-recolector`.
+- Nadie puede cambiarse su propio rol, asociación o correo de perfil (trigger
+  `proteger_campos_perfil`).
 
 ### RLS
 
-Las políticas de Row Level Security en la práctica son **muy permisivas**: `manifiestos`,
-`manifiestos_residuos` y `manifiesto_basuron` usan `USING (true)`; `buques`, `personas`,
-`asociaciones_recolectoras` y `tipos_persona` sólo exigen `auth.role() = 'authenticated'` para
-`SELECT`. Varios `fix_*_rls.sql` / `debug_*.sql` en la raíz abrieron los buckets y políticas
-durante el desarrollo.
+Funciones auxiliares `is_admin()`, `get_my_role()` y `get_my_asociacion_id()` (security definer).
+
+- Tablas operativas (`manifiestos*`, `manifiesto_basuron`, `buques`, `personas`,
+  `tipos_persona`, `bitacora`, `audit_log`, `backups*`): **sólo admin** (política `admin_todo`).
+- `asociaciones_recolectoras`: el admin gestiona; el recolector sólo lee la suya (y edita sus
+  datos de contacto vía RPC `actualizar_mi_asociacion`).
+- `inventario_residuos`: el admin gestiona; el recolector lee lo publicado.
+- `solicitudes_recoleccion`, `recolecciones`, `mensajes`, `notificaciones`: cada asociación sólo
+  ve lo suyo. Las solicitudes **sólo se escriben por RPC** (`crear_solicitud`,
+  `aprobar_solicitud`, `rechazar_solicitud`, `cancelar_solicitud`, `completar_solicitud`), que
+  validan rol, estado e inventario en una transacción.
+- Storage: los buckets de manifiestos sólo aceptan escrituras de admin; el bucket privado
+  `recolecciones_pdf` (`{asociacion_id}/{folio}.pdf`) lo escribe el admin y cada asociación lee
+  sólo su carpeta.
 
 ---
 
@@ -307,13 +320,19 @@ durante el desarrollo.
 | `tipos_persona` | `id`, `nombre_tipo` (unique), `descripcion` | Catálogo de roles de persona. |
 | `personas` | `id`, `nombre`, `tipo_persona_id`, `info_contacto`, `registro_completo` | `tipo_persona_id` → `tipos_persona` (`ON DELETE SET NULL`). `registro_completo = false` ⇒ auto-creada desde un manifiesto. |
 | `buques` | `id`, `nombre_buque` (unique), `tipo_buque`, `propietario_id`, `matricula` (unique), `puerto_base`, `capacidad_toneladas`, `estado`, `registro_completo` | `propietario_id` → `personas`. `estado` ∈ `Activo` / `Inactivo` / `En Mantenimiento`. |
-| `asociaciones_recolectoras` | `id`, `nombre_asociacion` (unique), `tipo_asociacion`, `contacto_asociacion`, `email`, `telefono`, `direccion`, `certificaciones[]`, `especialidad[]`, `estado` | `estado` ∈ `Activo` / `Inactivo` / `Suspendido`. **Servicio CRUD existe; la UI usa mock.** |
+| `asociaciones_recolectoras` | `id`, `nombre_asociacion` (unique), `tipo_asociacion`, `contacto_asociacion`, `email`, `telefono`, `direccion`, `ubicacion`, `rfc`, `sitio_web`, `descripcion`, `tipos_residuo[]`, `certificaciones[]`, `especialidad[]` (legacy), `estado` | `estado` ∈ `Activo` / `Inactivo` / `Suspendido`; sólo las activas pueden crear solicitudes. `tipos_residuo` decide qué avisos de inventario recibe. |
+| `invitaciones` | `email`, `rol`, `asociacion_id`, `aceptada_at` | Correos autorizados pendientes de registrarse. |
+| `inventario_residuos` | `tipo` (unique, dominio `tipo_residuo`), `cantidad` (disponible), `unidad` (`kg`/`L`/`pz`), `notas`, `publicado` | Lo captura el admin. Se descuenta al aprobar una solicitud. |
+| `solicitudes_recoleccion` | `asociacion_id`, `tipo`, `cantidad_solicitada`, `cantidad_aprobada`, `unidad`, `fecha_propuesta`, `mensaje`, `estado`, `motivo_rechazo` | `estado` ∈ `pendiente` / `aprobada` / `rechazada` / `completada` / `cancelada`. |
+| `recolecciones` | `folio` (`REC-AAAA-NNNNN`), `solicitud_id` (unique), `asociacion_id`, `tipo`, `cantidad` (real), `fecha`, `entregado_por`, `recibido_por`, `comprobante_pdf_path` | Una por solicitud completada. |
+| `mensajes` | `asociacion_id`, `autor_id`, `autor_rol`, `texto`, `leido_at` | Una conversación por asociación. Autor y rol los pone un trigger. Realtime. |
+| `notificaciones` | `destinatario` (`admin`/`recolector`), `asociacion_id`, `tipo`, `titulo`, `detalle`, `leida` | Generadas por triggers al cambiar una solicitud o publicar inventario. Realtime. |
 | `manifiestos` | `id`, `numero_manifiesto` (unique), `fecha_emision`, `buque_id`, `responsable_principal_id`, `responsable_secundario_id`, `responsable_liquidos_id`, `imagen_manifiesto_url`, `pdf_manifiesto_url`, `estado_digitalizacion`, `digitalizador_id`, `fecha_digitalizacion`, `observaciones` | `buque_id` → `buques`; los `responsable_*_id` → `personas`. `responsable_principal` = motorista, `responsable_secundario` = cocinero, `responsable_liquidos` = responsable de líquidos (sólo en `estructura_completa.sql`). `estado_digitalizacion` ∈ `pendiente` / `en_proceso` / `completado`. |
 | `manifiestos_residuos` | `id`, `manifiesto_id` (unique), `aceite_usado` (num, litros), `filtros_aceite` (int), `filtros_diesel` (int), `filtros_aire` (int), `basura` (num, kg), `observaciones` | **1:1** con `manifiestos` (`ON DELETE CASCADE`). Todos los valores `CHECK >= 0`. |
 | `manifiesto_basuron` | `id`, `fecha`, `hora_entrada`, `hora_salida`, `peso_entrada`, `peso_salida`, `total_depositado` (**GENERATED** = `peso_entrada − COALESCE(peso_salida,0)`), `buque_id`, `recibimos_de`, `direccion`, `recibido_por`, `nombre_usuario`, `pdf_manifiesto_url`, `observaciones` | `buque_id` → `buques` (opcional, `ON DELETE CASCADE`). Variantes del esquema añaden `estado` (`En Proceso`/`Completado`/`Cancelado`) y `numero_ticket` (`TKT-YYYYMMDD-NNNNNN` por trigger). |
 | `manifiestos_no_firmados` | `id`, `manifiesto_id`, `nombre_archivo`, `ruta_archivo`, `url_descarga`, `numero_manifiesto`, `fecha_generacion`, `estado`, `descargado_en/por`, `firmado_en` | Metadatos de PDFs generados pendientes de firma física. `estado` ∈ `pendiente`/`descargado`/`firmado`/`cancelado`. **El servicio existe pero ninguna página lo usa.** |
 | `bitacora` | `id`, `fecha_registro`, `id_embarcacion`, `usuario_email`, `accion` | Log. Poblada por trigger al crear un buque + función `registrar_bitacora_embarcacion(...)`. |
-| `profiles` | `id` (uuid, = `auth.users.id`), `email`, `full_name`, `avatar_url` | 1:1 con `auth.users`. Trigger `handle_new_user()`. |
+| `profiles` | `id` (uuid, = `auth.users.id`), `email`, `full_name`, `avatar_url`, `rol`, `asociacion_id` | 1:1 con `auth.users`. Trigger `on_auth_user_created` → `handle_new_user()`. |
 | `audit_log` | `tabla`, `operacion`, `registro_id`, `datos_ant` (jsonb), `datos_nue` (jsonb), `usuario_email` | Poblada por `audit_trigger_fn()` en las 7 tablas del dominio. |
 | `backups`, `backup_schedules` | — | Metadatos de respaldos. |
 
@@ -368,7 +387,12 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
 | `dashboard_stats.ts` | Recibe `supabase` como argumento. `calcularRangoFechas(periodo, ...)`; `getDashboardKPIs` (usa `count exact head` + suma en JS con `limit(100_000)` para saltar el tope de 1000 filas de Supabase); `getDashboardKPIsFiltered`; `getComparacionPeriodoAnterior`; `getDashboardStats` (residuos por mes, top buques, distribución por tipo); **`getReporteComplejo`** → RPC `get_reporte_detallado`. `PeriodoFiltro = semana \| mes \| trimestre \| anio \| todo \| personalizado`. |
 | `landing_stats.ts` | `getLandingStats(supabase)` — totales históricos para la landing (`totalManifiestos`, `totalAceiteUsado`, `totalBasura`, `totalBasuron`, `filtrosAceite/Diesel/Aire`). |
 | `reportes.ts` | `getReporteResiduosPorFechas`, `getTotalesGenerales`. ⚠️ **`saveFirmaDigital(...)` es un stub sin efecto** — no existe la columna correspondiente en la BD. |
-| `asociaciones.ts` | CRUD de `asociaciones_recolectoras`. **Sólo lo referencia `asociaciones/page.tsx.bak`.** |
+| `asociaciones.ts` | CRUD de `asociaciones_recolectoras`; usuarios vinculados e invitaciones (`invitarUsuario`, `revocarAcceso`); `actualizarMiAsociacion` (portal recolector). |
+| `perfil.ts` | `getMiPerfil()` (rol + asociación), `cambiarContrasena`. |
+| `inventario.ts` | CRUD de `inventario_residuos`. |
+| `solicitudes.ts` | Listado + wrappers de las RPC del flujo (`crearSolicitud`, `aprobarSolicitud`, `rechazarSolicitud`, `cancelarSolicitud`, `completarSolicitud`). |
+| `recolecciones.ts` | Historial, `subirComprobante` y `abrirComprobante` (URL firmada del bucket privado). |
+| `mensajes.ts` / `notificaciones.ts` | Chat y notificaciones, con suscripciones Realtime (`suscribirMensajes`, `suscribirNotificaciones`, `suscribirCambios`). |
 
 ### Tipos (`types/`)
 
@@ -381,15 +405,11 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
   `embarcacion.ts`, `persona.ts`, `manifiesto.ts`, `asociacion.ts`. `usuario.ts` no lo usa
   nadie. `images.d.ts` tipa los `import` de PNG.
 
-### Datos mock todavía activos
+### Datos demo
 
-- `lib/mock/recolector.ts` — **alimenta todo `/dashboard-recolector`** (9 puertos con lat/lng,
-  solicitudes, historial, notificaciones, KPIs, perfil de empresa; `TipoResiduo = plastico |
-  aceite | carton | chatarra | vidrio | organico`). Cabecera del archivo: *"Reemplazar por
-  queries a Supabase cuando el modelo esté disponible."*
-- `lib/mock/asociaciones.ts` — **alimenta la UI de `/dashboard/asociaciones`** (inventario,
-  empresas, solicitudes entrantes, conversaciones de chat).
 - `lib/data.ts` — datos demo antiguos (embarcaciones/personas/manifiestos); en desuso.
+- `lib/mock/*` se eliminó en la Fase 1: el módulo de asociaciones y el portal recolector ya usan
+  Supabase.
 
 ---
 
@@ -505,6 +525,8 @@ npm run dev      # http://localhost:3000  → redirige a /es
 3. Crear el bucket público **`images`** y subir `logoSemarnat.png` (lo necesitan los generadores
    de PDF).
 4. Verificar que las funciones RPC (`get_reporte_detallado`, ...) quedaron creadas.
+5. Aplicar **en orden** las migraciones de `supabase/migrations/` (roles + RLS y módulo de
+   asociaciones recolectoras). Son idempotentes: se pueden volver a ejecutar.
 
 ---
 
@@ -529,15 +551,13 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 
 - **`saveFirmaDigital`** (firma del Responsable de Líquidos guardada en el PDF) — pendiente en
   BD y en el módulo de PDF; el servicio es un *stub*.
-- **Pantalla de Asociaciones Recolectoras** — el backend (`lib/services/asociaciones.ts` + tabla
-  `asociaciones_recolectoras`) está completo, pero la UI corre con **datos mock**.
+- **Factores de CO₂e** de `lib/constants/impacto.ts` son provisionales; validarlos con el asesor
+  externo antes de usarlos en reportes oficiales.
 
 ### Deuda técnica / cosas a saber antes de tocar el código
 
-- **`/dashboard-recolector` completo y `/dashboard/asociaciones` son prototipos con datos mock**
-  (`lib/mock/*`), sin persistencia. Las acciones se "simulan" con `toast`.
-- **No hay RBAC** — la protección de rutas sólo verifica que haya sesión Supabase; el rol
-  `admin`/`recolector` es una cookie de cliente (ver §7).
+- **Migraciones:** los cambios de esquema nuevos van en `supabase/migrations/`. Los `.sql`
+  sueltos de la raíz son históricos.
 - **`components/simple/SimpleBasuronForm.tsx` está vacío** (0 bytes).
 - **`app/[locale]/dashboard/manifiesto/page.tsx`** (~2250 líneas) es la pantalla real de
   producción y **duplica** buena parte de `components/manifiestos/CreateManifiestoModal.tsx`
@@ -554,7 +574,7 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 - `dashboard/manifiesto-basuron/page.tsx` importa `DashboardLayout` aunque el segmento ya tiene
   layout (doble layout anidado).
 - Archivos sueltos en la raíz: `nuevoDiseño.tsx`, `debug_dashboard_data.ts` (script no
-  conectado), `app/[locale]/dashboard/asociaciones/page.tsx.bak`.
+  conectado).
 
 ---
 
