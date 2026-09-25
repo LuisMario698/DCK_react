@@ -985,3 +985,23 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
 .dark .maplibregl-ctrl-attrib-button {
   filter: invert(1);
 }
+
+/* Mapa de puertos de la landing (opción silueta) */
+.mapa-silueta-contorno {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: mapa-dibujar 2.8s ease-out 0.2s forwards;
+}
+.mapa-silueta-ruta {
+  animation: mapa-flujo 1.2s linear infinite;
+}
+@keyframes mapa-dibujar {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes mapa-flujo {
+  to { stroke-dashoffset: -28; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mapa-silueta-contorno { animation: none; stroke-dashoffset: 0; }
+  .mapa-silueta-ruta { animation: none; }
+}

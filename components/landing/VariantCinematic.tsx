@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
-import { InteractiveMexicoMap } from './InteractiveMexicoMap';
+import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
+import type { VarianteMapa } from './mapa/puertos';
 import { useScrollReveal } from './useScrollReveal';
 import { CountUpNumber } from './CountUpNumber';
 import type { LandingStats } from '@/lib/services/landing_stats';
@@ -265,7 +266,15 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
     ];
 }
 
-export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
+export function VariantCinematic({
+    stats,
+    varianteMapa,
+    compararMapas = false,
+}: {
+    stats: LandingStats | null;
+    varianteMapa: VarianteMapa;
+    compararMapas?: boolean;
+}) {
     // `stats` puede llegar relleno de ceros si la consulta no devolvió filas
     // (RLS bloquea al visitante anónimo). En ese caso la página debe usar el
     // texto de referencia, no afirmar que son datos reales de la BD.
@@ -986,7 +995,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                     </div>
 
                     <div className="reveal" data-delay="100">
-                        <InteractiveMexicoMap />
+                        <SeccionMapaPuertos variante={varianteMapa} mostrarSelector={compararMapas} />
                     </div>
                 </div>
             </section>
