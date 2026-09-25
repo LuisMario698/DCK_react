@@ -1,33 +1,92 @@
 'use client';
 
-import { Download, FileDown } from 'lucide-react';
-import { HISTORIAL_MOCK, TIPO_RESIDUO_LABEL } from '@/lib/mock/recolector';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { parseFechaLocal } from '@/lib/utils/fechas';
+import { Download, FileDown, Loader2, Truck } from 'lucide-react';
+import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad } from '@/lib/constants/residuos';
+import { formatearFecha } from '@/lib/utils/fechas';
+import { RecoleccionConAsociacion } from '@/types/database';
+import { abrirComprobante, getRecolecciones } from '@/lib/services/recolecciones';
+import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
 
 export default function HistorialPage() {
-    const descargarTodo = () => {
-        toast.info('Descarga simulada', {
-            description: 'En la integración real esto exportará un CSV con todo el historial.',
-        });
+    const [historial, setHistorial] = useState<RecoleccionConAsociacion[]>([]);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [abriendo, setAbriendo] = useState<number | null>(null);
+
+    const cargar = () => {
+        setCargando(true);
+        getRecolecciones()
+            .then((r) => {
+                setHistorial(r);
+                setError(null);
+            })
+            .catch((err) => setError(mensajeError(err, 'No se pudo cargar el historial.')))
+            .finally(() => setCargando(false));
     };
 
-    const descargarComprobante = (id: string) => {
-        toast.success(`Comprobante ${id} descargado`);
+    useEffect(cargar, []);
+
+    const descargarCSV = () => {
+        const filas = [
+            ['Folio', 'Fecha', 'Centro de acopio', 'Residuo', 'Cantidad', 'Unidad', 'Entregó', 'Recibió', 'Observaciones'],
+            ...historial.map((h) => [
+                h.folio,
+                h.fecha,
+                PUERTO_PENASCO.nombre,
+                TIPO_RESIDUO_LABEL[h.tipo],
+                String(h.cantidad),
+                h.unidad,
+                h.entregado_por ?? '',
+                h.recibido_por ?? '',
+                h.observaciones ?? '',
+            ]),
+        ];
+        const csv = filas.map((f) => f.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\r\n');
+        // BOM para que Excel reconozca los acentos
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `historial-recolecciones-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
+
+    const verComprobante = async (h: RecoleccionConAsociacion) => {
+        if (!h.comprobante_pdf_path) {
+            return toast.info('El comprobante aún no está disponible', {
+                description: 'El centro de acopio lo generará en breve. Si lo necesitas, escríbeles desde Mensajes.',
+            });
+        }
+        setAbriendo(h.id);
+        try {
+            await abrirComprobante(h.comprobante_pdf_path);
+        } catch (err) {
+            toast.error(mensajeError(err, 'No se pudo abrir el comprobante.'));
+        } finally {
+            setAbriendo(null);
+        }
+    };
+
+    if (cargando) return <Cargando texto="Cargando historial…" />;
 
     return (
         <div className="space-y-6">
+            {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
+
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {HISTORIAL_MOCK.length} recolecciones registradas
+                    {historial.length} {historial.length === 1 ? 'recolección registrada' : 'recolecciones registradas'}
                 </p>
                 <button
-                    onClick={descargarTodo}
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"
+                    onClick={descargarCSV}
+                    disabled={historial.length === 0}
+                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"
                 >
                     <FileDown className="w-4 h-4" />
-                    Descargar historial
+                    Descargar historial (CSV)
                 </button>
             </div>
 
@@ -36,41 +95,46 @@ export default function HistorialPage() {
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                         <thead className="bg-gray-50 dark:bg-gray-800/50">
                             <tr>
+                                <Th>Folio</Th>
                                 <Th>Fecha</Th>
-                                <Th>Puerto</Th>
                                 <Th>Residuo</Th>
                                 <Th>Cantidad</Th>
+                                <Th className="hidden md:table-cell">Recibió</Th>
                                 <Th className="text-right">Comprobante</Th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
-                            {HISTORIAL_MOCK.map((h) => (
+                            {historial.map((h) => (
                                 <tr key={h.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {parseFechaLocal(h.fecha).toLocaleDateString('es-MX', {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                        })}
+                                    <td className="px-4 sm:px-6 py-4 text-sm font-mono font-semibold text-gray-900 dark:text-white whitespace-nowrap">{h.folio}</td>
+                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">{formatearFecha(h.fecha)}</td>
+                                    <td className="px-4 sm:px-6 py-4">
+                                        <ResiduoBadge tipo={h.tipo} />
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{h.puerto}</td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                                        {TIPO_RESIDUO_LABEL[h.residuo]}
+                                    <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                        {formatCantidad(h.cantidad)} {h.unidad}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white">
-                                        {h.cantidad} {h.unidad}
-                                    </td>
+                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">{h.recibido_por || '—'}</td>
                                     <td className="px-4 sm:px-6 py-4 text-right">
                                         <button
-                                            onClick={() => descargarComprobante(h.id)}
-                                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                                            onClick={() => verComprobante(h)}
+                                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
+                                            disabled={abriendo === h.id}
                                         >
-                                            <Download className="w-4 h-4" />
+                                            {abriendo === h.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                                             PDF
                                         </button>
                                     </td>
                                 </tr>
                             ))}
+                            {historial.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        <Truck className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                                        Aún no tienes recolecciones completadas.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>

@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
 import {
     LayoutDashboard,
     Map,
@@ -11,13 +10,14 @@ import {
     Leaf,
     UserCircle,
     Bell,
-    Settings,
+    MessageSquare,
     LogOut,
     Recycle,
     ChevronsLeft,
     X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
+import { useRecolector } from './RecolectorContext';
 
 interface SidebarRecolectorProps {
     isOpen: boolean;
@@ -29,18 +29,19 @@ interface SidebarRecolectorProps {
 export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarRecolectorProps) {
     const pathname = usePathname();
     const { signOut, user } = useAuth();
+    const { asociacion, mensajesNoLeidos, notificacionesNoLeidas } = useRecolector();
     const locale = pathname.split('/')[1] || 'es';
     const base = `/${locale}/dashboard-recolector`;
 
     const items = [
         { label: 'Inicio', href: base, icon: LayoutDashboard },
-        { label: 'Mapa de puertos', href: `${base}/mapa`, icon: Map },
+        { label: 'Residuos disponibles', href: `${base}/mapa`, icon: Map },
         { label: 'Mis solicitudes', href: `${base}/solicitudes`, icon: ClipboardList },
         { label: 'Historial', href: `${base}/historial`, icon: History },
         { label: 'Impacto ambiental', href: `${base}/impacto`, icon: Leaf },
+        { label: 'Mensajes', href: `${base}/mensajes`, icon: MessageSquare, badge: mensajesNoLeidos },
+        { label: 'Notificaciones', href: `${base}/notificaciones`, icon: Bell, badge: notificacionesNoLeidas },
         { label: 'Perfil', href: `${base}/perfil`, icon: UserCircle },
-        { label: 'Notificaciones', href: `${base}/notificaciones`, icon: Bell },
-        { label: 'Configuración', href: `${base}/configuracion`, icon: Settings },
     ];
 
     const isActive = (href: string) =>
@@ -102,8 +103,18 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                                         }
                                     `}
                                 >
-                                    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'scale-110' : ''} transition-transform`} />
-                                    {!isCollapsed && <span className="ml-3 text-sm">{item.label}</span>}
+                                    <span className="relative flex-shrink-0">
+                                        <Icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
+                                        {isCollapsed && !!item.badge && (
+                                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500" />
+                                        )}
+                                    </span>
+                                    {!isCollapsed && <span className="ml-3 text-sm flex-1">{item.label}</span>}
+                                    {!isCollapsed && !!item.badge && (
+                                        <span className="ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">
+                                            {item.badge > 99 ? '99+' : item.badge}
+                                        </span>
+                                    )}
                                 </Link>
                             );
                         })}
@@ -113,14 +124,14 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                 <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1">
                     <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2`}>
                         <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-sm border border-emerald-200 dark:border-emerald-800 flex-shrink-0">
-                            {user?.user_metadata?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'E'}
+                            {(asociacion?.nombre_asociacion || user?.email || 'E').charAt(0).toUpperCase()}
                         </div>
                         {!isCollapsed && (
                             <div className="flex flex-col overflow-hidden">
                                 <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
-                                    {user?.user_metadata?.full_name || 'Empresa'}
+                                    {asociacion?.nombre_asociacion || user?.user_metadata?.full_name || 'Empresa'}
                                 </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || 'demo@ecorecicla.mx'}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</span>
                             </div>
                         )}
                     </div>

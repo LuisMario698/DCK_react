@@ -1,56 +1,87 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-import {
-    ClipboardCheck,
-    Truck,
-    Package,
-    Leaf,
-    ArrowRight,
-    CheckCircle2,
-    Droplet,
-    XCircle,
-    Sparkles,
-} from 'lucide-react';
-import {
-    KPIS_MOCK,
-    NOTIFICACIONES_MOCK,
-    PUERTOS_MOCK,
-    formatHaceMin,
-} from '@/lib/mock/recolector';
-import { PortMap } from '@/components/recolector/PortMap';
+import { ClipboardCheck, Truck, Package, Leaf, ArrowRight, Sparkles, Inbox } from 'lucide-react';
+import { PUERTO_PENASCO, formatCantidad, tiempoRelativo } from '@/lib/constants/residuos';
+import { co2eEvitadoKg } from '@/lib/constants/impacto';
+import { InventarioResiduo, Notificacion, Recoleccion, SolicitudRecoleccion } from '@/types/database';
+import { getInventario } from '@/lib/services/inventario';
+import { getSolicitudes } from '@/lib/services/solicitudes';
+import { getRecolecciones } from '@/lib/services/recolecciones';
+import { getNotificaciones } from '@/lib/services/notificaciones';
+import { useRecolector } from '@/components/recolector/RecolectorContext';
+import { Cargando } from '@/components/asociaciones/ui';
+import { NotifIcon } from '@/components/recolector/NotifIcon';
+
+const PortMap = dynamic(() => import('@/components/recolector/PortMap').then((m) => m.PortMap), {
+    ssr: false,
+    loading: () => <div className="w-full h-72 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />,
+});
 
 export default function DashboardRecolectorPage() {
     const pathname = usePathname();
     const locale = pathname.split('/')[1] || 'es';
     const base = `/${locale}/dashboard-recolector`;
+    const { asociacion, cargando: cargandoPerfil } = useRecolector();
+
+    const [inventario, setInventario] = useState<InventarioResiduo[]>([]);
+    const [solicitudes, setSolicitudes] = useState<SolicitudRecoleccion[]>([]);
+    const [recolecciones, setRecolecciones] = useState<Recoleccion[]>([]);
+    const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+    const [cargando, setCargando] = useState(true);
+
+    useEffect(() => {
+        Promise.all([getInventario(), getSolicitudes(), getRecolecciones(), getNotificaciones(5)])
+            .then(([inv, sol, rec, notif]) => {
+                setInventario(inv);
+                setSolicitudes(sol);
+                setRecolecciones(rec);
+                setNotificaciones(notif);
+            })
+            .catch((err) => console.error('Error cargando el inicio del recolector:', err))
+            .finally(() => setCargando(false));
+    }, []);
+
+    const disponibles = inventario.filter((i) => i.cantidad > 0);
+    const activas = solicitudes.filter((s) => s.estado === 'pendiente' || s.estado === 'aprobada').length;
+    const kgRecolectados = recolecciones.filter((r) => r.unidad === 'kg').reduce((s, r) => s + r.cantidad, 0);
+    const co2 = recolecciones.reduce((s, r) => s + co2eEvitadoKg(r.tipo, r.cantidad), 0);
+
+    const puertos = useMemo(
+        () => [{ ...PUERTO_PENASCO, estado: disponibles.length > 0 ? ('disponible' as const) : ('sin_disponibilidad' as const) }],
+        [disponibles.length]
+    );
+
+    if (cargando || cargandoPerfil) return <Cargando />;
 
     const kpis = [
         {
             label: 'Solicitudes activas',
-            value: KPIS_MOCK.solicitudesActivas,
+            value: activas,
             icon: ClipboardCheck,
             accent: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
             href: `${base}/solicitudes`,
         },
         {
             label: 'Recolecciones completadas',
-            value: KPIS_MOCK.recoleccionesCompletadas,
+            value: recolecciones.length,
             icon: Truck,
             accent: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
             href: `${base}/historial`,
         },
         {
-            label: 'Material obtenido',
-            value: `${KPIS_MOCK.materialObtenidoToneladas} t`,
+            label: 'Material sólido obtenido',
+            value: kgRecolectados >= 1000 ? `${formatCantidad(kgRecolectados / 1000)} t` : `${formatCantidad(kgRecolectados)} kg`,
             icon: Package,
             accent: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
             href: `${base}/impacto`,
         },
         {
-            label: 'CO₂ evitado',
-            value: `${KPIS_MOCK.co2EvitadoToneladas} t`,
+            label: 'CO₂e evitado (estimado)',
+            value: co2 >= 1000 ? `${formatCantidad(co2 / 1000)} t` : `${formatCantidad(Math.round(co2))} kg`,
             icon: Leaf,
             accent: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
             href: `${base}/impacto`,
@@ -66,15 +97,17 @@ export default function DashboardRecolectorPage() {
                 </div>
                 <div className="relative">
                     <p className="text-emerald-50 text-sm font-medium">¡Bienvenido de vuelta!</p>
-                    <h2 className="text-2xl sm:text-3xl font-bold mt-1">EcoRecicla S.A.</h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold mt-1">{asociacion?.nombre_asociacion ?? 'Empresa recolectora'}</h2>
                     <p className="text-emerald-50 text-sm mt-2 max-w-xl">
-                        Tienes <strong>3 solicitudes activas</strong> y <strong>4 puertos</strong> con residuos disponibles cerca de ti.
+                        Tienes <strong>{activas} {activas === 1 ? 'solicitud activa' : 'solicitudes activas'}</strong> y el
+                        centro de acopio de {PUERTO_PENASCO.nombre} tiene{' '}
+                        <strong>{disponibles.length} {disponibles.length === 1 ? 'residuo disponible' : 'residuos disponibles'}</strong>.
                     </p>
                     <Link
                         href={`${base}/mapa`}
                         className="inline-flex items-center gap-2 mt-4 bg-white text-emerald-700 hover:bg-emerald-50 font-semibold text-sm px-4 py-2 rounded-lg transition-colors shadow-md"
                     >
-                        Explorar mapa <ArrowRight className="w-4 h-4" />
+                        Ver residuos y solicitar <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
             </div>
@@ -107,17 +140,19 @@ export default function DashboardRecolectorPage() {
                 <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white">Puertos cercanos</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Residuos disponibles en tiempo real</p>
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white">Centro de acopio</h3>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {PUERTO_PENASCO.nombre}, {PUERTO_PENASCO.region}
+                            </p>
                         </div>
                         <Link
                             href={`${base}/mapa`}
                             className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
                         >
-                            Ver mapa completo <ArrowRight className="w-3.5 h-3.5" />
+                            Ver inventario <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
-                    <PortMap puertos={PUERTOS_MOCK} height="h-72" />
+                    <PortMap puertos={puertos} selectedId={PUERTO_PENASCO.id} height="h-72" />
                 </div>
 
                 {/* Feed de actividad */}
@@ -131,35 +166,27 @@ export default function DashboardRecolectorPage() {
                             Ver todas
                         </Link>
                     </div>
-                    <ul className="space-y-3">
-                        {NOTIFICACIONES_MOCK.slice(0, 5).map((n) => (
-                            <li key={n.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:pb-0">
-                                <NotifIcon tipo={n.tipo} />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{n.titulo}</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{n.detalle}</p>
-                                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{formatHaceMin(n.haceMin)}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    {notificaciones.length === 0 ? (
+                        <div className="flex flex-col items-center gap-2 py-10 text-gray-400">
+                            <Inbox className="w-8 h-8" />
+                            <p className="text-sm">Sin actividad todavía.</p>
+                        </div>
+                    ) : (
+                        <ul className="space-y-3">
+                            {notificaciones.map((n) => (
+                                <li key={n.id} className="flex items-start gap-3 pb-3 border-b border-gray-100 dark:border-gray-800 last:border-b-0 last:pb-0">
+                                    <NotifIcon tipo={n.tipo} />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{n.titulo}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{n.detalle}</p>
+                                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{tiempoRelativo(n.created_at)}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
             </div>
-        </div>
-    );
-}
-
-function NotifIcon({ tipo }: { tipo: 'aprobada' | 'rechazada' | 'completada' | 'nuevo_residuo' }) {
-    const map = {
-        aprobada: { Icon: CheckCircle2, cls: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' },
-        rechazada: { Icon: XCircle, cls: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' },
-        completada: { Icon: Truck, cls: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
-        nuevo_residuo: { Icon: Droplet, cls: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400' },
-    } as const;
-    const { Icon, cls } = map[tipo];
-    return (
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${cls}`}>
-            <Icon className="w-4 h-4" />
         </div>
     );
 }

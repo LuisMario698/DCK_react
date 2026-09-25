@@ -1,11 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { PuertoMock } from '@/lib/mock/recolector';
+
+/** Punto que se dibuja en el mapa (un centro de acopio). */
+export interface PuertoMapa {
+    id: string;
+    nombre: string;
+    lat: number;
+    lng: number;
+    estado: 'disponible' | 'sin_disponibilidad';
+}
 
 interface PortMapProps {
-    puertos: PuertoMock[];
+    puertos: PuertoMapa[];
     selectedId?: string | null;
     onSelect?: (id: string) => void;
     height?: string;
@@ -57,6 +65,9 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
     const mapRef = useRef<any>(null);
     const markersRef = useRef<Map<string, any>>(new Map());
     const initialized = useRef(false);
+    // El mapa se crea de forma asíncrona (import dinámico de Leaflet); los
+    // marcadores se sincronizan hasta que está listo.
+    const [listo, setListo] = useState(false);
 
     // Init map once
     useEffect(() => {
@@ -81,8 +92,8 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
             }
 
             const map = L.map(containerRef.current, {
-                center: [23.5, -102],
-                zoom: 5,
+                center: [29.5, -111.5],
+                zoom: 6,
                 zoomControl: false,
                 attributionControl: false,
             });
@@ -102,6 +113,7 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
 
             // Attribution minimal
             L.control.attribution({ position: 'bottomright', prefix: '© OpenStreetMap' }).addTo(map);
+            setListo(true);
         };
 
         init();
@@ -112,6 +124,7 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
                 mapRef.current = null;
                 initialized.current = false;
                 markersRef.current.clear();
+                setListo(false);
             }
         };
     }, []);
@@ -177,13 +190,13 @@ export function PortMap({ puertos, selectedId, onSelect, height = 'h-80' }: Port
             if (selectedId) {
                 const target = puertos.find((p) => p.id === selectedId);
                 if (target) {
-                    map.flyTo([target.lat, target.lng], 7, { animate: true, duration: 0.8 });
+                    map.flyTo([target.lat, target.lng], 9, { animate: true, duration: 0.8 });
                 }
             }
         };
 
         syncMarkers();
-    }, [puertos, selectedId, onSelect]);
+    }, [puertos, selectedId, onSelect, listo]);
 
     return (
         <div
