@@ -277,6 +277,8 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
     const [showLoginModal, setShowLoginModal] = useState(false);
     // null = mostrar selector, 'admin'/'recolector' = ir directo al form
     const [modalRole, setModalRole] = useState<ModalRole | null>(null);
+    // Página protegida que se pidió sin sesión (?siguiente=...), para volver tras el login
+    const [siguiente, setSiguiente] = useState<string | null>(null);
     const [scrolled, setScrolled] = useState(false);
 
     const openLoginModal = () => {
@@ -292,6 +294,9 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
         if (params.get('login') === '1') {
             setModalRole(readSavedRole());
             setShowLoginModal(true);
+            // Sólo rutas internas: evita redirecciones abiertas a otros dominios
+            const destino = params.get('siguiente');
+            if (destino && /^\/(?!\/)[\w\-/]*$/.test(destino)) setSiguiente(destino);
         }
     }, []);
 
@@ -1135,8 +1140,11 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                 </div>
                                 <LoginForm
                                     showLogo={true}
-                                    redirectTo={modalRole === 'recolector' ? '/dashboard-recolector' : '/dashboard'}
-                                    onSuccess={cerrarLoginModal}
+                                    redirectTo={siguiente ?? (modalRole === 'recolector' ? '/dashboard-recolector' : '/dashboard')}
+                                    // Tras iniciar sesión sólo se oculta el modal: tocar la URL aquí
+                                    // (replaceState de cerrarLoginModal) cancelaba la navegación
+                                    // al panel y el usuario se quedaba en la landing.
+                                    onSuccess={() => setShowLoginModal(false)}
                                 />
                             </div>
                         </div>

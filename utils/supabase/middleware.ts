@@ -62,9 +62,10 @@ export async function updateSession(request: NextRequest) {
     const locale = (locales as readonly string[]).includes(primerSegmento) ? primerSegmento : defaultLocale
 
     // Ya no existe una página /login: el inicio de sesión es un modal en la landing.
-    // Sin sesión, devolvemos al inicio con ?login=1 para que el modal se abra solo.
+    // Sin sesión, devolvemos al inicio con ?login=1 para que el modal se abra solo
+    // y ?siguiente para volver a la página pedida después de iniciar sesión.
     if (!user && isDashboard) {
-        return redirigir('/', { login: '1' })
+        return redirigir('/', { login: '1', siguiente: pathname })
     }
 
     // Con sesión, el rol se lee de `profiles` (no de la cookie simar_user_role,
