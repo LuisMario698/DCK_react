@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { ClipboardCheck, Truck, Package, Leaf, ArrowRight, Sparkles, Inbox } from 'lucide-react';
 import { PUERTO_PENASCO, formatCantidad, tiempoRelativo } from '@/lib/constants/residuos';
@@ -15,11 +14,8 @@ import { getNotificaciones } from '@/lib/services/notificaciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando } from '@/components/asociaciones/ui';
 import { NotifIcon } from '@/components/recolector/NotifIcon';
+import { MapaCentroAcopio } from '@/components/recolector/MapaCentroAcopio';
 
-const PortMap = dynamic(() => import('@/components/recolector/PortMap').then((m) => m.PortMap), {
-    ssr: false,
-    loading: () => <div className="w-full h-72 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />,
-});
 
 export default function DashboardRecolectorPage() {
     const pathname = usePathname();
@@ -49,11 +45,6 @@ export default function DashboardRecolectorPage() {
     const activas = solicitudes.filter((s) => s.estado === 'pendiente' || s.estado === 'aprobada').length;
     const kgRecolectados = recolecciones.filter((r) => r.unidad === 'kg').reduce((s, r) => s + r.cantidad, 0);
     const co2 = recolecciones.reduce((s, r) => s + co2eEvitadoKg(r.tipo, r.cantidad), 0);
-
-    const puertos = useMemo(
-        () => [{ ...PUERTO_PENASCO, estado: disponibles.length > 0 ? ('disponible' as const) : ('sin_disponibilidad' as const) }],
-        [disponibles.length]
-    );
 
     if (cargando || cargandoPerfil) return <Cargando />;
 
@@ -152,7 +143,7 @@ export default function DashboardRecolectorPage() {
                             Ver inventario <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
-                    <PortMap puertos={puertos} selectedId={PUERTO_PENASCO.id} height="h-72" />
+                    <MapaCentroAcopio alto="h-80" />
                 </div>
 
                 {/* Feed de actividad */}

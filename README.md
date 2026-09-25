@@ -96,14 +96,14 @@ distintos** que ambos se llaman "manifiesto"; no confundirlos.
 | i18n | **next-intl** | `^4.5` | Locales `es` (default) y `en`; prefijo de locale siempre |
 | PDF | **jsPDF** | `^3` | Generación 100% en el cliente |
 | Gráficas | **Recharts** | `^3.5` | Usado en **un solo archivo** (`dashboard-recolector/impacto`) |
-| Mapas | **Leaflet** | `^1.9` | Usado en **un solo componente** (`recolector/PortMap`) |
+| Mapas | **Google Maps (iframe incrustado)** | — | Sin API key ni dependencia npm; un solo componente (`recolector/MapaCentroAcopio`) |
 | Fechas | **date-fns** | `^4` | + `react-datepicker ^8` |
 | Iconos | **lucide-react** | — | + set SVG propio en `components/ui/Icons.tsx` |
 | Toasts | **sonner** | `^2` | |
 | Excel | **xlsx** (SheetJS) | `^0.18` | Export de reportes |
 
 **Dependencias instaladas pero NO utilizadas** (candidatas a eliminar): `html2canvas`,
-`react-leaflet`, `react-time-picker`, `react-time-picker-input`, `browser-image-compression`,
+`react-time-picker`, `react-time-picker-input`, `browser-image-compression`,
 `@types/react-datepicker` es necesario pero `react-datepicker` se usa parcialmente.
 
 - **Node.js**: 20+ (`@types/node ^20`).
@@ -203,7 +203,7 @@ DCK_react/
 │   ├── personas/      # PersonasTable, CreatePersonaModal, TiposPersonaManager
 │   ├── embarcaciones/ # EmbarcacionesTable, CreateEmbarcacionModal, Pagination (reusado)
 │   ├── asociaciones/  # ChatTab, EmpresasTab, InventarioTab, SolicitudesTab, Conversacion, ui
-│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, PortMap (Leaflet)
+│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, MapaCentroAcopio (Google Maps)
 │   └── simple/        # SimpleManifiestoForm, SimpleEstadisticas, SimpleBasuronForm (VACÍO)
 │
 ├── lib/
@@ -563,9 +563,10 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
   producción y **duplica** buena parte de `components/manifiestos/CreateManifiestoModal.tsx`
   (incluida su propia lógica de firma en canvas).
 - **Recharts se usa en un único archivo** (`dashboard-recolector/impacto/page.tsx`); todo lo
-  demás son gráficas hechas a mano con divs/SVG. **Leaflet se usa en un único componente**
-  (`components/recolector/PortMap.tsx`); el mapa de la landing es SVG puro.
-- **Dependencias sin usar**: `html2canvas`, `react-leaflet`, `react-time-picker`,
+  demás son gráficas hechas a mano con divs/SVG. El mapa del portal recolector es un **iframe de
+  Google Maps** (`components/recolector/MapaCentroAcopio.tsx`, sin API key; Leaflet se quitó
+  porque se dibujaba encima de los modales); el mapa de la landing es SVG puro.
+- **Dependencias sin usar**: `html2canvas`, `react-time-picker`,
   `react-time-picker-input`, `browser-image-compression`.
 - **Servicios que consultan tablas eliminadas** (`tipos_residuos`, `usuarios_sistema`) — ver §8.
 - **Nombres de marca inconsistentes** (SiMAR / CIAD / DCK / CDK) en toda la UI.

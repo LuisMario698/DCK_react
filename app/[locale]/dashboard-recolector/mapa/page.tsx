@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { CheckCircle2, MapPin, Anchor, RefreshCw, Package, Filter, Send } from 'lucide-react';
@@ -21,6 +20,7 @@ import { getInventario } from '@/lib/services/inventario';
 import { crearSolicitud } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
+import { MapaCentroAcopio } from '@/components/recolector/MapaCentroAcopio';
 import {
     BotonPrimario,
     BotonSecundario,
@@ -32,15 +32,6 @@ import {
     inputCls,
     mensajeError,
 } from '@/components/asociaciones/ui';
-
-const PortMap = dynamic(() => import('@/components/recolector/PortMap').then((m) => m.PortMap), {
-    ssr: false,
-    loading: () => (
-        <div className="w-full h-full rounded-xl flex items-center justify-center bg-gray-100 dark:bg-gray-900">
-            <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-        </div>
-    ),
-});
 
 export default function MapaPage() {
     const pathname = usePathname();
@@ -75,11 +66,6 @@ export default function MapaPage() {
     const ultimaActualizacion = inventario.reduce<string | null>(
         (max, i) => (!max || i.updated_at > max ? i.updated_at : max),
         null
-    );
-
-    const puertos = useMemo(
-        () => [{ ...PUERTO_PENASCO, estado: disponibles.length > 0 ? ('disponible' as const) : ('sin_disponibilidad' as const) }],
-        [disponibles.length]
     );
 
     if (cargando) return <Cargando texto="Cargando residuos disponibles…" />;
@@ -118,8 +104,8 @@ export default function MapaPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Mapa */}
-                <div className="lg:col-span-2 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm" style={{ height: 520 }}>
-                    <PortMap puertos={puertos} selectedId={PUERTO_PENASCO.id} height="h-full" />
+                <div className="lg:col-span-2 h-[420px] lg:h-[560px]">
+                    <MapaCentroAcopio alto="h-full" zoom={15} />
                 </div>
 
                 {/* Panel lateral: inventario del centro de acopio */}

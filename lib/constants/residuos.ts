@@ -70,13 +70,16 @@ export const ESTADO_SOLICITUD_LABEL: Record<EstadoSolicitud, string> = {
 /**
  * Centro de acopio. En la Fase 1 sólo existe Puerto Peñasco; si en el futuro
  * se suman puertos, esto pasa a una tabla `puertos`.
+ *
+ * Coordenadas: calle Recinto Portuario, col. El Puerto (OpenStreetMap).
+ * Ajustarlas al punto exacto del centro de acopio si se conoce.
  */
 export const PUERTO_PENASCO = {
     id: 'penasco',
     nombre: 'Puerto Peñasco',
     region: 'Sonora',
-    lat: 31.3167,
-    lng: -113.5333,
+    lat: 31.3037,
+    lng: -113.5451,
     imagen: '/images/penasco.jpg',
 } as const;
 
