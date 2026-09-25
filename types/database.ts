@@ -1,4 +1,5 @@
 // Tipos basados en la estructura de base de datos de Supabase
+import type { EstadoSolicitud, TipoResiduo, UnidadResiduo } from '@/lib/constants/residuos';
 
 export interface Buque {
   id: number;
@@ -26,6 +27,11 @@ export interface AsociacionRecolectora {
   certificaciones: string[] | null;
   especialidad: string[] | null;
   estado: 'Activo' | 'Inactivo' | 'Suspendido';
+  rfc: string | null;
+  descripcion: string | null;
+  sitio_web: string | null;
+  ubicacion: string | null;
+  tipos_residuo: TipoResiduo[];
   created_at: string;
   updated_at: string;
 }
@@ -134,4 +140,117 @@ export interface ManifiestoNoFirmado {
 
 export interface ManifiestoNoFirmadoConRelaciones extends ManifiestoNoFirmado {
   manifiesto?: ManifiestoConRelaciones;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Roles y módulo de asociaciones recolectoras (Fase 1)
+// ─────────────────────────────────────────────────────────────────────
+
+export type RolUsuario = 'admin' | 'recolector' | 'pendiente';
+
+export interface Perfil {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  rol: RolUsuario;
+  asociacion_id: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Invitacion {
+  id: number;
+  email: string;
+  rol: 'admin' | 'recolector';
+  asociacion_id: number | null;
+  creada_por: string | null;
+  aceptada_at: string | null;
+  created_at: string;
+}
+
+export interface InventarioResiduo {
+  id: number;
+  tipo: TipoResiduo;
+  /** Cantidad disponible para nuevas solicitudes (ya descontado lo aprobado). */
+  cantidad: number;
+  unidad: UnidadResiduo;
+  notas: string | null;
+  publicado: boolean;
+  created_at: string;
+  updated_at: string;
+  updated_by: string | null;
+}
+
+export interface SolicitudRecoleccion {
+  id: number;
+  asociacion_id: number;
+  tipo: TipoResiduo;
+  cantidad_solicitada: number;
+  cantidad_aprobada: number | null;
+  unidad: UnidadResiduo;
+  fecha_propuesta: string;
+  mensaje: string | null;
+  estado: EstadoSolicitud;
+  motivo_rechazo: string | null;
+  creada_por: string | null;
+  resuelta_por: string | null;
+  resuelta_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SolicitudConAsociacion extends SolicitudRecoleccion {
+  asociacion: Pick<AsociacionRecolectora, 'id' | 'nombre_asociacion' | 'ubicacion' | 'email' | 'telefono' | 'rfc' | 'estado'> | null;
+}
+
+export interface Recoleccion {
+  id: number;
+  folio: string;
+  solicitud_id: number;
+  asociacion_id: number;
+  tipo: TipoResiduo;
+  cantidad: number;
+  unidad: UnidadResiduo;
+  fecha: string;
+  entregado_por: string | null;
+  recibido_por: string | null;
+  observaciones: string | null;
+  /** Ruta dentro del bucket privado `recolecciones_pdf`. */
+  comprobante_pdf_path: string | null;
+  registrada_por: string | null;
+  created_at: string;
+}
+
+export interface RecoleccionConAsociacion extends Recoleccion {
+  asociacion: Pick<AsociacionRecolectora, 'id' | 'nombre_asociacion' | 'rfc' | 'ubicacion'> | null;
+}
+
+export interface Mensaje {
+  id: number;
+  asociacion_id: number;
+  autor_id: string | null;
+  autor_rol: 'admin' | 'recolector';
+  texto: string;
+  leido_at: string | null;
+  created_at: string;
+}
+
+export type TipoNotificacion =
+  | 'nueva_solicitud'
+  | 'aprobada'
+  | 'rechazada'
+  | 'completada'
+  | 'cancelada'
+  | 'nuevo_residuo';
+
+export interface Notificacion {
+  id: number;
+  destinatario: 'admin' | 'recolector';
+  asociacion_id: number | null;
+  tipo: TipoNotificacion;
+  titulo: string;
+  detalle: string | null;
+  leida: boolean;
+  created_at: string;
 }
