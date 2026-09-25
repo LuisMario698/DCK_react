@@ -96,7 +96,7 @@ distintos** que ambos se llaman "manifiesto"; no confundirlos.
 | i18n | **next-intl** | `^4.5` | Locales `es` (default) y `en`; prefijo de locale siempre |
 | PDF | **jsPDF** | `^3` | Generación 100% en el cliente |
 | Gráficas | **Recharts** | `^3.5` | Usado en **un solo archivo** (`dashboard-recolector/impacto`) |
-| Mapas | **Google Maps (iframe incrustado)** | — | Sin API key ni dependencia npm; un solo componente (`recolector/MapaCentroAcopio`) |
+| Mapas | **MapLibre GL JS** + **react-map-gl** | `^5` / `^8` | Teselas vectoriales de OpenFreeMap (gratis, sin API key); un solo componente (`recolector/MapaCentroAcopio`) |
 | Fechas | **date-fns** | `^4` | + `react-datepicker ^8` |
 | Iconos | **lucide-react** | — | + set SVG propio en `components/ui/Icons.tsx` |
 | Toasts | **sonner** | `^2` | |
@@ -203,7 +203,7 @@ DCK_react/
 │   ├── personas/      # PersonasTable, CreatePersonaModal, TiposPersonaManager
 │   ├── embarcaciones/ # EmbarcacionesTable, CreateEmbarcacionModal, Pagination (reusado)
 │   ├── asociaciones/  # ChatTab, EmpresasTab, InventarioTab, SolicitudesTab, Conversacion, ui
-│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, MapaCentroAcopio (Google Maps)
+│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, MapaCentroAcopio (MapLibre)
 │   └── simple/        # SimpleManifiestoForm, SimpleEstadisticas, SimpleBasuronForm (VACÍO)
 │
 ├── lib/
@@ -563,9 +563,10 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
   producción y **duplica** buena parte de `components/manifiestos/CreateManifiestoModal.tsx`
   (incluida su propia lógica de firma en canvas).
 - **Recharts se usa en un único archivo** (`dashboard-recolector/impacto/page.tsx`); todo lo
-  demás son gráficas hechas a mano con divs/SVG. El mapa del portal recolector es un **iframe de
-  Google Maps** (`components/recolector/MapaCentroAcopio.tsx`, sin API key; Leaflet se quitó
-  porque se dibujaba encima de los modales); el mapa de la landing es SVG puro.
+  demás son gráficas hechas a mano con divs/SVG. El mapa del portal recolector usa **MapLibre GL
+  JS + react-map-gl** con teselas de OpenFreeMap (`components/recolector/MapaCentroAcopio.tsx`).
+  `maplibre-gl` está fijado en v5: la v6 carga su web worker con `import.meta.url` y falla con
+  Turbopack. El mapa de la landing es SVG puro.
 - **Dependencias sin usar**: `html2canvas`, `react-time-picker`,
   `react-time-picker-input`, `browser-image-compression`.
 - **Servicios que consultan tablas eliminadas** (`tipos_residuos`, `usuarios_sistema`) — ver §8.

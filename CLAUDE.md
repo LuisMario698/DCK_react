@@ -59,9 +59,10 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
   históricos. El catálogo de residuos está duplicado a propósito: dominio `tipo_residuo` en SQL y
   `lib/constants/residuos.ts`; si cambias uno, cambia el otro.
 - **Recharts** se usa en un solo archivo (`dashboard-recolector/impacto/page.tsx`); el resto de
-  "gráficas" son divs/SVG a mano. El mapa del portal recolector es un **iframe de Google Maps**
-  sin API key (`components/recolector/MapaCentroAcopio.tsx`); no hay Leaflet. El mapa de la
-  landing es SVG puro.
+  "gráficas" son divs/SVG a mano. El mapa del portal recolector usa **MapLibre GL JS +
+  react-map-gl** con teselas de OpenFreeMap, sin API key (`components/recolector/MapaMapLibre.tsx`).
+  Mantén `maplibre-gl` en v5: la v6 no carga su worker con Turbopack. El mapa de la landing es
+  SVG puro.
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar).
 - Dependencias instaladas pero **sin usar**: `html2canvas`, `react-time-picker`,
   `react-time-picker-input`, `browser-image-compression`.
