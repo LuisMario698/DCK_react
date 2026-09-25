@@ -23,8 +23,11 @@ export default async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 2. Run intl middleware
-  return intlMiddleware(request);
+  // 2. Run intl middleware, conservando las cookies de sesión que Supabase
+  //    haya refrescado en el paso 1
+  const intlResponse = intlMiddleware(request);
+  response.cookies.getAll().forEach((cookie) => intlResponse.cookies.set(cookie));
+  return intlResponse;
 }
 
 export const config = {

@@ -1,0 +1,66 @@
+'use client';
+
+import { useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { Clock, LogOut, RefreshCw } from 'lucide-react';
+import { useAuth } from '@/components/layout/AuthProvider';
+
+/**
+ * Pantalla para cuentas con rol 'pendiente': se registraron sin invitación o
+ * el administrador les quitó el acceso. El middleware las envía aquí.
+ */
+export default function AccesoPendientePage() {
+    const { user, signOut } = useAuth();
+    const pathname = usePathname();
+    const locale = pathname.split('/')[1] || 'es';
+    const [reintentando, setReintentando] = useState(false);
+
+    const reintentar = () => {
+        setReintentando(true);
+        // El middleware decide a qué panel corresponde según el rol actual
+        window.location.href = `/${locale}/dashboard`;
+    };
+
+    return (
+        <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
+            <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5">
+                    <Clock className="w-8 h-8" />
+                </div>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está pendiente de aprobación</h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
+                    {user?.email ? (
+                        <>
+                            La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> todavía no
+                            está vinculada a una asociación recolectora ni tiene permisos de administrador.
+                        </>
+                    ) : (
+                        'Tu cuenta todavía no tiene permisos asignados.'
+                    )}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                    Pide al centro de acopio de Puerto Peñasco que vincule tu correo desde el módulo de
+                    Asociaciones. En cuanto lo haga podrás entrar.
+                </p>
+
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                    <button
+                        onClick={reintentar}
+                        disabled={reintentando}
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${reintentando ? 'animate-spin' : ''}`} />
+                        Volver a intentar
+                    </button>
+                    <button
+                        onClick={signOut}
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        Cerrar sesión
+                    </button>
+                </div>
+            </div>
+        </main>
+    );
+}

@@ -18,7 +18,7 @@ type AuthView = 'login' | 'register' | 'verify' | 'forgot_password' | 'reset_pas
 
 const TITULOS: Record<AuthView, { titulo: string; subtitulo: string }> = {
     login: { titulo: 'Iniciar sesión', subtitulo: 'Accede al sistema de gestión de residuos' },
-    register: { titulo: 'Crear cuenta', subtitulo: 'Regístrate para comenzar a operar' },
+    register: { titulo: 'Crear cuenta', subtitulo: 'Usa el correo con el que te invitó el centro de acopio' },
     verify: { titulo: 'Verifica tu correo', subtitulo: 'Introduce el código de 6 dígitos que te enviamos' },
     forgot_password: { titulo: 'Recuperar contraseña', subtitulo: 'Te enviaremos un código para restablecerla' },
     reset_password: { titulo: 'Nueva contraseña', subtitulo: 'Introduce el código y tu nueva contraseña' },
@@ -216,6 +216,13 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                         </div>
                     )}
                 </div>
+
+                {view === 'register' && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        El acceso se habilita cuando el administrador del centro de acopio vincula tu correo a tu
+                        asociación. Si te registras con otro correo, tu cuenta quedará pendiente de aprobación.
+                    </p>
+                )}
 
                 {view === 'register' && (
                     <div>

@@ -25,6 +25,8 @@ import {
 
 type ModalRole = 'admin' | 'recolector';
 
+// Sólo recuerda la opción elegida en el modal. El acceso real lo decide
+// `profiles.rol` en el middleware (utils/supabase/middleware.ts).
 function saveRole(r: ModalRole) {
     document.cookie = `simar_user_role=${r}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     localStorage.setItem('simar_user_role', r);
@@ -1090,7 +1092,7 @@ export function VariantCinematic({ stats }: { stats: LandingStats | null }) {
                                     />
                                     <ModalRoleCard
                                         title="Empresa Recolectora"
-                                        desc="Seguimiento de recolecciones e impacto. Vista previa con datos de demostración."
+                                        desc="Residuos disponibles, solicitudes de recolección, historial e impacto."
                                         accent="emerald"
                                         Icon={Recycle}
                                         onClick={() => selectModalRole('recolector')}
