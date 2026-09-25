@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { hoyLocal } from '@/lib/utils/fechas';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
@@ -44,7 +45,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
   const basuraRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState<FormData>({
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: '', // se llena al montar con la fecha local (ver efecto abajo)
     buqueId: null,
     responsableCocineroId: null,
     responsableMotoristaid: null,
@@ -61,6 +62,13 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
   const [search, setSearch] = useState('');
+
+  // Fecha de hoy en hora local; calcularla en el estado inicial daría valores
+  // distintos en el servidor (UTC) y en el navegador y rompería la hidratación.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- la fecha local sólo existe en el navegador
+    setFormData((f) => (f.fecha ? f : { ...f, fecha: hoyLocal() }));
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {

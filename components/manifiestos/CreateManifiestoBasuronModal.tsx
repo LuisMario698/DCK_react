@@ -6,7 +6,7 @@ import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { TimePicker } from '@/components/ui/TimePicker';
-import { parseFechaLocal } from '@/lib/utils/fechas';
+import { horaLocal, hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -39,14 +39,12 @@ export function CreateManifiestoBasuronModal({
   const buqueSelectRef = useRef<HTMLSelectElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // Fecha y hora arrancan vacías y se llenan al montar en el navegador: calcularlas
+  // aquí daría valores distintos en el servidor (UTC) y en el cliente (hora local)
+  // y rompería la hidratación.
   const [formData, setFormData] = useState({
-    fecha: new Date().toISOString().split('T')[0],
-    hora_entrada: (() => {
-      const now = new Date();
-      const hh = String(now.getHours()).padStart(2, '0');
-      const mm = String(now.getMinutes()).padStart(2, '0');
-      return `${hh}:${mm}`;
-    })(),
+    fecha: '',
+    hora_entrada: '',
     hora_salida: '',
     peso_entrada: '',
     peso_salida: '',
@@ -58,20 +56,15 @@ export function CreateManifiestoBasuronModal({
   });
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen || inline) {
       resetForm();
     }
-  }, [isOpen]);
+  }, [isOpen, inline]);
 
   const resetForm = () => {
     setFormData({
-      fecha: new Date().toISOString().split('T')[0],
-      hora_entrada: (() => {
-        const now = new Date();
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        return `${hh}:${mm}`;
-      })(),
+      fecha: hoyLocal(),
+      hora_entrada: horaLocal(),
       hora_salida: '',
       peso_entrada: '',
       peso_salida: '',
@@ -168,7 +161,7 @@ export function CreateManifiestoBasuronModal({
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">RECIBO RELLENO SANITARIO</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
                 </div>
               </div>
               <div className="text-right">

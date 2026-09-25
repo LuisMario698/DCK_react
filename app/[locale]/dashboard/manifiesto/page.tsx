@@ -11,7 +11,7 @@ import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifi
 import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
-import { parseFechaLocal } from '@/lib/utils/fechas';
+import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -29,9 +29,11 @@ export default function ManifiestosPage() {
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
 
+  // La fecha se llena al montar en el navegador (hoy en hora local); calcularla
+  // aquí daría valores distintos en el servidor (UTC) y en el cliente.
   const [formData, setFormData] = useState({
     numero_manifiesto: '',
-    fecha_emision: new Date().toISOString().split('T')[0],
+    fecha_emision: '',
     buque_id: '',
     responsable_principal_id: '',
     responsable_secundario_id: '',
@@ -351,6 +353,12 @@ export default function ManifiestosPage() {
     }
   };
 
+  // Fecha de hoy en hora local (ver comentario en formData)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- la fecha local sólo existe en el navegador
+    setFormData((f) => (f.fecha_emision ? f : { ...f, fecha_emision: hoyLocal() }));
+  }, []);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -586,7 +594,7 @@ export default function ManifiestosPage() {
 
       setFormData({
         numero_manifiesto: '',
-        fecha_emision: new Date().toISOString().split('T')[0],
+        fecha_emision: hoyLocal(),
         buque_id: '',
         responsable_principal_id: '',
         responsable_secundario_id: '',
@@ -902,7 +910,7 @@ export default function ManifiestosPage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">MANIFIESTO DE ENTREGA-RECEPCIÓN</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {new Date(formData.fecha_emision + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
               </div>
             </div>
             <div className="text-right">

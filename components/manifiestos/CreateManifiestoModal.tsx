@@ -6,7 +6,7 @@ import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
-import { parseFechaLocal } from '@/lib/utils/fechas';
+import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 
 interface CreateManifiestoModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
 
   const [formData, setFormData] = useState({
     numero_manifiesto: '',
-    fecha_emision: new Date().toISOString().split('T')[0],
+    fecha_emision: hoyLocal(),
     buque_id: '',
     cocinero_id: '',
     motorista_id: '',
@@ -175,7 +175,7 @@ export function CreateManifiestoModal({ isOpen, onClose, onSave, manifiestoToEdi
   const resetForm = () => {
     setFormData({
       numero_manifiesto: '',
-      fecha_emision: new Date().toISOString().split('T')[0],
+      fecha_emision: hoyLocal(),
       buque_id: '',
       cocinero_id: '',
       motorista_id: '',

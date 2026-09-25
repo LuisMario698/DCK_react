@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 import { Buque } from '@/types/database'
 import { SupabaseClient } from '@supabase/supabase-js'
+import { hoyLocal } from '@/lib/utils/fechas'
 
 export async function getBuques(supabase?: SupabaseClient) {
   const client = supabase || createClient()
@@ -113,7 +114,7 @@ export async function createBuqueAutomatico(nombre: string) {
     .from('buques')
     .insert({
       nombre_buque: nombre,
-      fecha_registro: new Date().toISOString().split('T')[0],
+      fecha_registro: hoyLocal(),
       estado: 'Activo',
       registro_completo: true
     })

@@ -48,6 +48,12 @@ export function formatearFechaLarga(fecha: string | Date): string {
     });
 }
 
+/** Hora actual 'HH:MM' en hora local. */
+export function horaLocal(): string {
+    const ahora = new Date();
+    return `${String(ahora.getHours()).padStart(2, '0')}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+}
+
 /** Fecha de hoy como 'YYYY-MM-DD' en hora local (no en UTC). */
 export function hoyLocal(): string {
     const ahora = new Date();

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { hoyLocal } from '@/lib/utils/fechas';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { createBuque, updateBuque } from '@/lib/services/buques';
@@ -30,7 +31,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
     } else {
       setNombre('');
       setEstado('Activo');
-      setFechaRegistro(new Date().toISOString().split('T')[0]);
+      setFechaRegistro(hoyLocal());
     }
   }, [buqueToEdit]);
 
@@ -72,7 +73,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
       onCreate();
       onClose();
       setNombre('');
-      setFechaRegistro(new Date().toISOString().split('T')[0]);
+      setFechaRegistro(hoyLocal());
     } catch (error) {
       console.error('Error guardando buque:', error);
       alert(buqueToEdit ? tm('errorEditar') : tm('errorCrear'));

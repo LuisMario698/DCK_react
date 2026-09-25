@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Download, FileDown, Loader2, Truck } from 'lucide-react';
 import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad } from '@/lib/constants/residuos';
-import { formatearFecha } from '@/lib/utils/fechas';
+import { formatearFecha, hoyLocal } from '@/lib/utils/fechas';
 import { RecoleccionConAsociacion } from '@/types/database';
 import { abrirComprobante, getRecolecciones } from '@/lib/services/recolecciones';
 import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
@@ -49,7 +49,7 @@ export default function HistorialPage() {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `historial-recolecciones-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.download = `historial-recolecciones-${hoyLocal()}.csv`;
         a.click();
         URL.revokeObjectURL(url);
     };
