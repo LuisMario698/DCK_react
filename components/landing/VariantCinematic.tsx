@@ -22,18 +22,28 @@ import {
     Globe2,
     X,
     ArrowLeft,
+    SquareTerminal,
 } from 'lucide-react';
 
-type ModalRole = 'admin' | 'recolector';
+type RolGuardado = 'admin' | 'recolector';
+// 'superadmin' = acceso de desarrollador (enlace discreto del footer); no se
+// ofrece en el selector ni se recuerda.
+type ModalRole = RolGuardado | 'superadmin';
+
+const DESTINO_POR_ROL: Record<ModalRole, string> = {
+    admin: '/dashboard',
+    recolector: '/dashboard-recolector',
+    superadmin: '/superadmin',
+};
 
 // Sólo recuerda la opción elegida en el modal. El acceso real lo decide
 // `profiles.rol` en el middleware (utils/supabase/middleware.ts).
-function saveRole(r: ModalRole) {
+function saveRole(r: RolGuardado) {
     document.cookie = `simar_user_role=${r}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
     localStorage.setItem('simar_user_role', r);
 }
 
-function readSavedRole(): ModalRole | null {
+function readSavedRole(): RolGuardado | null {
     try {
         const v = localStorage.getItem('simar_user_role');
         return v === 'admin' || v === 'recolector' ? v : null;
@@ -301,13 +311,20 @@ export function VariantCinematic({
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         if (params.get('login') === '1') {
-            setModalRole(readSavedRole());
-            setShowLoginModal(true);
             // Sólo rutas internas: evita redirecciones abiertas a otros dominios
-            const destino = params.get('siguiente');
-            if (destino && /^\/(?!\/)[\w\-/]*$/.test(destino)) setSiguiente(destino);
+            const param = params.get('siguiente');
+            const destino = param && /^\/(?!\/)[\w\-/]*$/.test(param) ? param : null;
+            // Si se pidió el panel de superadmin, el modal abre directo en el acceso de desarrollador
+            setModalRole(destino && /^\/(\w{2}\/)?superadmin(\/|$)/.test(destino) ? 'superadmin' : readSavedRole());
+            setShowLoginModal(true);
+            if (destino) setSiguiente(destino);
         }
     }, []);
+
+    const abrirAccesoDesarrollador = () => {
+        setModalRole('superadmin');
+        setShowLoginModal(true);
+    };
 
     const cerrarLoginModal = () => {
         setShowLoginModal(false);
@@ -320,7 +337,7 @@ export function VariantCinematic({
         }
     };
 
-    const selectModalRole = (r: ModalRole) => {
+    const selectModalRole = (r: RolGuardado) => {
         saveRole(r);
         setModalRole(r);
     };
@@ -1050,8 +1067,17 @@ export function VariantCinematic({
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 text-center text-slate-500 text-xs md:text-sm">
-                    © 2025 DCK / ITSPP. Todos los derechos reservados.
+                <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col-reverse items-center gap-4 md:flex-row md:justify-between text-slate-500 text-xs md:text-sm">
+                    <span>© 2025 DCK / ITSPP. Todos los derechos reservados.</span>
+                    {/* Acceso interno al panel de superadmin: discreto a propósito */}
+                    <button
+                        type="button"
+                        onClick={abrirAccesoDesarrollador}
+                        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-violet-300 transition-colors cursor-pointer"
+                    >
+                        <SquareTerminal className="w-3.5 h-3.5" />
+                        Acceso desarrollador
+                    </button>
                 </div>
             </footer>
 
@@ -1116,29 +1142,39 @@ export function VariantCinematic({
                                 <X className="w-5 h-5" />
                             </button>
                             <div className="p-8">
-                                {/* Badge de rol + botón volver */}
-                                <div className="flex items-center justify-between mb-5">
-                                    <button
-                                        onClick={clearModalRole}
-                                        className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-                                    >
-                                        <ArrowLeft className="w-3.5 h-3.5" />
-                                        Cambiar
-                                    </button>
+                                {/* Badge de rol + botón volver (pr-8: deja libre el botón de cerrar) */}
+                                <div className="flex items-center justify-between mb-5 pr-8">
+                                    {modalRole === 'superadmin' ? (
+                                        <span />
+                                    ) : (
+                                        <button
+                                            onClick={clearModalRole}
+                                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+                                        >
+                                            <ArrowLeft className="w-3.5 h-3.5" />
+                                            Cambiar
+                                        </button>
+                                    )}
                                     <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${
                                         modalRole === 'recolector'
                                             ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                                            : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
+                                            : modalRole === 'superadmin'
+                                                ? 'bg-violet-500/10 border-violet-500/30 text-violet-300'
+                                                : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
                                     }`}>
                                         {modalRole === 'recolector'
                                             ? <><Recycle className="w-3.5 h-3.5" /> Empresa Recolectora</>
-                                            : <><Anchor className="w-3.5 h-3.5" /> Administrador Portuario</>
+                                            : modalRole === 'superadmin'
+                                                ? <><SquareTerminal className="w-3.5 h-3.5" /> Acceso de desarrollador</>
+                                                : <><Anchor className="w-3.5 h-3.5" /> Administrador Portuario</>
                                         }
                                     </span>
                                 </div>
                                 <LoginForm
                                     showLogo={true}
-                                    redirectTo={siguiente ?? (modalRole === 'recolector' ? '/dashboard-recolector' : '/dashboard')}
+                                    // El desarrollador no se registra aquí: su cuenta ya existe y se marca como superadmin en la BD
+                                    permitirRegistro={modalRole !== 'superadmin'}
+                                    redirectTo={siguiente ?? DESTINO_POR_ROL[modalRole]}
                                     // Tras iniciar sesión sólo se oculta el modal: tocar la URL aquí
                                     // (replaceState de cerrarLoginModal) cancelaba la navegación
                                     // al panel y el usuario se quedaba en la landing.

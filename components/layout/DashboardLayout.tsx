@@ -3,6 +3,7 @@
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { SidebarProvider, useSidebar } from './SidebarContext';
+import { AvisoGlobal } from './AvisoGlobal';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -40,6 +41,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           className={`flex-1 p-3 sm:p-4 md:p-6 lg:p-8 transition-opacity duration-150 ${transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
             }`}
         >
+          <AvisoGlobal />
           <div className="max-w-[100vw] overflow-x-hidden">
             {displayChildren}
           </div>

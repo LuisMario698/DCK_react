@@ -1,17 +1,28 @@
 'use client';
 
-import { useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { Clock, LogOut, RefreshCw } from 'lucide-react';
+import { Suspense, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Ban, Clock, LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 
 /**
  * Pantalla para cuentas con rol 'pendiente': se registraron sin invitación o
- * el administrador les quitó el acceso. El middleware las envía aquí.
+ * el administrador les quitó el acceso. El middleware las envía aquí, y
+ * también a las cuentas suspendidas por un superadmin (?motivo=suspendida).
  */
 export default function AccesoPendientePage() {
+    // useSearchParams necesita un límite de Suspense para el prerender
+    return (
+        <Suspense>
+            <AccesoPendiente />
+        </Suspense>
+    );
+}
+
+function AccesoPendiente() {
     const { user, signOut } = useAuth();
     const pathname = usePathname();
+    const suspendida = useSearchParams().get('motivo') === 'suspendida';
     const locale = pathname.split('/')[1] || 'es';
     const [reintentando, setReintentando] = useState(false);
 
@@ -24,24 +35,48 @@ export default function AccesoPendientePage() {
     return (
         <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
             <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8 text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5">
-                    <Clock className="w-8 h-8" />
-                </div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está pendiente de aprobación</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
-                    {user?.email ? (
-                        <>
-                            La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> todavía no
-                            está vinculada a una asociación recolectora ni tiene permisos de administrador.
-                        </>
-                    ) : (
-                        'Tu cuenta todavía no tiene permisos asignados.'
-                    )}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
-                    Pide al centro de acopio de Puerto Peñasco que vincule tu correo desde el módulo de
-                    Asociaciones. En cuanto lo haga podrás entrar.
-                </p>
+                {suspendida ? (
+                    <>
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center mb-5">
+                            <Ban className="w-8 h-8" />
+                        </div>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está suspendida</h1>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
+                            {user?.email ? (
+                                <>
+                                    La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> no tiene
+                                    acceso a SiMAR por el momento.
+                                </>
+                            ) : (
+                                'Esta cuenta no tiene acceso a SiMAR por el momento.'
+                            )}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                            Si crees que es un error, comunícate con el centro de acopio de Puerto Peñasco.
+                        </p>
+                    </>
+                ) : (
+                    <>
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5">
+                            <Clock className="w-8 h-8" />
+                        </div>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está pendiente de aprobación</h1>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
+                            {user?.email ? (
+                                <>
+                                    La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> todavía no
+                                    está vinculada a una asociación recolectora ni tiene permisos de administrador.
+                                </>
+                            ) : (
+                                'Tu cuenta todavía no tiene permisos asignados.'
+                            )}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                            Pide al centro de acopio de Puerto Peñasco que vincule tu correo desde el módulo de
+                            Asociaciones. En cuanto lo haga podrás entrar.
+                        </p>
+                    </>
+                )}
 
                 <div className="mt-6 flex flex-col sm:flex-row gap-3">
                     <button

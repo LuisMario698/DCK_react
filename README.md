@@ -246,7 +246,9 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 | `/[locale]/dashboard/asociaciones` | Client | 4 pestañas: **Solicitudes** (aprobar / rechazar / completar con firmas y comprobante PDF) / **Inventario** / **Asociaciones** (CRUD, estado, vincular usuarios) / **Mensajes** (chat en tiempo real). | `inventario`, `solicitudes`, `recolecciones`, `asociaciones`, `mensajes` |
 | `/[locale]/dashboard/simple` | Client | **"Modo simple"** para usuarios no técnicos (Don Francisco): botones grandes, `SimpleManifiestoForm` + `SimpleEstadisticas`, navbar propia. El botón "Basurón" hace `router.push('/dashboard/manifiesto-basuron')` (sin prefijo de locale — el middleware lo re-prefija). | **Supabase real** vía componentes `simple/` |
 | `/[locale]/dashboard-recolector` | Client, **layout propio** (`RecolectorProvider`) | Portal de la empresa recolectora. Sub-rutas: `page` (KPIs + mapa + actividad), `mapa` (inventario publicado + crear solicitud), `solicitudes` (seguimiento / cancelar), `historial` (comprobantes PDF + CSV), `impacto` (Recharts), `mensajes`, `notificaciones`, `perfil` (datos de la asociación + contraseña). | `inventario`, `solicitudes`, `recolecciones`, `mensajes`, `notificaciones`, `perfil` |
-| `/[locale]/acceso-pendiente` | Client | Aviso para cuentas con rol `pendiente` (registradas sin invitación). | — |
+| `/[locale]/acceso-pendiente` | Client | Aviso para cuentas con rol `pendiente` (registradas sin invitación) o suspendidas (`?motivo=suspendida`). | — |
+| `/[locale]/superadmin` | Client, **layout propio** | **Panel del desarrollador** (sólo `es_superadmin`): Resumen, Cuentas, Suscripciones, Planes, Auditoría y Sistema. Ver [`Contexto-DCK/panel-superadmin.md`](./Contexto-DCK/panel-superadmin.md). | `superadmin`, `suscripciones`, `configuracion` |
+| `/[locale]/mantenimiento` | Client | Pantalla del modo mantenimiento (el middleware manda aquí a todos salvo superadmins). | `configuracion` |
 
 **Resumen:** toda la aplicación trabaja con datos reales de Supabase. Ya no quedan pantallas mock.
 
@@ -279,6 +281,22 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
   su área; un recolector no puede abrir `/dashboard` ni un admin `/dashboard-recolector`.
 - Nadie puede cambiarse su propio rol, asociación o correo de perfil (trigger
   `proteger_campos_perfil`).
+
+### Superadmin (desarrollador)
+
+- No es un cuarto rol: es la bandera **`profiles.es_superadmin`** sobre una cuenta `admin`. Da
+  acceso a `/[locale]/superadmin` (el middleware lo comprueba con la RPC `mi_acceso`) y a las
+  RPC `sa_*`, que validan `is_superadmin()` en la base de datos.
+- Se entra desde la landing: enlace **Acceso desarrollador** en el footer, que abre el modal de
+  login en modo desarrollador (sin registro) y redirige a `/superadmin`.
+- Sólo otro superadmin o el SQL Editor la otorgan; un admin normal no puede modificar la cuenta
+  de un superadmin.
+- **Cuentas suspendidas** (`profiles.suspendido_at`): `is_admin()`, `get_my_role()` y
+  `get_my_asociacion_id()` dejan de reconocerlas, se cierran sus sesiones y Supabase Auth les
+  impide entrar (`banned_until`). El middleware las manda a `/acceso-pendiente?motivo=suspendida`.
+- **Modo mantenimiento** (`configuracion_sistema`): el middleware manda a `/mantenimiento` a todo
+  el que entra a un panel, salvo superadmins.
+- Detalle y decisiones en [`Contexto-DCK/panel-superadmin.md`](./Contexto-DCK/panel-superadmin.md).
 
 ### RLS
 
@@ -332,7 +350,11 @@ Funciones auxiliares `is_admin()`, `get_my_role()` y `get_my_asociacion_id()` (s
 | `manifiesto_basuron` | `id`, `fecha`, `hora_entrada`, `hora_salida`, `peso_entrada`, `peso_salida`, `total_depositado` (**GENERATED** = `peso_entrada − COALESCE(peso_salida,0)`), `buque_id`, `recibimos_de`, `direccion`, `recibido_por`, `nombre_usuario`, `pdf_manifiesto_url`, `observaciones` | `buque_id` → `buques` (opcional, `ON DELETE CASCADE`). Variantes del esquema añaden `estado` (`En Proceso`/`Completado`/`Cancelado`) y `numero_ticket` (`TKT-YYYYMMDD-NNNNNN` por trigger). |
 | `manifiestos_no_firmados` | `id`, `manifiesto_id`, `nombre_archivo`, `ruta_archivo`, `url_descarga`, `numero_manifiesto`, `fecha_generacion`, `estado`, `descargado_en/por`, `firmado_en` | Metadatos de PDFs generados pendientes de firma física. `estado` ∈ `pendiente`/`descargado`/`firmado`/`cancelado`. **El servicio existe pero ninguna página lo usa.** |
 | `bitacora` | `id`, `fecha_registro`, `id_embarcacion`, `usuario_email`, `accion` | Log. Poblada por trigger al crear un buque + función `registrar_bitacora_embarcacion(...)`. |
-| `profiles` | `id` (uuid, = `auth.users.id`), `email`, `full_name`, `avatar_url`, `rol`, `asociacion_id` | 1:1 con `auth.users`. Trigger `on_auth_user_created` → `handle_new_user()`. |
+| `profiles` | `id` (uuid, = `auth.users.id`), `email`, `full_name`, `avatar_url`, `rol`, `asociacion_id`, `es_superadmin`, `suspendido_at`, `motivo_suspension` | 1:1 con `auth.users`. Trigger `on_auth_user_created` → `handle_new_user()`. |
+| `planes` | `nombre` (unique), `precio_mensual`, `precio_anual`, `limite_usuarios`, `caracteristicas[]`, `activo`, `orden` | Catálogo del panel de superadmin (MXN). |
+| `suscripciones` | `asociacion_id` (unique), `plan_id`, `estado`, `ciclo`, `precio`, `fecha_inicio`, `vence_el`, `notas` | Una por asociación. `estado` ∈ `prueba`/`activa`/`suspendida`/`cancelada`; «vencida» se deriva de `vence_el`. |
+| `pagos_suscripcion` | `suscripcion_id`, `monto`, `fecha_pago`, `metodo`, `referencia`, `cubre_hasta` | Registro manual de cobros; `sa_registrar_pago` extiende la vigencia. |
+| `configuracion_sistema` | `clave` (unique), `valor` (jsonb) | Claves fijas: `mantenimiento`, `aviso_global`, `suscripciones`. Sólo superadmin. |
 | `audit_log` | `tabla`, `operacion`, `registro_id`, `datos_ant` (jsonb), `datos_nue` (jsonb), `usuario_email` | Poblada por `audit_trigger_fn()` en las 7 tablas del dominio. |
 | `backups`, `backup_schedules` | — | Metadatos de respaldos. |
 
@@ -393,6 +415,9 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
 | `solicitudes.ts` | Listado + wrappers de las RPC del flujo (`crearSolicitud`, `aprobarSolicitud`, `rechazarSolicitud`, `cancelarSolicitud`, `completarSolicitud`). |
 | `recolecciones.ts` | Historial, `subirComprobante` y `abrirComprobante` (URL firmada del bucket privado). |
 | `mensajes.ts` / `notificaciones.ts` | Chat y notificaciones, con suscripciones Realtime (`suscribirMensajes`, `suscribirNotificaciones`, `suscribirCambios`). |
+| `superadmin.ts` | Panel de superadmin: cuentas (`getCuentas`, `suspenderCuenta`, `eliminarCuenta`, `cambiarSuperadmin`, ...), invitaciones de cualquier rol, `getMetricas` y `getAuditoria`. |
+| `suscripciones.ts` | CRUD de `planes` y `suscripciones`, `getAsociacionesConSuscripcion`, pagos (`registrarPago`) y `getEstadoMiSuscripcion` (portal recolector). |
+| `configuracion.ts` | `getConfiguracionPublica` (aviso global y mantenimiento, cualquier usuario con sesión), `getConfiguracion` / `guardarConfiguracion` (superadmin). |
 
 ### Tipos (`types/`)
 
@@ -525,8 +550,11 @@ npm run dev      # http://localhost:3000  → redirige a /es
 3. Crear el bucket público **`images`** y subir `logoSemarnat.png` (lo necesitan los generadores
    de PDF).
 4. Verificar que las funciones RPC (`get_reporte_detallado`, ...) quedaron creadas.
-5. Aplicar **en orden** las migraciones de `supabase/migrations/` (roles + RLS y módulo de
-   asociaciones recolectoras). Son idempotentes: se pueden volver a ejecutar.
+5. Aplicar **en orden** las migraciones de `supabase/migrations/` (roles + RLS, módulo de
+   asociaciones recolectoras y panel de superadmin). Son idempotentes: se pueden volver a
+   ejecutar.
+6. Nombrar al primer superadmin en el SQL Editor:
+   `update public.profiles set rol = 'admin', es_superadmin = true where email = '<correo>';`
 
 ---
 
@@ -588,6 +616,7 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 |---|---|
 | **`Contexto-DCK/proyecto.md`** | ⭐ Reporte de residencia completo. **El mejor documento de dominio** (problema, marco legal, entrevista con Don Francisco en el Anexo 2, tipos de residuo, campos del manifiesto físico). |
 | `Contexto-DCK/contesto-actual.md` | "Archivo vivo" del estado del proyecto (actualizado dic-2025). |
+| `Contexto-DCK/panel-superadmin.md` | Panel del desarrollador: suscripciones, cuentas, mantenimiento; decisiones y puesta en marcha. |
 | `Contexto-DCK/guia.md` | Guía de usuario final: cómo crear personas/embarcaciones/asociaciones y el flujo paso a paso del manifiesto. |
 | `BITACORA_PRUEBAS.md` | Bitácora de pruebas — lista los 77 procesos backend/frontend y su estado. |
 | `DESIGN_SYSTEM.md` | Lenguaje de diseño (glassmorphism, paleta, tipografía, animaciones). |

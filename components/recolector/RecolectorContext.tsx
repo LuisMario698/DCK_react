@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { getMiPerfil, type PerfilConAsociacion } from '@/lib/services/perfil';
 import { contarNotificacionesNoLeidas, suscribirNotificaciones } from '@/lib/services/notificaciones';
 import { contarMensajesNoLeidos, suscribirMensajes } from '@/lib/services/mensajes';
+import { getEstadoMiSuscripcion, type EstadoMiSuscripcion } from '@/lib/services/suscripciones';
 import type { AsociacionRecolectora } from '@/types/database';
 
 interface RecolectorContextType {
@@ -12,8 +13,12 @@ interface RecolectorContextType {
     cargando: boolean;
     notificacionesNoLeidas: number;
     mensajesNoLeidos: number;
-    /** La asociación no está activa: puede consultar pero no crear solicitudes. */
+    /** Suscripción de la asociación (null si la migración no está aplicada). */
+    suscripcion: EstadoMiSuscripcion | null;
+    /** La asociación no está activa o su suscripción obligatoria no está vigente:
+     *  puede consultar pero no crear solicitudes. */
     bloqueada: boolean;
+    motivoBloqueo: 'asociacion' | 'suscripcion' | null;
     recargarPerfil: () => Promise<void>;
     recargarContadores: () => Promise<void>;
 }
@@ -29,13 +34,16 @@ export function useRecolector() {
 /** Datos de la sesión del portal recolector compartidos por todas sus páginas. */
 export function RecolectorProvider({ children }: { children: React.ReactNode }) {
     const [perfil, setPerfil] = useState<PerfilConAsociacion | null>(null);
+    const [suscripcion, setSuscripcion] = useState<EstadoMiSuscripcion | null>(null);
     const [cargando, setCargando] = useState(true);
     const [notificacionesNoLeidas, setNotificaciones] = useState(0);
     const [mensajesNoLeidos, setMensajes] = useState(0);
 
     const recargarPerfil = useCallback(async () => {
         try {
-            setPerfil(await getMiPerfil());
+            const [p, s] = await Promise.all([getMiPerfil(), getEstadoMiSuscripcion()]);
+            setPerfil(p);
+            setSuscripcion(s);
         } catch (err) {
             console.error('Error cargando el perfil del recolector:', err);
         } finally {
@@ -65,6 +73,12 @@ export function RecolectorProvider({ children }: { children: React.ReactNode }) 
     }, [recargarPerfil, recargarContadores]);
 
     const asociacion = perfil?.asociacion ?? null;
+    const motivoBloqueo =
+        asociacion && asociacion.estado !== 'Activo'
+            ? 'asociacion'
+            : suscripcion?.obligatoria && !suscripcion.vigente
+              ? 'suscripcion'
+              : null;
 
     return (
         <RecolectorContext.Provider
@@ -74,7 +88,9 @@ export function RecolectorProvider({ children }: { children: React.ReactNode }) 
                 cargando,
                 notificacionesNoLeidas,
                 mensajesNoLeidos,
-                bloqueada: !!asociacion && asociacion.estado !== 'Activo',
+                suscripcion,
+                bloqueada: motivoBloqueo !== null,
+                motivoBloqueo,
                 recargarPerfil,
                 recargarContadores,
             }}

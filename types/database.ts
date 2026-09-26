@@ -1,5 +1,6 @@
 // Tipos basados en la estructura de base de datos de Supabase
 import type { EstadoSolicitud, TipoResiduo, UnidadResiduo } from '@/lib/constants/residuos';
+import type { CicloSuscripcion, EstadoSuscripcion, MetodoPago } from '@/lib/constants/suscripciones';
 
 export interface Buque {
   id: number;
@@ -155,6 +156,11 @@ export interface Perfil {
   avatar_url: string | null;
   rol: RolUsuario;
   asociacion_id: number | null;
+  /** Acceso al panel /superadmin. Siempre implica rol 'admin'. */
+  es_superadmin: boolean;
+  /** Fecha de suspensión; `null` si la cuenta está activa. */
+  suspendido_at: string | null;
+  motivo_suspension: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -254,5 +260,80 @@ export interface Notificacion {
   titulo: string;
   detalle: string | null;
   leida: boolean;
+  created_at: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Panel de superadmin: suscripciones, cuentas y configuración
+// ─────────────────────────────────────────────────────────────────────
+
+export interface Plan {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  /** Importes en MXN. */
+  precio_mensual: number;
+  precio_anual: number | null;
+  /** Usuarios recolectores por asociación; `null` = sin límite. */
+  limite_usuarios: number | null;
+  caracteristicas: string[];
+  activo: boolean;
+  orden: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Suscripcion {
+  id: number;
+  asociacion_id: number;
+  plan_id: number;
+  /** Estado guardado; 'vencida' se deriva de `vence_el` (ver estadoEfectivo). */
+  estado: Exclude<EstadoSuscripcion, 'vencida'>;
+  ciclo: CicloSuscripcion;
+  precio: number;
+  fecha_inicio: string;
+  vence_el: string | null;
+  notas: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PagoSuscripcion {
+  id: number;
+  suscripcion_id: number;
+  monto: number;
+  fecha_pago: string;
+  metodo: MetodoPago;
+  referencia: string | null;
+  cubre_hasta: string | null;
+  notas: string | null;
+  registrado_por: string | null;
+  created_at: string;
+}
+
+/** Fila de la RPC `sa_listar_usuarios()` (auth.users + profiles). */
+export interface CuentaUsuario {
+  id: string;
+  email: string;
+  full_name: string | null;
+  rol: RolUsuario;
+  asociacion_id: number | null;
+  asociacion_nombre: string | null;
+  es_superadmin: boolean;
+  suspendido_at: string | null;
+  motivo_suspension: string | null;
+  creado_at: string;
+  ultimo_acceso: string | null;
+  correo_confirmado: boolean;
+}
+
+export interface EntradaAuditoria {
+  id: number;
+  tabla: string;
+  operacion: 'INSERT' | 'UPDATE' | 'DELETE';
+  registro_id: string | null;
+  datos_ant: Record<string, unknown> | null;
+  datos_nue: Record<string, unknown> | null;
+  usuario_email: string | null;
   created_at: string;
 }

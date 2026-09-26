@@ -49,9 +49,14 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
 ## No asumas
 
 - **Roles en BD:** `profiles.rol` ∈ `admin` / `recolector` / `pendiente` (+ `asociacion_id`).
-  El middleware lee ese rol y manda a cada uno a su área; la cookie `simar_user_role` sólo
-  recuerda la opción del modal de login. RLS usa `is_admin()`, `get_my_role()` y
-  `get_my_asociacion_id()`. Ver `Contexto-DCK/fase1-asociaciones.md`.
+  El middleware lee ese rol (RPC `mi_acceso`) y manda a cada uno a su área; la cookie
+  `simar_user_role` sólo recuerda la opción del modal de login. RLS usa `is_admin()`,
+  `get_my_role()` y `get_my_asociacion_id()`. Ver `Contexto-DCK/fase1-asociaciones.md`.
+- **Superadmin** no es un rol: es `profiles.es_superadmin` (siempre con rol `admin`) y abre
+  `/[locale]/superadmin` (cuentas, suscripciones, planes, auditoría, mantenimiento). Las RPC
+  `sa_*` validan `is_superadmin()`. Una cuenta con `suspendido_at` pierde el acceso en todas las
+  funciones de RLS. Las suscripciones son de las **asociaciones recolectoras** y el cobro es
+  manual (MXN). Ver `Contexto-DCK/panel-superadmin.md`.
 - **Solicitudes de recolección sólo se escriben por RPC** (`crear_solicitud`,
   `aprobar_solicitud`, `rechazar_solicitud`, `cancelar_solicitud`, `completar_solicitud`); la
   tabla no tiene políticas de escritura. No hagas `insert`/`update` directos.

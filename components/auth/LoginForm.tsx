@@ -12,6 +12,8 @@ interface LoginFormProps {
     onSuccess?: () => void;
     redirectTo?: string;
     showLogo?: boolean;
+    /** Muestra el enlace «Regístrate» (no aplica al acceso de desarrollador). */
+    permitirRegistro?: boolean;
 }
 
 type AuthView = 'login' | 'register' | 'verify' | 'forgot_password' | 'reset_password';
@@ -24,7 +26,7 @@ const TITULOS: Record<AuthView, { titulo: string; subtitulo: string }> = {
     reset_password: { titulo: 'Nueva contraseña', subtitulo: 'Introduce el código y tu nueva contraseña' },
 };
 
-export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = true }: LoginFormProps) {
+export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = true, permitirRegistro = true }: LoginFormProps) {
     const [view, setView] = useState<AuthView>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -391,7 +393,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 </button>
 
                 <div className="pt-1 text-center">
-                    {view === 'login' && (
+                    {view === 'login' && permitirRegistro && (
                         <button
                             type="button"
                             onClick={() => cambiarVista('register')}
