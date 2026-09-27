@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { AlertTriangle, ShieldCheck, Unlink } from 'lucide-react';
+import { AlertTriangle, ClipboardList, LayoutGrid, Map as MapIcon, ShieldCheck, Unlink } from 'lucide-react';
+import { BarraInferior } from '@/components/layout/BarraInferior';
 import { SidebarRecolector } from '@/components/recolector/SidebarRecolector';
 import { HeaderRecolector } from '@/components/recolector/HeaderRecolector';
 import { RecolectorProvider, useRecolector } from '@/components/recolector/RecolectorContext';
@@ -27,8 +28,9 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                     onToggleCollapse={() => setIsCollapsed((c) => !c)}
                 />
                 <div className={`relative flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${isCollapsed ? 'pl-0 lg:pl-[120px]' : 'pl-0 lg:pl-[308px]'}`}>
-                    <HeaderRecolector onOpenSidebar={() => setIsOpen(true)} />
-                    <main className="flex-1 p-3 sm:p-4 md:p-6 lg:py-8 lg:pr-10 lg:pl-8">
+                    <HeaderRecolector />
+                    {/* Abajo deja lugar a la barra inferior en celular (y a la zona segura del teléfono) */}
+                    <main className="flex-1 px-4 pt-4 pb-[calc(112px+env(safe-area-inset-bottom))] md:px-6 md:pt-6 lg:py-8 lg:pr-10 lg:pl-8">
                         <AvisoGlobal />
                         <AvisoSuperadmin />
                         <AvisoEstado />
@@ -38,9 +40,24 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                         </div>
                     </main>
                 </div>
+                <BarraPortal onAbrirMenu={() => setIsOpen(true)} />
             </div>
         </RecolectorProvider>
     );
+}
+
+/** Barra inferior del portal (celular y tableta): lo que más se usa, y "Menú" para lo demás. */
+function BarraPortal({ onAbrirMenu }: { onAbrirMenu: () => void }) {
+    const pathname = usePathname();
+    const { mensajesNoLeidos } = useRecolector();
+    const base = `/${pathname.split('/')[1] || 'es'}/dashboard-recolector`;
+    const items = [
+        { label: 'Inicio', href: base, icon: LayoutGrid, activo: pathname === base || pathname === `${base}/` },
+        { label: 'Residuos', href: `${base}/mapa`, icon: MapIcon, activo: pathname.startsWith(`${base}/mapa`) },
+        { label: 'Solicitudes', href: `${base}/solicitudes`, icon: ClipboardList, activo: pathname.startsWith(`${base}/solicitudes`) },
+    ];
+    // Los mensajes sin leer viven en el menú: el contador va en "Menú" para que se note
+    return <BarraInferior items={items} onAbrirMenu={onAbrirMenu} contadorMenu={mensajesNoLeidos} />;
 }
 
 /** Sin asociación vinculada no hay nada que mostrar (las páginas filtran por ella). */

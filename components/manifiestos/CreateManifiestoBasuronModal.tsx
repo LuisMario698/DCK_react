@@ -8,6 +8,7 @@ import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { TimePicker } from '@/components/ui/TimePicker';
 import { CalendarDays, Check, Clock, Scale, Upload } from 'lucide-react';
 import { horaLocal, hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -380,26 +381,49 @@ export function CreateManifiestoBasuronModal({
                 <p className="text-[15px] text-simar-texto-2">Foto o PDF del recibo firmado</p>
               </div>
             </div>
-            <div className={`flex-1 min-h-[64px] rounded-[14px] px-4 py-3 flex items-center border-2 ${file ? 'border-simar-arrecife/50 bg-simar-arrecife-suave' : 'border-dashed border-simar-campo-borde'}`}>
+            {/* Botón propio en lugar del control nativo, que en celular corta su texto ("Sin archivos…") */}
+            <div className={`flex-1 min-h-[64px] rounded-[14px] p-2 flex items-center border-2 ${file ? 'border-simar-arrecife/50 bg-simar-arrecife-suave' : 'border-dashed border-simar-campo-borde'}`}>
               <input
                 ref={fileInputRef}
+                id="archivo-basuron"
                 type="file"
                 accept=".pdf,image/*"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="block w-full text-base text-simar-texto file:mr-4 file:min-h-[44px] file:px-5 file:rounded-xl file:border-0 file:text-base file:font-bold file:bg-simar-marea-suave file:text-simar-marea-tinta hover:file:bg-simar-marea hover:file:text-white file:cursor-pointer"
+                className="sr-only"
               />
+              {!file ? (
+                <label htmlFor="archivo-basuron" className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 text-[17px] font-bold text-simar-texto cursor-pointer rounded-xl hover:bg-simar-marea-suave/60 transition-colors">
+                  <Upload className="w-5 h-5" />
+                  Elegir foto o PDF
+                </label>
+              ) : (
+                <div className="w-full flex items-center justify-between gap-2 px-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <PalomitaAnimada tamano={20} circulo={false} className="text-simar-arrecife-tinta" />
+                    <span className="text-[15px] font-bold text-simar-texto truncate">{file.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                    className="min-h-[44px] px-3 text-[15px] font-bold text-simar-coral hover:underline"
+                  >
+                    Quitar
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
           {/* Barra de guardar (vidrio, flota sobre el formulario) */}
-          <div className="simar-vidrio sticky bottom-4 z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
-            <p className="flex-1 min-w-[220px] text-base text-simar-texto-2">
-              Por una ciudad más limpia y digna para todos · <span className="font-bold text-simar-texto">No es comprobante fiscal</span>
+          <div className={`simar-vidrio ${inline ? 'simar-pegada-abajo' : 'bottom-4'} sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3`}>
+            {/* En celular la leyenda se acorta y el botón ocupa todo el ancho */}
+            <p className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base text-simar-texto-2">
+              <span className="hidden sm:inline">Por una ciudad más limpia y digna para todos · </span><span className="font-bold text-simar-texto">No es comprobante fiscal</span>
             </p>
             <button
               type="submit"
               disabled={loading}
-              className="min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

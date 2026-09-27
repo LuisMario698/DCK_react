@@ -40,6 +40,22 @@ export function ThemeToggle() {
     );
 }
 
+/** Botón de tema redondo, sólo ícono (barra de la landing). Lleva aria-label y title. */
+export function BotonTemaIcono({ className = '', compacto = false }: { className?: string; compacto?: boolean }) {
+    const { theme, toggleTheme } = useTheme();
+    const oscuro = theme === 'dark';
+    return (
+        <button
+            onClick={(e) => toggleTheme(centroDe(e))}
+            aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+            title={oscuro ? 'Modo claro' : 'Modo oscuro'}
+            className={`simar-presiona ${compacto ? 'w-[52px] h-[52px]' : 'w-[54px] h-[54px] md:w-[58px] md:h-[58px]'} flex-shrink-0 rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto flex items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 ${className}`}
+        >
+            {oscuro ? <Sun className="w-6 h-6" strokeWidth={2} /> : <Moon className="w-6 h-6" strokeWidth={2} />}
+        </button>
+    );
+}
+
 /** Botón de tema para el pie del menú lateral (ver DISEÑO_SIMAR.md → Menú lateral). */
 export function BotonTema({ colapsado = false }: { colapsado?: boolean }) {
     const { theme, toggleTheme } = useTheme();

@@ -1417,7 +1417,30 @@ body.simar [data-sonner-toast] [data-close-button] {
 }
 
 /* ============================================
-   LANDING — detalles de la vitrina pública (siempre en claro)
+   VERSIÓN MÓVIL — barra inferior de los paneles (DISEÑO_SIMAR.md → "Versión móvil")
+   ============================================ */
+
+/* Barras pegadas abajo (guardar manifiesto, recibo): en celular quedan encima de la barra
+   inferior; desde 1024 px (menú lateral) vuelven a 16 px del borde. */
+.simar-pegada-abajo {
+  bottom: calc(96px + env(safe-area-inset-bottom));
+}
+@media (min-width: 1024px) {
+  .simar-pegada-abajo {
+    bottom: 1rem;
+  }
+}
+
+/* Los avisos (toasts) salen arriba de la barra inferior, no encima de ella */
+@media (max-width: 1023px) {
+  body:has(.simar-barra-inferior) [data-sonner-toaster][data-y-position='bottom'] {
+    --offset-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    --mobile-offset-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ============================================
+   LANDING — detalles de la vitrina pública (claro y oscuro)
    ============================================ */
 
 /* Los enlaces del menú llevan a la sección con desplazamiento suave, sin quedar

@@ -1476,15 +1476,15 @@ export default function ManifiestosPage() {
         </section>
 
         {/* Barra de guardar (vidrio, flota sobre el formulario) */}
-        <div className="simar-vidrio sticky bottom-4 z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
-          <span className="flex-1 min-w-[220px] text-lg text-simar-texto">
+        <div className="simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
+          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto">
             {firmasListas === 0
               ? 'Aún no hay firmas. También puedes adjuntar el documento firmado.'
               : firmasListas === 1 ? '1 firma lista.' : `${firmasListas} firmas listas.`}
           </span>
           <button
             onClick={() => document.getElementById('registros-list')?.scrollIntoView({ behavior: 'smooth' })}
-            className="min-h-[60px] px-6 rounded-[18px] border-2 border-simar-texto bg-white/60 dark:bg-white/5 text-simar-texto text-lg font-bold flex items-center gap-2.5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors"
+            className="hidden sm:flex min-h-[60px] px-6 rounded-[18px] border-2 border-simar-texto bg-white/60 dark:bg-white/5 text-simar-texto text-lg font-bold items-center gap-2.5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors"
           >
             <List className="w-[22px] h-[22px]" />
             Ver registros
@@ -1492,7 +1492,7 @@ export default function ManifiestosPage() {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saving ? (
               <>
@@ -1753,11 +1753,11 @@ export default function ManifiestosPage() {
             <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-simar-marea border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (<>
-          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-            <div className="inline-block min-w-full align-middle">
+          <div className="sm:overflow-x-auto sm:-mx-4 md:mx-0">
+            <div className="sm:inline-block min-w-full align-middle">
               <div className="overflow-hidden rounded-xl border border-simar-borde shadow-sm">
-                <table className="w-full border-collapse">
-                  <thead>
+                <table className="w-full border-collapse block sm:table">
+                  <thead className="hidden sm:table-header-group">
                     <tr className="bg-simar-papel border-b border-simar-borde">
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Número</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Buque</th>
@@ -1767,7 +1767,7 @@ export default function ManifiestosPage() {
                       <th className="px-4 md:px-5 py-3 text-right text-[15px] font-bold text-simar-texto-2">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-simar-borde-suave">
+                  <tbody className="block sm:table-row-group divide-y divide-simar-borde-suave">
                     {manifiestos.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-16 text-center">
@@ -1805,15 +1805,24 @@ export default function ManifiestosPage() {
                         return (
                           <tr
                             key={manifiesto.id}
-                            className="group bg-simar-superficie hover:bg-simar-papel transition-colors duration-150"
+                            className="group block sm:table-row bg-simar-superficie hover:bg-simar-papel transition-colors duration-150"
                             style={{ animationDelay: `${idx * 20}ms` }}
                           >
-                            <td className="px-4 md:px-5 py-3.5">
+                            <td className="block sm:table-cell px-4 pt-4 sm:pt-3.5 pb-0 sm:pb-3.5 md:px-5">
                               <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">
                                 {manifiesto.numero_manifiesto}
                               </span>
+                              {/* En celular: barco y fecha debajo del folio (sin columnas que se corten) */}
+                              <p className="sm:hidden mt-2 text-[17px] font-bold text-simar-texto">
+                                {buqueNombre}
+                                <span className="font-normal text-simar-texto-2">
+                                  {' · '}
+                                  {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </span>
+                              </p>
+                              <p className="sm:hidden text-[15px] text-simar-texto-2">Motorista: {respPrincipal}</p>
                             </td>
-                            <td className="px-4 md:px-5 py-3.5">
+                            <td className="hidden sm:table-cell px-4 md:px-5 py-3.5">
                               <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-simar-papel flex items-center justify-center flex-shrink-0">
                                   <svg className="w-4 h-4 text-simar-texto-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1834,8 +1843,8 @@ export default function ManifiestosPage() {
                                 {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
                             </td>
-                            <td className="px-4 md:px-5 py-3.5">
-                              <div className="flex items-center justify-end gap-2">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:py-3.5 md:px-5">
+                              <div className="flex items-center justify-start sm:justify-end gap-2">
                                 <button
                                   onClick={() => setViewingManifiesto(manifiesto)}
                                   className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
@@ -1845,7 +1854,7 @@ export default function ManifiestosPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                   </svg>
-                                  <span className="hidden sm:inline">Ver</span>
+                                  <span>Ver</span>
                                 </button>
                                 <button
                                   onClick={() => handleDescargarPDF(manifiesto)}

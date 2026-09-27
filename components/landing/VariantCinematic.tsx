@@ -28,9 +28,11 @@ import {
     SquareTerminal,
     Pause,
     Play,
+    Menu,
     type LucideIcon,
 } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
+import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 import { NumeroAnimado, usePrefiereMenosMovimiento, usePresencia } from '@/components/ui/movimiento';
 
@@ -261,7 +263,7 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: 0,
             impactUnit: 'bolsas de plástico',
             impactDescription: 'que no llegaron al océano',
-            tono: 'bg-[#E4F5F7] text-[#0E7C8A]',
+            tono: 'bg-[#E4F5F7] text-[#0E7C8A] dark:bg-[rgba(32,178,196,0.2)] dark:text-[#7FE0D6]',
         },
         {
             icon: TreePine,
@@ -341,6 +343,7 @@ export function VariantCinematic({
     // Página protegida que se pidió sin sesión (?siguiente=...), para volver tras el login
     const [siguiente, setSiguiente] = useState<string | null>(null);
     const [scrolled, setScrolled] = useState(false);
+    const [menuMovil, setMenuMovil] = useState(false);
     // La ventana de acceso se queda montada mientras hace su salida
     const ventanaAcceso = usePresencia(showLoginModal, 200);
 
@@ -470,7 +473,7 @@ export function VariantCinematic({
     }, [showLoginModal]);
 
     return (
-        <div className="simar-claro simar-landing relative min-h-screen w-full overflow-x-clip bg-simar-papel font-sans text-simar-texto antialiased">
+        <div className="simar-landing relative min-h-screen w-full overflow-x-clip bg-simar-papel font-sans text-simar-texto antialiased">
             {/* Navbar — vidrio flotante */}
             <nav
                 aria-label="Principal"
@@ -483,11 +486,14 @@ export function VariantCinematic({
                 <span aria-hidden="true" className="absolute left-7 right-7 bottom-0 h-[3px] overflow-hidden rounded-full">
                     <span className="simar-progreso h-full w-full bg-simar-golfo" />
                 </span>
-                <div className="h-[72px] md:h-[84px] pl-4 md:pl-5 pr-2.5 md:pr-3 flex items-center gap-5">
-                    <a href="#top" className="flex items-center gap-4 rounded-2xl" aria-label="SiMAR - Inicio">
-                        <LogoSimar tamano={46} tono="claro" />
-                        <span aria-hidden="true" className="hidden sm:block h-9 w-px bg-simar-texto/20" />
-                        <span className="hidden sm:flex items-center gap-3">
+                <div className="h-[72px] md:h-[84px] pl-3 md:pl-5 pr-2 md:pr-3 flex items-center gap-2 sm:gap-5">
+                    <a href="#top" className="flex items-center gap-4 rounded-2xl min-w-0" aria-label="SiMAR - Inicio">
+                        {/* En celular sólo el símbolo: el nombre ya está grande en el hero */}
+                        <LogoSimar variante="simbolo" tamano={46} className="sm:hidden" />
+                        <LogoSimar tamano={46} className="hidden sm:inline-flex" />
+                        <span aria-hidden="true" className="hidden md:block h-9 w-px bg-simar-texto/20" />
+                        {/* Logos institucionales: en oscuro van sobre una pastilla clara (tienen letras negras) */}
+                        <span className="hidden md:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
                             <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
                             <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
                         </span>
@@ -518,14 +524,53 @@ export function VariantCinematic({
                         </span>
                     </div>
 
-                    <button
-                        onClick={openLoginModal}
-                        className="simar-presiona ml-auto xl:ml-0 min-h-[54px] md:min-h-[58px] px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer"
-                    >
-                        Iniciar sesión
-                        <ArrowRight className="w-5 h-5" strokeWidth={2.4} />
-                    </button>
+                    <div className="ml-auto xl:ml-0 flex items-center gap-2">
+                        <BotonTemaIcono />
+                        {/* Menú de secciones (bajo 1280 px los enlaces no caben en la barra) */}
+                        <button
+                            type="button"
+                            onClick={() => setMenuMovil((v) => !v)}
+                            aria-expanded={menuMovil}
+                            aria-controls="menu-secciones"
+                            aria-label={menuMovil ? 'Cerrar menú de secciones' : 'Abrir menú de secciones'}
+                            className="xl:hidden simar-presiona w-[54px] h-[54px] md:w-[58px] md:h-[58px] flex-shrink-0 rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto flex items-center justify-center"
+                        >
+                            {menuMovil ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                        <button
+                            onClick={openLoginModal}
+                            className="simar-presiona min-h-[54px] md:min-h-[58px] px-4 sm:px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer whitespace-nowrap"
+                        >
+                            Iniciar sesión
+                            <ArrowRight className="hidden sm:block w-5 h-5" strokeWidth={2.4} />
+                        </button>
+                    </div>
                 </div>
+
+                {/* Menú de secciones para celular y tableta: renglones grandes, se cierra al elegir */}
+                {menuMovil && (
+                    <div id="menu-secciones" className="xl:hidden simar-aparece px-3 pb-3">
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 border-t border-simar-texto/10">
+                            {NAV_LINKS.map((link) => (
+                                <li key={link.href}>
+                                    <a
+                                        href={link.href}
+                                        onClick={() => setMenuMovil(false)}
+                                        aria-current={seccionActiva === link.href ? 'location' : undefined}
+                                        className={`min-h-[56px] px-4 rounded-2xl flex items-center justify-between text-lg font-bold transition-colors ${
+                                            seccionActiva === link.href
+                                                ? 'bg-simar-superficie text-simar-texto'
+                                                : 'text-simar-texto hover:bg-white/60 dark:hover:bg-white/10'
+                                        }`}
+                                    >
+                                        {link.label}
+                                        <ArrowRight className="w-5 h-5 text-simar-texto-2" />
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
             </nav>
 
             {/* Hero */}
@@ -1063,7 +1108,7 @@ export function VariantCinematic({
             {/* Footer */}
             <footer className="bg-simar-superficie py-12 md:py-14 px-6">
                 <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:items-center gap-8 md:gap-14">
-                    <LogoSimar tamano={60} tono="claro" />
+                    <LogoSimar tamano={60} />
                     <div>
                         <h3 className="text-lg font-extrabold">Instituciones</h3>
                         <ul className="mt-2 space-y-1 text-lg text-simar-texto-2">

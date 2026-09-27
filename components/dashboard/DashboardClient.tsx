@@ -321,10 +321,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
         <div className="space-y-8 font-sans text-simar-texto-2">
             {/* Tabs de Navegación Estilizados */}
             <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex space-x-2 bg-simar-superficie p-2 rounded-2xl shadow-simar border border-simar-borde">
+                <div className="grid grid-cols-2 sm:flex w-full sm:w-auto gap-2 bg-simar-superficie p-2 rounded-2xl shadow-simar border border-simar-borde">
                     <button
                         onClick={() => setActiveTab('general')}
-                        className={`min-h-[52px] px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'general'
+                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'general'
                             ? 'bg-simar-marea text-white shadow-simar'
                             : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'
                             }`}
@@ -333,7 +333,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </button>
                     <button
                         onClick={() => setActiveTab('reportes')}
-                        className={`min-h-[52px] px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'reportes'
+                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'reportes'
                             ? 'bg-simar-marea text-white shadow-simar'
                             : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'
                             }`}
@@ -344,9 +344,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                 {/* Selector de Período */}
                 {activeTab === 'general' && (
-                    <div className="flex items-center gap-3">
+                    // En celular: "Período:" arriba y los cinco botones repartidos a lo ancho
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full sm:w-auto">
                         <span className="text-[17px] text-simar-texto font-bold">Período:</span>
-                        <div className="flex space-x-1 bg-simar-superficie p-1.5 rounded-xl shadow-simar border border-simar-borde">
+                        <div className="order-2 sm:order-none basis-full sm:basis-auto grid grid-cols-5 sm:flex gap-1 bg-simar-superficie p-1.5 rounded-xl shadow-simar border border-simar-borde">
                             {[
                                 { key: 'semana', label: '7 días' },
                                 { key: 'mes', label: '1 mes' },
@@ -357,7 +358,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <button
                                     key={p.key}
                                     onClick={() => setPeriodoSeleccionado(p.key as PeriodoFiltro)}
-                                    className={`min-h-[44px] px-4 text-base font-bold rounded-lg transition-colors ${periodoSeleccionado === p.key
+                                    className={`min-h-[48px] sm:min-h-[44px] px-1 sm:px-4 text-[15px] sm:text-base leading-tight font-bold rounded-lg transition-colors ${periodoSeleccionado === p.key
                                         ? 'bg-simar-marea text-white shadow-simar'
                                         : 'text-simar-texto-2 hover:bg-simar-papel'
                                         }`}
@@ -376,7 +377,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
             {activeTab === 'general' ? (
                 <div className="space-y-8">
                     {/* KPIs Section - Diseño Simple y Claro */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                         {/* Total Reciclado - Azul */}
                         <SimpleKpiCard
                             title="Total procesado"
@@ -423,7 +424,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Segunda fila - Filtros y Buques */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                         <SimpleKpiCard
                             title="Filtros de aceite"
                             value={<NumeroAnimado valor={stats.filtrosAceite} />}
@@ -461,11 +462,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     {/* Gráficas Section */}
                     <div className="simar-aparece grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ animationDelay: '0.3s' }}>
                         {/* Gráfica Principal (Barras) - Ocupa 2 columnas */}
-                        <div className="lg:col-span-2 bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
-                            <div className="flex justify-between items-center mb-8">
-                                <div className="flex items-start gap-3">
+                        <div className="lg:col-span-2 bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+                                <div className="flex items-start justify-between sm:justify-start gap-3">
                                     <div>
-                                        <h3 className="text-2xl font-extrabold text-simar-texto">Estadísticas de residuos</h3>
+                                        <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Estadísticas de residuos</h3>
                                         <p className="text-base text-simar-texto-2 mt-1">Comparativa mensual de Aceite vs Basura</p>
                                     </div>
                                     <InfoTooltip
@@ -473,11 +474,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         description="Esta gráfica de barras muestra la cantidad de residuos recolectados cada mes. El azul representa la basura general (kg) y el naranja el aceite usado (litros). Las barras más altas indican meses con mayor recolección."
                                         examples={[
                                             "Barra alta = mucha recolección ese mes",
-                                            "Pasa el mouse sobre cada barra para ver los detalles exactos"
+                                            "Toca o pasa el cursor sobre cada barra para ver los detalles exactos"
                                         ]}
                                     />
                                 </div>
-                                <div className="flex gap-4">
+                                <div className="flex flex-wrap gap-x-4 gap-y-1">
                                     <div className="flex items-center gap-2 text-base text-simar-texto-2">
                                         <span className="w-4 h-4 rounded-full bg-simar-marea"></span>
                                         <span className="font-medium">Basura (kg)</span>
@@ -499,7 +500,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 const maxVal = Math.max(...initialStats.residuosPorMes.map(m => m.aceite + m.basura), 1);
 
                                 return (
-                                    <div className="h-72 flex items-end justify-between gap-3 px-2">
+                                    <div className="h-64 md:h-72 flex items-end justify-between gap-1.5 md:gap-3 md:px-2">
                                         {initialStats.residuosPorMes.map((mes, idx) => {
                                             const total = mes.aceite + mes.basura;
                                             const heightPercent = Math.max((total / maxVal) * 100, 8);
@@ -508,9 +509,15 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             const anio = mes.mes.split('-')[0];
 
                                             return (
-                                                <div key={mes.mes} className="flex flex-col items-center flex-1 group relative h-full justify-end min-w-[50px]">
-                                                    {/* Tooltip mejorado */}
-                                                    <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">
+                                                // Se puede enfocar: en celular, tocar la barra muestra su detalle
+                                                <div
+                                                    key={mes.mes}
+                                                    tabIndex={0}
+                                                    aria-label={`${nombreMes} ${anio}: aceite ${mes.aceite.toLocaleString()} litros, basura ${mes.basura.toLocaleString()} kilos`}
+                                                    className="flex flex-col items-center flex-1 group relative h-full justify-end min-w-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-simar-marea-tinta"
+                                                >
+                                                    {/* Tooltip mejorado (los de las orillas se alinean hacia adentro para no salirse) */}
+                                                    <div className={`absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 group-focus:translate-y-0 z-20 pointer-events-none ${idx === 0 ? 'left-0' : idx === initialStats.residuosPorMes.length - 1 ? 'right-0' : ''}`}>
                                                         <div className="bg-simar-abismo text-white text-base py-3 px-4 rounded-xl shadow-2xl min-w-[140px]">
                                                             <p className="font-bold text-base mb-2 text-white">{nombreMes} {anio}</p>
                                                             <div className="space-y-1">
@@ -530,11 +537,11 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className="w-3 h-3 bg-simar-abismo transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-1"></div>
+                                                        <div className={`w-3 h-3 bg-simar-abismo transform rotate-45 absolute -bottom-1 ${idx === 0 ? 'left-5' : idx === initialStats.residuosPorMes.length - 1 ? 'right-5' : 'left-1/2 -translate-x-1/2'}`}></div>
                                                     </div>
 
                                                     {/* Valor encima de la barra */}
-                                                    <div className="text-base font-bold text-simar-texto-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="hidden md:block text-base font-bold text-simar-texto-2 mb-2 opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity">
                                                         {total.toLocaleString()}
                                                     </div>
 
@@ -557,8 +564,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                                                     {/* Nombre del mes */}
                                                     <div className="mt-3 text-center">
-                                                        <span className="text-base font-bold text-simar-texto">{nombreMes}</span>
-                                                        <span className="text-base text-simar-texto-2 block">{anio}</span>
+                                                        <span className="text-[15px] md:text-base font-bold text-simar-texto">{nombreMes}</span>
+                                                        <span className="text-[13px] md:text-base text-simar-texto-2 block">{anio}</span>
                                                     </div>
                                                 </div>
                                             );
@@ -568,7 +575,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             })()}
 
                             {/* Línea de referencia y totales */}
-                            <div className="mt-6 pt-4 border-t border-simar-borde flex justify-between items-center">
+                            <div className="mt-6 pt-4 border-t border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
                                 <div className="text-base text-simar-texto-2">
                                     <span className="font-medium">Total período:</span>{' '}
                                     <span className="font-bold text-simar-texto text-lg">
@@ -577,15 +584,16 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     <span className="text-simar-texto-2"> kg + L</span>
                                 </div>
                                 <div className="text-base text-simar-texto-2">
-                                    Pasa el mouse sobre las barras para ver detalles
+                                    <span className="md:hidden">Toca una barra para ver su detalle</span>
+                                    <span className="hidden md:inline">Pasa el mouse sobre las barras para ver detalles</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Gráfica Secundaria (Top Buques / Donut Style) */}
-                        <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar flex flex-col">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar flex flex-col">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-2xl font-extrabold text-simar-texto">Buques con más residuos</h3>
+                                <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Buques con más residuos</h3>
                                 <InfoTooltip
                                     title="¿Qué significa Top Buques?"
                                     description="Muestra los 4 buques que más residuos han generado este mes. La barra indica la proporción respecto al buque con mayor cantidad."
@@ -640,9 +648,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     {/* Segunda fila de gráficas */}
                     <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.36s' }}>
                         {/* Gráfica de Distribución por Tipo (Dona) */}
-                        <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-2xl font-extrabold text-simar-texto">Distribución por tipo</h3>
+                                <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Distribución por tipo</h3>
                                 <InfoTooltip
                                     title="¿Cómo leer la gráfica de dona?"
                                     description="El círculo muestra qué proporción ocupa cada tipo de residuo del total. Cada color representa un tipo diferente: naranja es aceite, azul es basura general y verde es el basurón."
@@ -654,9 +662,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
                             <p className="text-base text-simar-texto-2 mb-6">Proporción de residuos recolectados</p>
 
-                            <div className="flex items-center justify-center gap-8">
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
                                 {/* Gráfica de Dona */}
-                                <div className="relative w-52 h-52">
+                                <div className="relative w-52 h-52 flex-shrink-0">
                                     <DonutChart
                                         data={[
                                             { label: 'Aceite', value: stats.totalAceiteUsado, color: 'var(--simar-coral)' },
@@ -670,23 +678,23 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </div>
                                 </div>
 
-                                {/* Leyenda */}
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3">
+                                {/* Leyenda (en celular, en fila bajo la dona) */}
+                                <div className="grid grid-cols-3 sm:grid-cols-1 gap-3 sm:gap-0 sm:space-y-4 w-full sm:w-auto">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-coral"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Aceite Usado</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalAceiteUsado.toLocaleString()} L</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-marea"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Basura General</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalBasuraGeneral.toLocaleString()} kg</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-arrecife"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Basurón</p>
@@ -698,9 +706,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Gráfica de Filtros Recolectados */}
-                        <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-2xl font-extrabold text-simar-texto">Filtros recolectados</h3>
+                                <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Filtros recolectados</h3>
                                 <InfoTooltip
                                     title="¿Qué son los filtros?"
                                     description="Los filtros son componentes de los motores que deben ser reemplazados y reciclados. Hay 3 tipos: de aceite (retienen impurezas), de diesel (limpian el combustible) y de aire (filtran partículas)."
@@ -769,9 +777,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     {/* Tercera fila - Comparación y Métricas Ambientales */}
                     <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.42s' }}>
                         {/* Comparación vs Período Anterior */}
-                        <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-2xl font-extrabold text-simar-texto">Comparación con el período anterior</h3>
+                                <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Comparación con el período anterior</h3>
                                 <InfoTooltip
                                     title="¿Qué compara esta gráfica?"
                                     description="Compara los residuos del período actual con el período anterior (ej: este mes vs mes pasado). El porcentaje verde indica aumento y rojo indica disminución."
@@ -831,25 +839,20 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Métricas de Impacto Ambiental */}
-                        <div className="bg-[#127A5D] p-8 rounded-3xl shadow-simar text-white relative">
+                        <div className="bg-[#127A5D] p-5 md:p-8 rounded-3xl shadow-simar text-white relative">
                             <div className="flex items-start gap-3 mb-2">
-                                <h3 className="text-2xl font-extrabold">Impacto ambiental</h3>
-                                <div className="relative inline-block">
-                                    <button
-                                        className="w-11 h-11 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all duration-200 text-base font-bold group"
-                                        title="Cada litro de aceite contamina 1,000L de agua. Aquí calculamos el impacto positivo de tu reciclaje."
-                                    >
-                                        ?
-                                        <span className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
-                                            <span className="block bg-simar-abismo text-white rounded-2xl p-4 shadow-2xl text-base border border-simar-texto-2">
-                                                <strong className="text-base">¿Cómo calculamos esto?</strong><br /><br />
-                                                • CO₂: Aceite × 2.5 + Basurón × 0.5<br />
-                                                • Árboles: CO₂ ÷ 21 kg/año<br />
-                                                • Agua: 1L aceite = 1,000L agua protegida
-                                            </span>
-                                        </span>
-                                    </button>
-                                </div>
+                                <h3 className="text-[22px] md:text-2xl font-extrabold">Impacto ambiental</h3>
+                                <InfoTooltip
+                                    sobreColor
+                                    title="¿Cómo calculamos esto?"
+                                    description="Cada litro de aceite contamina 1,000 L de agua. Aquí calculamos el impacto positivo de tu reciclaje."
+                                    tituloEjemplos="Fórmulas:"
+                                    examples={[
+                                        "CO₂: aceite × 2.5 + basurón × 0.5",
+                                        "Árboles: CO₂ ÷ 21 kg al año",
+                                        "Agua: 1 L de aceite = 1,000 L de agua protegida"
+                                    ]}
+                                />
                             </div>
                             <p className="text-white/85 text-base mb-6">Contribución al medio ambiente</p>
 
@@ -969,7 +972,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                             <div className="mt-6 p-4 bg-white/10 rounded-xl">
                                 <p className="text-base text-white/85">
-                                    <span className="font-bold text-white">Consejo:</span> Pasa el mouse sobre cada tarjeta para ver comparaciones con objetos del mundo real.
+                                    <span className="font-bold text-white">Consejo:</span> Toca o pasa el cursor sobre cada tarjeta para ver comparaciones con objetos del mundo real.
                                 </p>
                             </div>
                         </div>
@@ -978,7 +981,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
             ) : (
                 <div className="simar-aparece space-y-6">
                     {/* Panel de Filtros Mejorado */}
-                    <div className="bg-simar-superficie p-6 rounded-3xl border border-simar-borde shadow-simar">
+                    <div className="bg-simar-superficie p-5 md:p-6 rounded-3xl border border-simar-borde shadow-simar">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="p-3 bg-simar-marea-suave rounded-xl">
                                 <svg className="w-6 h-6 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1098,7 +1101,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                             {/* Botón Generar */}
                             <div className="space-y-2">
-                                <label className="text-base font-bold text-transparent">Acción</label>
+                                <label aria-hidden="true" className="hidden md:block text-base font-bold text-transparent">Acción</label>
                                 <button
                                     onClick={loadReport}
                                     disabled={loadingReport}
@@ -1151,7 +1154,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             });
                                             setAccesoRapidoSeleccionado(option.label);
                                         }}
-                                        className={`px-4 py-2 rounded-lg font-medium text-base transition-colors ${accesoRapidoSeleccionado === option.label
+                                        className={`min-h-[48px] px-4 py-2 rounded-lg font-medium text-base transition-colors ${accesoRapidoSeleccionado === option.label
                                             ? 'bg-simar-marea text-white shadow-simar'
                                             : 'bg-simar-papel text-simar-texto-2 hover:bg-simar-marea-suave hover:text-simar-marea-tinta'
                                             }`}
@@ -1174,12 +1177,12 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Resumen de resultados */}
                     {reportData.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
                             <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
                                 <p className="text-simar-texto-2 text-base mb-1">Total Registros</p>
                                 <p className="text-3xl font-extrabold text-simar-texto">{reportData.length}</p>
                             </div>
-                            <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
+                            <div className="order-first col-span-2 md:order-none md:col-span-1 bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
                                 <p className="text-simar-texto-2 text-base mb-1">Total Residuos</p>
                                 <p className="text-3xl font-extrabold text-simar-marea-tinta">
                                     {reportData.reduce((sum, item) => sum + item.cantidad, 0).toLocaleString()} kg
@@ -1196,7 +1199,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Tabla de Resultados */}
                     <div className="bg-simar-superficie rounded-3xl border border-simar-borde shadow-simar overflow-hidden">
-                        <div className="p-6 border-b border-simar-borde flex justify-between items-center">
+                        <div className="p-5 md:p-6 border-b border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-simar-papel rounded-lg">
                                     <Icons.Document className="w-5 h-5 text-simar-texto-2" />
@@ -1211,24 +1214,25 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 </div>
                             </div>
 
-                            <div className="flex gap-3"> {/* Increased gap */}
+                            {/* En celular los tres formatos se reparten a lo ancho */}
+                            <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-3">
                                 <button
                                     onClick={() => exportToExcel(reportData)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-simar-arrecife-suave text-simar-arrecife-tinta hover:bg-[#0E6A50] hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar min-h-[52px]"
+                                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 bg-simar-arrecife-suave text-simar-arrecife-tinta hover:bg-[#0E6A50] hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar min-h-[52px]"
                                 >
                                     <Icons.Document className="w-5 h-5" />
                                     <span>Excel</span>
                                 </button>
                                 <button
                                     onClick={() => exportToCSV(reportData)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-simar-papel text-simar-texto hover:bg-simar-texto-2 hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar border border-simar-borde hover:border-transparent min-h-[52px]"
+                                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 bg-simar-papel text-simar-texto hover:bg-simar-texto-2 hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar border border-simar-borde hover:border-transparent min-h-[52px]"
                                 >
                                     <Icons.Document className="w-5 h-5" />
                                     <span>CSV</span>
                                 </button>
                                 <button
                                     onClick={() => exportToPDF(reportData, stats!)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-simar-marea-suave text-simar-marea-tinta hover:bg-simar-marea-hover hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar min-h-[52px]"
+                                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 bg-simar-marea-suave text-simar-marea-tinta hover:bg-simar-marea-hover hover:text-white rounded-xl text-base font-bold transition-all duration-200 shadow-simar min-h-[52px]"
                                 >
                                     <Icons.Document className="w-5 h-5" />
                                     <span>PDF</span>
@@ -1236,9 +1240,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto rounded-xl border border-simar-borde shadow-simar">
-                            <table className="w-full border-collapse">
-                                <thead>
+                        {/* En celular cada registro es un bloque: folio y cantidad arriba, buque, fecha y tipo debajo */}
+                        <div className="sm:overflow-x-auto sm:rounded-xl sm:border sm:border-simar-borde sm:shadow-simar">
+                            <table className="w-full border-collapse block sm:table">
+                                <thead className="hidden sm:table-header-group">
                                     <tr className="bg-simar-papel border-b border-simar-borde">
                                         <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Fecha</th>
                                         <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Folio</th>
@@ -1247,10 +1252,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         <th className="px-4 md:px-5 py-3 text-right text-[15px] font-semibold text-simar-texto-2">Cantidad</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
+                                <tbody className="block sm:table-row-group divide-y divide-simar-borde-suave bg-simar-superficie">
                                     {reportData.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={5} className="py-16 text-center">
+                                        <tr className="block sm:table-row">
+                                            <td colSpan={5} className="block sm:table-cell px-4 py-16 text-center">
                                                 <div className="flex flex-col items-center gap-3 text-simar-texto-2">
                                                     <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1268,16 +1273,20 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         </tr>
                                     ) : (
                                         reportData.map((item, idx) => (
-                                            <tr key={idx} className="bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 group">
-                                                <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 whitespace-nowrap">
+                                            <tr key={idx} className="relative block sm:table-row bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 group">
+                                                <td className="hidden sm:table-cell px-4 md:px-5 py-3.5 text-base text-simar-texto-2 whitespace-nowrap">
                                                     {parseFechaLocal(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </td>
-                                                <td className="px-4 md:px-5 py-3.5">
+                                                <td className="block sm:table-cell px-4 md:px-5 pt-4 pb-4 pr-32 sm:pr-5 sm:py-3.5">
                                                     <span className="font-mono text-[15px] bg-simar-papel px-2.5 py-1 rounded-md text-simar-texto-2">
                                                         {item.folio}
                                                     </span>
+                                                    <span className="sm:hidden mt-2 block text-base font-bold text-simar-texto">{item.buque}</span>
+                                                    <span className="sm:hidden block text-base text-simar-texto-2">
+                                                        {parseFechaLocal(item.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })} · {item.tipoResiduo}
+                                                    </span>
                                                 </td>
-                                                <td className="px-4 md:px-5 py-3.5 text-base font-semibold text-simar-texto">{item.buque}</td>
+                                                <td className="hidden sm:table-cell px-4 md:px-5 py-3.5 text-base font-semibold text-simar-texto">{item.buque}</td>
                                                 <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
                                                     <span className="inline-flex items-center gap-1.5 text-base text-simar-texto-2">
                                                         {item.tipoResiduo === 'Aceite' && <Droplet className="w-4 h-4" />}
@@ -1286,8 +1295,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                         {item.tipoResiduo}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 md:px-5 py-3.5 text-right">
-                                                    <span className="text-base font-bold text-simar-texto">{item.cantidad.toLocaleString()}</span>
+                                                <td className="absolute top-3.5 right-4 sm:static sm:table-cell px-0 sm:px-4 md:px-5 sm:py-3.5 text-right whitespace-nowrap">
+                                                    <span className="text-lg sm:text-base font-bold text-simar-texto">{item.cantidad.toLocaleString()}</span>
                                                     <span className="text-[15px] text-simar-texto-2 ml-1">{item.unidad}</span>
                                                 </td>
                                             </tr>
@@ -1358,27 +1367,30 @@ function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }:
     const [openUpward, setOpenUpward] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
 
-    const handleMouseEnter = () => {
+    const calcularDireccion = () => {
         if (cardRef.current) {
             const rect = cardRef.current.getBoundingClientRect();
             const windowHeight = window.innerHeight;
             // Si la tarjeta está en la mitad inferior de la pantalla, abrir hacia arriba
-            const shouldOpenUpward = rect.bottom > windowHeight * 0.6;
-            setOpenUpward(shouldOpenUpward);
+            // (en celular el detalle se despliega debajo, dentro del flujo, así que nunca sube)
+            const esCelular = !window.matchMedia('(min-width: 640px)').matches;
+            setOpenUpward(!esCelular && rect.bottom > windowHeight * 0.6);
         }
-        setIsOpen(true);
     };
 
     return (
         <div
             ref={cardRef}
             className="relative h-full"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={() => setIsOpen(false)}
+            onPointerEnter={(e) => { if (e.pointerType === 'mouse') { calcularDireccion(); setIsOpen(true); } }}
+            onPointerLeave={(e) => { if (e.pointerType === 'mouse') setIsOpen(false); }}
         >
-            {/* Tarjeta base - tamaño fijo */}
-            <div
-                className={` bg-white/10 rounded-2xl p-6 cursor-pointer h-full min-h-[120px] transition-all duration-200 flex items-center ${isOpen ? 'bg-white/25 shadow-simar' : 'hover:bg-white/15'}
+            {/* Tarjeta base - tamaño fijo; con dedo o teclado se abre y cierra tocándola */}
+            <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() => { calcularDireccion(); setIsOpen((v) => !v); }}
+                className={`w-full text-left bg-white/10 rounded-2xl p-5 md:p-6 cursor-pointer h-full min-h-[112px] md:min-h-[120px] transition-all duration-200 flex items-center ${isOpen ? 'bg-white/25 shadow-simar' : 'hover:bg-white/15'}
                 `}
             >
                 <div className="flex items-center justify-between w-full">
@@ -1390,15 +1402,15 @@ function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }:
                         </div>
                     </div>
                 </div>
-            </div>
+            </button>
 
             {/* Panel flotante - aparece arriba o abajo según posición */}
             {isOpen && (
-                <div className={`simar-aparece absolute left-0 right-0 z-50 ${openUpward
-                    ? 'bottom-full mb-2'
-                    : 'top-full mt-2'
+                <div className={`simar-aparece relative mt-3 sm:mt-0 sm:absolute sm:left-0 sm:right-0 z-50 ${openUpward
+                    ? 'sm:bottom-full sm:mb-2'
+                    : 'sm:top-full sm:mt-2'
                     }`}>
-                    <div className="bg-simar-abismo rounded-2xl p-4 shadow-2xl border border-white/15">
+                    <div className="relative bg-simar-abismo rounded-2xl p-4 shadow-2xl border border-white/15">
                         {/* Flecha - cambia posición según dirección */}
                         <div className={`absolute left-8 w-4 h-4 bg-simar-abismo rotate-45 border-white/15 ${openUpward
                             ? '-bottom-2 border-r border-b'
@@ -1440,25 +1452,40 @@ interface InfoTooltipProps {
     title: string;
     description: string;
     examples?: string[];
+    /** Encabezado de la lista de ejemplos */
+    tituloEjemplos?: string;
+    /** El botón va sobre un fondo de color (p. ej. la tarjeta verde de impacto) */
+    sobreColor?: boolean;
 }
 
-function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
+function InfoTooltip({ title, description, examples, tituloEjemplos = 'Ejemplo:', sobreColor = false }: InfoTooltipProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="relative inline-block">
+        <div className="relative inline-block flex-shrink-0">
+            {/* El cursor la abre al pasar; con el dedo, un toque abre y otro cierra */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                onMouseEnter={() => setIsOpen(true)}
-                onMouseLeave={() => setIsOpen(false)}
-                className="w-11 h-11 rounded-full bg-simar-marea-suave hover:bg-simar-marea text-simar-marea-tinta hover:text-white flex items-center justify-center transition-all duration-200 text-base font-bold shadow-simar"
+                type="button"
+                onClick={() => setIsOpen((v) => !v)}
+                onPointerEnter={(e) => { if (e.pointerType === 'mouse') setIsOpen(true); }}
+                onPointerLeave={(e) => { if (e.pointerType === 'mouse') setIsOpen(false); }}
+                className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 text-base font-bold ${sobreColor
+                    ? 'bg-white/20 hover:bg-white/30 text-white'
+                    : 'bg-simar-marea-suave hover:bg-simar-marea text-simar-marea-tinta hover:text-white shadow-simar'
+                    }`}
                 aria-label="Más información"
+                aria-expanded={isOpen}
             >
                 ?
             </button>
 
             {isOpen && (
-                <div className="simar-aparece absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-80">
+                // En celular un globo de 320 px se saldría de la pantalla: se vuelve un panel fijo a lo ancho,
+                // encima de la barra inferior, que se cierra tocándolo.
+                <div
+                    onClick={() => setIsOpen(false)}
+                    className="simar-aparece fixed inset-x-4 bottom-[calc(100px+env(safe-area-inset-bottom))] z-50 sm:absolute sm:inset-x-auto sm:bottom-full sm:left-1/2 sm:-translate-x-1/2 sm:mb-3 sm:w-80"
+                >
                     <div className="bg-simar-abismo text-white rounded-2xl p-5 shadow-2xl border border-white/15">
                         <h4 className="font-bold text-base mb-3 flex items-center gap-2">
                             <span className="w-8 h-8 rounded-full bg-simar-marea text-white flex items-center justify-center"><Lightbulb className="w-[18px] h-[18px]" /></span>
@@ -1467,7 +1494,7 @@ function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
                         <p className="text-white/80 text-base leading-relaxed mb-3">{description}</p>
                         {examples && examples.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-white/15">
-                                <p className="text-white/80 text-base font-medium mb-2">Ejemplo:</p>
+                                <p className="text-white/80 text-base font-medium mb-2">{tituloEjemplos}</p>
                                 <ul className="text-base text-white/80 space-y-2">
                                     {examples.map((ex, i) => (
                                         <li key={i} className="flex items-start gap-2">
@@ -1480,7 +1507,7 @@ function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
                         )}
                     </div>
                     {/* Flecha */}
-                    <div className="w-4 h-4 bg-simar-abismo transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-2 border-b border-r border-white/15"></div>
+                    <div className="hidden sm:block w-4 h-4 bg-simar-abismo transform rotate-45 absolute left-1/2 -translate-x-1/2 -bottom-2 border-b border-r border-white/15"></div>
                 </div>
             )}
         </div>
@@ -1724,22 +1751,22 @@ function SimpleKpiCard({ title, value, subtitle, icon, color, orden = 0 }: Simpl
 
     return (
         <div
-            className={`simar-aparece bg-simar-superficie p-6 rounded-2xl border ${colors.border} shadow-simar`}
+            className={`simar-aparece bg-simar-superficie p-4 md:p-6 rounded-2xl border ${colors.border} shadow-simar`}
             style={{ animationDelay: `${orden * 0.04}s` }}
         >
             {/* Icono grande */}
-            <div className={`w-16 h-16 ${colors.bg} rounded-2xl flex items-center justify-center mb-4 ${colors.icon}`}>
+            <div className={`w-12 h-12 md:w-16 md:h-16 [&_svg]:w-6 [&_svg]:h-6 md:[&_svg]:w-8 md:[&_svg]:h-8 ${colors.bg} rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 ${colors.icon}`}>
                 {SimpleIcons[icon]}
             </div>
 
             {/* Título */}
-            <p className="text-simar-texto-2 text-base font-medium mb-1">{title}</p>
+            <p className="text-simar-texto-2 text-[15px] md:text-base font-medium leading-snug mb-1">{title}</p>
 
             {/* Valor grande */}
-            <p className="text-4xl font-bold text-simar-texto mb-2">{value}</p>
+            <p className="text-[26px] md:text-4xl leading-tight font-bold text-simar-texto mb-1 md:mb-2">{value}</p>
 
             {/* Subtítulo */}
-            <p className="text-base text-simar-texto-2">{subtitle}</p>
+            <p className="text-[15px] md:text-base leading-snug text-simar-texto-2">{subtitle}</p>
         </div>
     );
 }

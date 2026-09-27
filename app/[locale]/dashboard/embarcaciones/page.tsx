@@ -136,11 +136,11 @@ export default function EmbarcacionesPage() {
         }
       />
 
-      {/* Conteos */}
-      <div className="simar-aparece grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ animationDelay: '0.06s' }}>
-        <TarjetaDato etiqueta="Total de buques" valor={estadisticas.total} icono={Ship} />
-        <TarjetaDato etiqueta="Activos" valor={estadisticas.activos} icono={CheckCircle2} tono="arrecife" />
-        <TarjetaDato etiqueta="Inactivos" valor={estadisticas.inactivos} icono={Ban} tono="neutro" />
+      {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
+      <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4" style={{ animationDelay: '0.06s' }}>
+        <TarjetaDato apilada etiqueta="Total de buques" valor={estadisticas.total} icono={Ship} />
+        <TarjetaDato apilada etiqueta="Activos" valor={estadisticas.activos} icono={CheckCircle2} tono="arrecife" />
+        <TarjetaDato apilada etiqueta="Inactivos" valor={estadisticas.inactivos} icono={Ban} tono="neutro" />
       </div>
 
       {/* Alerta de registros incompletos */}

@@ -59,6 +59,8 @@ export function Tarjeta({ children, className = '' }: { children: ReactNode; cla
  * Dato grande con etiqueta (conteos de la pantalla). Si el valor es un número, cuenta al aparecer.
  * Con `href` la tarjeta entera lleva a otra pantalla y muestra una flecha a la derecha.
  * `compacto` baja el valor a 24 px para textos largos ("Puerto Peñasco", "Hace 1 día").
+ * `apilada`: en celular el ícono va arriba y el dato debajo, para poner dos o tres tarjetas por
+ * fila (ver DISEÑO_SIMAR.md → "Versión móvil"); desde 640 px vuelve a ser horizontal.
  */
 export function TarjetaDato({
     etiqueta,
@@ -68,6 +70,7 @@ export function TarjetaDato({
     detalle,
     href,
     compacto = false,
+    apilada = false,
     className = '',
     style,
 }: {
@@ -78,17 +81,18 @@ export function TarjetaDato({
     detalle?: ReactNode;
     href?: string;
     compacto?: boolean;
+    apilada?: boolean;
     className?: string;
     style?: CSSProperties;
 }) {
     const contenido = (
         <>
-            <span className={`w-14 h-14 flex-shrink-0 rounded-full flex items-center justify-center ${TONO_CIRCULO[tono]}`}>
-                <Icono className="w-7 h-7" strokeWidth={2} />
+            <span className={`${apilada ? 'w-11 h-11 sm:w-14 sm:h-14' : 'w-14 h-14'} flex-shrink-0 rounded-full flex items-center justify-center ${TONO_CIRCULO[tono]}`}>
+                <Icono className={apilada ? 'w-[22px] h-[22px] sm:w-7 sm:h-7' : 'w-7 h-7'} strokeWidth={2} />
             </span>
             <div className="min-w-0 flex-1">
-                <p className="text-[17px] text-simar-texto-2 leading-snug">{etiqueta}</p>
-                <p className={`${compacto ? 'text-[24px]' : 'text-[30px]'} font-extrabold leading-tight text-simar-texto ${compacto ? '' : 'whitespace-nowrap'}`}>
+                <p className={`${apilada ? 'text-[15px] sm:text-[17px]' : 'text-[17px]'} text-simar-texto-2 leading-snug`}>{etiqueta}</p>
+                <p className={`${compacto ? 'text-[24px]' : apilada ? 'text-[26px] sm:text-[30px]' : 'text-[30px]'} font-extrabold leading-tight text-simar-texto ${compacto ? '' : 'whitespace-nowrap'}`}>
                     {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
                 </p>
                 {detalle && <div className="text-[15px] text-simar-texto-2">{detalle}</div>}
@@ -97,13 +101,16 @@ export function TarjetaDato({
             {href && (
                 <ChevronRight
                     aria-hidden="true"
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 text-simar-texto-2"
+                    className={`absolute right-3.5 w-6 h-6 text-simar-texto-2 ${apilada ? 'top-4 sm:top-1/2 sm:-translate-y-1/2' : 'top-1/2 -translate-y-1/2'}`}
                     strokeWidth={2}
                 />
             )}
         </>
     );
-    const clases = `relative bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-5 ${href ? 'pr-11' : ''} flex items-center gap-4 ${className}`;
+    const disposicion = apilada
+        ? `p-4 sm:p-5 ${href ? 'sm:pr-11' : ''} flex flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:gap-4`
+        : `p-5 ${href ? 'pr-11' : ''} flex items-center gap-4`;
+    const clases = `relative bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] ${disposicion} ${className}`;
 
     if (href) {
         return (

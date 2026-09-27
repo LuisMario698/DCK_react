@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { BarChart3, Building2, FileText, Scale, Ship, Users, type LucideIcon } from 'lucide-react';
+import { BarChart3, Building2, ChevronRight, FileText, Scale, Ship, Users, type LucideIcon } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 
 export const dynamic = 'force-dynamic';
@@ -22,19 +22,24 @@ const ActionCard = ({
   tono: string;
   delay: string;
 }) => (
+  // En celular la tarjeta es horizontal (ícono, texto y flecha) para que las tres quepan en una
+  // pantalla; desde 768 px vuelve a ser la tarjeta alta del diseño.
   <Link
     href={href}
     style={{ animationDelay: delay }}
-    className={`simar-aparece simar-tarjeta-accion flex flex-col min-h-[230px] md:min-h-[250px] rounded-[28px] p-7 ${principal
+    className={`simar-aparece simar-tarjeta-accion flex flex-row items-center gap-5 min-h-[112px] p-5 md:flex-col md:items-stretch md:gap-0 md:min-h-[250px] md:p-7 rounded-[28px] ${principal
       ? 'bg-simar-marea text-white shadow-simar'
       : 'bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto'
       }`}
   >
-    <span className={`w-[72px] h-[72px] rounded-full flex items-center justify-center ${principal ? 'bg-white text-[#1B5FC9]' : tono}`}>
-      <Icon className="w-[34px] h-[34px]" strokeWidth={2} />
+    <span className={`w-16 h-16 md:w-[72px] md:h-[72px] flex-shrink-0 rounded-full flex items-center justify-center ${principal ? 'bg-white text-[#1B5FC9]' : tono}`}>
+      <Icon className="w-[30px] h-[30px] md:w-[34px] md:h-[34px]" strokeWidth={2} />
     </span>
-    <span className="mt-auto pt-6 text-[32px] font-extrabold leading-tight">{title}</span>
-    <span className={`mt-1 text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2'}`}>{description}</span>
+    <span className="flex-1 min-w-0 flex flex-col md:mt-auto md:pt-6">
+      <span className="text-[26px] md:text-[32px] font-extrabold leading-tight">{title}</span>
+      <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2'}`}>{description}</span>
+    </span>
+    <ChevronRight aria-hidden="true" className={`md:hidden w-7 h-7 flex-shrink-0 ${principal ? 'text-white/80' : 'text-simar-texto-2'}`} strokeWidth={2} />
   </Link>
 );
 
@@ -45,6 +50,7 @@ const OtraSeccion = ({ href, Icon, label }: { href: string; Icon: LucideIcon; la
   >
     <Icon className="w-6 h-6 text-simar-marea-tinta" strokeWidth={2} />
     {label}
+    <ChevronRight aria-hidden="true" className="sm:hidden ml-auto w-6 h-6 text-simar-texto-2" strokeWidth={2} />
   </Link>
 );
 
@@ -58,12 +64,15 @@ export default async function DashboardPage({
   return (
     <div className="relative max-w-[1600px]">
       {/* Encabezado: marca SiMAR + saludo */}
-      <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-9">
+      <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9">
         <div className="flex items-center gap-4 flex-shrink-0">
-          <LogoSimar variante="simbolo" tamano={92} />
+          {/* En celular la marca es más chica: el saludo es lo importante */}
+          <LogoSimar variante="simbolo" tamano={64} className="md:hidden" />
+          <LogoSimar variante="simbolo" tamano={92} className="hidden md:inline-flex" />
           <div>
-            <LogoSimar variante="nombre" tamano={80} />
-            <p className="mt-2.5 text-[17px] leading-snug text-simar-texto-2 max-w-[240px]">
+            <LogoSimar variante="nombre" tamano={60} className="md:hidden" />
+            <LogoSimar variante="nombre" tamano={80} className="hidden md:inline-flex" />
+            <p className="mt-2 md:mt-2.5 text-[15px] md:text-[17px] leading-snug text-simar-texto-2 max-w-[240px]">
               Sistema Integral de Manejo Ambiental de Residuos
             </p>
           </div>
@@ -78,7 +87,7 @@ export default async function DashboardPage({
       </section>
 
       {/* Acciones principales */}
-      <div className="mt-7 grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+      <div className="mt-5 md:mt-7 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <ActionCard
           title="Manifiesto"
           Icon={FileText}
@@ -109,7 +118,7 @@ export default async function DashboardPage({
       {/* Accesos rápidos a otras secciones */}
       <section className="simar-aparece mt-9" style={{ animationDelay: '0.26s' }}>
         <h2 className="text-xl font-bold text-simar-texto-2">Otras secciones</h2>
-        <div className="mt-3.5 flex flex-wrap gap-3.5">
+        <div className="mt-3.5 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-3.5">
           <OtraSeccion href={`/${locale}/dashboard/embarcaciones`} Icon={Ship} label="Embarcaciones" />
           <OtraSeccion href={`/${locale}/dashboard/personas`} Icon={Users} label="Personas" />
           <OtraSeccion href={`/${locale}/dashboard/asociaciones`} Icon={Building2} label="Asociaciones" />

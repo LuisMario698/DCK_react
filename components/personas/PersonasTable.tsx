@@ -84,7 +84,11 @@ export function PersonasTable({
                       <span>Incompleto</span>
                     </span>
                   )}
-                  <span className="text-[15px] text-simar-texto-2 sm:hidden">#{persona.id}</span>
+                  {/* En celular (sin columnas de tipo ni número) van debajo del nombre */}
+                  <span className="md:hidden basis-full text-[15px] text-simar-texto-2">
+                    {persona.tipo_persona?.nombre_tipo || 'Sin tipo'}
+                    <span className="sm:hidden"> · #{persona.id}</span>
+                  </span>
                 </div>
               </TableCell>
               <TableCell className="hidden md:table-cell">

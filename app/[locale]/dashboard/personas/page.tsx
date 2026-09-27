@@ -137,11 +137,11 @@ export default function PersonasPage() {
         }
       />
 
-      {/* Conteos */}
-      <div className="simar-aparece grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ animationDelay: '0.06s' }}>
-        <TarjetaDato etiqueta="Total de personas" valor={estadisticas.total} icono={Users} />
-        <TarjetaDato etiqueta="Motoristas" valor={estadisticas.motoristas} icono={Wrench} tono="neutro" />
-        <TarjetaDato etiqueta="Cocineros" valor={estadisticas.cocineros} icono={ChefHat} tono="neutro" />
+      {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
+      <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4" style={{ animationDelay: '0.06s' }}>
+        <TarjetaDato apilada etiqueta="Total de personas" valor={estadisticas.total} icono={Users} />
+        <TarjetaDato apilada etiqueta="Motoristas" valor={estadisticas.motoristas} icono={Wrench} tono="neutro" />
+        <TarjetaDato apilada etiqueta="Cocineros" valor={estadisticas.cocineros} icono={ChefHat} tono="neutro" />
       </div>
 
       {/* Alerta de registros incompletos */}

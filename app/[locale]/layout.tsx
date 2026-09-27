@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 
 // Color de la barra del navegador en celular: papel en claro, abismo en oscuro
 export const viewport: Viewport = {
+  // cover: la página llega hasta los bordes y la barra inferior respeta la zona segura (env(safe-area-inset-*))
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#E9E4D9" },
     { media: "(prefers-color-scheme: dark)", color: "#081624" },

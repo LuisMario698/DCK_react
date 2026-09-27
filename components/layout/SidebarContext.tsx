@@ -20,24 +20,20 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Cargar estado desde localStorage
+  // Cargar estado desde localStorage. Sólo se recuerda si el menú de escritorio está colapsado:
+  // el menú de celular (isOpen) siempre empieza cerrado, para no tapar la pantalla al volver.
   useEffect(() => {
-    const savedState = localStorage.getItem('sidebarOpen');
     const savedCollapsed = localStorage.getItem('sidebarCollapsed');
-
-    if (savedState !== null) setIsOpen(savedState === 'true');
     if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true');
-
     setMounted(true);
   }, []);
 
   // Persistir estado
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('sidebarOpen', String(isOpen));
       localStorage.setItem('sidebarCollapsed', String(isCollapsed));
     }
-  }, [isOpen, isCollapsed, mounted]);
+  }, [isCollapsed, mounted]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
   const closeSidebar = () => setIsOpen(false);

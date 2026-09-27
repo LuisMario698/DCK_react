@@ -25,6 +25,12 @@ function formatFechaRelativa(fecha: string): string {
   return `Hace ${Math.floor(days / 30)} meses`;
 }
 
+function colorEstado(estado: string | null | undefined): string {
+  if (estado === 'Activo') return 'bg-simar-arrecife-suave text-simar-arrecife-tinta';
+  if (estado === 'En Mantenimiento') return 'bg-simar-coral-suave text-simar-coral';
+  return 'bg-simar-papel text-simar-texto-2';
+}
+
 export function EmbarcacionesTable({
   embarcaciones,
   onEdit,
@@ -35,9 +41,9 @@ export function EmbarcacionesTable({
   return (
     <Table>
       <TableHeader>
-        <TableHead className="w-14">#</TableHead>
+        <TableHead className="hidden sm:table-cell w-14">#</TableHead>
         <TableHead>{t('tabla.nombre')}</TableHead>
-        <TableHead>Estado</TableHead>
+        <TableHead className="hidden sm:table-cell">Estado</TableHead>
         <TableHead className="hidden md:table-cell">Registro</TableHead>
         <TableHead className="text-right">{t('tabla.acciones')}</TableHead>
       </TableHeader>
@@ -56,7 +62,7 @@ export function EmbarcacionesTable({
         ) : (
           embarcaciones.map((buque) => (
             <TableRow key={buque.id}>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <span className="text-[15px] font-mono text-simar-texto-2">#{buque.id}</span>
               </TableCell>
               <TableCell>
@@ -70,16 +76,16 @@ export function EmbarcacionesTable({
                       <span>Incompleto</span>
                     </span>
                   )}
+                  {/* En celular el estado va debajo del nombre (su columna se oculta) */}
+                  <span className="sm:hidden basis-full">
+                    <span className={`inline-flex items-center px-3 py-0.5 text-[15px] font-bold rounded-full whitespace-nowrap ${colorEstado(buque.estado)}`}>
+                      {buque.estado}
+                    </span>
+                  </span>
                 </div>
               </TableCell>
-              <TableCell>
-                <span className={`inline-flex items-center px-3 py-1 text-[15px] font-bold rounded-full whitespace-nowrap ${
-                  buque.estado === 'Activo'
-                    ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta'
-                    : buque.estado === 'En Mantenimiento'
-                      ? 'bg-simar-coral-suave text-simar-coral'
-                      : 'bg-simar-papel text-simar-texto-2'
-                }`}>
+              <TableCell className="hidden sm:table-cell">
+                <span className={`inline-flex items-center px-3 py-1 text-[15px] font-bold rounded-full whitespace-nowrap ${colorEstado(buque.estado)}`}>
                   {buque.estado}
                 </span>
               </TableCell>

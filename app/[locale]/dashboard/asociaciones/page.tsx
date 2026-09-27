@@ -72,16 +72,17 @@ export default function AsociacionesPage() {
                 subtitulo="Publica residuos, gestiona solicitudes y comunícate con las empresas."
             />
 
-            {/* Conteos */}
-            <div className="simar-aparece grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ animationDelay: '0.06s' }}>
-                <TarjetaDato etiqueta="Asociaciones activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
-                <TarjetaDato etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
-                <TarjetaDato etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
+            {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
+            <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4" style={{ animationDelay: '0.06s' }}>
+                <TarjetaDato apilada etiqueta="Asociaciones activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
+                <TarjetaDato apilada etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
+                <TarjetaDato apilada etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
             </div>
 
             {/* Tabs */}
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar">
-                <nav aria-label="Secciones de asociaciones" className="flex gap-1 overflow-x-auto">
+                {/* En celular, las cuatro secciones en una cuadrícula de 2 × 2: todas a la vista, sin deslizar */}
+                <nav aria-label="Secciones de asociaciones" className="grid grid-cols-2 sm:flex gap-1">
                     {tabs.map((t) => {
                         const active = tab === t.value;
                         return (
@@ -89,7 +90,7 @@ export default function AsociacionesPage() {
                                 key={t.value}
                                 onClick={() => setTab(t.value)}
                                 aria-current={active ? 'page' : undefined}
-                                className={`relative flex-1 min-w-fit whitespace-nowrap min-h-[52px] px-4 sm:px-5 text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 ${
+                                className={`relative sm:flex-1 min-w-0 sm:min-w-fit whitespace-nowrap min-h-[52px] px-3 sm:px-5 text-[17px] sm:text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 ${
                                     active
                                         ? 'bg-simar-marea text-white shadow-simar'
                                         : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'

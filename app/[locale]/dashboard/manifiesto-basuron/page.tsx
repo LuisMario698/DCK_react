@@ -183,11 +183,12 @@ export default function ManifiestoBasuronPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <div className="overflow-hidden border border-simar-borde sm:rounded-2xl">
-                  <table className="w-full">
-                    <thead className="bg-simar-papel border-b border-simar-borde">
+            {/* En celular cada recibo es una tarjeta (la tabla se vuelve bloques); desde 640 px, tabla */}
+            <div className="sm:overflow-x-auto sm:-mx-4 md:mx-0">
+              <div className="sm:inline-block min-w-full align-middle">
+                <div className="overflow-hidden border border-simar-borde rounded-2xl">
+                  <table className="w-full block sm:table">
+                    <thead className="hidden sm:table-header-group bg-simar-papel border-b border-simar-borde">
                       <tr>
                         <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-[15px] font-bold text-simar-texto-2 w-[25%]"># Ticket</th>
                         <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[20%]">Fecha</th>
@@ -196,7 +197,7 @@ export default function ManifiestoBasuronPage() {
                         <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[20%]">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="block sm:table-row-group">
                       {paginatedManifiestos.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center py-8 text-simar-texto-2">
@@ -211,13 +212,13 @@ export default function ManifiestoBasuronPage() {
                         </tr>
                       ) : (
                         paginatedManifiestos.map((m) => (
-                          <tr key={m.id} className="border-b border-simar-borde-suave bg-simar-superficie hover:bg-simar-papel/60 transition-colors">
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto">
+                          <tr key={m.id} className="block sm:table-row border-b border-simar-borde-suave last:border-b-0 sm:last:border-b bg-simar-superficie hover:bg-simar-papel/60 transition-colors">
+                            <td className="block sm:table-cell px-4 pt-4 pb-0 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <span className="font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">#{m.numero_ticket || m.id}</span>
                                   {m.estado && (
-                                    <span className={`inline-flex px-2.5 py-0.5 text-[15px] font-bold rounded-full ${m.estado === 'Completado' ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' :
+                                    <span className={`inline-flex whitespace-nowrap px-2.5 py-0.5 text-[15px] font-bold rounded-full ${m.estado === 'Completado' ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' :
                                       m.estado === 'En Proceso' ? 'bg-simar-coral-suave text-simar-coral' :
                                         m.estado === 'Cancelado' ? 'bg-simar-coral-suave text-simar-coral' :
                                           'bg-simar-papel text-simar-texto-2'
@@ -229,21 +230,28 @@ export default function ManifiestoBasuronPage() {
                                 <span className="text-base font-bold text-simar-texto truncate max-w-[200px]">
                                   {m.buque?.nombre_buque || 'Sin buque'}
                                 </span>
+                                {/* En celular: fecha, hora y total debajo del ticket */}
+                                <span className="sm:hidden text-base text-simar-texto-2">
+                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {m.hora_entrada ? ` · ${m.hora_entrada}` : ''}
+                                  {' · '}
+                                  <strong className="text-simar-texto">{Number(m.total_depositado || 0).toFixed(2)} kg</strong>
+                                </span>
                               </div>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center whitespace-nowrap font-medium">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center whitespace-nowrap font-medium">
                               {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto-2 text-center font-mono">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto-2 text-center font-mono">
                               {m.hora_entrada}
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-center">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-center">
                               <span className="font-bold text-simar-texto bg-simar-papel px-3 py-1 rounded-full whitespace-nowrap">
                                 {Number(m.total_depositado || 0).toFixed(2)} kg
                               </span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto">
-                              <div className="flex justify-center gap-2">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
+                              <div className="flex justify-start sm:justify-center gap-2">
                                 <button
                                   onClick={() => setSelectedManifiesto(m)}
                                   className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
@@ -253,7 +261,7 @@ export default function ManifiestoBasuronPage() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                   </svg>
-                                  <span className="hidden sm:inline">Ver</span>
+                                  <span>Ver</span>
                                 </button>
                                 <button
                                   onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
