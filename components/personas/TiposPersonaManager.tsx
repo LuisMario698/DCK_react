@@ -159,8 +159,8 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
-          <div className="simar-aparece bg-simar-superficie rounded-[28px] p-6 w-full max-w-md shadow-2xl">
+        <div className="simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+          <div className="simar-ventana bg-simar-superficie rounded-[28px] p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-extrabold text-simar-texto">
                 {editingTipo ? 'Editar Tipo de Persona' : 'Nuevo Tipo de Persona'}

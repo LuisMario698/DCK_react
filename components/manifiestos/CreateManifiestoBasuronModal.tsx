@@ -145,8 +145,8 @@ export function CreateManifiestoBasuronModal({
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
 
   return (
-    <div className={inline ? '' : 'fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
-      <div className={inline ? 'w-full' : 'simar-aparece bg-simar-papel rounded-[28px] shadow-2xl max-w-7xl w-full h-full overflow-y-auto p-6'}>
+    <div className={inline ? '' : 'simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
+      <div className={inline ? 'w-full' : 'simar-ventana bg-simar-papel rounded-[28px] shadow-2xl max-w-7xl w-full h-full overflow-y-auto p-6'}>
         {/* Recibo del relleno sanitario — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Encabezado del recibo */}

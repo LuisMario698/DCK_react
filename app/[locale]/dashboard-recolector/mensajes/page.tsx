@@ -15,14 +15,14 @@ export default function MensajesPage() {
     }
 
     return (
-        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-190px)] min-h-[480px] flex flex-col">
-            <header className="px-5 py-4 border-b border-simar-borde flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-simar-marea-suave flex items-center justify-center text-simar-marea-tinta">
-                    <Anchor className="w-5 h-5" />
-                </div>
+        <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden h-[calc(100vh-190px)] min-h-[480px] flex flex-col">
+            <header className="px-5 sm:px-6 py-5 border-b border-simar-borde flex items-center gap-4">
+                <span className="w-14 h-14 flex-shrink-0 rounded-full bg-simar-marea-suave flex items-center justify-center text-simar-marea-tinta">
+                    <Anchor className="w-7 h-7" strokeWidth={2} />
+                </span>
                 <div className="min-w-0">
-                    <p className="text-base font-bold text-simar-texto">Centro de acopio · {PUERTO_PENASCO.nombre}</p>
-                    <p className="text-[15px] text-simar-texto-2">Coordina horarios, cantidades y documentación.</p>
+                    <p className="text-[21px] font-extrabold leading-tight text-simar-texto">Centro de acopio · {PUERTO_PENASCO.nombre}</p>
+                    <p className="text-base text-simar-texto-2">Coordina horarios, cantidades y documentación.</p>
                 </div>
             </header>
             <Conversacion

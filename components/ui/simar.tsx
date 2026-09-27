@@ -3,8 +3,10 @@
  * Sólo dibujan: no guardan estado ni hacen consultas. Los manejadores (onChange, onClick)
  * los pasa cada pantalla tal cual.
  */
-import type { InputHTMLAttributes, ReactNode } from 'react';
-import { AlertTriangle, Info, Loader2, Search, type LucideIcon } from 'lucide-react';
+import type { CSSProperties, InputHTMLAttributes, ReactNode } from 'react';
+import Link from 'next/link';
+import { AlertTriangle, ChevronRight, Info, Loader2, Search, type LucideIcon } from 'lucide-react';
+import { NumeroAnimado } from './movimiento';
 
 type Tono = 'marea' | 'arrecife' | 'coral' | 'violeta' | 'neutro';
 
@@ -53,30 +55,66 @@ export function Tarjeta({ children, className = '' }: { children: ReactNode; cla
     );
 }
 
-/** Dato grande con etiqueta (conteos de la pantalla). */
+/**
+ * Dato grande con etiqueta (conteos de la pantalla). Si el valor es un número, cuenta al aparecer.
+ * Con `href` la tarjeta entera lleva a otra pantalla y muestra una flecha a la derecha.
+ * `compacto` baja el valor a 24 px para textos largos ("Puerto Peñasco", "Hace 1 día").
+ */
 export function TarjetaDato({
     etiqueta,
     valor,
     icono: Icono,
     tono = 'marea',
     detalle,
+    href,
+    compacto = false,
+    className = '',
+    style,
 }: {
     etiqueta: ReactNode;
     valor: ReactNode;
     icono: LucideIcon;
     tono?: Tono;
     detalle?: ReactNode;
+    href?: string;
+    compacto?: boolean;
+    className?: string;
+    style?: CSSProperties;
 }) {
-    return (
-        <div className="bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-5 flex items-center gap-4">
+    const contenido = (
+        <>
             <span className={`w-14 h-14 flex-shrink-0 rounded-full flex items-center justify-center ${TONO_CIRCULO[tono]}`}>
                 <Icono className="w-7 h-7" strokeWidth={2} />
             </span>
-            <div className="min-w-0">
-                <p className="text-[17px] text-simar-texto-2 leading-tight">{etiqueta}</p>
-                <p className="text-[30px] font-extrabold leading-tight text-simar-texto">{valor}</p>
-                {detalle && <p className="text-[15px] text-simar-texto-2">{detalle}</p>}
+            <div className="min-w-0 flex-1">
+                <p className="text-[17px] text-simar-texto-2 leading-snug">{etiqueta}</p>
+                <p className={`${compacto ? 'text-[24px]' : 'text-[30px]'} font-extrabold leading-tight text-simar-texto ${compacto ? '' : 'whitespace-nowrap'}`}>
+                    {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
+                </p>
+                {detalle && <div className="text-[15px] text-simar-texto-2">{detalle}</div>}
             </div>
+            {/* La flecha va encima del margen derecho: así no le quita ancho a la etiqueta */}
+            {href && (
+                <ChevronRight
+                    aria-hidden="true"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 text-simar-texto-2"
+                    strokeWidth={2}
+                />
+            )}
+        </>
+    );
+    const clases = `relative bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-5 ${href ? 'pr-11' : ''} flex items-center gap-4 ${className}`;
+
+    if (href) {
+        return (
+            <Link href={href} className={`simar-tarjeta-accion ${clases}`} style={style}>
+                {contenido}
+            </Link>
+        );
+    }
+    return (
+        <div className={clases} style={style}>
+            {contenido}
         </div>
     );
 }

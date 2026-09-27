@@ -84,8 +84,8 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]">
-      <div role="dialog" aria-modal="true" className="simar-aparece w-full max-w-lg bg-simar-superficie rounded-[28px] shadow-2xl p-7">
+    <div className="simar-velo fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]">
+      <div role="dialog" aria-modal="true" className="simar-ventana w-full max-w-lg bg-simar-superficie rounded-[28px] shadow-2xl p-7">
         <div className="flex items-center justify-between gap-4 mb-6">
           <h3 className="text-[22px] font-extrabold leading-tight text-simar-texto">
             {buqueToEdit ? t('tituloEditar') : t('tituloCrear')}

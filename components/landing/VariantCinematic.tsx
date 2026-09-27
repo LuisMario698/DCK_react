@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, type CSSProperties } from 'react';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
 import type { VarianteMapa } from './mapa/puertos';
 import { useScrollReveal } from './useScrollReveal';
-import { CountUpNumber } from './CountUpNumber';
 import type { LandingStats } from '@/lib/services/landing_stats';
 import {
     ArrowDown,
@@ -27,9 +26,43 @@ import {
     X,
     ArrowLeft,
     SquareTerminal,
+    Pause,
+    Play,
     type LucideIcon,
 } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
+import { LineaMarea } from '@/components/layout/LineaMarea';
+import { NumeroAnimado, usePrefiereMenosMovimiento, usePresencia } from '@/components/ui/movimiento';
+
+/** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
+const SEGUNDOS_POR_FOTO = 6;
+
+/** Ola del logo, larga, bajo la palabra SiMAR del hero (se dibuja al cargar) */
+const OLA_TITULO = `M2 7 Q9.4 1 16.75 7 ${Array.from({ length: 15 }, (_, i) => `T${(2 + (i + 2) * 14.75).toFixed(2)} 7`).join(' ')}`;
+
+/**
+ * Borde de ola entre una franja clara y una oscura. `color` es el de la franja vecina;
+ * `lado` dice si la ola cuelga desde arriba o sube desde abajo de la sección.
+ */
+function OlaSeparador({ color, lado }: { color: string; lado: 'arriba' | 'abajo' }) {
+    return (
+        <svg
+            aria-hidden="true"
+            viewBox="0 0 1440 64"
+            preserveAspectRatio="none"
+            className={`absolute inset-x-0 h-10 md:h-16 w-full pointer-events-none ${lado === 'arriba' ? 'top-0' : 'bottom-0 rotate-180'}`}
+        >
+            <path
+                d="M0 0 H1440 V22 C1320 44 1190 54 1060 40 C930 26 820 6 700 14 C580 22 470 50 340 52 C210 54 110 36 0 26 Z"
+                style={{ fill: color, opacity: 0.45 }}
+            />
+            <path
+                d="M0 0 H1440 V14 C1300 30 1180 38 1040 28 C900 18 800 2 680 8 C560 14 450 36 320 38 C190 40 100 26 0 18 Z"
+                style={{ fill: color }}
+            />
+        </svg>
+    );
+}
 
 type RolGuardado = 'admin' | 'recolector';
 // 'superadmin' = acceso de desarrollador (enlace discreto del footer); no se
@@ -84,7 +117,18 @@ const NAV_LINKS = [
 ];
 
 // color = círculo del ícono, accent = cifra (franja oscura). Ver DISEÑO_SIMAR.md
-const AWARENESS_PANELS = [
+// cifra/sufijo: si la cifra es un número, cuenta al aparecer.
+const AWARENESS_PANELS: {
+    icon: LucideIcon;
+    title: string;
+    stat: string;
+    cifra?: number;
+    sufijo?: string;
+    statLabel: string;
+    desc: string;
+    color: string;
+    accent: string;
+}[] = [
     {
         icon: Droplets,
         title: 'Aceites y combustibles',
@@ -98,6 +142,8 @@ const AWARENESS_PANELS = [
         icon: Fish,
         title: 'Biodiversidad marina',
         stat: '2,000+',
+        cifra: 2000,
+        sufijo: '+',
         statLabel: 'especies en el Mar de Cortés',
         desc: 'El Alto Golfo de California es santuario de la vaquita marina y hogar de una de las biodiversidades marinas más ricas del planeta. Cada registro cuenta.',
         color: 'bg-[rgba(127,224,214,0.16)] text-[#7FE0D6]',
@@ -107,6 +153,8 @@ const AWARENESS_PANELS = [
         icon: Recycle,
         title: 'Economía circular',
         stat: '100%',
+        cifra: 100,
+        sufijo: '%',
         statLabel: 'de residuos con destino verificado',
         desc: 'Cada filtro, cada litro de aceite y cada bolsa de basura es rastreada desde la embarcación hasta su disposición final certificada, cerrando el ciclo.',
         color: 'bg-[rgba(95,209,160,0.16)] text-[#6FD9AE]',
@@ -293,6 +341,20 @@ export function VariantCinematic({
     // Página protegida que se pidió sin sesión (?siguiente=...), para volver tras el login
     const [siguiente, setSiguiente] = useState<string | null>(null);
     const [scrolled, setScrolled] = useState(false);
+    // La ventana de acceso se queda montada mientras hace su salida
+    const ventanaAcceso = usePresencia(showLoginModal, 200);
+
+    // Carrusel: se puede pausar (botón, o al pasar el cursor / enfocar la foto).
+    // Con "reducir movimiento" no avanza solo.
+    const reducirMovimiento = usePrefiereMenosMovimiento();
+    const [pausadoPorUsuario, setPausadoPorUsuario] = useState(false);
+    const [pausaMomentanea, setPausaMomentanea] = useState(false);
+    const carruselPausado = pausadoPorUsuario || pausaMomentanea;
+
+    // Sección visible en pantalla: la línea de marea del menú se desliza bajo su enlace
+    const [seccionActiva, setSeccionActiva] = useState<string | null>(null);
+    const enlacesRef = useRef<HTMLDivElement>(null);
+    const [marcaMenu, setMarcaMenu] = useState<{ x: number; visible: boolean }>({ x: 0, visible: false });
 
     const openLoginModal = () => {
         setModalRole(readSavedRole()); // null si no hay guardado → selector
@@ -348,19 +410,54 @@ export function VariantCinematic({
     const mapRef = useScrollReveal<HTMLElement>();
     const ctaRef = useScrollReveal<HTMLElement>();
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setPrevIndex(currentIndex);
-            setCurrentIndex((prev) => (prev + 1) % MEDIA.length);
-        }, 6000);
-        return () => clearInterval(interval);
-    }, [currentIndex]);
+    // Cambia de foto: la anterior se queda debajo mientras la nueva se funde encima
+    const irAFoto = (indice: number) => {
+        if (indice === currentIndex) return;
+        setPrevIndex(currentIndex);
+        setCurrentIndex(indice);
+    };
+    // El avance lo marca la barra de la píldora activa: al terminar de llenarse, sigue la próxima.
+    // Así la pausa detiene la barra y el cambio a la vez.
+    const alTerminarAvance = () => irAFoto((currentIndex + 1) % MEDIA.length);
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 60);
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
+
+    // Qué sección cruza el centro de la pantalla
+    useEffect(() => {
+        const secciones = NAV_LINKS.map((l) => document.querySelector<HTMLElement>(l.href)).filter(
+            (s): s is HTMLElement => s !== null
+        );
+        const obs = new IntersectionObserver(
+            (entradas) => {
+                for (const e of entradas) {
+                    if (e.isIntersecting) setSeccionActiva(`#${e.target.id}`);
+                    else if (e.boundingClientRect.top > 0 && e.target === secciones[0]) setSeccionActiva(null);
+                }
+            },
+            { rootMargin: '-45% 0px -50% 0px' }
+        );
+        secciones.forEach((s) => obs.observe(s));
+        return () => obs.disconnect();
+    }, []);
+
+    // Posición de la línea de marea bajo el enlace activo (y al cambiar el tamaño de la ventana)
+    useEffect(() => {
+        const medir = () => {
+            const contenedor = enlacesRef.current;
+            const enlace = seccionActiva ? contenedor?.querySelector<HTMLElement>(`a[href="${seccionActiva}"]`) : null;
+            setMarcaMenu((m) => (enlace ? { x: enlace.offsetLeft, visible: true } : { ...m, visible: false }));
+        };
+        const id = requestAnimationFrame(medir);
+        window.addEventListener('resize', medir);
+        return () => {
+            cancelAnimationFrame(id);
+            window.removeEventListener('resize', medir);
+        };
+    }, [seccionActiva]);
 
     useEffect(() => {
         if (showLoginModal) {
@@ -373,14 +470,19 @@ export function VariantCinematic({
     }, [showLoginModal]);
 
     return (
-        <div className="simar-claro relative min-h-screen w-full overflow-x-hidden bg-simar-papel font-sans text-simar-texto antialiased">
+        <div className="simar-claro simar-landing relative min-h-screen w-full overflow-x-clip bg-simar-papel font-sans text-simar-texto antialiased">
             {/* Navbar — vidrio flotante */}
             <nav
                 aria-label="Principal"
-                className={`fixed top-3 md:top-6 inset-x-3 md:inset-x-8 z-50 rounded-[30px] transition-[background-color] duration-300 ${
+                className={`simar-entra fixed top-3 md:top-6 inset-x-3 md:inset-x-8 z-50 rounded-[30px] transition-[background-color] duration-300 ${
                     scrolled ? 'simar-vidrio-fuerte' : 'simar-vidrio'
                 }`}
+                style={{ animationDuration: '0.7s' }}
             >
+                {/* Avance de lectura: la marea sube con el scroll (sólo navegadores que lo soportan) */}
+                <span aria-hidden="true" className="absolute left-7 right-7 bottom-0 h-[3px] overflow-hidden rounded-full">
+                    <span className="simar-progreso h-full w-full bg-simar-golfo" />
+                </span>
                 <div className="h-[72px] md:h-[84px] pl-4 md:pl-5 pr-2.5 md:pr-3 flex items-center gap-5">
                     <a href="#top" className="flex items-center gap-4 rounded-2xl" aria-label="SiMAR - Inicio">
                         <LogoSimar tamano={46} tono="claro" />
@@ -391,21 +493,34 @@ export function VariantCinematic({
                         </span>
                     </a>
 
-                    <div className="hidden xl:flex items-center gap-6 ml-auto">
+                    <div ref={enlacesRef} className="relative hidden xl:flex items-center gap-6 ml-auto">
                         {NAV_LINKS.map((link) => (
                             <a
                                 key={link.href}
                                 href={link.href}
+                                aria-current={seccionActiva === link.href ? 'location' : undefined}
                                 className="min-h-[48px] flex items-center text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
                             >
                                 {link.label}
                             </a>
                         ))}
+                        {/* Línea de marea: se desliza bajo la sección que se está leyendo */}
+                        <span
+                            aria-hidden="true"
+                            className="absolute left-0 bottom-[3px] pointer-events-none transition-[transform,opacity] duration-500"
+                            style={{
+                                transform: `translateX(${marcaMenu.x}px)`,
+                                opacity: marcaMenu.visible ? 1 : 0,
+                                transitionTimingFunction: 'var(--simar-frena)',
+                            }}
+                        >
+                            <LineaMarea key={seccionActiva ?? 'ninguna'} className="block" />
+                        </span>
                     </div>
 
                     <button
                         onClick={openLoginModal}
-                        className="ml-auto xl:ml-0 min-h-[54px] md:min-h-[58px] px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold transition-colors flex items-center gap-2 cursor-pointer"
+                        className="simar-presiona ml-auto xl:ml-0 min-h-[54px] md:min-h-[58px] px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer"
                     >
                         Iniciar sesión
                         <ArrowRight className="w-5 h-5" strokeWidth={2.4} />
@@ -414,7 +529,8 @@ export function VariantCinematic({
             </nav>
 
             {/* Hero */}
-            <header id="top" className="relative overflow-hidden">
+            {/* overflow-clip y no -hidden: lo decorativo que sobresale no vuelve "desplazable" la franja (al enfocar un botón se corría) */}
+            <header id="top" className="relative overflow-clip">
                 <svg
                     aria-hidden="true"
                     width="900"
@@ -422,46 +538,88 @@ export function VariantCinematic({
                     viewBox="300 -200 600 520"
                     className="absolute -right-32 top-10 pointer-events-none"
                 >
-                    <ellipse cx="560" cy="40" rx="230" ry="170" style={{ fill: 'var(--simar-blob-1)' }} />
-                    <ellipse cx="700" cy="200" rx="160" ry="120" style={{ fill: 'var(--simar-blob-2)' }} />
+                    {/* Manchas de luz y curvas de profundidad: las curvas se trazan al cargar, de adentro hacia afuera */}
+                    <ellipse className="simar-mancha" cx="560" cy="40" rx="230" ry="170" style={{ fill: 'var(--simar-blob-1)' }} />
+                    <ellipse className="simar-mancha" cx="700" cy="200" rx="160" ry="120" style={{ fill: 'var(--simar-blob-2)', animationDelay: '0.3s' }} />
                     <g style={{ fill: 'none', stroke: 'var(--simar-curva)', strokeWidth: 1.5 }}>
-                        <path d="M722 40 C718 57 690 72 674 86 C659 100 648 115 629 124 C610 133 585 136 560 139 C535 142 498 149 478 141 C457 132 448 106 438 89 C429 73 424 57 421 40 C419 23 412 -1 423 -15 C435 -30 466 -40 488 -47 C511 -55 537 -62 560 -60 C583 -59 601 -46 625 -39 C648 -32 685 -30 701 -17 C717 -4 726 23 722 40 Z" />
-                        <path d="M800 40 C791 66 745 84 724 107 C702 130 698 161 671 176 C644 192 598 197 560 198 C522 200 473 199 442 185 C412 171 394 139 377 115 C361 91 349 67 343 40 C337 13 324 -28 343 -49 C362 -70 421 -76 457 -86 C494 -96 525 -107 560 -107 C595 -108 630 -100 666 -90 C702 -81 754 -70 776 -49 C799 -27 809 14 800 40 Z" />
+                        <path
+                            pathLength={1}
+                            className="simar-dibuja"
+                            style={{ '--simar-trazo-dur': '2.2s', animationDelay: '0.35s' } as CSSProperties}
+                            d="M722 40 C718 57 690 72 674 86 C659 100 648 115 629 124 C610 133 585 136 560 139 C535 142 498 149 478 141 C457 132 448 106 438 89 C429 73 424 57 421 40 C419 23 412 -1 423 -15 C435 -30 466 -40 488 -47 C511 -55 537 -62 560 -60 C583 -59 601 -46 625 -39 C648 -32 685 -30 701 -17 C717 -4 726 23 722 40 Z"
+                        />
+                        <path
+                            pathLength={1}
+                            className="simar-dibuja"
+                            style={{ '--simar-trazo-dur': '2.6s', animationDelay: '0.7s' } as CSSProperties}
+                            d="M800 40 C791 66 745 84 724 107 C702 130 698 161 671 176 C644 192 598 197 560 198 C522 200 473 199 442 185 C412 171 394 139 377 115 C361 91 349 67 343 40 C337 13 324 -28 343 -49 C362 -70 421 -76 457 -86 C494 -96 525 -107 560 -107 C595 -108 630 -100 666 -90 C702 -81 754 -70 776 -49 C799 -27 809 14 800 40 Z"
+                        />
                     </g>
                 </svg>
 
                 <div className="relative max-w-[1340px] mx-auto px-6 md:px-12 lg:px-24 pt-32 md:pt-44 pb-16 md:pb-24 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[100svh] lg:min-h-[900px]">
-                    <div className="simar-aparece">
-                        <p className="text-lg md:text-xl font-bold text-simar-marea-tinta">Puerto Peñasco · Sonora · México</p>
+                    {/* Entrada escalonada: lugar, nombre (y su ola), qué es, para qué, acciones */}
+                    <div>
+                        <p className="simar-entra text-lg md:text-xl font-bold text-simar-marea-tinta" style={{ animationDelay: '0.1s' }}>
+                            Puerto Peñasco · Sonora · México
+                        </p>
                         <h1 className="mt-3.5 font-extrabold leading-none">
-                            <span className="block text-7xl md:text-[104px] tracking-tight">SiMAR</span>
-                            <span className="block mt-3.5 text-2xl md:text-[30px] leading-tight">
+                            <span className="simar-entra relative inline-block text-7xl md:text-[104px] tracking-tight" style={{ animationDelay: '0.2s' }}>
+                                SiMAR
+                                <svg
+                                    aria-hidden="true"
+                                    viewBox="0 0 240 14"
+                                    className="absolute left-1 -bottom-3 md:-bottom-4 w-[92%] h-auto overflow-visible"
+                                >
+                                    <path
+                                        d={OLA_TITULO}
+                                        pathLength={1}
+                                        className="simar-dibuja"
+                                        style={{
+                                            fill: 'none',
+                                            stroke: 'var(--simar-golfo)',
+                                            strokeWidth: 3,
+                                            strokeLinecap: 'round',
+                                            '--simar-trazo-dur': '1.4s',
+                                            animationDelay: '0.75s',
+                                        } as CSSProperties}
+                                    />
+                                </svg>
+                            </span>
+                            <span className="simar-entra block mt-6 md:mt-7 text-2xl md:text-[30px] leading-tight" style={{ animationDelay: '0.3s' }}>
                                 Sistema Integral de Manejo Ambiental de Residuos
                             </span>
                         </h1>
-                        <p className="mt-6 text-lg md:text-[22px] leading-relaxed text-simar-texto-2 max-w-xl">
+                        <p className="simar-entra mt-6 text-lg md:text-[22px] leading-relaxed text-simar-texto-2 max-w-xl" style={{ animationDelay: '0.4s' }}>
                             Transformando la gestión de residuos marinos con <strong className="text-simar-texto">trazabilidad digital</strong> y
                             compromiso con el <strong className="text-simar-texto">Mar de Cortés</strong>.
                         </p>
-                        <div className="mt-8 md:mt-9 flex flex-col sm:flex-row sm:flex-wrap gap-3.5">
+                        <div className="simar-entra mt-8 md:mt-9 flex flex-col sm:flex-row sm:flex-wrap gap-3.5" style={{ animationDelay: '0.5s' }}>
                             <button
                                 onClick={openLoginModal}
-                                className="whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
+                                className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold flex items-center justify-center gap-2.5 cursor-pointer group"
                             >
                                 Acceder a la plataforma
-                                <ArrowRight className="w-[22px] h-[22px]" strokeWidth={2.4} />
+                                <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                             </button>
                             <a
                                 href="#proyecto"
-                                className="whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-simar-texto text-simar-texto text-lg md:text-xl font-bold hover:bg-simar-superficie transition-colors flex items-center justify-center"
+                                className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-simar-texto text-simar-texto text-lg md:text-xl font-bold hover:bg-simar-superficie flex items-center justify-center"
                             >
                                 Conocer el proyecto
                             </a>
                         </div>
                     </div>
 
-                    {/* Carrusel de fotografías del proyecto */}
-                    <figure className="simar-aparece relative m-0 h-[420px] sm:h-[520px] lg:h-[660px] rounded-[40px] overflow-hidden shadow-[0_30px_60px_-36px_rgba(11,34,54,0.6)]" style={{ animationDelay: '0.1s' }}>
+                    {/* Carrusel de fotografías del proyecto. Se pausa con el botón, al pasar el cursor o al enfocarlo */}
+                    <figure
+                        className="simar-entra relative m-0 h-[420px] sm:h-[520px] lg:h-[660px] rounded-[40px] overflow-hidden shadow-[0_30px_60px_-36px_rgba(11,34,54,0.6)]"
+                        style={{ animationDelay: '0.3s', animationDuration: '1.1s' }}
+                        onMouseEnter={() => setPausaMomentanea(true)}
+                        onMouseLeave={() => setPausaMomentanea(false)}
+                        onFocus={() => setPausaMomentanea(true)}
+                        onBlur={() => setPausaMomentanea(false)}
+                    >
                         {MEDIA.map((item, index) => {
                             const isActive = index === currentIndex;
                             const isPrev = index === prevIndex;
@@ -486,28 +644,69 @@ export function VariantCinematic({
                             );
                         })}
                         <div
+                            role="group"
                             aria-label={`Fotografía ${currentIndex + 1} de ${MEDIA.length}`}
-                            className="simar-vidrio-fuerte absolute left-1/2 bottom-5 -translate-x-1/2 z-30 rounded-full px-4 py-3 flex items-center gap-2.5"
+                            className="simar-vidrio-fuerte absolute left-1/2 bottom-5 -translate-x-1/2 z-30 rounded-full pl-1.5 pr-3 py-1.5 flex items-center gap-1"
                         >
-                            {MEDIA.map((_, index) => (
-                                <span
-                                    key={index}
-                                    aria-hidden="true"
-                                    className={`h-2.5 rounded-full transition-all duration-500 ${index === currentIndex ? 'w-7 bg-simar-texto' : 'w-2.5 bg-simar-texto/30'}`}
-                                />
-                            ))}
+                            {!reducirMovimiento && (
+                                <button
+                                    type="button"
+                                    onClick={() => setPausadoPorUsuario((p) => !p)}
+                                    aria-label={pausadoPorUsuario ? 'Reanudar fotografías' : 'Pausar fotografías'}
+                                    title={pausadoPorUsuario ? 'Reanudar' : 'Pausar'}
+                                    className="simar-presiona w-11 h-11 rounded-full flex items-center justify-center text-simar-texto hover:bg-simar-texto/10 cursor-pointer"
+                                >
+                                    {pausadoPorUsuario ? (
+                                        <Play className="w-[18px] h-[18px] ml-0.5" strokeWidth={2.4} />
+                                    ) : (
+                                        <Pause className="w-[18px] h-[18px]" strokeWidth={2.4} />
+                                    )}
+                                </button>
+                            )}
+                            {MEDIA.map((_, index) => {
+                                const activa = index === currentIndex;
+                                return (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        onClick={() => irAFoto(index)}
+                                        aria-label={`Ver fotografía ${index + 1}`}
+                                        aria-current={activa ? 'true' : undefined}
+                                        className="h-11 px-[5px] flex items-center cursor-pointer group/punto"
+                                    >
+                                        <span
+                                            className={`relative block h-2.5 rounded-full overflow-hidden transition-[width,background-color] duration-500 ${
+                                                activa ? 'w-10 bg-simar-texto/25' : 'w-2.5 bg-simar-texto/30 group-hover/punto:bg-simar-texto/60'
+                                            }`}
+                                        >
+                                            {/* La barra se llena mientras corre la foto; al llenarse pasa a la siguiente. En pausa se detiene donde va */}
+                                            {activa && (
+                                                <span
+                                                    key={currentIndex}
+                                                    className={`absolute inset-0 rounded-full bg-simar-texto ${reducirMovimiento ? '' : 'simar-avance'}`}
+                                                    style={{
+                                                        '--simar-avance-dur': `${SEGUNDOS_POR_FOTO}s`,
+                                                        animationPlayState: carruselPausado ? 'paused' : 'running',
+                                                    } as CSSProperties}
+                                                    onAnimationEnd={alTerminarAvance}
+                                                />
+                                            )}
+                                        </span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </figure>
                 </div>
 
-                <div aria-hidden="true" className="hidden lg:flex absolute left-24 bottom-10 items-center gap-2.5 text-base text-simar-texto-2">
+                <div aria-hidden="true" className="simar-entra hidden lg:flex absolute left-24 bottom-10 items-center gap-2.5 text-base text-simar-texto-2" style={{ animationDelay: '1.1s' }}>
                     <ArrowDown className="w-5 h-5" />
                     Desliza
                 </div>
             </header>
 
             {/* Sección Proyecto */}
-            <section id="proyecto" ref={projectRef} className="relative py-20 md:py-28 px-6 bg-simar-superficie overflow-hidden">
+            <section id="proyecto" ref={projectRef} className="relative py-20 md:py-28 px-6 bg-simar-superficie overflow-clip">
                 <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[1fr_540px] gap-12 lg:gap-16 items-center">
                     <div className="reveal" data-direction="left">
                         <p className="text-lg font-bold text-simar-marea-tinta">El proyecto</p>
@@ -540,9 +739,14 @@ export function VariantCinematic({
                             </div>
                             <div>
                                 <div className="text-3xl md:text-[40px] font-extrabold">
-                                    {stats?.totalManifiestos
-                                        ? stats.totalManifiestos.toLocaleString('es-MX') + (stats.totalManifiestos >= 1000 ? '+' : '')
-                                        : '5,000+'}
+                                    {stats?.totalManifiestos ? (
+                                        <>
+                                            <NumeroAnimado valor={stats.totalManifiestos} duracion={1400} />
+                                            {stats.totalManifiestos >= 1000 ? '+' : ''}
+                                        </>
+                                    ) : (
+                                        '5,000+'
+                                    )}
                                 </div>
                                 <div className="text-base md:text-[17px] text-simar-texto-2">Manifiestos</div>
                             </div>
@@ -570,7 +774,7 @@ export function VariantCinematic({
             </section>
 
             {/* Don Francisco */}
-            <section id="don-francisco" ref={francoRef} className="relative py-20 md:py-28 px-6 overflow-hidden">
+            <section id="don-francisco" ref={francoRef} className="relative py-20 md:py-28 px-6 overflow-clip">
                 <div className="max-w-[1248px] mx-auto">
                     <div className="reveal">
                         <p className="text-lg font-bold text-simar-marea-tinta">El protagonista</p>
@@ -634,8 +838,10 @@ export function VariantCinematic({
             </section>
 
             {/* Conciencia Azul — franja oscura */}
-            <section id="conciencia" ref={awarenessRef} className="relative py-20 md:py-28 px-6 bg-simar-abismo text-white overflow-hidden">
-                <div className="max-w-[1248px] mx-auto">
+            <section id="conciencia" ref={awarenessRef} className="relative py-24 md:py-36 px-6 bg-simar-abismo text-white overflow-clip">
+                <OlaSeparador color="var(--simar-papel)" lado="arriba" />
+                <OlaSeparador color="var(--simar-papel)" lado="abajo" />
+                <div className="relative max-w-[1248px] mx-auto">
                     <div className="max-w-3xl reveal">
                         <p className="text-lg font-bold text-simar-espuma">Conciencia Azul</p>
                         <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">¿Por qué importan los datos del mar?</h2>
@@ -658,7 +864,16 @@ export function VariantCinematic({
                                         <Icon className="w-[26px] h-[26px]" />
                                     </span>
                                     <h3 className="mt-4 text-xl md:text-[21px] font-extrabold">{panel.title}</h3>
-                                    <div className={`mt-2.5 text-[38px] font-extrabold leading-tight ${panel.accent}`}>{panel.stat}</div>
+                                    <div className={`mt-2.5 text-[38px] font-extrabold leading-tight ${panel.accent}`}>
+                                        {panel.cifra !== undefined ? (
+                                            <>
+                                                <NumeroAnimado valor={panel.cifra} duracion={1600} />
+                                                {panel.sufijo}
+                                            </>
+                                        ) : (
+                                            panel.stat
+                                        )}
+                                    </div>
                                     <div className="text-base text-[#C7D3DD]">{panel.statLabel}</div>
                                     <p className="mt-3 text-base leading-relaxed text-[#C7D3DD]">{panel.desc}</p>
                                 </article>
@@ -669,7 +884,7 @@ export function VariantCinematic({
             </section>
 
             {/* Equivalencias */}
-            <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-hidden">
+            <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-clip">
                 <div className="max-w-[1248px] mx-auto">
                     <div className="max-w-4xl reveal">
                         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold">
@@ -701,7 +916,7 @@ export function VariantCinematic({
                                         <div className="flex-1">
                                             <div className="text-lg md:text-[19px] font-bold text-[#DCE8FB]">{eq.label}</div>
                                             <div className="mt-1 text-5xl md:text-[56px] font-extrabold leading-tight">
-                                                <CountUpNumber value={eq.impactValue} decimals={eq.impactDecimals} duration={2400} />{' '}
+                                                <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={2400} />{' '}
                                                 <span className="text-2xl md:text-[26px]">{eq.impactUnit}</span>
                                             </div>
                                             <div className="mt-1 text-lg md:text-[19px] text-[#E6EEFB]">{eq.impactDescription}</div>
@@ -709,7 +924,7 @@ export function VariantCinematic({
                                         <div className="md:w-[240px] md:pl-7 md:border-l border-white/30">
                                             <div className="text-base text-[#DCE8FB]">Basado en</div>
                                             <div className="text-2xl md:text-[26px] font-extrabold">
-                                                <CountUpNumber value={eq.inputValue} decimals={eq.inputDecimals} duration={1200} /> {eq.inputUnit}
+                                                <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
                                             </div>
                                             <div className="text-base text-[#DCE8FB]">{eq.inputCaption}</div>
                                         </div>
@@ -727,14 +942,14 @@ export function VariantCinematic({
                                     </span>
                                     <div className="mt-3.5 text-lg font-bold text-simar-texto-2">{eq.label}</div>
                                     <div className="text-[38px] font-extrabold leading-tight">
-                                        <CountUpNumber value={eq.impactValue} decimals={eq.impactDecimals} duration={1800} />
+                                        <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={1800} />
                                     </div>
                                     <div className="text-lg font-bold">{eq.impactUnit}</div>
                                     <div className="text-[17px] text-simar-texto-2">{eq.impactDescription}</div>
                                     <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2">
                                         Basado en{' '}
                                         <strong className="text-simar-texto">
-                                            <CountUpNumber value={eq.inputValue} decimals={eq.inputDecimals} duration={1200} /> {eq.inputUnit}
+                                            <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
                                         </strong>{' '}
                                         {eq.inputCaption}
                                     </div>
@@ -750,7 +965,7 @@ export function VariantCinematic({
             </section>
 
             {/* Impacto / Stats */}
-            <section id="impacto" ref={statsRef} className="relative py-20 md:py-24 px-6 bg-simar-superficie overflow-hidden">
+            <section id="impacto" ref={statsRef} className="relative py-20 md:py-24 px-6 bg-simar-superficie overflow-clip">
                 <div className="max-w-[1248px] mx-auto">
                     <div className="reveal">
                         <p className="text-lg font-bold text-simar-marea-tinta">Impacto medible</p>
@@ -761,10 +976,14 @@ export function VariantCinematic({
                         {[
                             {
                                 icon: FileCheck,
-                                value: stats?.totalManifiestos
-                                    ? stats.totalManifiestos.toLocaleString('es-MX') +
-                                      (stats.totalManifiestos >= 1000 ? '+' : '')
-                                    : '5,000+',
+                                value: stats?.totalManifiestos ? (
+                                    <>
+                                        <NumeroAnimado valor={stats.totalManifiestos} duracion={1400} />
+                                        {stats.totalManifiestos >= 1000 ? '+' : ''}
+                                    </>
+                                ) : (
+                                    '5,000+'
+                                ),
                                 label: 'Reportes digitalizados',
                                 detail: stats?.totalManifiestos
                                     ? `${stats.totalManifiestos.toLocaleString('es-MX')} registros capturados en el sistema.`
@@ -802,8 +1021,9 @@ export function VariantCinematic({
             </section>
 
             {/* Mapa de puertos — franja oscura (el mapa interactivo está pensado para fondo oscuro) */}
-            <section id="mapa" ref={mapRef} className="relative py-20 md:py-28 px-6 bg-simar-abismo text-white overflow-hidden">
-                <div className="max-w-[1248px] mx-auto">
+            <section id="mapa" ref={mapRef} className="relative pt-24 md:pt-36 pb-20 md:pb-28 px-6 bg-simar-abismo text-white overflow-clip">
+                <OlaSeparador color="var(--simar-superficie)" lado="arriba" />
+                <div className="relative max-w-[1248px] mx-auto">
                     <div className="max-w-3xl mb-10 md:mb-12 reveal">
                         <p className="text-lg font-bold text-simar-espuma">Mapa de puertos</p>
                         <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Dónde estamos, a dónde vamos.</h2>
@@ -820,8 +1040,9 @@ export function VariantCinematic({
             </section>
 
             {/* Llamado final */}
-            <section ref={ctaRef} className="relative py-20 md:py-24 px-6 bg-simar-abismo text-white border-t border-white/10 overflow-hidden">
-                <div className="max-w-4xl mx-auto text-center reveal">
+            <section ref={ctaRef} className="relative pt-20 md:pt-24 pb-28 md:pb-36 px-6 bg-simar-abismo text-white border-t border-white/10 overflow-clip">
+                <OlaSeparador color="var(--simar-superficie)" lado="abajo" />
+                <div className="relative max-w-4xl mx-auto text-center reveal">
                     <h2 className="text-4xl md:text-[50px] font-extrabold leading-tight">
                         Cada dato cuenta. <br />
                         <span className="text-simar-espuma">Cada mar lo agradece.</span>
@@ -831,10 +1052,10 @@ export function VariantCinematic({
                     </p>
                     <button
                         onClick={openLoginModal}
-                        className="mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold transition-colors inline-flex items-center gap-2.5 cursor-pointer"
+                        className="simar-presiona group mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold inline-flex items-center gap-2.5 cursor-pointer"
                     >
                         Iniciar sesión
-                        <ArrowRight className="w-[22px] h-[22px]" strokeWidth={2.4} />
+                        <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                     </button>
                 </div>
             </section>
@@ -866,8 +1087,8 @@ export function VariantCinematic({
                 </div>
             </footer>
 
-            {/* Login Modal */}
-            {showLoginModal && (
+            {/* Login Modal: entra y sale (usePresencia); cada paso entra con simar-ventana */}
+            {ventanaAcceso.montado && (
                 <div
                     className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
                     role="dialog"
@@ -875,13 +1096,13 @@ export function VariantCinematic({
                     aria-label="Iniciar sesión"
                 >
                     <div
-                        className="fixed inset-0 bg-[rgba(11,34,54,0.42)] backdrop-blur-[6px] animate-fade-in"
+                        className={`${ventanaAcceso.saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 bg-[rgba(11,34,54,0.42)] backdrop-blur-[6px]`}
                         onClick={cerrarLoginModal}
                     />
 
                     {/* PASO 1 — Selector de rol */}
                     {modalRole === null && (
-                        <div className="simar-vidrio-fuerte relative w-full max-w-[640px] rounded-[34px] p-7 md:p-9 animate-scale-in">
+                        <div className={`${ventanaAcceso.saliendo ? 'simar-ventana-sale' : 'simar-ventana'} simar-vidrio-fuerte relative w-full max-w-[640px] rounded-[34px] p-7 md:p-9`}>
                             <button
                                 onClick={cerrarLoginModal}
                                 className="absolute top-4 right-4 w-12 h-12 rounded-2xl bg-simar-texto/5 hover:bg-simar-texto/10 text-simar-texto flex items-center justify-center transition-colors z-10"
@@ -915,7 +1136,7 @@ export function VariantCinematic({
 
                     {/* PASO 2 — Formulario de login */}
                     {modalRole !== null && (
-                        <div className="simar-vidrio-fuerte relative w-full max-w-[520px] rounded-[34px] p-7 md:p-9 animate-scale-in">
+                        <div className={`${ventanaAcceso.saliendo ? 'simar-ventana-sale' : 'simar-ventana'} simar-vidrio-fuerte relative w-full max-w-[520px] rounded-[34px] p-7 md:p-9`}>
                             <button
                                 onClick={cerrarLoginModal}
                                 className="absolute top-4 right-4 w-12 h-12 rounded-2xl bg-simar-texto/5 hover:bg-simar-texto/10 text-simar-texto flex items-center justify-center transition-colors z-10"

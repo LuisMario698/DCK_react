@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -19,6 +19,7 @@ import { Icons } from '@/components/ui/Icons';
 import { Building2, Car, Check, Droplet, Droplets, House, LandPlot, Lightbulb, Mountain, Plane, Recycle, ShowerHead, Sprout, Trash2, TreeDeciduous, TreePine, Truck, Users, Waves, Weight, type LucideIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { parseFechaLocal } from '@/lib/utils/fechas';
+import { NumeroAnimado } from '@/components/ui/movimiento';
 
 interface DashboardClientProps {
     initialStats: DashboardStats;
@@ -347,10 +348,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         <span className="text-[17px] text-simar-texto font-bold">Período:</span>
                         <div className="flex space-x-1 bg-simar-superficie p-1.5 rounded-xl shadow-simar border border-simar-borde">
                             {[
-                                { key: 'semana', label: '7D' },
-                                { key: 'mes', label: '1M' },
-                                { key: 'trimestre', label: '3M' },
-                                { key: 'anio', label: '1A' },
+                                { key: 'semana', label: '7 días' },
+                                { key: 'mes', label: '1 mes' },
+                                { key: 'trimestre', label: '3 meses' },
+                                { key: 'anio', label: '1 año' },
                                 { key: 'todo', label: 'Todo' }
                             ].map((p) => (
                                 <button
@@ -373,46 +374,50 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
             </div>
 
             {activeTab === 'general' ? (
-                <div className="space-y-8 animate-in fade-in duration-700 slide-in-from-bottom-4">
+                <div className="space-y-8">
                     {/* KPIs Section - Diseño Simple y Claro */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {/* Total Reciclado - Azul */}
                         <SimpleKpiCard
                             title="Total procesado"
-                            value={`${stats.totalResiduosReciclados.toLocaleString()} kg`}
+                            value={<><NumeroAnimado valor={stats.totalResiduosReciclados} /> kg</>}
                             subtitle={`${trendTotal.valor} vs anterior`}
                             icon="recycle"
                             color="blue"
+                            orden={0}
                             trendUp={trendTotal.positivo}
                         />
 
                         {/* Manifiestos - Violeta */}
                         <SimpleKpiCard
                             title="Manifiestos"
-                            value={stats.totalManifiestos.toString()}
+                            value={<NumeroAnimado valor={stats.totalManifiestos} />}
                             subtitle={`${stats.manifiestosPendientes} pendientes`}
                             icon="document"
                             color="violet"
+                            orden={1}
                             trendUp={trendManifiestos.positivo}
                         />
 
                         {/* Basurón - Esmeralda */}
                         <SimpleKpiCard
                             title="Basurón"
-                            value={`${stats.totalBasuron.toLocaleString()} kg`}
+                            value={<><NumeroAnimado valor={stats.totalBasuron} /> kg</>}
                             subtitle={`${stats.entregasBasuron} entregas`}
                             icon="truck"
                             color="emerald"
+                            orden={2}
                             trendUp={trendBasuron.positivo}
                         />
 
                         {/* Aceite - Ámbar */}
                         <SimpleKpiCard
                             title="Aceite usado"
-                            value={`${stats.totalAceiteUsado.toLocaleString()} L`}
+                            value={<><NumeroAnimado valor={stats.totalAceiteUsado} /> L</>}
                             subtitle="Litros recolectados"
                             icon="drop"
                             color="amber"
+                            orden={3}
                             trendUp={trendAceite.positivo}
                         />
                     </div>
@@ -421,36 +426,40 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <SimpleKpiCard
                             title="Filtros de aceite"
-                            value={stats.filtrosAceite.toString()}
+                            value={<NumeroAnimado valor={stats.filtrosAceite} />}
                             subtitle="Unidades"
                             icon="filter"
                             color="orange"
+                            orden={4}
                         />
                         <SimpleKpiCard
                             title="Filtros de diésel"
-                            value={stats.filtrosDiesel.toString()}
+                            value={<NumeroAnimado valor={stats.filtrosDiesel} />}
                             subtitle="Unidades"
                             icon="filter"
                             color="sky"
+                            orden={5}
                         />
                         <SimpleKpiCard
                             title="Filtros de aire"
-                            value={stats.filtrosAire.toString()}
+                            value={<NumeroAnimado valor={stats.filtrosAire} />}
                             subtitle="Unidades"
                             icon="filter"
                             color="teal"
+                            orden={6}
                         />
                         <SimpleKpiCard
                             title="Buques"
-                            value={`${stats.buquesActivos} / ${stats.totalBuques}`}
+                            value={<><NumeroAnimado valor={stats.buquesActivos} /> / <NumeroAnimado valor={stats.totalBuques} /></>}
                             subtitle="Activos / Total"
                             icon="ship"
                             color="indigo"
+                            orden={7}
                         />
                     </div>
 
                     {/* Gráficas Section */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ animationDelay: '0.3s' }}>
                         {/* Gráfica Principal (Barras) - Ocupa 2 columnas */}
                         <div className="lg:col-span-2 bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex justify-between items-center mb-8">
@@ -461,7 +470,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </div>
                                     <InfoTooltip
                                         title="¿Qué muestra esta gráfica?"
-                                        description="Esta gráfica de barras muestra la cantidad de residuos recolectados cada mes. El azul representa la basura general (kg) y el gris el aceite usado (litros). Las barras más altas indican meses con mayor recolección."
+                                        description="Esta gráfica de barras muestra la cantidad de residuos recolectados cada mes. El azul representa la basura general (kg) y el naranja el aceite usado (litros). Las barras más altas indican meses con mayor recolección."
                                         examples={[
                                             "Barra alta = mucha recolección ese mes",
                                             "Pasa el mouse sobre cada barra para ver los detalles exactos"
@@ -474,7 +483,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         <span className="font-medium">Basura (kg)</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-base text-simar-texto-2">
-                                        <span className="w-4 h-4 rounded-full bg-simar-coral-suave"></span>
+                                        <span className="w-4 h-4 rounded-full bg-simar-coral"></span>
                                         <span className="font-medium">Aceite (L)</span>
                                     </div>
                                 </div>
@@ -491,7 +500,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                                 return (
                                     <div className="h-72 flex items-end justify-between gap-3 px-2">
-                                        {initialStats.residuosPorMes.map((mes) => {
+                                        {initialStats.residuosPorMes.map((mes, idx) => {
                                             const total = mes.aceite + mes.basura;
                                             const heightPercent = Math.max((total / maxVal) * 100, 8);
                                             const mesNumero = mes.mes.split('-')[1];
@@ -503,18 +512,18 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                                     {/* Tooltip mejorado */}
                                                     <div className="absolute bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 z-20 pointer-events-none">
                                                         <div className="bg-simar-abismo text-white text-base py-3 px-4 rounded-xl shadow-2xl min-w-[140px]">
-                                                            <p className="font-bold text-base mb-2 text-simar-marea-tinta">{nombreMes} {anio}</p>
+                                                            <p className="font-bold text-base mb-2 text-white">{nombreMes} {anio}</p>
                                                             <div className="space-y-1">
                                                                 <p className="flex justify-between gap-4">
-                                                                    <span className="text-simar-coral">Aceite:</span>
+                                                                    <span className="flex items-center gap-2 text-white/80"><span className="w-3 h-3 rounded-full bg-simar-coral" />Aceite:</span>
                                                                     <span className="font-bold">{mes.aceite.toLocaleString()} L</span>
                                                                 </p>
                                                                 <p className="flex justify-between gap-4">
-                                                                    <span className="text-simar-marea-tinta">Basura:</span>
+                                                                    <span className="flex items-center gap-2 text-white/80"><span className="w-3 h-3 rounded-full bg-simar-marea" />Basura:</span>
                                                                     <span className="font-bold">{mes.basura.toLocaleString()} kg</span>
                                                                 </p>
-                                                                <div className="border-t border-simar-texto-2 pt-1 mt-1">
-                                                                    <p className="flex justify-between gap-4 text-simar-arrecife-tinta">
+                                                                <div className="border-t border-white/20 pt-1 mt-1">
+                                                                    <p className="flex justify-between gap-4 text-white">
                                                                         <span>Total:</span>
                                                                         <span className="font-bold">{total.toLocaleString()}</span>
                                                                     </p>
@@ -531,17 +540,17 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                                                     {/* Barra con dos secciones */}
                                                     <div
-                                                        className="w-full max-w-[50px] relative rounded-xl overflow-hidden transition-all duration-500 cursor-pointer shadow-simar"
-                                                        style={{ height: `${heightPercent}%` }}
+                                                        className="simar-crece-y w-full max-w-[50px] relative rounded-xl overflow-hidden transition-[height] duration-500 cursor-pointer shadow-simar"
+                                                        style={{ height: `${heightPercent}%`, animationDelay: `${0.35 + idx * 0.05}s` }}
                                                     >
-                                                        {/* Sección Aceite (arriba - ámbar) */}
+                                                        {/* Sección Aceite (arriba - coral) */}
                                                         <div
-                                                            className="absolute top-0 w-full bg-simar-coral-suave transition-all duration-1000"
+                                                            className="absolute top-0 w-full bg-simar-coral transition-all duration-1000"
                                                             style={{ height: `${(mes.aceite / (total || 1)) * 100}%` }}
                                                         />
                                                         {/* Sección Basura (abajo - azul) */}
                                                         <div
-                                                            className="absolute bottom-0 w-full bg-simar-marea-suave transition-all duration-1000"
+                                                            className="absolute bottom-0 w-full bg-simar-marea transition-all duration-1000"
                                                             style={{ height: `${(mes.basura / (total || 1)) * 100}%` }}
                                                         />
                                                     </div>
@@ -610,8 +619,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             </div>
                                             <div className="w-full bg-simar-papel rounded-full h-2 overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full ${colors[idx % colors.length]} opacity-80 group-hover:opacity-100 transition-all duration-500`}
-                                                    style={{ width: `${width}%` }}
+                                                    className={`simar-crece-x h-full rounded-full ${colors[idx % colors.length]} opacity-80 group-hover:opacity-100 transition-[width,opacity] duration-500`}
+                                                    style={{ width: `${width}%`, animationDelay: `${0.45 + idx * 0.08}s` }}
                                                 ></div>
                                             </div>
                                         </div>
@@ -629,14 +638,14 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Segunda fila de gráficas */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.36s' }}>
                         {/* Gráfica de Distribución por Tipo (Dona) */}
                         <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-2xl font-extrabold text-simar-texto">Distribución por tipo</h3>
                                 <InfoTooltip
                                     title="¿Cómo leer la gráfica de dona?"
-                                    description="El círculo muestra qué proporción ocupa cada tipo de residuo del total. Cada color representa un tipo diferente: amarillo es aceite, azul es basura general y verde es el basurón."
+                                    description="El círculo muestra qué proporción ocupa cada tipo de residuo del total. Cada color representa un tipo diferente: naranja es aceite, azul es basura general y verde es el basurón."
                                     examples={[
                                         "Sección más grande = tipo de residuo más recolectado",
                                         "El número del centro es el total en kg"
@@ -650,13 +659,13 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <div className="relative w-52 h-52">
                                     <DonutChart
                                         data={[
-                                            { label: 'Aceite', value: stats.totalAceiteUsado, color: '#F59E0B' },
-                                            { label: 'Basura', value: stats.totalBasuraGeneral, color: '#3B82F6' },
-                                            { label: 'Basurón', value: stats.totalBasuron, color: '#10B981' },
+                                            { label: 'Aceite', value: stats.totalAceiteUsado, color: 'var(--simar-coral)' },
+                                            { label: 'Basura', value: stats.totalBasuraGeneral, color: 'var(--simar-marea)' },
+                                            { label: 'Basurón', value: stats.totalBasuron, color: 'var(--simar-arrecife)' },
                                         ]}
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                        <span className="text-2xl font-extrabold text-simar-texto">{stats.totalResiduosReciclados.toLocaleString()}</span>
+                                        <NumeroAnimado valor={stats.totalResiduosReciclados} className="text-2xl font-extrabold text-simar-texto" />
                                         <span className="text-base text-simar-texto-2">kg total</span>
                                     </div>
                                 </div>
@@ -664,7 +673,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Leyenda */}
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-[#A63F0E]"></div>
+                                        <div className="w-5 h-5 rounded-full bg-simar-coral"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Aceite Usado</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalAceiteUsado.toLocaleString()} L</p>
@@ -678,7 +687,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-5 h-5 rounded-full bg-[#127A5D]"></div>
+                                        <div className="w-5 h-5 rounded-full bg-simar-arrecife"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Basurón</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalBasuron.toLocaleString()} kg</p>
@@ -712,8 +721,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </div>
                                     <div className="w-full bg-simar-papel rounded-full h-3 overflow-hidden">
                                         <div
-                                            className="h-full bg-simar-coral-suave rounded-full transition-all duration-1000"
-                                            style={{ width: `${Math.min((stats.filtrosAceite / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%` }}
+                                            className="simar-crece-x h-full bg-simar-coral rounded-full transition-[width] duration-1000"
+                                            style={{ width: `${Math.min((stats.filtrosAceite / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%`, animationDelay: '0.5s' }}
                                         ></div>
                                     </div>
                                 </div>
@@ -726,8 +735,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </div>
                                     <div className="w-full bg-simar-papel rounded-full h-3 overflow-hidden">
                                         <div
-                                            className="h-full bg-simar-marea-suave rounded-full transition-all duration-1000"
-                                            style={{ width: `${Math.min((stats.filtrosDiesel / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%` }}
+                                            className="simar-crece-x h-full bg-simar-marea rounded-full transition-[width] duration-1000"
+                                            style={{ width: `${Math.min((stats.filtrosDiesel / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%`, animationDelay: '0.58s' }}
                                         ></div>
                                     </div>
                                 </div>
@@ -740,8 +749,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </div>
                                     <div className="w-full bg-simar-papel rounded-full h-3 overflow-hidden">
                                         <div
-                                            className="h-full bg-simar-arrecife-suave rounded-full transition-all duration-1000"
-                                            style={{ width: `${Math.min((stats.filtrosAire / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%` }}
+                                            className="simar-crece-x h-full bg-simar-arrecife rounded-full transition-[width] duration-1000"
+                                            style={{ width: `${Math.min((stats.filtrosAire / Math.max(stats.filtrosAceite, stats.filtrosDiesel, stats.filtrosAire, 1)) * 100, 100)}%`, animationDelay: '0.66s' }}
                                         ></div>
                                     </div>
                                 </div>
@@ -758,7 +767,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Tercera fila - Comparación y Métricas Ambientales */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.42s' }}>
                         {/* Comparación vs Período Anterior */}
                         <div className="bg-simar-superficie p-8 rounded-3xl border border-simar-borde shadow-simar">
                             <div className="flex items-start gap-3 mb-2">
@@ -782,7 +791,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         actual={stats.totalResiduosReciclados}
                                         anterior={comparaciones.totalAnterior}
                                         unit="kg"
-                                        color="blue"
+                                        color="violet"
                                     />
 
                                     {/* Aceite */}
@@ -800,7 +809,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         actual={stats.totalBasuraGeneral}
                                         anterior={comparaciones.basuraAnterior}
                                         unit="kg"
-                                        color="emerald"
+                                        color="blue"
                                     />
 
                                     {/* Basurón */}
@@ -809,7 +818,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         actual={stats.totalBasuron}
                                         anterior={comparaciones.basuronAnterior}
                                         unit="kg"
-                                        color="violet"
+                                        color="emerald"
                                     />
                                 </div>
                             )}
@@ -848,7 +857,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* CO2 Evitado - Expandible */}
                                 <ExpandableImpactCard
                                     icono={Sprout}
-                                    value={((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5)).toFixed(0)}
+                                    value={<NumeroAnimado valor={Math.round((stats.totalAceiteUsado * 2.5) + (stats.totalBasuron * 0.5))} duracion={1400} />}
                                     unit="kg"
                                     label="CO₂ evitado"
                                     comparisons={[
@@ -876,7 +885,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Árboles equivalentes - Expandible */}
                                 <ExpandableImpactCard
                                     icono={TreeDeciduous}
-                                    value={Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21).toString()}
+                                    value={<NumeroAnimado valor={Math.ceil((stats.totalAceiteUsado * 2.5 + stats.totalBasuron * 0.5) / 21)} duracion={1400} />}
                                     unit=""
                                     label="Árboles equivalentes"
                                     comparisons={[
@@ -904,7 +913,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Litros de agua protegidos - Expandible */}
                                 <ExpandableImpactCard
                                     icono={Droplets}
-                                    value={(stats.totalAceiteUsado * 1000).toLocaleString()}
+                                    value={<NumeroAnimado valor={stats.totalAceiteUsado * 1000} duracion={1400} />}
                                     unit=""
                                     label="Litros de agua protegidos"
                                     comparisons={[
@@ -932,7 +941,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 {/* Residuos reciclados - Expandible */}
                                 <ExpandableImpactCard
                                     icono={Recycle}
-                                    value={stats.totalResiduosReciclados.toLocaleString()}
+                                    value={<NumeroAnimado valor={stats.totalResiduosReciclados} duracion={1400} />}
                                     unit="kg"
                                     label="kg reciclados total"
                                     comparisons={[
@@ -967,7 +976,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6 animate-in fade-in duration-500">
+                <div className="simar-aparece space-y-6">
                     {/* Panel de Filtros Mejorado */}
                     <div className="bg-simar-superficie p-6 rounded-3xl border border-simar-borde shadow-simar">
                         <div className="flex items-center gap-3 mb-6">
@@ -1338,7 +1347,7 @@ interface ImpactComparison {
 
 interface ExpandableImpactCardProps {
     icono: LucideIcon;
-    value: string;
+    value: ReactNode;
     unit: string;
     label: string;
     comparisons: ImpactComparison[];
@@ -1385,9 +1394,9 @@ function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }:
 
             {/* Panel flotante - aparece arriba o abajo según posición */}
             {isOpen && (
-                <div className={`absolute left-0 right-0 z-50 animate-in fade-in duration-200 ${openUpward
-                    ? 'bottom-full mb-2 slide-in-from-bottom-2'
-                    : 'top-full mt-2 slide-in-from-top-2'
+                <div className={`simar-aparece absolute left-0 right-0 z-50 ${openUpward
+                    ? 'bottom-full mb-2'
+                    : 'top-full mt-2'
                     }`}>
                     <div className="bg-simar-abismo rounded-2xl p-4 shadow-2xl border border-white/15">
                         {/* Flecha - cambia posición según dirección */}
@@ -1449,7 +1458,7 @@ function InfoTooltip({ title, description, examples }: InfoTooltipProps) {
             </button>
 
             {isOpen && (
-                <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-80 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div className="simar-aparece absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-3 w-80">
                     <div className="bg-simar-abismo text-white rounded-2xl p-5 shadow-2xl border border-white/15">
                         <h4 className="font-bold text-base mb-3 flex items-center gap-2">
                             <span className="w-8 h-8 rounded-full bg-simar-marea text-white flex items-center justify-center"><Lightbulb className="w-[18px] h-[18px]" /></span>
@@ -1486,45 +1495,58 @@ interface DonutChartData {
 }
 
 function DonutChart({ data }: { data: DonutChartData[] }) {
+    // La dona se dibuja al aparecer: empieza con los segmentos en 0 y la transición
+    // de stroke-dasharray los lleva a su tamaño (también al cambiar de período).
+    const [dibujada, setDibujada] = useState(false);
+    // Sólo la primera vez espera a que aparezca su tarjeta; al cambiar de período responde ya
+    const [primeraVez, setPrimeraVez] = useState(true);
+    useEffect(() => {
+        const id = requestAnimationFrame(() => setDibujada(true));
+        const t = setTimeout(() => setPrimeraVez(false), 2000);
+        return () => {
+            cancelAnimationFrame(id);
+            clearTimeout(t);
+        };
+    }, []);
+
     const total = data.reduce((sum, d) => sum + d.value, 0);
     if (total === 0) {
         return (
             <svg viewBox="0 0 100 100" className="w-full h-full">
-                <circle cx="50" cy="50" r="40" fill="none" stroke="#f3f4f6" strokeWidth="20" />
+                <circle cx="50" cy="50" r="40" fill="none" stroke="var(--simar-borde-suave)" strokeWidth="20" />
             </svg>
         );
     }
 
     const radius = 40;
     const circumference = 2 * Math.PI * radius;
-    let accumulatedOffset = 0;
+    // Dónde empieza cada segmento: la suma de los anteriores
+    const segmentos = data.map((segment, index) => {
+        const inicio = data.slice(0, index).reduce((sum, d) => sum + d.value, 0) / total;
+        return { ...segment, porcentaje: segment.value / total, inicio };
+    });
 
     return (
         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-            {data.map((segment, index) => {
-                const percentage = segment.value / total;
-                const strokeDasharray = `${percentage * circumference} ${circumference}`;
-                const strokeDashoffset = -accumulatedOffset;
-                accumulatedOffset += percentage * circumference;
-
-                return (
-                    <circle
-                        key={index}
-                        cx="50"
-                        cy="50"
-                        r={radius}
-                        fill="none"
-                        stroke={segment.color}
-                        strokeWidth="20"
-                        strokeDasharray={strokeDasharray}
-                        strokeDashoffset={strokeDashoffset}
-                        className="transition-all duration-1000 ease-out"
-                        style={{
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                    />
-                );
-            })}
+            <circle cx="50" cy="50" r={radius} fill="none" stroke="var(--simar-borde-suave)" strokeWidth="20" />
+            {segmentos.map((segment, index) => (
+                <circle
+                    key={index}
+                    cx="50"
+                    cy="50"
+                    r={radius}
+                    fill="none"
+                    stroke={segment.color}
+                    strokeWidth="20"
+                    strokeDasharray={`${dibujada ? segment.porcentaje * circumference : 0} ${circumference}`}
+                    strokeDashoffset={dibujada ? -segment.inicio * circumference : 0}
+                    className="transition-all duration-1000 ease-out"
+                    style={{
+                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))',
+                        transitionDelay: primeraVez ? `${0.4 + index * 0.12}s` : '0s',
+                    }}
+                />
+            ))}
         </svg>
     );
 }
@@ -1548,9 +1570,9 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
 
     const colorClasses = {
         blue: { bg: 'bg-simar-marea', light: 'bg-simar-marea-suave' },
-        amber: { bg: 'bg-[#A63F0E]', light: 'bg-simar-coral-suave' },
-        emerald: { bg: 'bg-[#127A5D]', light: 'bg-simar-arrecife-suave' },
-        violet: { bg: 'bg-[#5B3FA8]', light: 'bg-simar-violeta-suave' }
+        amber: { bg: 'bg-simar-coral', light: 'bg-simar-coral-suave' },
+        emerald: { bg: 'bg-simar-arrecife', light: 'bg-simar-arrecife-suave' },
+        violet: { bg: 'bg-simar-violeta', light: 'bg-simar-violeta-suave' }
     };
 
     return (
@@ -1568,8 +1590,8 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
                 {/* Barra actual */}
                 <div className="flex-1 bg-simar-papel rounded-full overflow-hidden">
                     <div
-                        className={`h-full ${colorClasses[color].bg} rounded-full transition-all duration-1000`}
-                        style={{ width: `${actualPercent}%` }}
+                        className={`simar-crece-x h-full ${colorClasses[color].bg} rounded-full transition-[width] duration-1000`}
+                        style={{ width: `${actualPercent}%`, animationDelay: '0.55s' }}
                     ></div>
                 </div>
             </div>
@@ -1619,11 +1641,13 @@ const SimpleIcons = {
 // Componente de Tarjeta KPI Simple con colores
 interface SimpleKpiCardProps {
     title: string;
-    value: string;
+    value: ReactNode;
     subtitle: string;
     icon: keyof typeof SimpleIcons;
     color: 'blue' | 'violet' | 'emerald' | 'amber' | 'orange' | 'sky' | 'teal' | 'indigo';
     trendUp?: boolean;
+    /** Posición en la cuadrícula: escalona la entrada (0.04 s por tarjeta) */
+    orden?: number;
 }
 
 const colorConfig = {
@@ -1693,24 +1717,29 @@ const colorConfig = {
     },
 };
 
-function SimpleKpiCard({ title, value, subtitle, icon, color, trendUp }: SimpleKpiCardProps) {
+// La tarjeta sólo informa: no se pinta de color al pasar el cursor ni muestra la mano,
+// porque no lleva a ningún lado (DISEÑO_SIMAR.md → "las acciones se ven sin pasar el cursor").
+function SimpleKpiCard({ title, value, subtitle, icon, color, orden = 0 }: SimpleKpiCardProps) {
     const colors = colorConfig[color];
 
     return (
-        <div className={`group bg-simar-superficie p-6 rounded-2xl border ${colors.border} shadow-simar transition-all duration-300 cursor-pointer ${colors.bgHover}`}>
+        <div
+            className={`simar-aparece bg-simar-superficie p-6 rounded-2xl border ${colors.border} shadow-simar`}
+            style={{ animationDelay: `${orden * 0.04}s` }}
+        >
             {/* Icono grande */}
-            <div className={`w-16 h-16 ${colors.bg} rounded-2xl flex items-center justify-center mb-4 ${colors.icon} transition-colors duration-300 group-hover:bg-white/20 group-hover:text-white`}>
+            <div className={`w-16 h-16 ${colors.bg} rounded-2xl flex items-center justify-center mb-4 ${colors.icon}`}>
                 {SimpleIcons[icon]}
             </div>
 
             {/* Título */}
-            <p className="text-simar-texto-2 text-base font-medium mb-1 group-hover:text-white/80 transition-colors">{title}</p>
+            <p className="text-simar-texto-2 text-base font-medium mb-1">{title}</p>
 
             {/* Valor grande */}
-            <p className="text-4xl font-bold text-simar-texto mb-2 group-hover:text-white transition-colors">{value}</p>
+            <p className="text-4xl font-bold text-simar-texto mb-2">{value}</p>
 
             {/* Subtítulo */}
-            <p className="text-base text-simar-texto-2 group-hover:text-white/70 transition-colors">{subtitle}</p>
+            <p className="text-base text-simar-texto-2">{subtitle}</p>
         </div>
     );
 }

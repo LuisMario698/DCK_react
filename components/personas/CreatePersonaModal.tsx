@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
+import { usePresencia } from '@/components/ui/movimiento';
 import { createPersona, updatePersona } from '@/lib/services/personas';
 import { getTiposPersona } from '@/lib/services/tipos_persona';
 import { TipoPersona, PersonaConTipo } from '@/types/database';
@@ -120,11 +121,13 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     }
   };
 
-  if (!isOpen) return null;
+  // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+  const { montado, saliendo } = usePresencia(isOpen);
+  if (!montado) return null;
 
   return (
-    <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
-      <div className="simar-aparece bg-simar-superficie rounded-[28px] p-7 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4`}>
+      <div className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] p-7 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl`}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-[22px] font-extrabold leading-tight text-simar-texto">
             {personaToEdit ? t('tituloEditar') : t('tituloCrear')}

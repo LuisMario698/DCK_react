@@ -15,6 +15,8 @@ import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando } from '@/components/asociaciones/ui';
 import { NotifIcon } from '@/components/recolector/NotifIcon';
 import { MapaCentroAcopio } from '@/components/recolector/MapaCentroAcopio';
+import { LogoSimar } from '@/components/layout/LogoSimar';
+import { TarjetaDato } from '@/components/ui/simar';
 
 
 export default function DashboardRecolectorPage() {
@@ -56,83 +58,85 @@ export default function DashboardRecolectorPage() {
 
     if (cargandoPerfil || (asociacionId && cargando)) return <Cargando />;
 
+    // Formato común de datos (TarjetaDato): ícono en círculo, etiqueta, número grande y flecha
     const kpis = [
         {
             label: 'Solicitudes activas',
             value: activas,
             icon: ClipboardCheck,
-            accent: 'bg-simar-marea-suave text-simar-marea-tinta',
+            tono: 'marea' as const,
             href: `${base}/solicitudes`,
         },
         {
             label: 'Recolecciones completadas',
             value: recolecciones.length,
             icon: Truck,
-            accent: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
+            tono: 'arrecife' as const,
             href: `${base}/historial`,
         },
         {
             label: 'Material sólido obtenido',
             value: kgRecolectados >= 1000 ? `${formatCantidad(kgRecolectados / 1000)} t` : `${formatCantidad(kgRecolectados)} kg`,
             icon: Package,
-            accent: 'bg-[#E4F5F7] text-[#0E7C8A] dark:bg-[rgba(32,178,196,0.2)] dark:text-[#7FE0D6]',
+            tono: 'violeta' as const,
             href: `${base}/impacto`,
         },
         {
             label: 'CO₂e evitado (estimado)',
             value: co2 >= 1000 ? `${formatCantidad(co2 / 1000)} t` : `${formatCantidad(Math.round(co2))} kg`,
             icon: Leaf,
-            accent: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
+            tono: 'arrecife' as const,
             href: `${base}/impacto`,
         },
     ];
 
     return (
         <div className="space-y-5 max-w-[1600px]">
-            {/* Saludo */}
-            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[26px] p-6 sm:p-8">
-                <p className="text-base text-simar-texto-2">¡Bienvenido de vuelta!</p>
-                <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5">{asociacion?.nombre_asociacion ?? 'Empresa recolectora'}</h2>
-                <p className="text-[17px] sm:text-lg leading-relaxed text-simar-texto-2 mt-2.5 max-w-2xl">
-                    Tienes <strong className="text-simar-texto">{activas} {activas === 1 ? 'solicitud activa' : 'solicitudes activas'}</strong> y el
-                    centro de acopio de {PUERTO_PENASCO.nombre} tiene{' '}
-                    <strong className="text-simar-texto">{disponibles.length} {disponibles.length === 1 ? 'residuo disponible' : 'residuos disponibles'}</strong>.
-                </p>
+            {/* Saludo: símbolo SiMAR (como el Panel del recinto) y la acción principal a la derecha */}
+            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 sm:p-8 flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-8">
+                <div className="flex items-center gap-6 flex-1 min-w-0">
+                    <LogoSimar variante="simbolo" tamano={84} className="hidden sm:inline-flex flex-shrink-0" />
+                    <div className="min-w-0">
+                        <p className="text-base text-simar-texto-2">¡Bienvenido de vuelta!</p>
+                        <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5">{asociacion?.nombre_asociacion ?? 'Empresa recolectora'}</h2>
+                        <p className="text-[17px] sm:text-lg leading-relaxed text-simar-texto-2 mt-2 max-w-2xl">
+                            Tienes <strong className="text-simar-texto">{activas} {activas === 1 ? 'solicitud activa' : 'solicitudes activas'}</strong> y el
+                            centro de acopio de {PUERTO_PENASCO.nombre} tiene{' '}
+                            <strong className="text-simar-texto">{disponibles.length} {disponibles.length === 1 ? 'residuo disponible' : 'residuos disponibles'}</strong>.
+                        </p>
+                    </div>
+                </div>
                 <Link
                     href={`${base}/mapa`}
-                    className="mt-5 min-h-[60px] w-full sm:w-auto px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg font-extrabold inline-flex items-center justify-center gap-2.5 transition-colors"
+                    className="simar-presiona group flex-shrink-0 min-h-[60px] w-full sm:w-auto sm:self-start xl:self-center px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg font-extrabold inline-flex items-center justify-center gap-2.5"
                 >
-                    Ver residuos y solicitar <ArrowRight className="w-5 h-5" strokeWidth={2.4} />
+                    Ver residuos y solicitar{' '}
+                    <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                 </Link>
             </section>
 
-            {/* KPIs */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                {kpis.map((kpi, i) => {
-                    const Icon = kpi.icon;
-                    return (
-                        <Link
-                            key={kpi.label}
-                            href={kpi.href}
-                            style={{ animationDelay: `${0.06 + i * 0.04}s` }}
-                            className="simar-aparece simar-tarjeta-accion bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-4 sm:p-5"
-                        >
-                            <span className={`w-11 h-11 rounded-full flex items-center justify-center ${kpi.accent}`}>
-                                <Icon className="w-[22px] h-[22px]" />
-                            </span>
-                            <p className="mt-2.5 text-[28px] font-extrabold text-simar-texto">{kpi.value}</p>
-                            <p className="text-base leading-snug text-simar-texto-2">{kpi.label}</p>
-                        </Link>
-                    );
-                })}
+            {/* Datos: toda la tarjeta lleva a su pantalla */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                {kpis.map((kpi, i) => (
+                    <TarjetaDato
+                        key={kpi.label}
+                        etiqueta={kpi.label}
+                        valor={kpi.value}
+                        icono={kpi.icon}
+                        tono={kpi.tono}
+                        href={kpi.href}
+                        className="simar-aparece"
+                        style={{ animationDelay: `${0.06 + i * 0.04}s` }}
+                    />
+                ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Mapa */}
-                <section className="lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[26px] p-5">
+                {/* Mapa: crece hasta la altura de "Actividad reciente" (acomodo a escuadra) */}
+                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6 flex flex-col" style={{ animationDelay: '0.24s' }}>
                     <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
-                            <h3 className="text-xl font-extrabold text-simar-texto">Centro de acopio</h3>
+                            <h3 className="text-[22px] font-extrabold text-simar-texto">Centro de acopio</h3>
                             <p className="text-base text-simar-texto-2">
                                 {PUERTO_PENASCO.nombre}, {PUERTO_PENASCO.region}
                             </p>
@@ -144,15 +148,15 @@ export default function DashboardRecolectorPage() {
                             Ver inventario <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
-                    <div className="rounded-[18px] overflow-hidden">
-                        <MapaCentroAcopio alto="h-80" />
+                    <div className="flex-1 min-h-[320px] rounded-[18px] overflow-hidden border border-simar-borde-suave">
+                        <MapaCentroAcopio alto="h-full" />
                     </div>
                 </section>
 
                 {/* Actividad reciente */}
-                <section className="bg-simar-superficie border border-simar-borde shadow-simar rounded-[26px] p-5">
+                <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6" style={{ animationDelay: '0.3s' }}>
                     <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xl font-extrabold text-simar-texto">Actividad reciente</h3>
+                        <h3 className="text-[22px] font-extrabold text-simar-texto">Actividad reciente</h3>
                         <Link
                             href={`${base}/notificaciones`}
                             className="min-h-[44px] inline-flex items-center text-base font-bold text-simar-marea-tinta hover:underline"

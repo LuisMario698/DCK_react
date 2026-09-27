@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 
 import { LogoSimar } from '@/components/layout/LogoSimar';
 
@@ -184,7 +185,8 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 </div>
             )}
 
-            <div className="mb-6 text-center">
+            {/* El título entra de nuevo al cambiar de paso (entrar, crear cuenta, código…) */}
+            <div key={view} className="simar-aparece mb-6 text-center">
                 <h2 className="text-[28px] font-extrabold text-simar-texto">{titulo}</h2>
                 <p className="mt-1.5 text-lg text-simar-texto-2">
                     {view === 'verify' ? (
@@ -200,14 +202,14 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
             <form className="space-y-5" onSubmit={handleSubmit} noValidate>
                 <div aria-live="polite" className="space-y-3 empty:hidden">
                     {error && (
-                        <div className="flex items-start gap-2.5 rounded-[14px] bg-simar-coral-suave px-4 py-3 text-base font-semibold text-simar-coral">
+                        <div key={error} className="simar-aparece flex items-start gap-2.5 rounded-[14px] bg-simar-coral-suave px-4 py-3 text-base font-semibold text-simar-coral">
                             <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                             <span>{error}</span>
                         </div>
                     )}
                     {message && (
-                        <div className="flex items-start gap-2.5 rounded-[14px] bg-simar-arrecife-suave px-4 py-3 text-base font-semibold text-simar-arrecife-tinta">
-                            <CheckCircle2 className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                        <div key={message} className="simar-aparece flex items-start gap-2.5 rounded-[14px] bg-simar-arrecife-suave px-4 py-3 text-base font-semibold text-simar-arrecife-tinta">
+                            <PalomitaAnimada tamano={20} className="mt-0.5" />
                             <span>{message}</span>
                         </div>
                     )}

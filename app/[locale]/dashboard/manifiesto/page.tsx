@@ -13,6 +13,7 @@ import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from 
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -1178,7 +1179,7 @@ export default function ManifiestosPage() {
                         <img src={oficialSignature} alt="Firma Oficial" className="w-full h-16 object-contain" />
                       </div>
                       <div className="mt-1 flex items-center justify-between gap-3">
-                        <span className="simar-confirma flex items-center gap-1.5 text-[15px] font-bold text-simar-arrecife-tinta"><Check className="w-5 h-5" strokeWidth={2.6} />Firmado</span>
+                        <span className="simar-confirma flex items-center gap-1.5 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={20} circulo={false} />Firmado</span>
                         <span className="flex gap-4">
                           <button type="button" onClick={() => openSignatureModal('oficial')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
                           <button type="button" onClick={() => setOficialSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
@@ -1262,7 +1263,7 @@ export default function ManifiestosPage() {
                           <img src={motoristaSignature} alt="Firma Motorista" className="w-full h-12 object-contain" />
                         </div>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><Check className="w-4 h-4" strokeWidth={2.6} />Firmado</span>
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
                           <span className="flex gap-3">
                             <button type="button" onClick={() => openSignatureModal('motorista')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
                             <button type="button" onClick={() => setMotoristaSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
@@ -1344,7 +1345,7 @@ export default function ManifiestosPage() {
                           <img src={cocineroSignature} alt="Firma Cocinero" className="w-full h-12 object-contain" />
                         </div>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><Check className="w-4 h-4" strokeWidth={2.6} />Firmado</span>
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
                           <span className="flex gap-3">
                             <button type="button" onClick={() => openSignatureModal('cocinero')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
                             <button type="button" onClick={() => setCocineroSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
@@ -1406,7 +1407,7 @@ export default function ManifiestosPage() {
                           <img src={liquidosSignature} alt="Firma Líquidos" className="w-full h-12 object-contain" />
                         </div>
                         <div className="mt-1 flex items-center justify-between gap-2">
-                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><Check className="w-4 h-4" strokeWidth={2.6} />Firmado</span>
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
                           <span className="flex gap-3">
                             <button type="button" onClick={() => openSignatureModal('liquidos')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
                             <button type="button" onClick={() => setLiquidosSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
@@ -1451,7 +1452,7 @@ export default function ManifiestosPage() {
               ) : (
                 <div className="w-full flex items-center justify-between gap-2 px-1">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Check className="w-5 h-5 text-simar-arrecife-tinta flex-shrink-0" strokeWidth={2.6} />
+                    <PalomitaAnimada tamano={20} circulo={false} className="text-simar-arrecife-tinta" />
                     <span className="text-[15px] font-bold text-simar-texto truncate">{archivo.name}</span>
                   </div>
                   <button type="button" onClick={() => setArchivo(null)} className="min-h-[44px] px-3 text-[15px] font-bold text-simar-coral hover:underline">Quitar</button>
@@ -1949,9 +1950,9 @@ export default function ManifiestosPage() {
 
       {/* Modal de visualización de detalles */}
       {viewingManifiesto && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
+        <div className="simar-velo fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
           <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="relative w-full max-w-5xl flex flex-col gap-6 my-8">
+            <div className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8">
 
               {/* Botón de cierre flotante */}
               <div className="flex justify-end sticky top-0 z-10 pt-2 pr-2">
@@ -2135,12 +2136,12 @@ export default function ManifiestosPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Fondo oscuro sin blur para mejor rendimiento */}
           <div
-            className="absolute inset-0 bg-[rgba(11,34,54,0.55)]"
+            className="simar-velo absolute inset-0 bg-[rgba(11,34,54,0.55)]"
             onClick={closeSignatureModal}
           />
 
           {/* Panel de firma */}
-          <div className="simar-aparece relative w-full max-w-2xl bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden">
+          <div className="simar-ventana relative w-full max-w-2xl bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden">
             {/* Header */}
             <div className="px-6 pt-6 pb-2 flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">

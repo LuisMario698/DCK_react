@@ -3,7 +3,7 @@
 // Piezas de UI compartidas por el módulo de asociaciones (panel admin y
 // portal recolector).
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Ban, CheckCircle2, Clock, Loader2, Package, Truck, X, XCircle } from 'lucide-react';
 import {
     ESTADO_SOLICITUD_LABEL,
@@ -12,6 +12,7 @@ import {
     type EstadoSolicitud,
     type TipoResiduo,
 } from '@/lib/constants/residuos';
+import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 
 export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
     // Colores con significado (DISEÑO_SIMAR.md): coral = falta hacer algo, azul = en curso,
@@ -58,22 +59,38 @@ export function Modal({
     children: React.ReactNode;
     ancho?: string;
 }) {
+    // Al cerrar desde la ventana (X, clic fuera, Escape) primero se ve la salida y luego se
+    // avisa a la pantalla. Si la pantalla la cierra sola (al guardar), desaparece sin más.
+    const reducir = usePrefiereMenosMovimiento();
+    const [cerrando, setCerrando] = useState(false);
+    const espera = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    useEffect(() => () => clearTimeout(espera.current), []);
+    const cerrar = () => {
+        if (cerrando) return;
+        setCerrando(true);
+        espera.current = setTimeout(onClose, reducir ? 0 : 180);
+    };
+    const cerrarRef = useRef(cerrar);
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+        cerrarRef.current = cerrar;
+    });
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && cerrarRef.current();
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [onClose]);
+    }, []);
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]"
-            onClick={onClose}
+            className={`${cerrando ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]`}
+            onClick={cerrar}
             role="dialog"
             aria-modal="true"
             aria-label={titulo}
         >
             <div
-                className={`simar-aparece bg-simar-superficie rounded-[28px] shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-simar-borde`}
+                className={`${cerrando ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-simar-borde`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between gap-4 px-7 pt-7 pb-5">
@@ -82,7 +99,7 @@ export function Modal({
                         {subtitulo && <p className="text-base text-simar-texto-2 mt-1">{subtitulo}</p>}
                     </div>
                     <button
-                        onClick={onClose}
+                        onClick={cerrar}
                         className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-papel text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors"
                         aria-label="Cerrar"
                     >

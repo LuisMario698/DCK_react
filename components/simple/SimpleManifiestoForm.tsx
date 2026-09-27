@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 import { Check, Droplet, Filter, Fuel, Ship, Trash2, Wind, X } from 'lucide-react';
 import { hoyLocal } from '@/lib/utils/fechas';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
@@ -166,8 +167,8 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
     renderItem: (item: T) => React.ReactNode;
   }) {
     return (
-      <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
-        <div className="simar-aparece bg-simar-superficie rounded-[28px] w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
+      <div className="simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+        <div className="simar-ventana bg-simar-superficie rounded-[28px] w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
           <div className="p-5 border-b flex justify-between items-center bg-simar-papel rounded-t-2xl border-simar-borde">
             <h3 className="text-2xl font-extrabold text-simar-texto">{title}</h3>
             <button onClick={() => { onClose(); setSearch(''); }} aria-label="Cerrar" className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-superficie text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors"><X className="w-6 h-6" /></button>
@@ -204,12 +205,10 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
 
   if (showSuccess) {
     return (
-      <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
-        <div className="simar-aparece bg-simar-superficie rounded-[28px] p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 bg-simar-arrecife-suave rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-simar-arrecife-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-            </svg>
+      <div className="simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+        <div className="simar-ventana bg-simar-superficie rounded-[28px] p-8 text-center shadow-2xl">
+          <div className="w-16 h-16 bg-simar-arrecife-suave rounded-full flex items-center justify-center mx-auto mb-4 text-simar-arrecife-tinta">
+            <PalomitaAnimada tamano={40} circulo={false} />
           </div>
           <h3 className="text-2xl font-extrabold text-simar-texto">¡Guardado!</h3>
         </div>

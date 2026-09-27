@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { BellOff } from 'lucide-react';
+import { BellOff, CheckCheck } from 'lucide-react';
 import { tiempoRelativo } from '@/lib/constants/residuos';
 import { Notificacion } from '@/types/database';
 import {
@@ -14,6 +14,7 @@ import {
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { NotifIcon } from '@/components/recolector/NotifIcon';
 import { Cargando, mensajeError } from '@/components/asociaciones/ui';
+import { EstadoVacio } from '@/components/ui/simar';
 
 export default function NotificacionesPage() {
     const { recargarContadores, asociacion, esSuperadmin } = useRecolector();
@@ -58,42 +59,51 @@ export default function NotificacionesPage() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-simar-superficie border border-simar-borde rounded-xl shadow-simar overflow-hidden">
-                <div className="px-5 py-4 border-b border-simar-borde flex items-center justify-between">
-                    <h2 className="text-base font-bold text-simar-texto">
+            <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
+                <div className="px-5 sm:px-6 py-4 border-b border-simar-borde flex flex-wrap items-center justify-between gap-3">
+                    <h2 className="text-[21px] font-extrabold text-simar-texto">
                         Todas las notificaciones
-                        {noLeidas > 0 && <span className="ml-2 text-[15px] font-semibold text-simar-marea-tinta">{noLeidas} sin leer</span>}
+                        {noLeidas > 0 && <span className="ml-2 text-base font-bold text-simar-marea-tinta">{noLeidas} sin leer</span>}
                     </h2>
                     <button
                         onClick={() => marcar()}
                         disabled={noLeidas === 0}
-                        className="text-[15px] font-semibold text-simar-marea-tinta hover:underline disabled:opacity-40 disabled:no-underline"
+                        className="simar-presiona min-h-[48px] px-4 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-base font-bold hover:border-simar-marea-tinta disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
                     >
+                        <CheckCheck className="w-5 h-5 text-simar-marea-tinta" />
                         Marcar todas como leídas
                     </button>
                 </div>
                 {notificaciones.length === 0 ? (
-                    <div className="py-16 flex flex-col items-center gap-2 text-simar-texto-2">
-                        <BellOff className="w-8 h-8" />
-                        <p className="text-base">No tienes notificaciones.</p>
-                    </div>
+                    <EstadoVacio icono={BellOff} titulo="No tienes notificaciones">
+                        Aquí verás cuando el centro de acopio apruebe, complete o rechace tus solicitudes.
+                    </EstadoVacio>
                 ) : (
                     <ul className="divide-y divide-simar-borde-suave">
                         {notificaciones.map((n) => (
                             <li
                                 key={n.id}
                                 onClick={() => !n.leida && marcar([n.id])}
-                                className={`px-5 py-4 transition-colors flex items-start gap-3 ${
-                                    n.leida ? 'hover:bg-simar-papel' : 'bg-simar-marea-suave/50 cursor-pointer'
+                                className={`px-5 sm:px-6 py-4 transition-colors flex items-start gap-3.5 border-l-[5px] ${
+                                    n.leida
+                                        ? 'border-l-transparent hover:bg-simar-papel'
+                                        : 'border-l-simar-marea-tinta bg-simar-marea-suave/50 cursor-pointer'
                                 }`}
                             >
                                 <NotifIcon tipo={n.tipo} size="md" />
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-base font-semibold text-simar-texto">{n.titulo}</p>
+                                    <p className="flex flex-wrap items-center gap-2 text-[17px] font-bold text-simar-texto">
+                                        {n.titulo}
+                                        {/* No leída: franja azul y la palabra "Nueva" (el color nunca va solo) */}
+                                        {!n.leida && (
+                                            <span className="px-2.5 py-0.5 rounded-full bg-simar-marea text-white text-[15px] font-bold leading-tight">
+                                                Nueva
+                                            </span>
+                                        )}
+                                    </p>
                                     {n.detalle && <p className="text-base text-simar-texto-2">{n.detalle}</p>}
                                     <p className="text-[15px] text-simar-texto-2 mt-1">{tiempoRelativo(n.created_at)}</p>
                                 </div>
-                                {!n.leida && <span className="w-2 h-2 rounded-full bg-simar-marea mt-2 flex-shrink-0" aria-label="Sin leer" />}
                             </li>
                         ))}
                     </ul>

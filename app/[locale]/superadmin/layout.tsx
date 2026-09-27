@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { SidebarSuperadmin } from '@/components/superadmin/SidebarSuperadmin';
 import { HeaderSuperadmin } from '@/components/superadmin/HeaderSuperadmin';
 import { AvisoGlobal } from '@/components/layout/AvisoGlobal';
@@ -12,6 +13,7 @@ import { FondoSimar } from '@/components/layout/FondoSimar';
  * en la base de datos.
  */
 export default function SuperadminLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -28,7 +30,7 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
                 <HeaderSuperadmin onOpenSidebar={() => setIsOpen(true)} />
                 <main className="flex-1 p-3 sm:p-4 md:p-6 lg:py-8 lg:pr-10 lg:pl-8">
                     <AvisoGlobal mostrarMantenimiento />
-                    <div className="max-w-[100vw] overflow-x-hidden">{children}</div>
+                    <div key={pathname} className="simar-pagina max-w-[100vw] overflow-x-hidden">{children}</div>
                 </main>
             </div>
         </div>

@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Mail, Phone, MapPin, Building2, FileText, Edit3, Save, Globe, User, X, Home } from 'lucide-react';
+import { Mail, Phone, MapPin, Building2, FileText, Edit3, Save, Globe, User, X, Home, Check } from 'lucide-react';
 import { TIPOS_RESIDUO, TIPO_RESIDUO_LABEL, type TipoResiduo } from '@/lib/constants/residuos';
 import { actualizarMiAsociacion, type MiAsociacionInput } from '@/lib/services/asociaciones';
 import { cambiarContrasena } from '@/lib/services/perfil';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { useAuth } from '@/components/layout/AuthProvider';
-import { BotonPrimario, Cargando, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
+import { BotonPrimario, Cargando, ResiduoBadge, inputCls, mensajeError } from '@/components/asociaciones/ui';
+import { claseChip } from '@/components/ui/simar';
 import type { AsociacionRecolectora } from '@/types/database';
 
 function aFormulario(a: AsociacionRecolectora): MiAsociacionInput {
@@ -67,42 +68,47 @@ export default function PerfilPage() {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Empresa a la izquierda; tipos de residuo y seguridad en la columna derecha (sin huecos) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 {/* Empresa */}
-                <div className="lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar">
-                    <div className="flex items-center justify-between mb-5 gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-12 h-12 rounded-lg bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center flex-shrink-0">
-                                <Building2 className="w-6 h-6" />
-                            </div>
+                <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar">
+                    <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-simar-borde-suave">
+                        <div className="flex items-center gap-4 min-w-0">
+                            <span className="w-14 h-14 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center flex-shrink-0">
+                                <Building2 className="w-7 h-7" strokeWidth={2} />
+                            </span>
                             <div className="min-w-0">
-                                <h3 className="text-lg font-bold text-simar-texto truncate">{asociacion.nombre_asociacion}</h3>
-                                <p className="text-[15px] text-simar-texto-2">
+                                <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate">{asociacion.nombre_asociacion}</h3>
+                                <p className="text-base text-simar-texto-2">
                                     {asociacion.tipo_asociacion || 'Asociación recolectora'} · {asociacion.estado}
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             {editing && (
                                 <button
                                     onClick={() => setEditing(false)}
-                                    className="inline-flex items-center gap-1 text-base font-semibold text-simar-texto-2 hover:underline"
+                                    className="simar-presiona min-h-[52px] px-5 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-[17px] font-bold hover:border-simar-marea-tinta inline-flex items-center gap-2"
                                 >
-                                    <X className="w-4 h-4" /> Cancelar
+                                    <X className="w-5 h-5" /> Cancelar
                                 </button>
                             )}
                             <button
                                 onClick={editing ? guardar : empezar}
                                 disabled={guardando}
-                                className="inline-flex items-center gap-2 text-base font-semibold text-simar-marea-tinta hover:underline disabled:opacity-50"
+                                className={`simar-presiona min-h-[52px] px-5 rounded-2xl text-[17px] font-bold inline-flex items-center gap-2 disabled:opacity-50 ${
+                                    editing
+                                        ? 'bg-simar-marea hover:bg-simar-marea-hover text-white'
+                                        : 'border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto hover:border-simar-marea-tinta'
+                                }`}
                             >
-                                {editing ? <Save className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
+                                {editing ? <Save className="w-5 h-5" /> : <Edit3 className="w-5 h-5" />}
                                 {editing ? (guardando ? 'Guardando…' : 'Guardar') : 'Editar'}
                             </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                         <Field label="RFC" icon={FileText} value={asociacion.rfc ?? ''} editing={false} ayuda={editing ? 'Sólo el centro de acopio puede cambiarlo' : undefined} />
                         <Field label="Persona de contacto" icon={User} value={datos.contacto_asociacion ?? ''} editing={editing} onChange={(v) => set('contacto_asociacion', v || null)} />
                         <Field label="Email" icon={Mail} value={datos.email ?? ''} editing={editing} onChange={(v) => set('email', v || null)} />
@@ -114,39 +120,40 @@ export default function PerfilPage() {
                     </div>
                 </div>
 
-                {/* Tipos de residuo */}
-                <div className="bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar">
-                    <h3 className="text-lg font-bold text-simar-texto mb-1">Tipos de residuo</h3>
-                    <p className="text-[15px] text-simar-texto-2 mb-4">
-                        Materiales que tu empresa recolecta. Recibirás avisos cuando haya nuevos lotes de estos residuos.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        {editing
-                            ? TIPOS_RESIDUO.map((t) => {
-                                  const activo = datos.tipos_residuo.includes(t);
-                                  return (
-                                      <button
-                                          key={t}
-                                          type="button"
-                                          onClick={() => toggleTipo(t)}
-                                          className={`px-3 py-1.5 rounded-lg text-base font-medium border transition-all ${
-                                              activo
-                                                  ? 'bg-simar-marea border-simar-marea-tinta text-white'
-                                                  : 'border-simar-campo-borde text-simar-texto-2 hover:border-simar-marea-tinta/30'
-                                          }`}
-                                      >
-                                          {TIPO_RESIDUO_LABEL[t]}
-                                      </button>
-                                  );
-                              })
-                            : datos.tipos_residuo.length > 0
-                              ? datos.tipos_residuo.map((t) => <ResiduoBadge key={t} tipo={t} size="md" />)
-                              : <p className="text-base text-simar-texto-2">Sin especificar: recibirás avisos de todos los residuos.</p>}
+                <div className="space-y-6">
+                    {/* Tipos de residuo */}
+                    <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.06s' }}>
+                        <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Tipos de residuo</h3>
+                        <p className="text-base text-simar-texto-2 mb-4">
+                            Materiales que tu empresa recolecta. Recibirás avisos cuando haya nuevos lotes de estos residuos.
+                        </p>
+                        <div className="flex flex-wrap gap-2.5">
+                            {editing
+                                ? TIPOS_RESIDUO.map((t) => {
+                                      const activo = datos.tipos_residuo.includes(t);
+                                      // Fichas de 48 px: la elegida lleva palomita, no sólo color
+                                      return (
+                                          <button
+                                              key={t}
+                                              type="button"
+                                              onClick={() => toggleTipo(t)}
+                                              aria-pressed={activo}
+                                              className={`${claseChip(activo)} inline-flex items-center gap-2`}
+                                          >
+                                              {activo && <Check className="w-[18px] h-[18px]" strokeWidth={2.6} />}
+                                              {TIPO_RESIDUO_LABEL[t]}
+                                          </button>
+                                      );
+                                  })
+                                : datos.tipos_residuo.length > 0
+                                  ? datos.tipos_residuo.map((t) => <ResiduoBadge key={t} tipo={t} size="md" />)
+                                  : <p className="text-base text-simar-texto-2">Sin especificar: recibirás avisos de todos los residuos.</p>}
+                        </div>
                     </div>
+
+                    <CambioContrasena />
                 </div>
             </div>
-
-            <CambioContrasena />
         </div>
     );
 }
@@ -177,10 +184,10 @@ function CambioContrasena() {
     };
 
     return (
-        <div className="bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar max-w-xl">
-            <h3 className="text-lg font-bold text-simar-texto mb-1">Seguridad</h3>
-            <p className="text-[15px] text-simar-texto-2 mb-5">Cuenta: {user?.email}</p>
-            <div className="space-y-3">
+        <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.12s' }}>
+            <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Seguridad</h3>
+            <p className="text-base text-simar-texto-2 mb-5 break-all">Cuenta: {user?.email}</p>
+            <div className="space-y-4">
                 <PasswordInput label="Contraseña actual" value={actual} onChange={setActual} autoComplete="current-password" />
                 <PasswordInput label="Nueva contraseña" value={nueva} onChange={setNueva} autoComplete="new-password" />
                 <PasswordInput label="Confirmar nueva contraseña" value={confirmar} onChange={setConfirmar} autoComplete="new-password" />
@@ -188,7 +195,7 @@ function CambioContrasena() {
                     onClick={guardar}
                     cargando={guardando}
                     disabled={!actual || !nueva || !confirmar}
-                    className="!bg-simar-marea hover:!bg-[#0E6A50]"
+                    className="w-full min-h-[56px]"
                 >
                     Actualizar contraseña
                 </BotonPrimario>
@@ -216,12 +223,12 @@ function Field({
     multiline?: boolean;
     ayuda?: string;
 }) {
-    const cls =
-        'mt-1 w-full text-base bg-simar-papel border border-simar-borde rounded-lg px-3 py-2 text-simar-texto focus:outline-none focus:ring-2 focus:ring-simar-marea-tinta';
+    // Campos con el borde de 2 px del lenguaje SiMAR (inputCls)
+    const cls = `mt-2 ${inputCls}`;
     return (
         <div className={wide ? 'sm:col-span-2' : ''}>
-            <label className="text-[15px] font-medium text-simar-texto-2 flex items-center gap-1.5">
-                <Icon className="w-3.5 h-3.5" />
+            <label className="text-[15px] font-bold text-simar-texto-2 flex items-center gap-2">
+                <Icon className="w-[18px] h-[18px]" />
                 {label}
             </label>
             {editing && onChange ? (
@@ -231,9 +238,9 @@ function Field({
                     <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
                 )
             ) : (
-                <p className="mt-1 text-base font-medium text-simar-texto whitespace-pre-wrap">{value || '—'}</p>
+                <p className="mt-1 text-[17px] text-simar-texto whitespace-pre-wrap">{value || '—'}</p>
             )}
-            {ayuda && <p className="text-[15px] text-simar-texto-2 mt-0.5">{ayuda}</p>}
+            {ayuda && <p className="text-[15px] text-simar-texto-2 mt-1">{ayuda}</p>}
         </div>
     );
 }

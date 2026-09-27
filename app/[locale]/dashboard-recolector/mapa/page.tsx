@@ -32,6 +32,7 @@ import {
     inputCls,
     mensajeError,
 } from '@/components/asociaciones/ui';
+import { TarjetaDato, claseChip } from '@/components/ui/simar';
 
 export default function MapaPage() {
     const pathname = usePathname();
@@ -74,49 +75,54 @@ export default function MapaPage() {
         <div className="space-y-5">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            {/* KPI Bar */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Datos del centro de acopio: formato común (TarjetaDato) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
                 {[
-                    { label: 'Centro de acopio', value: PUERTO_PENASCO.nombre, icon: Anchor, color: '#00c9a7' },
-                    { label: 'Residuos disponibles', value: String(disponibles.length), icon: CheckCircle2, color: '#10b981' },
+                    { label: 'Centro de acopio', value: PUERTO_PENASCO.nombre, icon: Anchor, tono: 'marea' as const },
+                    { label: 'Residuos disponibles', value: String(disponibles.length), icon: CheckCircle2, tono: 'arrecife' as const },
                     {
                         label: 'Sólidos disponibles',
                         value: `${formatCantidad(disponibles.filter((i) => i.unidad === 'kg').reduce((s, i) => s + i.cantidad, 0))} kg`,
                         icon: Package,
-                        color: '#3b82f6',
+                        tono: 'violeta' as const,
                     },
                     {
                         label: 'Actualizado',
                         value: ultimaActualizacion ? tiempoRelativo(ultimaActualizacion) : '—',
                         icon: RefreshCw,
-                        color: '#f59e0b',
+                        tono: 'neutro' as const,
                     },
-                ].map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-simar-superficie border border-simar-borde rounded-xl p-4 shadow-simar">
-                        <div className="flex items-center gap-2 mb-2">
-                            <Icon className="w-4 h-4" style={{ color }} />
-                            <span className="text-[15px] font-medium text-simar-texto-2">{label}</span>
-                        </div>
-                        <div className="text-lg sm:text-2xl font-extrabold text-simar-texto truncate">{value}</div>
-                    </div>
+                ].map(({ label, value, icon, tono }, i) => (
+                    <TarjetaDato
+                        key={label}
+                        etiqueta={label}
+                        valor={value}
+                        icono={icon}
+                        tono={tono}
+                        compacto
+                        className="simar-aparece"
+                        style={{ animationDelay: `${i * 0.04}s` }}
+                    />
                 ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Mapa */}
-                <div className="lg:col-span-2 h-[420px] lg:h-[560px]">
-                    <MapaCentroAcopio alto="h-full" zoom={15} />
-                </div>
+                {/* Mapa enmarcado como tarjeta; ocupa toda la altura del panel de residuos */}
+                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
+                    <div className="flex-1 min-h-[400px] rounded-[22px] overflow-hidden">
+                        <MapaCentroAcopio alto="h-full" zoom={15} />
+                    </div>
+                </section>
 
                 {/* Panel lateral: inventario del centro de acopio */}
-                <div className="bg-simar-superficie border border-simar-borde rounded-xl overflow-hidden flex flex-col shadow-simar" style={{ minHeight: 520 }}>
+                <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] overflow-hidden flex flex-col shadow-simar" style={{ minHeight: 520, animationDelay: '0.22s' }}>
                     <div className="p-5 border-b border-simar-borde">
                         <div className="flex items-center gap-2 text-[15px] text-simar-texto-2 mb-1">
-                            <MapPin className="w-3.5 h-3.5" />
+                            <MapPin className="w-[18px] h-[18px]" />
                             <span>{PUERTO_PENASCO.region}</span>
                         </div>
-                        <h3 className="text-xl font-extrabold text-simar-texto flex items-center gap-2">
-                            <Anchor className="w-5 h-5 text-simar-marea-tinta" />
+                        <h3 className="text-[22px] font-extrabold text-simar-texto flex items-center gap-2">
+                            <Anchor className="w-6 h-6 text-simar-marea-tinta" />
                             {PUERTO_PENASCO.nombre}
                         </h3>
                         <span
@@ -142,14 +148,15 @@ export default function MapaPage() {
                     </div>
 
                     <div className="p-5 flex-1 overflow-y-auto">
-                        <div className="flex items-center justify-between mb-3">
-                            <p className="text-[15px] font-bold text-simar-texto-2">Residuos publicados</p>
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                            <p className="text-[17px] font-bold text-simar-texto">Residuos publicados</p>
                             {misTipos.length > 0 && (
                                 <button
                                     onClick={() => setSoloMios((v) => !v)}
-                                    className={`inline-flex items-center gap-1 text-[15px] font-semibold ${soloMios ? 'text-simar-marea-tinta' : 'text-simar-texto-2'}`}
+                                    aria-pressed={soloMios}
+                                    className={`${claseChip(soloMios)} inline-flex items-center gap-2`}
                                 >
-                                    <Filter className="w-3 h-3" />
+                                    <Filter className="w-[18px] h-[18px]" />
                                     {soloMios ? 'Sólo los que recolecto' : 'Todos'}
                                 </button>
                             )}
@@ -160,21 +167,23 @@ export default function MapaPage() {
                                 <p className="text-base">El centro de acopio no tiene residuos publicados.</p>
                             </div>
                         ) : (
-                            <ul className="space-y-2.5">
-                                {visibles.map((r) => {
+                            <ul className="space-y-3">
+                                {visibles.map((r, i) => {
+                                    // El color del residuo va en una franja a la izquierda (siempre con su nombre escrito);
+                                    // la cantidad en texto oscuro: en color no se leía (DISEÑO_SIMAR.md → categorías).
                                     const accent = TIPO_RESIDUO_HEX[r.tipo];
                                     const agotado = r.cantidad <= 0;
                                     return (
                                         <li
                                             key={r.id}
-                                            className="p-3 rounded-xl border transition-all border-simar-borde"
-                                            style={{ background: `${accent}0d`, borderColor: `${accent}33` }}
+                                            className="simar-aparece p-4 pl-5 rounded-2xl border border-simar-borde border-l-[6px] bg-simar-superficie"
+                                            style={{ borderLeftColor: accent, animationDelay: `${0.26 + i * 0.05}s` }}
                                         >
                                             <div className="flex items-center justify-between gap-2">
-                                                <span className="text-base font-semibold text-simar-texto">
+                                                <span className="text-[17px] font-bold text-simar-texto">
                                                     {TIPO_RESIDUO_LABEL[r.tipo]}
                                                 </span>
-                                                <span className="text-base font-bold tabular-nums" style={{ color: accent }}>
+                                                <span className="text-[17px] font-extrabold tabular-nums text-simar-texto">
                                                     {formatCantidad(r.cantidad)} {r.unidad}
                                                 </span>
                                             </div>
@@ -182,9 +191,9 @@ export default function MapaPage() {
                                             <button
                                                 onClick={() => setSolicitar(r)}
                                                 disabled={agotado || bloqueada}
-                                                className="mt-3 w-full min-h-[52px] inline-flex items-center justify-center gap-2 text-[17px] font-bold rounded-2xl text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all min-h-[52px]"
+                                                className="simar-presiona mt-3 w-full min-h-[52px] inline-flex items-center justify-center gap-2 text-[17px] font-bold rounded-2xl text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-40 disabled:cursor-not-allowed"
                                             >
-                                                <Send className="w-3.5 h-3.5" />
+                                                <Send className="w-5 h-5" />
                                                 {agotado ? 'Agotado' : 'Solicitar recolección'}
                                             </button>
                                         </li>

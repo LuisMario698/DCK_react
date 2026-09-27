@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { toast } from 'sonner';
+import { usePresencia } from '@/components/ui/movimiento';
 
 interface UserProfileModalProps {
     isOpen: boolean;
@@ -41,7 +42,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
         }
     }, [user, isOpen]);
 
-    if (!isOpen) return null;
+    // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+    const { montado, saliendo } = usePresencia(isOpen);
+    if (!montado) return null;
 
     // --- HANDLERS ---
 
@@ -180,8 +183,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4 animate-in fade-in duration-200">
-            <div className="simar-aparece bg-simar-superficie rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-simar-borde">
+        <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4`}>
+            <div className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-simar-borde`}>
                 {/* Header */}
                 <div className="px-7 pt-7 pb-2 flex justify-between items-center gap-4">
                     <h2 className="text-[22px] font-extrabold text-simar-texto">Mi perfil</h2>
@@ -241,7 +244,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
                     {/* --- EDIT NAME MODE --- */}
                     {mode === 'edit_name' && (
-                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-200">
+                        <div className="space-y-4 simar-aparece">
                             <div>
                                 <label className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo nombre</label>
                                 <input
@@ -262,7 +265,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
                     {/* --- EDIT EMAIL MODE --- */}
                     {mode === 'edit_email' && (
-                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-200">
+                        <div className="space-y-4 simar-aparece">
                             {step === 1 ? (
                                 <>
                                     <div className="bg-simar-coral-suave p-3 rounded-lg text-base text-simar-coral mb-2">
@@ -305,7 +308,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             ) : (
                                 // STEP 3: SUCCESS & VERIFICATION INSTRUCTIONS
                                 <>
-                                    <div className="bg-simar-arrecife-suave p-4 rounded-lg text-simar-arrecife-tinta mb-4 flex flex-col items-center text-center gap-3 animate-in zoom-in-95 duration-300">
+                                    <div className="bg-simar-arrecife-suave p-4 rounded-lg text-simar-arrecife-tinta mb-4 flex flex-col items-center text-center gap-3 simar-confirma">
                                         <div className="bg-simar-arrecife-suave p-3 rounded-full">
                                             <svg className="w-8 h-8 text-simar-arrecife-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                         </div>
@@ -334,7 +337,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
                     {/* --- RESET PASSWORD MODE --- */}
                     {mode === 'reset_password' && (
-                        <div className="space-y-4 animate-in slide-in-from-right-4 duration-200">
+                        <div className="space-y-4 simar-aparece">
                             {step === 1 ? (
                                 <>
                                     <div className="text-base text-simar-texto-2 mb-4">

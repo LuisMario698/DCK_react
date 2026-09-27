@@ -24,9 +24,12 @@ export function LogoSimar({
 }) {
     const alturaNombre = Math.round(tamano * 0.52);
     const anchoNombre = Math.round((alturaNombre * nombreClaro.width) / nombreClaro.height);
+    // Si quien lo usa decide cuándo se ve (hidden, lg:inline-flex…), no se agrega inline-flex:
+    // las dos clases chocaban y en celular con el menú colapsado salían dos logos.
+    const decideVisibilidad = /(^|\s)(hidden|flex|inline-flex|block)(\s|$)/.test(className);
 
     return (
-        <span className={`inline-flex items-center gap-2.5 ${className}`}>
+        <span className={`${decideVisibilidad ? '' : 'inline-flex'} items-center gap-2.5 ${className}`}>
             {variante !== 'nombre' && (
                 <Image
                     src={simbolo}

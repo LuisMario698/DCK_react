@@ -1196,8 +1196,10 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* "backwards" y no "both": al terminar no deja transform/opacity activos, que convertirían
+   al elemento en contenedor de las ventanas fixed de adentro (quedarían bajo el menú). */
 .simar-aparece {
-  animation: simar-aparece 0.4s ease-out both;
+  animation: simar-aparece 0.4s ease-out backwards;
 }
 
 /* Movimiento 2: confirmar (firma dibujada y palomita) */
@@ -1214,7 +1216,7 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
   to { opacity: 1; transform: scale(1); }
 }
 .simar-confirma {
-  animation: simar-confirma 0.35s ease-out both;
+  animation: simar-confirma 0.35s ease-out backwards;
 }
 
 /* Tarjeta de acción que se levanta al pasar el cursor */
@@ -1224,6 +1226,11 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
 .simar-tarjeta-accion:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 30px -18px rgba(11, 34, 54, 0.45);
+}
+/* Al presionarla baja otra vez: se siente el toque */
+.simar-tarjeta-accion:active {
+  transform: translateY(-1px);
+  transition-duration: 0.08s;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1246,6 +1253,247 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
     background: var(--simar-superficie);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
+  }
+}
+
+/* ============================================
+   LENGUAJE DE DISEÑO SiMAR — movimiento funcional
+   Ver DISEÑO_SIMAR.md → "Movimiento". Dentro de los paneles el movimiento
+   sólo informa (algo entró, creció, se guardó, está cargando). Nada rebota ni
+   se repite solo, salvo los indicadores de carga. Todo se apaga con
+   "reducir movimiento" (bloque al final de esta sección).
+   ============================================ */
+:root {
+  /* Curvas de movimiento (--simar-curva ya es el color de las líneas de profundidad) */
+  --simar-frena: cubic-bezier(0.22, 1, 0.36, 1);   /* sale rápido y frena suave */
+  --simar-acelera: cubic-bezier(0.4, 0, 1, 1);     /* para lo que se va */
+}
+
+/* Página nueva dentro de un panel: sólo opacidad (los encabezados ya suben con simar-aparece) */
+@keyframes simar-funde {
+  from { opacity: 0; }
+}
+.simar-pagina {
+  animation: simar-funde 0.28s ease-out backwards;
+}
+
+/* Ventanas (modales): el velo se funde y el panel sube 14 px. Al cerrar, al revés y más rápido.
+   Las entradas usan "backwards" (ver simar-aparece); las salidas "both" para quedarse ocultas
+   hasta que la ventana se desmonta. */
+@keyframes simar-velo-sale {
+  to { opacity: 0; }
+}
+@keyframes simar-ventana-entra {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+}
+@keyframes simar-ventana-sale {
+  to { opacity: 0; transform: translateY(8px) scale(0.98); }
+}
+.simar-velo {
+  animation: simar-funde 0.24s ease-out backwards;
+}
+.simar-velo-sale {
+  animation: simar-velo-sale 0.18s var(--simar-acelera) both;
+}
+.simar-ventana {
+  animation: simar-ventana-entra 0.34s var(--simar-frena) backwards;
+}
+.simar-ventana-sale {
+  animation: simar-ventana-sale 0.18s var(--simar-acelera) both;
+}
+
+/* Gráficas: la barra crece desde su base al aparecer. Escalonar con animationDelay */
+@keyframes simar-crece-y {
+  from { transform: scaleY(0); }
+}
+@keyframes simar-crece-x {
+  from { transform: scaleX(0); }
+}
+.simar-crece-y {
+  transform-origin: bottom;
+  animation: simar-crece-y 0.7s var(--simar-frena) backwards;
+}
+.simar-crece-x {
+  transform-origin: left;
+  animation: simar-crece-x 0.8s var(--simar-frena) backwards;
+}
+
+/* Trazo SVG normalizado: el <path> lleva pathLength={1}. Sirve para cualquier largo
+   (la ola del logo, la palomita, la línea de marea). Duración con --simar-trazo-dur */
+@keyframes simar-dibuja {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+.simar-dibuja {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: simar-dibuja var(--simar-trazo-dur, 0.6s) var(--simar-frena) forwards;
+}
+
+/* Presionar: el botón se hunde 1 px. Transición explícita para no pisar transition-colors */
+.simar-presiona {
+  transition-property: color, background-color, border-color, box-shadow, transform;
+  transition-duration: 0.15s;
+  transition-timing-function: ease;
+}
+.simar-presiona:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+/* Esqueleto de carga: bloque con un brillo que pasa despacio (indicador de carga) */
+@keyframes simar-esqueleto {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+.simar-esqueleto {
+  background: linear-gradient(90deg, var(--simar-borde-suave) 30%, var(--simar-superficie) 50%, var(--simar-borde-suave) 70%);
+  background-size: 200% 100%;
+  animation: simar-esqueleto 1.6s ease-in-out infinite;
+}
+
+/* Cambio de tema: el tema nuevo se abre en círculo desde el botón (View Transitions).
+   El círculo lo anima ThemeContext; aquí sólo se apaga el fundido por defecto. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Avisos (sonner) con la paleta y los tamaños de SiMAR */
+body.simar [data-sonner-toaster][data-sonner-theme] {
+  --width: 400px;
+  --border-radius: 20px;
+  --normal-bg: var(--simar-superficie);
+  --normal-border: var(--simar-borde);
+  --normal-text: var(--simar-texto);
+  --success-bg: var(--simar-superficie);
+  --success-border: var(--simar-arrecife);
+  --success-text: var(--simar-texto);
+  --info-bg: var(--simar-superficie);
+  --info-border: var(--simar-marea-tinta);
+  --info-text: var(--simar-texto);
+  --warning-bg: var(--simar-coral-suave);
+  --warning-border: var(--simar-coral);
+  --warning-text: var(--simar-texto);
+  --error-bg: var(--simar-coral-suave);
+  --error-border: var(--simar-coral);
+  --error-text: var(--simar-texto);
+}
+body.simar [data-sonner-toast][data-styled='true'] {
+  font-family: var(--font-atkinson), system-ui, sans-serif;
+  font-size: 17px;
+  padding: 18px 20px;
+  gap: 12px;
+  border-width: 2px;
+  box-shadow: 0 18px 40px -20px rgba(11, 34, 54, 0.5);
+}
+body.simar [data-sonner-toast] [data-title] {
+  font-weight: 700;
+  line-height: 1.3;
+}
+body.simar [data-sonner-toast] [data-description] {
+  font-size: 15px;
+  color: var(--simar-texto-2) !important;
+}
+body.simar [data-sonner-toast] [data-icon] {
+  width: 26px;
+  height: 26px;
+  margin: 0;
+}
+body.simar [data-sonner-toast] [data-icon] > svg {
+  width: 26px;
+  height: 26px;
+}
+body.simar [data-sonner-toast][data-type='success'] [data-icon] { color: var(--simar-arrecife-tinta); }
+body.simar [data-sonner-toast][data-type='info'] [data-icon] { color: var(--simar-marea-tinta); }
+body.simar [data-sonner-toast][data-type='error'] [data-icon],
+body.simar [data-sonner-toast][data-type='warning'] [data-icon] { color: var(--simar-coral); }
+body.simar [data-sonner-toast] [data-close-button] {
+  width: 28px;
+  height: 28px;
+  background: var(--simar-superficie);
+  border-color: var(--simar-borde);
+  color: var(--simar-texto);
+}
+
+/* ============================================
+   LANDING — detalles de la vitrina pública (siempre en claro)
+   ============================================ */
+
+/* Los enlaces del menú llevan a la sección con desplazamiento suave, sin quedar
+   tapados por la barra flotante. Next quita el suave durante los cambios de ruta
+   (data-scroll-behavior en <html>). */
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.simar-landing) {
+    scroll-behavior: smooth;
+  }
+}
+.simar-landing :where(section[id], header[id]) {
+  scroll-margin-top: 104px;
+}
+
+/* Barra de avance de lectura (la marea sube con el scroll). Sólo donde el navegador
+   sabe atar una animación al scroll; en los demás no se muestra. */
+.simar-progreso {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .simar-progreso {
+    display: block;
+    transform-origin: left;
+    animation: simar-progreso linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+@keyframes simar-progreso {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Entrada del hero: sube 24 px y frena suave. Escalonar con animationDelay */
+@keyframes simar-entra {
+  from { opacity: 0; transform: translateY(24px); }
+}
+.simar-entra {
+  animation: simar-entra 0.9s var(--simar-frena) backwards;
+}
+/* Manchas de luz del hero: aparecen despacio mientras se dibujan las curvas */
+.simar-mancha {
+  animation: simar-funde 1.6s ease-out backwards;
+}
+
+/* Avance del carrusel: la píldora activa se llena mientras corre la foto */
+@keyframes simar-avance {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.simar-avance {
+  transform-origin: left;
+  animation: simar-avance var(--simar-avance-dur, 6s) linear both;
+}
+
+/* Reducir movimiento: todo lo anterior (y cualquier transición) se vuelve instantáneo.
+   Los indicadores de carga siguen girando, más despacio. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  .animate-spin {
+    animation-duration: 1.6s !important;
+    animation-iteration-count: infinite !important;
+  }
+  .simar-esqueleto {
+    animation: none !important;
+    background: var(--simar-borde-suave);
+  }
+  .simar-presiona:active:not(:disabled) {
+    transform: none;
   }
 }
 

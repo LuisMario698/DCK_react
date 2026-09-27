@@ -1,4 +1,7 @@
+'use client';
+
 import { Button } from './Button';
+import { usePresencia } from './movimiento';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -21,11 +24,13 @@ export function ConfirmationModal({
     cancelText = 'Cancelar',
     isLoading = false
 }: ConfirmationModalProps) {
-    if (!isOpen) return null;
+    // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+    const { montado, saliendo } = usePresencia(isOpen);
+    if (!montado) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4">
-            <div role="alertdialog" aria-modal="true" className="simar-aparece bg-simar-superficie rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden">
+        <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4`}>
+            <div role="alertdialog" aria-modal="true" className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden`}>
                 <div className="p-7">
                     <h3 className="text-[22px] font-extrabold text-simar-texto leading-tight mb-2">{title}</h3>
                     <p className="text-lg text-simar-texto-2">{message}</p>

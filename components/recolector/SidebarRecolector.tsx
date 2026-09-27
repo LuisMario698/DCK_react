@@ -20,24 +20,13 @@ import { useRecolector } from './RecolectorContext';
 import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
+import { LineaMarea } from '@/components/layout/LineaMarea';
 
 interface SidebarRecolectorProps {
     isOpen: boolean;
     isCollapsed: boolean;
     onClose: () => void;
     onToggleCollapse: () => void;
-}
-
-/** Línea de marea (la ola del logo) bajo la sección activa. */
-function LineaMarea() {
-    return (
-        <svg aria-hidden="true" width="46" height="8" viewBox="0 0 44 8" className="absolute left-0 -bottom-[9px]">
-            <path
-                d="M0 4 Q2.75 0 5.5 4 T11 4 T16.5 4 T22 4 T27.5 4 T33 4 T38.5 4 T44 4"
-                style={{ fill: 'none', stroke: 'var(--simar-golfo)', strokeWidth: 2, strokeLinecap: 'round' }}
-            />
-        </svg>
-    );
 }
 
 export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarRecolectorProps) {
@@ -65,7 +54,7 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
         <>
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]"
+                    className="simar-velo fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]"
                     onClick={onClose}
                 />
             )}

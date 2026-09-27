@@ -14,7 +14,7 @@ export function Button({
   ...props
 }: ButtonProps) {
   // Lenguaje de diseño SiMAR (DISEÑO_SIMAR.md → Botones): alto mínimo 44/52/60 px, letra ≥ 15 px
-  const baseStyles = 'font-bold transition-colors duration-150 rounded-2xl inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
+  const baseStyles = 'simar-presiona font-bold rounded-2xl inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const sizeStyles = {
     sm: 'min-h-[44px] px-4 text-[15px]',

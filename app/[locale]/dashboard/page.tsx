@@ -41,7 +41,7 @@ const ActionCard = ({
 const OtraSeccion = ({ href, Icon, label }: { href: string; Icon: LucideIcon; label: string }) => (
   <Link
     href={href}
-    className="min-h-[60px] px-6 rounded-[18px] bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto text-[19px] font-bold flex items-center gap-3 hover:bg-simar-superficie hover:border-simar-marea transition-colors"
+    className="simar-presiona min-h-[60px] px-6 rounded-[18px] bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto text-[19px] font-bold flex items-center gap-3 hover:bg-simar-superficie hover:border-simar-marea"
   >
     <Icon className="w-6 h-6 text-simar-marea-tinta" strokeWidth={2} />
     {label}

@@ -12,6 +12,7 @@ import { FondoSimar } from '@/components/layout/FondoSimar';
 import { ESTADO_SUSCRIPCION_LABEL } from '@/lib/constants/suscripciones';
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -31,7 +32,8 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                         <AvisoGlobal />
                         <AvisoSuperadmin />
                         <AvisoEstado />
-                        <div className="max-w-[100vw] overflow-x-hidden">
+                        {/* Cada pantalla entra con un fundido corto (simar-pagina) */}
+                        <div key={pathname} className="simar-pagina max-w-[100vw] overflow-x-hidden">
                             <Contenido>{children}</Contenido>
                         </div>
                     </main>

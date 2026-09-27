@@ -74,9 +74,9 @@ export default function AsociacionesPage() {
 
             {/* Conteos */}
             <div className="simar-aparece grid grid-cols-1 sm:grid-cols-3 gap-4" style={{ animationDelay: '0.06s' }}>
-                <TarjetaDato etiqueta="Asociaciones activas" valor={stats.empresas.toString()} icono={Building2} tono="arrecife" />
-                <TarjetaDato etiqueta="Solicitudes pendientes" valor={stats.pendientes.toString()} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
-                <TarjetaDato etiqueta="Mensajes sin leer" valor={stats.noLeidos.toString()} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
+                <TarjetaDato etiqueta="Asociaciones activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
+                <TarjetaDato etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
+                <TarjetaDato etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
             </div>
 
             {/* Tabs */}

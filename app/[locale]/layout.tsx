@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible_Next } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
@@ -24,6 +24,14 @@ export const metadata: Metadata = {
     "Gestión digital de manifiestos de residuos de embarcaciones pesqueras en Puerto Peñasco, Sonora. Formato MARPOL Anexo V.",
 };
 
+// Color de la barra del navegador en celular: papel en claro, abismo en oscuro
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#E9E4D9" },
+    { media: "(prefers-color-scheme: dark)", color: "#081624" },
+  ],
+};
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
@@ -43,7 +51,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={atkinson.variable} suppressHydrationWarning>
+    <html lang={locale} className={atkinson.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className="simar antialiased bg-simar-papel text-simar-texto" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>

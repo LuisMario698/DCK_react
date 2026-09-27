@@ -197,7 +197,7 @@ DCK_react/
 │   ├── layout/        # DashboardLayout, Sidebar, Header, *Context, ThemeToggle,
 │   │   └── sidebars/  #   LanguageSwitcher (no montado), UserProfileModal, SidebarVariantD
 │   ├── auth/          # LoginForm (5 vistas)
-│   ├── landing/       # VariantCinematic, InteractiveMexicoMap (SVG), CountUpNumber, useScrollReveal
+│   ├── landing/       # VariantCinematic, mapa/ (puertos, SVG + MapLibre), useScrollReveal
 │   ├── dashboard/     # DashboardClient (~1700 líneas), DashboardBackground
 │   ├── manifiestos/   # CreateManifiestoModal, CreateManifiestoBasuronModal, ManifiestoBasuronDetails
 │   ├── personas/      # PersonasTable, CreatePersonaModal, TiposPersonaManager

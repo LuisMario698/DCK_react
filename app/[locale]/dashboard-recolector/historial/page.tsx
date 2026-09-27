@@ -9,6 +9,7 @@ import { RecoleccionConAsociacion } from '@/types/database';
 import { abrirComprobante, getRecolecciones } from '@/lib/services/recolecciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
+import { EstadoVacio } from '@/components/ui/simar';
 
 export default function HistorialPage() {
     const [historial, setHistorial] = useState<RecoleccionConAsociacion[]>([]);
@@ -80,29 +81,30 @@ export default function HistorialPage() {
         <div className="space-y-6">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p className="text-base text-simar-texto-2">
-                    {historial.length} {historial.length === 1 ? 'recolección registrada' : 'recolecciones registradas'}
+            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-lg text-simar-texto-2">
+                    <strong className="text-simar-texto">{historial.length}</strong>{' '}
+                    {historial.length === 1 ? 'recolección registrada' : 'recolecciones registradas'}
                 </p>
                 <button
                     onClick={descargarCSV}
                     disabled={historial.length === 0}
-                    className="inline-flex items-center gap-2 bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-base font-bold px-4 py-2 rounded-lg shadow-simar transition-colors min-h-[52px]"
+                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2"
                 >
-                    <FileDown className="w-4 h-4" />
+                    <FileDown className="w-[22px] h-[22px]" />
                     Descargar historial (CSV)
                 </button>
             </div>
 
-            <div className="bg-simar-superficie border border-simar-borde rounded-xl shadow-simar overflow-hidden">
+            <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden" style={{ animationDelay: '0.06s' }}>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-simar-borde-suave">
                         <thead className="bg-simar-papel">
                             <tr>
-                                <Th>Folio</Th>
-                                <Th>Fecha</Th>
+                                <Th className="hidden sm:table-cell">Folio</Th>
+                                <Th className="hidden sm:table-cell">Fecha</Th>
                                 <Th>Residuo</Th>
-                                <Th>Cantidad</Th>
+                                <Th className="hidden sm:table-cell">Cantidad</Th>
                                 <Th className="hidden md:table-cell">Recibió</Th>
                                 <Th className="text-right">Comprobante</Th>
                             </tr>
@@ -110,22 +112,31 @@ export default function HistorialPage() {
                         <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
                             {historial.map((h) => (
                                 <tr key={h.id} className="hover:bg-simar-papel transition-colors">
-                                    <td className="px-4 sm:px-6 py-4 text-base font-mono font-semibold text-simar-texto whitespace-nowrap">{h.folio}</td>
-                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto whitespace-nowrap">{formatearFecha(h.fecha)}</td>
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-mono font-bold text-simar-texto whitespace-nowrap">{h.folio}</td>
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] text-simar-texto whitespace-nowrap">{formatearFecha(h.fecha)}</td>
                                     <td className="px-4 sm:px-6 py-4">
                                         <ResiduoBadge tipo={h.tipo} />
+                                        {/* En celular: cantidad, fecha y folio debajo del residuo (no se corta a la derecha) */}
+                                        <div className="sm:hidden mt-2 space-y-0.5">
+                                            <p className="text-[17px] font-bold text-simar-texto">
+                                                {formatCantidad(h.cantidad)} {h.unidad}
+                                                <span className="font-normal text-simar-texto-2"> · {formatearFecha(h.fecha)}</span>
+                                            </p>
+                                            <p className="text-[15px] font-mono text-simar-texto-2">{h.folio}</p>
+                                        </div>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-base font-semibold text-simar-texto whitespace-nowrap">
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-bold text-simar-texto whitespace-nowrap">
                                         {formatCantidad(h.cantidad)} {h.unidad}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto-2 hidden md:table-cell">{h.recibido_por || '—'}</td>
+                                    <td className="px-4 sm:px-6 py-4 text-[17px] text-simar-texto-2 hidden md:table-cell">{h.recibido_por || '—'}</td>
                                     <td className="px-4 sm:px-6 py-4 text-right">
                                         <button
                                             onClick={() => verComprobante(h)}
-                                            className="inline-flex items-center gap-1.5 text-base font-semibold text-simar-marea-tinta hover:underline disabled:opacity-50"
+                                            className="simar-presiona min-h-[44px] px-3.5 rounded-xl border-2 border-simar-campo-borde bg-simar-superficie text-[15px] font-bold text-simar-marea-tinta hover:border-simar-marea-tinta disabled:opacity-50 inline-flex items-center gap-1.5"
                                             disabled={abriendo === h.id}
+                                            aria-label={`Descargar comprobante ${h.folio} en PDF`}
                                         >
-                                            {abriendo === h.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                            {abriendo === h.id ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <Download className="w-[18px] h-[18px]" />}
                                             PDF
                                         </button>
                                     </td>
@@ -133,9 +144,10 @@ export default function HistorialPage() {
                             ))}
                             {historial.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-base text-simar-texto-2">
-                                        <Truck className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                                        Aún no tienes recolecciones completadas.
+                                    <td colSpan={6}>
+                                        <EstadoVacio icono={Truck} titulo="Aún no hay recolecciones">
+                                            Cuando el centro de acopio complete una de tus solicitudes, su comprobante aparecerá aquí.
+                                        </EstadoVacio>
                                     </td>
                                 </tr>
                             )}
@@ -149,7 +161,7 @@ export default function HistorialPage() {
 
 function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`px-4 sm:px-6 py-3 text-left text-[15px] font-semibold text-simar-texto-2 ${className}`}>
+        <th className={`px-4 sm:px-6 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 ${className}`}>
             {children}
         </th>
     );

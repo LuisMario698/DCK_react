@@ -4,6 +4,7 @@
 // components/asociaciones/ui.tsx (Modal, Campo, inputCls, botones).
 
 import { useState } from 'react';
+import { NumeroAnimado } from '@/components/ui/movimiento';
 import {
     AlertTriangle,
     Ban,
@@ -85,7 +86,10 @@ export function Kpi({
                     <Icono className="w-6 h-6" />
                 </span>
             </div>
-            <p className="mt-3 text-[30px] font-extrabold leading-tight text-simar-texto">{valor}</p>
+            <p className="mt-3 text-[30px] font-extrabold leading-tight text-simar-texto">
+                {/* Los conteos cuentan al aparecer; los textos (MXN, bytes) se muestran tal cual */}
+                {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
+            </p>
             {detalle && <p className="mt-1 text-[15px] text-simar-texto-2">{detalle}</p>}
         </div>
     );

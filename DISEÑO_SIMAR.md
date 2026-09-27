@@ -42,7 +42,7 @@ otro. Todo sale de ahí:
 | Íconos de `lucide-react` (trazo 2) | Emojis en la interfaz |
 | Vidrio sólo en lo que flota | Vidrio en formularios, tablas o tarjetas |
 | Un color para un significado (azul = acción, verde = listo, coral = falta) | Color como único indicador (siempre va con texto) |
-| `simar-aparece` al abrir, `simar-confirma` al confirmar | Rebotes, parallax, animaciones en bucle |
+| Movimiento que informa: `simar-aparece` al abrir, `simar-ventana` en ventanas, `PalomitaAnimada` al confirmar, `NumeroAnimado` en conteos | Rebotes, parallax, animaciones en bucle |
 
 ---
 
@@ -199,20 +199,57 @@ Requisitos:
 
 ## 8. Movimiento
 
-Sólo hay **dos movimientos** y un detalle al pasar el cursor. Nada más.
+**Dentro de los paneles el movimiento sólo informa**: algo entró, creció, se guardó, se firmó o
+está cargando. Nunca adorna ni se repite solo. **La landing** (la vitrina pública) puede ser un
+poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (bloques
+"movimiento funcional" y "LANDING"); piezas de React en `components/ui/movimiento.tsx`.
+
+### 8.1 Clases
 
 | Clase | Qué hace | Cuándo |
 |---|---|---|
-| `simar-aparece` | Entra 8 px desde abajo con opacidad, 0.4 s, sin rebote | Al abrir una pantalla o ventana. Escalonar con `style={{ animationDelay: '0.06s' }}` (pasos de 0.06 s) |
-| `simar-confirma` | Aparece con una leve escala, 0.35 s | Al confirmar algo: "Firmado" |
-| `simar-trazo` | Dibuja un trazo SVG (`stroke-dasharray: 420`) en 0.7 s | Trazos SVG largos (líneas, la ola). Para un trazo corto ajusta `strokeDasharray`/`strokeDashoffset` al largo del path |
-| `simar-tarjeta-accion` | La tarjeta sube 3 px con sombra al pasar el cursor | Sólo las tarjetas grandes del Panel |
+| `simar-aparece` | Entra 8 px desde abajo con opacidad, 0.4 s, sin rebote | Encabezados y tarjetas al abrir una pantalla. Escalonar con `style={{ animationDelay: '0.06s' }}` (pasos de 0.04–0.06 s) |
+| `simar-pagina` | Fundido de 0.28 s | Ya lo ponen `DashboardLayout` y los layouts del portal y del superadmin en cada cambio de ruta; no lo repitas |
+| `simar-velo` / `simar-ventana` | El fondo se funde y el panel sube 14 px (0.34 s) | Toda ventana modal: `simar-velo` en el fondo oscuro, `simar-ventana` en el panel |
+| `simar-velo-sale` / `simar-ventana-sale` | La salida, más rápida (0.18 s) | Con `usePresencia` (ver 8.2) |
+| `simar-crece-y` / `simar-crece-x` | La barra crece desde su base / desde la izquierda | Barras de gráficas hechas a mano. Escalonar con `animationDelay` |
+| `simar-dibuja` | Dibuja un trazo SVG. El `<path>` lleva `pathLength={1}`, así sirve para cualquier largo. Duración con la variable `--simar-trazo-dur` | La línea de marea, la palomita, la ola del hero |
+| `simar-confirma` | Aparece con una leve escala, 0.35 s | Insignias de "Firmado" y avisos de éxito |
+| `simar-presiona` | El botón se hunde 1 px al presionarlo | Ya lo lleva `Button`; úsalo en botones principales hechos a mano |
+| `simar-tarjeta-accion` | Sube 3 px con sombra al pasar el cursor y baja al presionarla | Sólo tarjetas que llevan a otra pantalla (Panel, KPIs del portal) |
+| `simar-esqueleto` | Bloque con un brillo lento | Sólo esqueletos de carga (es un indicador de carga, por eso puede repetirse) |
+| `simar-trazo` | Trazo con `stroke-dasharray: 420` | Heredada; para trazos nuevos usa `simar-dibuja` |
+
+Curvas: `--simar-frena` (sale rápido y frena suave, para lo que entra) y `--simar-acelera` (para
+lo que se va). **Ojo:** `--simar-curva` no es una curva de animación, es el color de las líneas
+de profundidad.
+
+### 8.2 Piezas (`components/ui/movimiento.tsx`)
+
+| Pieza | Para qué |
+|---|---|
+| `NumeroAnimado` | Un número que cuenta al aparecer y pasa del valor anterior al nuevo (al cambiar de período). El lector de pantalla oye sólo el valor final. `TarjetaDato` y `Kpi` ya lo usan cuando el valor es un número |
+| `PalomitaAnimada` | Palomita que se dibuja (con círculo, o sólo la marca con `circulo={false}`). "Firmado", "¡Guardado!", avisos de éxito |
+| `usePresencia(abierto)` | Deja montada una ventana mientras hace su salida: `{ montado, saliendo }` |
+| `Esqueleto`, `EsqueletoPantalla` | Esqueletos para los `loading.tsx` (esperan 0.15 s antes de verse, para no parpadear) |
+| `usePrefiereMenosMovimiento()` | Si el sistema pide reducir movimiento (p. ej. el carrusel no avanza solo) |
+| `LineaMarea` (`components/layout/LineaMarea.tsx`) | La ola bajo la sección activa; se dibuja al llegar |
+
+### 8.3 Reglas
 
 - Transiciones de color: `transition-colors` (150–200 ms). No uses `transition-all` en elementos
   grandes ni `hover:scale-*` en tarjetas.
-- Prohibido: rebotes, parallax, *ken burns*, cosas que se mueven solas en bucle (salvo el
-  indicador de carga).
-- Con `prefers-reduced-motion` todo esto se apaga solo.
+- Las entradas usan `animation-fill-mode: backwards`, **no `both`**: una animación de
+  `transform`/`opacity` que se queda "aplicada" convierte al elemento en contenedor de las
+  ventanas `fixed` de adentro, y quedarían debajo del menú lateral.
+- Prohibido: rebotes, parallax, *ken burns*, cosas que se mueven solas en bucle (salvo los
+  indicadores de carga) y mover algo que la persona está leyendo.
+- Un carrusel que avanza solo necesita botón de pausa, se detiene al pasar el cursor o enfocarlo,
+  y con "reducir movimiento" no avanza (landing).
+- Con `prefers-reduced-motion` todo se vuelve instantáneo solo (regla al final del bloque de
+  movimiento). No hace falta escribir `motion-safe:`.
+- El cambio de tema abre el tema nuevo en círculo desde el botón (View Transitions). En
+  navegadores sin soporte, o con "reducir movimiento", cambia al instante.
 
 ---
 
@@ -338,9 +375,11 @@ enfocar. Si el dato tiene unidad, la unidad va escrita dentro, a la derecha.
 <span className="text-[15px] font-bold text-simar-coral">Requerido</span>
 <span className="text-[15px] text-simar-texto-2">Opcional</span>
 <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta">
-  <Check className="w-4 h-4" strokeWidth={2.6} />Firmado
+  <PalomitaAnimada tamano={17} circulo={false} />Firmado
 </span>
 ```
+
+La palomita se dibuja cuando aparece la insignia: así se nota que la firma acaba de quedar.
 
 Contador (mensajes, notificaciones): `min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold`.
 Es el único texto de 13 px permitido.
@@ -375,13 +414,25 @@ etiqueta de 17 px y `select` de 56 px.
 - Encabezados `text-[15px] font-bold text-simar-texto-2`, sin mayúsculas.
 - Celdas `text-base`; el dato clave del renglón en negritas.
 - Acciones de 44 px: "Ver" (secundario con texto), descargar (azul), eliminar (coral suave).
+  Siempre con palabra: "Cancelar", "PDF", "Ver"; nunca sólo el ícono.
 - En móvil se ocultan columnas (`hidden md:table-cell`) en vez de encoger el texto.
+- **En celular los datos no se pierden:** las columnas que se ocultan (`hidden sm:table-cell`)
+  reaparecen **debajo del dato principal** dentro de su celda (`sm:hidden`): cantidad · fecha y la
+  insignia de estado bajo el residuo. Así la tabla nunca se corta a la derecha a 390 px. Ver
+  `dashboard-recolector/solicitudes` e `historial`.
+- Filtros y acción principal de la lista van en **la misma franja**, arriba de la tabla y dentro
+  de la tarjeta: fichas de 48 px (`claseChip`) con su conteo en un círculo de 26 px, y a la
+  derecha el botón principal ("Nueva solicitud").
 
 ### 10.11 Ventanas (modales)
 
-- Fondo `bg-[rgba(11,34,54,0.55)]` (Abismo translúcido), no negro puro.
-- Panel `bg-simar-superficie rounded-[28px]` con `simar-aparece`; o `simar-vidrio-fuerte` si va
+- Fondo `bg-[rgba(11,34,54,0.55)]` (Abismo translúcido), no negro puro, con `simar-velo`.
+- Panel `bg-simar-superficie rounded-[28px]` con `simar-ventana`; o `simar-vidrio-fuerte` si va
   sobre una foto (ventana de acceso de la landing).
+- Para que también salga con animación, usa `usePresencia(abierto)` y cambia a
+  `simar-velo-sale` / `simar-ventana-sale` mientras `saliendo` (así lo hacen `ConfirmationModal`,
+  `UserProfileModal`, `CreatePersonaModal`, el `Modal` de `components/asociaciones/ui.tsx` y la
+  ventana de acceso de la landing).
 - Botón de cerrar de 52 px arriba a la derecha con `aria-label="Cerrar"`.
 - Si el componente vive dentro del menú lateral (que tiene `transform`), monta la ventana con
   `createPortal(…, document.body)`.
@@ -424,7 +475,9 @@ No dibujes a mano lo que ya existe. Estas piezas ya siguen el lenguaje:
 
 | Archivo | Piezas |
 |---|---|
-| `components/ui/simar.tsx` | `EncabezadoPantalla` (ícono + título + subtítulo + acciones), `Tarjeta`, `TarjetaDato` (conteo grande), `Aviso` (info / advertencia), `CampoBusqueda` (56 px con lupa), `claseChip(activo)` (chips de filtro), `CargandoPantalla`, `EstadoVacio` |
+| `components/ui/simar.tsx` | `EncabezadoPantalla` (ícono + título + subtítulo + acciones), `Tarjeta`, `TarjetaDato` (conteo grande; si el valor es número, cuenta; `href` la vuelve enlace con flecha; `compacto` para textos largos), `Aviso` (info / advertencia), `CampoBusqueda` (56 px con lupa), `claseChip(activo)` (chips de filtro), `CargandoPantalla`, `EstadoVacio` |
+| `components/ui/movimiento.tsx` | `NumeroAnimado`, `PalomitaAnimada`, `usePresencia`, `Esqueleto`, `EsqueletoPantalla`, `usePrefiereMenosMovimiento` (ver sección 8) |
+| `app/[locale]/dashboard/loading.tsx` | Esqueleto mientras llega una pantalla del recinto (Estadísticas tiene el suyo) |
 | `components/ui/Button.tsx` | `variant`: `primary` (marea), `secondary` (borde 2 px), `danger` (coral sólido); `size`: `sm` 44 px, `md` 52 px, `lg` 60 px |
 | `components/ui/ConfirmationModal.tsx` | Confirmación de borrado |
 | `components/ui/Table.tsx` | `Table`, `TableHeader`, `TableHead`, `TableRow`, `TableCell` |
@@ -469,6 +522,18 @@ gráficas y mapa). Son la **única** excepción a "sólo tokens": sirven para di
 siempre van con su nombre escrito. En gráficas propias usa la familia SiMAR: aceite coral,
 basura marea, basurón arrecife.
 
+- **Franja de color por residuo:** en listas de residuos el color de la categoría va en una franja
+  a la izquierda (`border-l-[6px]` + `style={{ borderLeftColor: TIPO_RESIDUO_HEX[tipo] }}`) y la
+  cantidad en `text-simar-texto` (en color no se leía). Ver "Residuos disponibles".
+- **Gráficas con Recharts:** trazos y ejes con variables (`stroke="var(--simar-arrecife)"`,
+  `tick={{ fontSize: 15, fill: 'var(--simar-texto-2)' }}`, rejilla `var(--simar-borde)`), así
+  cambian solas en modo oscuro. Periodo actual = arrecife, línea continua con relleno suave;
+  periodo anterior = `--simar-marea-tinta`, punteada (`strokeDasharray="6 5"`) y sin relleno. La
+  leyenda se dibuja igual que las líneas (muestra de línea, no cuadritos) y el globo es oscuro con
+  texto blanco. Ver `dashboard-recolector/impacto`.
+- Barras hechas a mano: colores sólidos (`bg-simar-marea`, `bg-simar-coral`…), nunca los `-suave`
+  (sobre blanco casi no se ven).
+
 ### 10.19 Cosas que se descubrieron migrando
 
 - **Nunca esconder acciones hasta pasar el cursor** (`opacity-0 group-hover:opacity-100`): una
@@ -488,6 +553,21 @@ basura marea, basurón arrecife.
   ícono del ojo.
 - El calendario (`react-datepicker`) y el reloj (`TimePicker`) ya se re-pintan con los tokens al
   final de `app/globals.css` (bloque `body.simar …`); no agregues estilos sueltos para ellos.
+- **Editar / Guardar / Cancelar** en una ficha de datos son botones de 52 px, no enlaces
+  subrayados: "Editar" secundario (borde 2 px); al editar, "Cancelar" secundario y "Guardar"
+  principal (marea). Los campos en edición usan `inputCls` (borde de 2 px). Ver
+  `dashboard-recolector/perfil`.
+- **Elegir varias opciones** (tipos de residuo): fichas de 48 px con `claseChip(activa)` y una
+  palomita en la elegida (`aria-pressed`), no sólo el cambio de color.
+- **No leído** (notificaciones): franja azul a la izquierda (`border-l-[5px]
+  border-l-simar-marea-tinta`) y la palabra "Nueva" en una insignia; nunca sólo un punto de color.
+  "Marcar todas como leídas" es un botón de 48 px.
+- **Tarjetas de datos que llevan a otra pantalla:** `TarjetaDato` con `href` (toda la tarjeta es
+  el enlace, con flecha a la derecha y `simar-tarjeta-accion`). Para valores de texto largos
+  ("Puerto Peñasco", "Hace 1 día") usa `compacto`.
+- **`LogoSimar` con visibilidad por tamaño:** si le pasas `hidden` / `lg:inline-flex` en
+  `className`, el componente ya no agrega su propio `inline-flex` (chocaban y en celular salían
+  dos logos con el menú colapsado).
 
 ---
 
@@ -530,7 +610,8 @@ basura marea, basurón arrecife.
 - [ ] ¿El color siempre va acompañado de texto o ícono?
 - [ ] ¿Sin emojis ni mayúsculas sostenidas?
 - [ ] ¿Vidrio sólo en lo que flota?
-- [ ] ¿Sólo `simar-aparece` / `simar-confirma` como animación?
+- [ ] ¿Sólo movimiento de la sección 8 (entrar, crecer, dibujar, confirmar, cargar) y nada en bucle?
+- [ ] ¿Las ventanas llevan `simar-velo` + `simar-ventana`? ¿Se ve igual con "reducir movimiento"?
 - [ ] ¿Se ve bien en claro, oscuro y a 390 px de ancho?
 - [ ] ¿Se puede recorrer con el teclado y el foco se ve?
 - [ ] ¿Las acciones se ven sin pasar el cursor?
@@ -549,8 +630,10 @@ el modo simple (`/dashboard/simple`).
 
 **Se quedaron como estaban, a propósito:**
 
-- `components/landing/mapa/SeccionMapaPuertos.tsx` y `MapaMapLibrePuertos.tsx`: el mapa de puertos
-  de la landing vive en una banda oscura y tiene su propio estilo.
+- El dibujo del mapa de puertos de la landing (`MapaSilueta.tsx`, `MapaMapLibrePuertos.tsx`) vive
+  en una banda oscura y tiene su propio estilo. Su panel (`SeccionMapaPuertos.tsx`: cifras, ficha
+  del puerto, leyenda y botones) ya sigue la escala SiMAR: 15 px o más, sin mayúsculas, botones de
+  48 px.
 - Código que ninguna pantalla importa: `components/manifiestos/CreateManifiestoModal.tsx`,
   `components/layout/sidebars/SidebarVariantD.tsx`, `components/layout/LanguageSwitcher.tsx`. Si
   alguno vuelve a usarse, mígralo primero.

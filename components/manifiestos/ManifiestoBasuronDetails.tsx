@@ -13,9 +13,9 @@ export function ManifiestoBasuronDetails({ isOpen, onClose, manifiesto }: Manifi
     if (!isOpen || !manifiesto) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
+        <div className="simar-velo fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
             <div className="flex min-h-screen items-center justify-center p-4">
-                <div className="relative w-full max-w-5xl flex flex-col gap-6 my-8">
+                <div className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8">
 
                     {/* Botón de cierre pegajoso o flotante */}
                     <div className="flex justify-end sticky top-0 z-10 pt-2 pr-2">
