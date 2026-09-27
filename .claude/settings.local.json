@@ -9,7 +9,9 @@
       "Read(//tmp/**)",
       "Read(//c/tmp/**)",
       "Bash(unzip -o memoria.docx -d memoria_unpacked)",
-      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha -g format assets/logo_simar.png)"
+      "Bash(sips -g pixelWidth -g pixelHeight -g hasAlpha -g format assets/logo_simar.png)",
+      "mcp__3cfa6fe7-882b-484b-9d02-ae8e5291aa17__get_git_deployment_context",
+      "mcp__3cfa6fe7-882b-484b-9d02-ae8e5291aa17__get_runtime_errors"
     ]
   }
 }

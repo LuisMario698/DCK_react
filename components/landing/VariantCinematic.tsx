@@ -73,8 +73,8 @@ const NAV_LINKS = [
     { href: '#don-francisco', label: 'Don Francisco' },
     { href: '#conciencia', label: 'Conciencia Azul' },
     { href: '#equivalencias', label: 'Equivalencias' },
-    { href: '#mapa', label: 'Puertos' },
     { href: '#impacto', label: 'Impacto' },
+    { href: '#mapa', label: 'Puertos' },
 ];
 
 const AWARENESS_PANELS = [
@@ -213,21 +213,38 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             glowColor: 'shadow-cyan-500/40',
             accent: 'text-cyan-300',
         },
-        {
-            emoji: '🌳',
-            label: 'Árboles en pie',
-            inputValue: hojas,
-            inputDecimals: 0,
-            inputUnit: 'hojas',
-            inputCaption: 'de papel evitadas',
-            impactValue: arboles,
-            impactDecimals: arboles >= 10 ? 0 : 2,
-            impactUnit: 'árboles',
-            impactDescription: 'que siguen absorbiendo CO₂',
-            gradient: 'from-emerald-400 via-green-400 to-emerald-500',
-            glowColor: 'shadow-emerald-500/40',
-            accent: 'text-emerald-300',
-        },
+        // Mientras no se complete un árbol, la cifra de papel evitado dice más que "0.02 árboles"
+        arboles >= 1
+            ? {
+                  emoji: '🌳',
+                  label: 'Árboles en pie',
+                  inputValue: hojas,
+                  inputDecimals: 0,
+                  inputUnit: 'hojas',
+                  inputCaption: 'de papel evitadas',
+                  impactValue: arboles,
+                  impactDecimals: arboles >= 10 ? 0 : 1,
+                  impactUnit: 'árboles',
+                  impactDescription: 'que siguen absorbiendo CO₂',
+                  gradient: 'from-emerald-400 via-green-400 to-emerald-500',
+                  glowColor: 'shadow-emerald-500/40',
+                  accent: 'text-emerald-300',
+              }
+            : {
+                  emoji: '📄',
+                  label: 'Cero papel',
+                  inputValue: manifiestos,
+                  inputDecimals: 0,
+                  inputUnit: 'manifiestos',
+                  inputCaption: 'capturados en digital',
+                  impactValue: hojas,
+                  impactDecimals: 0,
+                  impactUnit: 'hojas de papel',
+                  impactDescription: 'que ya no se imprimen ni se archivan',
+                  gradient: 'from-emerald-400 via-green-400 to-emerald-500',
+                  glowColor: 'shadow-emerald-500/40',
+                  accent: 'text-emerald-300',
+              },
         {
             emoji: '🌱',
             label: 'Suelo protegido',
@@ -965,9 +982,9 @@ export function VariantCinematic({
                             },
                             {
                                 icon: Globe2,
-                                value: '2014 – 2025',
+                                value: '11 años',
                                 label: 'Histórico recuperado',
-                                detail: '11 años de datos ambientales preservados.',
+                                detail: 'Datos ambientales de 2014 a 2025 preservados.',
                             },
                         ].map((stat, i) => {
                             const Icon = stat.icon;
@@ -1045,22 +1062,43 @@ export function VariantCinematic({
 
             {/* Footer */}
             <footer className="bg-slate-950 py-16 md:py-20 px-6 border-t border-white/10">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
-                    <div className="md:col-span-2">
+                <div className="max-w-7xl mx-auto grid gap-12 md:grid-cols-[1.6fr_1fr_1fr]">
+                    <div>
                         <img
                             src="/assets/logo_simar.png"
-                            alt="SiMAR Logo"
-                            className="h-14 w-auto object-contain mb-6"
+                            alt="SiMAR"
+                            className="h-16 w-auto object-contain mb-5"
                         />
-
+                        <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+                            Sistema Integral de Manejo Ambiental de Residuos. Trazabilidad digital de los residuos
+                            de embarcaciones pesqueras en Puerto Peñasco, Sonora, bajo el Anexo V de MARPOL.
+                        </p>
+                        <button
+                            onClick={openLoginModal}
+                            className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-300 hover:text-cyan-200 transition-colors cursor-pointer"
+                        >
+                            Acceder a la plataforma
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
                     </div>
 
                     <div>
-                        <h4 className="text-base font-bold mb-5 text-white uppercase tracking-widest">
-                            Instituciones
-                        </h4>
+                        <h4 className="text-xs font-bold mb-5 text-white uppercase tracking-[0.2em]">Explora</h4>
                         <ul className="space-y-3 text-slate-400 text-sm">
-                            <li>ITSPP</li>
+                            {NAV_LINKS.map((link) => (
+                                <li key={link.href}>
+                                    <a href={link.href} className="hover:text-white transition-colors">
+                                        {link.label}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 className="text-xs font-bold mb-5 text-white uppercase tracking-[0.2em]">Instituciones</h4>
+                        <ul className="space-y-3 text-slate-400 text-sm">
+                            <li>Instituto Tecnológico Superior de Puerto Peñasco (ITSPP)</li>
                             <li>DCK Conciencia y Cultura</li>
                             <li>SEMARNAT</li>
                         </ul>
