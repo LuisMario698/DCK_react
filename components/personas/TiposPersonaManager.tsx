@@ -106,8 +106,8 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Tipos de Persona</h3>
-        <Button onClick={() => handleOpenModal()} variant="secondary" className="text-sm">
+        <h3 className="text-lg font-semibold text-simar-texto">Tipos de Persona</h3>
+        <Button onClick={() => handleOpenModal()} variant="secondary" className="text-base">
           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -117,23 +117,23 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-4 border-simar-marea-tinta border-t-transparent rounded-full animate-spin"></div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {tipos.map((tipo) => (
-            <div key={tipo.id} className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-4 hover:shadow-md transition-shadow">
+            <div key={tipo.id} className="bg-simar-superficie border border-simar-borde rounded-lg p-4 transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900 dark:text-white">{tipo.nombre_tipo}</h4>
+                  <h4 className="font-semibold text-simar-texto">{tipo.nombre_tipo}</h4>
                   {tipo.descripcion && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{tipo.descripcion}</p>
+                    <p className="text-[15px] text-simar-texto-2 mt-1">{tipo.descripcion}</p>
                   )}
                 </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => handleOpenModal(tipo)}
-                    className="p-1 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+                    className="p-1 text-simar-marea-tinta hover:bg-simar-marea-suave rounded min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                     title="Editar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   </button>
                   <button
                     onClick={() => handleDelete(tipo.id)}
-                    className="p-1 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                    className="p-1 text-simar-coral hover:bg-simar-coral-suave rounded min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                     title="Eliminar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,7 +151,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   </button>
                 </div>
               </div>
-              <div className="text-xs text-gray-400 dark:text-gray-500">ID: {tipo.id}</div>
+              <div className="text-[15px] text-simar-texto-2">ID: {tipo.id}</div>
             </div>
           ))}
         </div>
@@ -159,13 +159,13 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/20 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+        <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+          <div className="simar-aparece bg-simar-superficie rounded-[28px] p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+              <h3 className="text-xl font-extrabold text-simar-texto">
                 {editingTipo ? 'Editar Tipo de Persona' : 'Nuevo Tipo de Persona'}
               </h3>
-              <button onClick={handleCloseModal} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+              <button onClick={handleCloseModal} className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-papel text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors" aria-label="Cerrar">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
@@ -174,7 +174,7 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">
                   Nombre del Tipo *
                 </label>
                 <input
@@ -182,27 +182,27 @@ export function TiposPersonaManager({ onUpdate }: TiposPersonaManagerProps) {
                   required
                   value={formData.nombre_tipo}
                   onChange={(e) => setFormData({ ...formData, nombre_tipo: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                   placeholder="Ej: Capitán, Tripulante, Inspector"
                   disabled={saving}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">
                   Descripción
                 </label>
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none bg-white dark:bg-slate-700 text-gray-900 dark:text-white"
+                  className="w-full resize-none px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                   placeholder="Descripción opcional del tipo de persona"
                   rows={3}
                   disabled={saving}
                 />
               </div>
 
-              <div className="flex gap-3 justify-end pt-4 border-t dark:border-slate-700">
+              <div className="flex gap-3 justify-end pt-4 border-t border-simar-borde">
                 <Button type="button" variant="secondary" onClick={handleCloseModal} disabled={saving}>
                   Cancelar
                 </Button>

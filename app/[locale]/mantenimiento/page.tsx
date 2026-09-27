@@ -28,13 +28,13 @@ export default function MantenimientoPage() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
-            <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8 text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center mb-5">
+        <main className="min-h-screen flex items-center justify-center p-4 bg-simar-papel">
+            <div className="simar-aparece w-full max-w-md bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar p-8 text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-simar-violeta-suave text-simar-violeta flex items-center justify-center mb-5">
                     <Wrench className="w-8 h-8" />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">SiMAR está en mantenimiento</h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed whitespace-pre-line">
+                <h1 className="text-[22px] font-extrabold leading-tight text-simar-texto">SiMAR está en mantenimiento</h1>
+                <p className="text-base text-simar-texto-2 mt-3 leading-relaxed whitespace-pre-line">
                     {mensaje ?? 'Estamos haciendo mejoras en el sistema. Vuelve a intentarlo en unos minutos.'}
                 </p>
 
@@ -42,7 +42,7 @@ export default function MantenimientoPage() {
                     <button
                         onClick={reintentar}
                         disabled={reintentando}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-60 transition-colors min-h-[52px]"
                     >
                         <RefreshCw className={`w-4 h-4 ${reintentando ? 'animate-spin' : ''}`} />
                         Volver a intentar
@@ -50,7 +50,7 @@ export default function MantenimientoPage() {
                     {user && (
                         <button
                             onClick={signOut}
-                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold text-simar-texto border border-simar-borde hover:bg-simar-papel transition-colors min-h-[52px]"
                         >
                             <LogOut className="w-4 h-4" />
                             Cerrar sesión

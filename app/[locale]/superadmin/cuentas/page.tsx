@@ -141,7 +141,7 @@ export default function CuentasPage() {
                 <>
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="relative flex-1 min-w-[220px] max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
                                 placeholder="Buscar por correo, nombre o asociación"
@@ -181,7 +181,7 @@ export default function CuentasPage() {
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="border-b border-gray-200 dark:border-gray-800">
+                                    <thead className="border-b border-simar-borde">
                                         <tr>
                                             <th className={thCls}>Usuario</th>
                                             <th className={thCls}>Rol</th>
@@ -192,23 +192,23 @@ export default function CuentasPage() {
                                             <th className={`${thCls} text-right`}>Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tbody className="divide-y divide-simar-borde-suave">
                                         {filtradas.map((c) => {
                                             const esYo = c.id === user?.id;
                                             const protegida = esYo || c.es_superadmin;
                                             return (
-                                                <tr key={c.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                                                <tr key={c.id} className="hover:bg-simar-papel">
                                                     <td className={tdCls}>
-                                                        <p className="font-medium text-gray-900 dark:text-white">
+                                                        <p className="font-medium text-simar-texto">
                                                             {c.full_name || 'Sin nombre'}
-                                                            {esYo && <span className="ml-1.5 text-xs font-normal text-gray-400">(tú)</span>}
+                                                            {esYo && <span className="ml-1.5 text-[15px] font-normal text-simar-texto-2">(tú)</span>}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">{c.email}</p>
+                                                        <p className="text-[15px] text-simar-texto-2">{c.email}</p>
                                                     </td>
                                                     <td className={tdCls}>
                                                         <RolBadge rol={c.rol} superadmin={c.es_superadmin} />
                                                     </td>
-                                                    <td className={tdCls}>{c.asociacion_nombre ?? <span className="text-gray-400">—</span>}</td>
+                                                    <td className={tdCls}>{c.asociacion_nombre ?? <span className="text-simar-texto-2">—</span>}</td>
                                                     <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(c.creado_at)}</td>
                                                     <td className={`${tdCls} whitespace-nowrap`} title={formatoFechaHora(c.ultimo_acceso)}>
                                                         {hace(c.ultimo_acceso)}
@@ -297,7 +297,7 @@ export default function CuentasPage() {
                     onConfirmar={() => ejecutar(() => reactivarCuenta(cuenta.id), `${cuenta.email} reactivada`)}
                 >
                     <p>
-                        <strong className="text-gray-900 dark:text-white">{cuenta.email}</strong> podrá volver a iniciar sesión
+                        <strong className="text-simar-texto">{cuenta.email}</strong> podrá volver a iniciar sesión
                         con su rol de <strong>{ROL_LABEL[cuenta.rol].toLowerCase()}</strong>.
                     </p>
                 </ModalConfirmar>
@@ -319,12 +319,12 @@ export default function CuentasPage() {
                 >
                     {cuenta.es_superadmin ? (
                         <p>
-                            <strong className="text-gray-900 dark:text-white">{cuenta.email}</strong> dejará de ver este panel.
+                            <strong className="text-simar-texto">{cuenta.email}</strong> dejará de ver este panel.
                             Conserva su rol de administrador.
                         </p>
                     ) : (
                         <p>
-                            <strong className="text-gray-900 dark:text-white">{cuenta.email}</strong> tendrá control total:
+                            <strong className="text-simar-texto">{cuenta.email}</strong> tendrá control total:
                             cuentas, suscripciones, configuración y bitácora. También quedará como administrador del centro
                             de acopio.
                         </p>
@@ -342,10 +342,10 @@ export default function CuentasPage() {
                     onConfirmar={() => ejecutar(() => eliminarCuenta(cuenta.id), `${cuenta.email} eliminada`)}
                 >
                     <p>
-                        Se borrará la cuenta de <strong className="text-gray-900 dark:text-white">{cuenta.email}</strong> y su
+                        Se borrará la cuenta de <strong className="text-simar-texto">{cuenta.email}</strong> y su
                         perfil. Los manifiestos, solicitudes y mensajes que haya registrado se conservan sin autor.
                     </p>
-                    <p className="text-red-600 dark:text-red-400 font-medium">
+                    <p className="text-simar-coral font-medium">
                         No se puede deshacer. Si sólo quieres quitarle el acceso, suspéndela.
                     </p>
                 </ModalConfirmar>
@@ -379,7 +379,7 @@ function EstadoCuenta({ cuenta }: { cuenta: CuentaUsuario }) {
     if (cuenta.suspendido_at) {
         return (
             <span
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400"
+                className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-simar-coral"
                 title={cuenta.motivo_suspension ? `Motivo: ${cuenta.motivo_suspension}` : undefined}
             >
                 <UserX className="w-3.5 h-3.5" />
@@ -388,11 +388,11 @@ function EstadoCuenta({ cuenta }: { cuenta: CuentaUsuario }) {
         );
     }
     if (!cuenta.correo_confirmado) {
-        return <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">Correo sin confirmar</span>;
+        return <span className="text-[15px] font-semibold text-simar-coral">Correo sin confirmar</span>;
     }
     return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+        <span className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-simar-arrecife-tinta">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#127A5D]" />
             Activa
         </span>
     );
@@ -420,7 +420,7 @@ function TablaInvitaciones({
         <Tarjeta sinPadding>
             <div className="overflow-x-auto">
                 <table className="w-full">
-                    <thead className="border-b border-gray-200 dark:border-gray-800">
+                    <thead className="border-b border-simar-borde">
                         <tr>
                             <th className={thCls}>Correo</th>
                             <th className={thCls}>Rol</th>
@@ -429,14 +429,14 @@ function TablaInvitaciones({
                             <th className={`${thCls} text-right`}>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    <tbody className="divide-y divide-simar-borde-suave">
                         {invitaciones.map((inv) => (
                             <tr key={inv.id}>
-                                <td className={`${tdCls} font-medium text-gray-900 dark:text-white`}>{inv.email}</td>
+                                <td className={`${tdCls} font-medium text-simar-texto`}>{inv.email}</td>
                                 <td className={tdCls}>
                                     <RolBadge rol={inv.rol} />
                                 </td>
-                                <td className={tdCls}>{inv.asociacion?.nombre_asociacion ?? <span className="text-gray-400">—</span>}</td>
+                                <td className={tdCls}>{inv.asociacion?.nombre_asociacion ?? <span className="text-simar-texto-2">—</span>}</td>
                                 <td className={`${tdCls} whitespace-nowrap`}>{hace(inv.created_at)}</td>
                                 <td className={`${tdCls} text-right`}>
                                     <BotonIcono icono={X} etiqueta="Cancelar invitación" peligro onClick={() => onCancelar(inv)} />
@@ -576,7 +576,7 @@ function ModalSuspender({
             onConfirmar={() => onSuspender(motivo.trim() || null)}
         >
             <p>
-                <strong className="text-gray-900 dark:text-white">{cuenta.email}</strong> perderá el acceso de inmediato: se
+                <strong className="text-simar-texto">{cuenta.email}</strong> perderá el acceso de inmediato: se
                 cierran sus sesiones y no podrá volver a iniciar sesión hasta que la reactives. Sus datos no se borran.
             </p>
             <Campo label="Motivo (opcional, sólo lo ven los superadmins)">
@@ -636,7 +636,7 @@ function ModalInvitar({
                 {rol === 'recolector' && (
                     <SelectorAsociacion asociaciones={asociaciones} valor={asociacionId} onChange={setAsociacionId} />
                 )}
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-[15px] text-simar-texto-2">
                     SiMAR no envía correos: avísale a la persona que se registre en la página de inicio con este correo.
                 </p>
                 <div className="flex justify-end gap-2 pt-2">

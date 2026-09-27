@@ -35,18 +35,18 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
 
     if (verTabla) {
         return (
-            <table className="w-full text-sm">
+            <table className="w-full text-base">
                 <thead>
-                    <tr className="text-left text-xs text-gray-500 dark:text-gray-400">
+                    <tr className="text-left text-[15px] text-simar-texto-2">
                         <th className="py-1.5 font-semibold">Mes</th>
                         <th className="py-1.5 font-semibold text-right">Cobrado</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                <tbody className="divide-y divide-simar-borde-suave">
                     {datos.map((d) => (
                         <tr key={d.mes}>
-                            <td className="py-1.5 text-gray-700 dark:text-gray-300 capitalize">{MES_LARGO.format(fechaMes(d.mes))}</td>
-                            <td className="py-1.5 text-right tabular-nums text-gray-900 dark:text-white">{formatoMXN(d.total)}</td>
+                            <td className="py-1.5 text-simar-texto capitalize">{MES_LARGO.format(fechaMes(d.mes))}</td>
+                            <td className="py-1.5 text-right tabular-nums text-simar-texto">{formatoMXN(d.total)}</td>
                         </tr>
                     ))}
                 </tbody>
@@ -57,7 +57,7 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
     return (
         <div className="flex gap-2">
             {/* Eje Y: 0, mitad y máximo */}
-            <div className="relative w-10 h-48 flex-shrink-0 text-[10px] tabular-nums text-gray-400 dark:text-gray-500">
+            <div className="relative w-10 h-48 flex-shrink-0 text-[15px] tabular-nums text-simar-texto-2">
                 {[max, max / 2, 0].map((v, i) => (
                     <span key={v} className="absolute right-0 -translate-y-1/2" style={{ top: `${i * 50}%` }}>
                         {compacto.format(v)}
@@ -68,7 +68,7 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
             <div className="flex-1 min-w-0">
                 <div className="relative h-48">
                     {[0, 50, 100].map((top) => (
-                        <div key={top} className="absolute inset-x-0 h-px bg-gray-100 dark:bg-gray-800" style={{ top: `${top}%` }} />
+                        <div key={top} className="absolute inset-x-0 h-px bg-simar-papel" style={{ top: `${top}%` }} />
                     ))}
 
                     <div className="absolute inset-0 flex items-end">
@@ -90,19 +90,19 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
                                     {activo === i && (
                                         <span
                                             role="tooltip"
-                                            className="absolute z-10 bottom-full mb-1 px-2.5 py-1.5 rounded-lg bg-gray-900 dark:bg-gray-100 shadow-lg whitespace-nowrap text-left pointer-events-none"
+                                            className="absolute z-10 bottom-full mb-1 px-2.5 py-1.5 rounded-lg bg-simar-abismo shadow-simar whitespace-nowrap text-left pointer-events-none"
                                         >
-                                            <span className="block text-xs font-bold text-white dark:text-gray-900 tabular-nums">{formatoMXN(d.total)}</span>
-                                            <span className="block text-[10px] text-gray-300 dark:text-gray-600 capitalize">{MES_LARGO.format(fechaMes(d.mes))}</span>
+                                            <span className="block text-[15px] font-bold text-white tabular-nums">{formatoMXN(d.total)}</span>
+                                            <span className="block text-[15px] text-simar-texto-2 capitalize">{MES_LARGO.format(fechaMes(d.mes))}</span>
                                         </span>
                                     )}
                                     {mostrarValor && (
-                                        <span className="mb-1 text-[10px] font-semibold text-gray-600 dark:text-gray-300 tabular-nums">
+                                        <span className="mb-1 text-[15px] font-semibold text-simar-texto-2 tabular-nums">
                                             {compacto.format(d.total)}
                                         </span>
                                     )}
                                     <span
-                                        className={`w-full max-w-[24px] rounded-t-[4px] bg-violet-600 dark:bg-violet-500 transition-opacity group-focus-visible:ring-2 group-focus-visible:ring-violet-400 ${
+                                        className={`w-full max-w-[24px] rounded-t-[4px] bg-[#5B3FA8] transition-opacity group-focus-visible:ring-2 group-focus-visible:ring-simar-marea-tinta ${
                                             activo !== null && activo !== i ? 'opacity-50' : ''
                                         }`}
                                         style={{ height: `${alto}%` }}
@@ -113,12 +113,12 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
                     </div>
                 </div>
 
-                <div className="flex mt-1.5 border-t border-gray-200 dark:border-gray-700 pt-1.5">
+                <div className="flex mt-1.5 border-t border-simar-borde pt-1.5">
                     {datos.map((d, i) => (
                         <span
                             key={d.mes}
-                            className={`flex-1 text-center text-[10px] capitalize ${
-                                i === datos.length - 1 ? 'font-bold text-gray-700 dark:text-gray-200' : 'text-gray-400 dark:text-gray-500'
+                            className={`flex-1 text-center text-[15px] capitalize ${
+                                i === datos.length - 1 ? 'font-bold text-simar-texto' : 'text-simar-texto-2'
                             }`}
                         >
                             {MES_CORTO.format(fechaMes(d.mes)).replace('.', '')}

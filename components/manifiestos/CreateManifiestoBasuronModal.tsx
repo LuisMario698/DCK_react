@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { TimePicker } from '@/components/ui/TimePicker';
+import { CalendarDays, Check, Clock, Scale, Upload } from 'lucide-react';
 import { horaLocal, hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 
 // Registrar locale español
@@ -144,47 +145,36 @@ export function CreateManifiestoBasuronModal({
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
 
   return (
-    <div className={inline ? '' : 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50'}>
-      <div className={inline ? 'w-full' : 'bg-white dark:bg-gray-900 shadow-2xl max-w-7xl w-full h-full overflow-y-auto'}>
-
-        {/* Formulario estilo documento físico - Recibo Relleno Sanitario */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-7xl mx-auto shadow-lg">
-          {/* Encabezado del recibo - Estilo sutil */}
-          <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {/* Logo camión - Version sutil */}
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 17h8M8 17a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 104 0 2 2 0 00-4 0zM9 12V7a2 2 0 012-2h6a2 2 0 012 2v5m-4 0H5a2 2 0 00-2 2v3h2" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">RECIBO RELLENO SANITARIO</h2>
-                  <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Total depositado</p>
-                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{calcularTotalDepositado().toFixed(0)} kg</p>
-              </div>
+    <div className={inline ? '' : 'fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
+      <div className={inline ? 'w-full' : 'simar-aparece bg-simar-papel rounded-[28px] shadow-2xl max-w-7xl w-full h-full overflow-y-auto p-6'}>
+        {/* Recibo del relleno sanitario — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Encabezado del recibo */}
+          <header className="simar-aparece flex flex-wrap items-center gap-5">
+            <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center">
+              <Scale className="w-[30px] h-[30px]" strokeWidth={2} />
+            </span>
+            <div className="flex-1 min-w-[240px]">
+              <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto">Recibo del relleno sanitario</h1>
+              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
             </div>
-          </div>
+            <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right">
+              <p className="text-[15px] text-simar-texto-2">Total depositado</p>
+              <p className="text-[21px] font-extrabold text-simar-texto">{calcularTotalDepositado().toFixed(0)} kg</p>
+            </div>
+          </header>
 
-          {/* Contenido del formulario - Layout de dos columnas */}
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-slate-700">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6">
+            {/* COLUMNA IZQUIERDA - Datos del recibo */}
+            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.06s' }}>
+              <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del recibo</h2>
 
-              {/* COLUMNA IZQUIERDA - Datos generales */}
-              <div className="p-6 space-y-4">
-                <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Información General</h3>
-
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* FECHA */}
-                <div
-                  className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">FECHA:</label>
-                  <div className="flex-1 flex items-center gap-2">
+                <div>
+                  <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                    <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <DatePicker
                       selected={formData.fecha ? new Date(formData.fecha + 'T00:00:00') : null}
                       onChange={(date: Date | null) => {
@@ -200,8 +190,7 @@ export function CreateManifiestoBasuronModal({
                       dateFormat="dd/MM/yyyy"
                       locale="es"
                       showPopperArrow={false}
-                      className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:!text-white text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                        }`}
+                      className="w-full bg-transparent focus:outline-none !text-simar-texto !font-bold text-xl cursor-pointer"
                       wrapperClassName="flex-1"
                       popperClassName="datepicker-popper"
                       showMonthDropdown
@@ -209,271 +198,223 @@ export function CreateManifiestoBasuronModal({
                       dropdownMode="select"
                       todayButton="Hoy"
                     />
-                    <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
                   </div>
                 </div>
 
                 {/* HORA */}
-                <div
-                  className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'horaEntrada' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-                >
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">HORA:</label>
-                  <div className="flex-1 flex items-center gap-2">
+                <div>
+                  <label className="block mb-2 text-[17px] font-bold text-simar-texto">Hora</label>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                    <Clock className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <TimePicker
                       value={formData.hora_entrada || ''}
                       onChange={(time) => setFormData({ ...formData, hora_entrada: time })}
                       onFocus={() => setActiveField('horaEntrada')}
                       onBlur={() => setActiveField(null)}
-                      className={`border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-lg font-medium transition-all duration-200 cursor-pointer ${activeField === 'horaEntrada' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                        }`}
+                      className="!px-0 bg-transparent focus:outline-none text-simar-texto text-xl font-bold cursor-pointer"
                       placeholder="HH:MM"
                     />
-                    <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
                   </div>
-                </div>
-
-                {/* RECIBIMOS DE - Campo de texto libre */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'recibimos' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">RECIBIMOS DE:</label>
-                  <input
-                    type="text"
-                    value={formData.recibimos_de}
-                    onChange={(e) => {
-                      setFormData({ ...formData, recibimos_de: e.target.value });
-                      setShowValidation(false);
-                    }}
-                    onFocus={() => setActiveField('recibimos')}
-                    onBlur={() => setActiveField(null)}
-                    placeholder="Nombre de quien entrega..."
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-200 ${showValidation && !formData.recibimos_de ? 'border-red-500' : activeField === 'recibimos' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                      }`}
-                  />
-                </div>
-                {showValidation && !formData.recibimos_de && <p className="text-sm text-red-600 ml-3">* Requerido</p>}
-
-                {/* DIRECCIÓN */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'direccion' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">DIRECCIÓN:</label>
-                  <input
-                    type="text"
-                    value={formData.direccion}
-                    onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
-                    onFocus={() => setActiveField('direccion')}
-                    onBlur={() => setActiveField(null)}
-                    placeholder="Dirección..."
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-200 ${activeField === 'direccion' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                      }`}
-                  />
-                </div>
-
-                {/* Línea divisoria */}
-                <div className="border-t border-gray-200 dark:border-gray-700 my-2"></div>
-
-                {/* RECIBÍ */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'usuario' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">RECIBÍ:</label>
-                  <input
-                    type="text"
-                    value={formData.nombre_usuario}
-                    onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
-                    onFocus={() => setActiveField('usuario')}
-                    onBlur={() => setActiveField(null)}
-                    placeholder="Nombre de quien recibe"
-                    className={`flex-1 px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 transition-all duration-200 ${activeField === 'usuario' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                      }`}
-                  />
-                </div>
-
-                {/* DOCUMENTO DIGITALIZADO */}
-                <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${!file && showValidation ? 'border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/20' : file ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
-                  <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">DOCUMENTO:</label>
-                  <div className="flex-1">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".pdf,image/*"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/50 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"
-                    />
-                  </div>
-                </div>
-
-                {/* Observaciones */}
-                <div className={`mt-4 transition-all duration-200 ${activeField === 'observaciones' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600 rounded-lg p-3 -mx-3' : 'border-l-4 border-l-transparent'}`}>
-                  <label className="block text-sm font-bold text-black dark:text-white mb-1 uppercase">Observaciones (opcional)</label>
-                  <textarea
-                    value={formData.observaciones}
-                    onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-                    onFocus={() => setActiveField('observaciones')}
-                    onBlur={() => setActiveField(null)}
-                    rows={3}
-                    placeholder="Notas adicionales..."
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none text-black dark:text-white text-base placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                  />
                 </div>
               </div>
 
-              {/* COLUMNA DERECHA - Pesaje (# KILOS) */}
-              <div className="p-6 bg-gray-50 dark:bg-slate-700/30 space-y-4">
-                <h3 className="text-lg font-bold text-blue-800 dark:text-blue-400 uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                  </svg>
-                  # KILOS
-                </h3>
+              {/* RECIBIMOS DE - Campo de texto libre */}
+              <div className="mt-5">
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibimos de</label>
+                <input
+                  type="text"
+                  value={formData.recibimos_de}
+                  onChange={(e) => {
+                    setFormData({ ...formData, recibimos_de: e.target.value });
+                    setShowValidation(false);
+                  }}
+                  onFocus={() => setActiveField('recibimos')}
+                  onBlur={() => setActiveField(null)}
+                  placeholder="Nombre de quien entrega..."
+                  className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${showValidation && !formData.recibimos_de ? 'border-simar-coral' : activeField === 'recibimos' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'
+                    }`}
+                />
+                {showValidation && !formData.recibimos_de && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
+              </div>
 
-                {/* PESO DE ENTRADA */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-black dark:text-white">PESO ENTRADA</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Vehículo con carga</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.peso_entrada}
-                      onChange={(e) => setFormData({ ...formData, peso_entrada: e.target.value })}
-                      onFocus={() => setActiveField('pesoEntrada')}
-                      onBlur={() => setActiveField(null)}
-                      placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border rounded-xl focus:outline-none text-black dark:text-white bg-gray-50 dark:bg-slate-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_entrada ? 'border-red-500' : activeField === 'pesoEntrada' ? 'border-green-500 ring-2 ring-green-100 dark:ring-green-900/30' : 'border-gray-200 dark:border-slate-600'
-                        }`}
-                    />
-                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400 px-3 py-3 bg-gray-100 dark:bg-slate-700 rounded-lg">kg</span>
-                  </div>
-                  {showValidation && !formData.peso_entrada && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
-                </div>
+              {/* DIRECCIÓN */}
+              <div className="mt-5">
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Dirección <span className="font-medium text-simar-texto-2">(opcional)</span></label>
+                <input
+                  type="text"
+                  value={formData.direccion}
+                  onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
+                  onFocus={() => setActiveField('direccion')}
+                  onBlur={() => setActiveField(null)}
+                  placeholder="Dirección..."
+                  className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'direccion' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'
+                    }`}
+                />
+              </div>
 
-                {/* PESO DE SALIDA */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-slate-700 shadow-sm">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                      <svg className="w-5 h-5 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-base font-bold text-black dark:text-white">PESO SALIDA</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Vehículo sin carga</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.peso_salida}
-                      onChange={(e) => setFormData({ ...formData, peso_salida: e.target.value })}
-                      onFocus={() => setActiveField('pesoSalida')}
-                      onBlur={() => setActiveField(null)}
-                      placeholder="0"
-                      className={`flex-1 px-4 py-3 text-2xl font-bold text-center border rounded-xl focus:outline-none text-black dark:text-white bg-gray-50 dark:bg-slate-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${showValidation && !formData.peso_salida ? 'border-red-500' : activeField === 'pesoSalida' ? 'border-red-500 ring-2 ring-red-100 dark:ring-red-900/30' : 'border-gray-200 dark:border-slate-600'
-                        }`}
-                    />
-                    <span className="text-lg font-bold text-gray-500 dark:text-gray-400 px-3 py-3 bg-gray-100 dark:bg-slate-700 rounded-lg">kg</span>
-                  </div>
-                  {showValidation && !formData.peso_salida && <p className="text-sm text-red-600 mt-1">* Requerido</p>}
-                </div>
+              {/* RECIBÍ */}
+              <div className="mt-5">
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibí</label>
+                <input
+                  type="text"
+                  value={formData.nombre_usuario}
+                  onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
+                  onFocus={() => setActiveField('usuario')}
+                  onBlur={() => setActiveField(null)}
+                  placeholder="Nombre de quien recibe"
+                  className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'usuario' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'
+                    }`}
+                />
+              </div>
 
-                {/* TOTAL DEPOSITADO */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-5 shadow-sm border border-blue-100 dark:border-blue-900/30">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase">Total Depositado</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-center py-2">
-                    <p className="text-4xl font-bold text-blue-600 dark:text-blue-400">{calcularTotalDepositado().toFixed(0)} <span className="text-xl text-gray-400">kg</span></p>
-                  </div>
+              {/* Observaciones (crece para que la tarjeta termine a la par de Pesaje) */}
+              <div className="mt-5 flex-1 flex flex-col">
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
+                <textarea
+                  value={formData.observaciones}
+                  onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+                  onFocus={() => setActiveField('observaciones')}
+                  onBlur={() => setActiveField(null)}
+                  rows={3}
+                  placeholder="Notas adicionales..."
+                  className={`w-full flex-1 min-h-[110px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                />
+              </div>
+            </section>
+
+            {/* COLUMNA DERECHA - Pesaje */}
+            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.12s' }}>
+              <h2 className="text-[23px] font-extrabold text-simar-texto">Pesaje</h2>
+
+              {/* flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors DE ENTRADA */}
+              <div className="mt-5">
+                <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de entrada</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
+                <p className="text-[15px] text-simar-texto-2">Vehículo con carga</p>
+                <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_entrada ? 'border-simar-coral' : activeField === 'pesoEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.peso_entrada}
+                    onChange={(e) => setFormData({ ...formData, peso_entrada: e.target.value })}
+                    onFocus={() => setActiveField('pesoEntrada')}
+                    onBlur={() => setActiveField(null)}
+                    placeholder="0"
+                    aria-label="Peso de entrada en kilos"
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
                 </div>
+                {showValidation && !formData.peso_entrada && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
 
                 {/* Botones rápidos */}
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="text-sm text-gray-500 dark:text-gray-400 mr-2">Rápido:</span>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-[15px] font-bold text-simar-texto-2 mr-1">Rápido:</span>
                   {[500, 1000, 1500, 2000, 2500, 3000].map(peso => (
                     <button
                       key={peso}
                       type="button"
                       onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
-                      className="px-3 py-1 text-sm bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors border border-transparent hover:border-blue-200"
+                      className="min-h-[44px] px-3.5 rounded-xl text-base font-bold text-simar-texto bg-simar-superficie border-2 border-simar-campo-borde hover:border-simar-marea-tinta transition-colors"
                     >
                       {peso >= 1000 ? `${peso / 1000}T` : `${peso}kg`}
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors DE SALIDA */}
+              <div className="mt-6 pt-5 border-t border-simar-borde-suave">
+                <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de salida</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
+                <p className="text-[15px] text-simar-texto-2">Vehículo sin carga</p>
+                <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_salida ? 'border-simar-coral' : activeField === 'pesoSalida' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={formData.peso_salida}
+                    onChange={(e) => setFormData({ ...formData, peso_salida: e.target.value })}
+                    onFocus={() => setActiveField('pesoSalida')}
+                    onBlur={() => setActiveField(null)}
+                    placeholder="0"
+                    aria-label="Peso de salida en kilos"
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
+                </div>
+                {showValidation && !formData.peso_salida && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
+              </div>
+
+              {/* TOTAL DEPOSITADO */}
+              <div className="mt-6 flex-1 flex flex-col justify-end">
+                <div className="rounded-[22px] bg-simar-marea-suave px-5 py-4 flex items-center justify-between gap-4">
+                  <span className="text-lg font-bold text-simar-texto">Total depositado</span>
+                  <span className="text-[34px] font-extrabold leading-none text-simar-marea-tinta">{calcularTotalDepositado().toFixed(0)} <span className="text-xl text-simar-texto-2">kg</span></span>
+                </div>
 
                 {/* Info de embarcación seleccionada */}
                 {selectedBuque && (
-                  <div className="bg-green-50 dark:bg-green-900/10 rounded-xl p-4 border border-green-200 dark:border-green-900/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-green-700 dark:text-green-400">Embarcación seleccionada</p>
-                        <p className="text-base font-bold text-black dark:text-white">{selectedBuque.nombre_buque}</p>
-                        {selectedBuque.matricula && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">Matrícula: {selectedBuque.matricula}</p>
-                        )}
-                      </div>
+                  <div className="mt-3 rounded-[22px] bg-simar-arrecife-suave px-5 py-4 flex items-center gap-3">
+                    <Check className="w-6 h-6 text-simar-arrecife-tinta flex-shrink-0" strokeWidth={2.6} />
+                    <div>
+                      <p className="text-[15px] font-bold text-simar-arrecife-tinta">Embarcación seleccionada</p>
+                      <p className="text-lg font-bold text-simar-texto">{selectedBuque.nombre_buque}</p>
+                      {selectedBuque.matricula && (
+                        <p className="text-[15px] text-simar-texto-2">Matrícula: {selectedBuque.matricula}</p>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
-            </div>
+            </section>
+          </div>
 
-            {/* Footer con botón Guardar */}
-            <div className="border-t-2 border-gray-800 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-800">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <p className="text-xs text-gray-500 dark:text-gray-400 italic text-center md:text-left">
-                  POR UNA CIUDAD MÁS LIMPIA Y DIGNA PARA TODOS<br />
-                  <span className="font-bold">NO ES COMPROBANTE FISCAL</span>
-                </p>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-8 py-3 bg-green-600 text-white text-lg font-bold rounded-xl hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Guardando...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>GUARDAR RECIBO</span>
-                    </>
-                  )}
-                </button>
+          {/* Documento digitalizado (franja a lo ancho, como en Manifiesto) */}
+          <section className={`simar-aparece bg-simar-superficie border shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7 ${!file && showValidation ? 'border-simar-coral' : 'border-simar-borde'}`} style={{ animationDelay: '0.18s' }}>
+            <div className="flex items-center gap-3 lg:w-[290px] flex-shrink-0">
+              <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
+                <Upload className="w-6 h-6" />
+              </span>
+              <div>
+                <h2 className="text-lg font-extrabold text-simar-texto">Documento</h2>
+                <p className="text-[15px] text-simar-texto-2">Foto o PDF del recibo firmado</p>
               </div>
             </div>
-          </form>
-        </div>
+            <div className={`flex-1 min-h-[64px] rounded-[14px] px-4 py-3 flex items-center border-2 ${file ? 'border-simar-arrecife/50 bg-simar-arrecife-suave' : 'border-dashed border-simar-campo-borde'}`}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,image/*"
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                className="block w-full text-base text-simar-texto file:mr-4 file:min-h-[44px] file:px-5 file:rounded-xl file:border-0 file:text-base file:font-bold file:bg-simar-marea-suave file:text-simar-marea-tinta hover:file:bg-simar-marea hover:file:text-white file:cursor-pointer"
+              />
+            </div>
+          </section>
+
+          {/* Barra de guardar (vidrio, flota sobre el formulario) */}
+          <div className="simar-vidrio sticky bottom-4 z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
+            <p className="flex-1 min-w-[220px] text-base text-simar-texto-2">
+              Por una ciudad más limpia y digna para todos · <span className="font-bold text-simar-texto">No es comprobante fiscal</span>
+            </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                <>
+                  <Check className="w-[22px] h-[22px]" strokeWidth={2.6} />
+                  <span>Guardar recibo</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

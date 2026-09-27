@@ -11,18 +11,18 @@ export default function MensajesPage() {
 
     if (cargando) return <Cargando />;
     if (!asociacion) {
-        return <p className="text-sm text-gray-500 dark:text-gray-400">Tu usuario no está vinculado a una asociación.</p>;
+        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una asociación.</p>;
     }
 
     return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden h-[calc(100vh-190px)] min-h-[480px] flex flex-col">
-            <header className="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md">
+        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-190px)] min-h-[480px] flex flex-col">
+            <header className="px-5 py-4 border-b border-simar-borde flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-simar-marea-suave flex items-center justify-center text-simar-marea-tinta">
                     <Anchor className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">Centro de acopio · {PUERTO_PENASCO.nombre}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Coordina horarios, cantidades y documentación.</p>
+                    <p className="text-base font-bold text-simar-texto">Centro de acopio · {PUERTO_PENASCO.nombre}</p>
+                    <p className="text-[15px] text-simar-texto-2">Coordina horarios, cantidades y documentación.</p>
                 </div>
             </header>
             <Conversacion

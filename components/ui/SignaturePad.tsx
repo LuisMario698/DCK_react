@@ -135,20 +135,20 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
 
   return (
     <div className="w-full">
-      <label className="block text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">
+      <label className="block text-lg font-bold text-simar-texto mb-3">
         {label}
       </label>
       
-      <div className="relative border-2 border-gray-300 rounded-xl overflow-hidden bg-white">
+      <div className="relative border-2 border-simar-campo-borde rounded-xl overflow-hidden bg-white">
         {/* Línea de firma */}
         <div 
-          className="absolute bottom-12 left-4 right-4 border-b-2 border-dashed border-gray-300 pointer-events-none"
+          className="absolute bottom-12 left-4 right-4 border-b-2 border-dashed border-simar-campo-borde pointer-events-none"
         />
         
         {/* Texto indicativo */}
         {!hasSignature && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p className="text-gray-500 text-base">Firme aquí con el dedo o mouse</p>
+            <p className="text-[#6B7785] text-base">Firme aquí con el dedo o mouse</p>
           </div>
         )}
         
@@ -174,7 +174,7 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
         <button 
           type="button"
           onClick={clearCanvas}
-          className="flex-1 py-1.5 px-3 bg-gray-100 text-gray-600 rounded-lg font-medium text-sm hover:bg-gray-200 transition-colors flex items-center justify-center gap-1"
+          className="flex-1 py-1.5 px-3 bg-simar-papel text-simar-texto-2 rounded-lg font-bold text-base hover:bg-simar-borde-suave transition-colors flex items-center justify-center gap-1 min-h-[44px]"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -187,10 +187,10 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
             type="button"
             onClick={handleSave}
             disabled={!hasSignature}
-            className={`flex-1 py-1.5 px-3 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-1 ${
+            className={`flex-1 py-1.5 px-3 rounded-lg font-medium text-base transition-colors flex items-center justify-center gap-1 ${
               hasSignature 
-                ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-simar-marea text-white hover:bg-simar-marea-hover' 
+                : 'bg-simar-borde-suave text-simar-texto-2 cursor-not-allowed'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -32,7 +32,7 @@ export default function PerfilPage() {
 
     if (cargando) return <Cargando />;
     if (!asociacion) {
-        return <p className="text-sm text-gray-500 dark:text-gray-400">Tu usuario no está vinculado a una asociación.</p>;
+        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una asociación.</p>;
     }
 
     const datos = editing && form ? form : aFormulario(asociacion);
@@ -69,15 +69,15 @@ export default function PerfilPage() {
         <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Empresa */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
+                <div className="lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar">
                     <div className="flex items-center justify-between mb-5 gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 rounded-lg bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center flex-shrink-0">
                                 <Building2 className="w-6 h-6" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white truncate">{asociacion.nombre_asociacion}</h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <h3 className="text-lg font-bold text-simar-texto truncate">{asociacion.nombre_asociacion}</h3>
+                                <p className="text-[15px] text-simar-texto-2">
                                     {asociacion.tipo_asociacion || 'Asociación recolectora'} · {asociacion.estado}
                                 </p>
                             </div>
@@ -86,7 +86,7 @@ export default function PerfilPage() {
                             {editing && (
                                 <button
                                     onClick={() => setEditing(false)}
-                                    className="inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:underline"
+                                    className="inline-flex items-center gap-1 text-base font-semibold text-simar-texto-2 hover:underline"
                                 >
                                     <X className="w-4 h-4" /> Cancelar
                                 </button>
@@ -94,7 +94,7 @@ export default function PerfilPage() {
                             <button
                                 onClick={editing ? guardar : empezar}
                                 disabled={guardando}
-                                className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline disabled:opacity-50"
+                                className="inline-flex items-center gap-2 text-base font-semibold text-simar-marea-tinta hover:underline disabled:opacity-50"
                             >
                                 {editing ? <Save className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
                                 {editing ? (guardando ? 'Guardando…' : 'Guardar') : 'Editar'}
@@ -115,9 +115,9 @@ export default function PerfilPage() {
                 </div>
 
                 {/* Tipos de residuo */}
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Tipos de residuo</h3>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                <div className="bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar">
+                    <h3 className="text-lg font-bold text-simar-texto mb-1">Tipos de residuo</h3>
+                    <p className="text-[15px] text-simar-texto-2 mb-4">
                         Materiales que tu empresa recolecta. Recibirás avisos cuando haya nuevos lotes de estos residuos.
                     </p>
                     <div className="flex flex-wrap gap-2">
@@ -129,10 +129,10 @@ export default function PerfilPage() {
                                           key={t}
                                           type="button"
                                           onClick={() => toggleTipo(t)}
-                                          className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                                          className={`px-3 py-1.5 rounded-lg text-base font-medium border transition-all ${
                                               activo
-                                                  ? 'bg-emerald-600 border-emerald-600 text-white'
-                                                  : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-emerald-400'
+                                                  ? 'bg-simar-marea border-simar-marea-tinta text-white'
+                                                  : 'border-simar-campo-borde text-simar-texto-2 hover:border-simar-marea-tinta/30'
                                           }`}
                                       >
                                           {TIPO_RESIDUO_LABEL[t]}
@@ -141,7 +141,7 @@ export default function PerfilPage() {
                               })
                             : datos.tipos_residuo.length > 0
                               ? datos.tipos_residuo.map((t) => <ResiduoBadge key={t} tipo={t} size="md" />)
-                              : <p className="text-sm text-gray-400">Sin especificar: recibirás avisos de todos los residuos.</p>}
+                              : <p className="text-base text-simar-texto-2">Sin especificar: recibirás avisos de todos los residuos.</p>}
                     </div>
                 </div>
             </div>
@@ -177,9 +177,9 @@ function CambioContrasena() {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 shadow-sm max-w-xl">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Seguridad</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">Cuenta: {user?.email}</p>
+        <div className="bg-simar-superficie border border-simar-borde rounded-xl p-6 shadow-simar max-w-xl">
+            <h3 className="text-lg font-bold text-simar-texto mb-1">Seguridad</h3>
+            <p className="text-[15px] text-simar-texto-2 mb-5">Cuenta: {user?.email}</p>
             <div className="space-y-3">
                 <PasswordInput label="Contraseña actual" value={actual} onChange={setActual} autoComplete="current-password" />
                 <PasswordInput label="Nueva contraseña" value={nueva} onChange={setNueva} autoComplete="new-password" />
@@ -188,7 +188,7 @@ function CambioContrasena() {
                     onClick={guardar}
                     cargando={guardando}
                     disabled={!actual || !nueva || !confirmar}
-                    className="!bg-emerald-600 hover:!bg-emerald-700"
+                    className="!bg-simar-marea hover:!bg-[#0E6A50]"
                 >
                     Actualizar contraseña
                 </BotonPrimario>
@@ -217,10 +217,10 @@ function Field({
     ayuda?: string;
 }) {
     const cls =
-        'mt-1 w-full text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500';
+        'mt-1 w-full text-base bg-simar-papel border border-simar-borde rounded-lg px-3 py-2 text-simar-texto focus:outline-none focus:ring-2 focus:ring-simar-marea-tinta';
     return (
         <div className={wide ? 'sm:col-span-2' : ''}>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+            <label className="text-[15px] font-medium text-simar-texto-2 flex items-center gap-1.5">
                 <Icon className="w-3.5 h-3.5" />
                 {label}
             </label>
@@ -231,9 +231,9 @@ function Field({
                     <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className={cls} />
                 )
             ) : (
-                <p className="mt-1 text-sm font-medium text-gray-900 dark:text-white whitespace-pre-wrap">{value || '—'}</p>
+                <p className="mt-1 text-base font-medium text-simar-texto whitespace-pre-wrap">{value || '—'}</p>
             )}
-            {ayuda && <p className="text-[11px] text-gray-400 mt-0.5">{ayuda}</p>}
+            {ayuda && <p className="text-[15px] text-simar-texto-2 mt-0.5">{ayuda}</p>}
         </div>
     );
 }
@@ -251,13 +251,13 @@ function PasswordInput({
 }) {
     return (
         <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</label>
+            <label className="block mb-2 text-[17px] font-bold text-simar-texto">{label}</label>
             <input
                 type="password"
                 value={value}
                 autoComplete={autoComplete}
                 onChange={(e) => onChange(e.target.value)}
-                className="mt-1 w-full text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
             />
         </div>
     );

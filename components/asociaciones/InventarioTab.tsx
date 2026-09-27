@@ -161,28 +161,28 @@ export function InventarioTab() {
                 <KPI
                     label="Tipos publicados"
                     value={`${publicados.length} / ${items.length}`}
-                    icon={<Layers className="w-5 h-5" />}
-                    gradient="from-blue-500 to-blue-700"
+                    icon={<Layers className="w-7 h-7" />}
+                    gradient="bg-simar-marea-suave text-simar-marea-tinta"
                 />
                 <KPI
                     label="Sólidos disponibles"
                     value={`${formatCantidad(totalKg)} kg`}
-                    icon={<Package className="w-5 h-5" />}
-                    gradient="from-emerald-500 to-emerald-700"
+                    icon={<Package className="w-7 h-7" />}
+                    gradient="bg-simar-arrecife-suave text-simar-arrecife-tinta"
                 />
                 <KPI
                     label="Líquidos disponibles"
                     value={`${formatCantidad(totalL)} L`}
-                    icon={<Droplets className="w-5 h-5" />}
-                    gradient="from-orange-500 to-amber-600"
+                    icon={<Droplets className="w-7 h-7" />}
+                    gradient="bg-simar-coral-suave text-simar-coral"
                 />
             </div>
 
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-                <div className="flex items-center justify-between px-5 sm:px-7 py-5 border-b border-gray-200 dark:border-gray-800 gap-3 flex-wrap">
+            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
+                <div className="flex items-center justify-between px-5 sm:px-7 py-5 border-b border-simar-borde gap-3 flex-wrap">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Inventario del centro de acopio</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                        <h3 className="text-lg font-bold text-simar-texto">Inventario del centro de acopio</h3>
+                        <p className="text-base text-simar-texto-2 mt-0.5">
                             Los residuos publicados son visibles para las empresas recolectoras. Al aprobar una
                             solicitud, la cantidad se descuenta del disponible.
                         </p>
@@ -195,7 +195,7 @@ export function InventarioTab() {
                         }}
                         disabled={tiposLibres.length === 0 || creando}
                         title={tiposLibres.length === 0 ? 'Todos los tipos de residuo ya están en el inventario' : ''}
-                        className="group inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-xl shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group inline-flex items-center gap-2 px-5 py-2.5 bg-simar-marea hover:bg-simar-marea-hover text-white text-base font-bold rounded-xl shadow-simar transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
                     >
                         <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />
                         <span>Agregar residuo</span>
@@ -205,7 +205,7 @@ export function InventarioTab() {
                 <div className="overflow-x-auto">
                     <table className="min-w-full border-collapse">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-slate-700/60 border-b border-gray-200 dark:border-slate-600">
+                            <tr className="bg-simar-papel border-b border-simar-borde">
                                 <Th>Tipo</Th>
                                 <Th>Disponible</Th>
                                 <Th className="hidden md:table-cell">Por recolectar</Th>
@@ -215,7 +215,7 @@ export function InventarioTab() {
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
                             {creando && (
                                 <FilaEdicion
                                     draft={draft}
@@ -241,28 +241,28 @@ export function InventarioTab() {
                                 ) : (
                                     <tr
                                         key={item.id}
-                                        className="group bg-white dark:bg-slate-800 hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-colors duration-150 animate-fade-in"
+                                        className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150"
                                         style={{ animationDelay: `${idx * 30}ms` }}
                                     >
                                         <td className="px-4 md:px-5 py-3.5">
                                             <ResiduoBadge tipo={item.tipo} />
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 whitespace-nowrap">
-                                            <span className="text-sm font-bold text-gray-900 dark:text-white">
+                                            <span className="text-base font-bold text-simar-texto">
                                                 {formatCantidad(item.cantidad)}
                                             </span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">{item.unidad}</span>
+                                            <span className="text-[15px] text-simar-texto-2 ml-1">{item.unidad}</span>
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 hidden md:table-cell whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td className="px-4 md:px-5 py-3.5 hidden md:table-cell whitespace-nowrap text-base text-simar-texto-2">
                                             {reservado[item.tipo] ? `${formatCantidad(reservado[item.tipo]!)} ${item.unidad}` : '—'}
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5">
                                             <button
                                                 onClick={() => togglePublicado(item)}
-                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-semibold transition-colors ${
                                                     item.publicado
-                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200'
-                                                        : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 hover:bg-gray-200'
+                                                        ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta hover:bg-simar-arrecife-suave'
+                                                        : 'bg-simar-papel text-simar-texto-2 hover:bg-simar-borde-suave'
                                                 }`}
                                                 title={item.publicado ? 'Ocultar a las asociaciones' : 'Publicar a las asociaciones'}
                                             >
@@ -270,28 +270,30 @@ export function InventarioTab() {
                                                 {item.publicado ? 'Publicado' : 'Oculto'}
                                             </button>
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 max-w-[220px] truncate hidden lg:table-cell">
-                                            {item.notas || <span className="text-gray-300 dark:text-gray-600">—</span>}
+                                        <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 max-w-[220px] truncate hidden lg:table-cell">
+                                            {item.notas || <span className="text-simar-texto-2">—</span>}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
+                                        <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden sm:table-cell whitespace-nowrap">
                                             {formatearFecha(item.updated_at)}
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 text-right">
-                                            <div className="inline-flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                            <div className="inline-flex items-center gap-2">
                                                 <button
                                                     onClick={() => startEdit(item)}
-                                                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all"
+                                                    className="min-h-[44px] flex items-center gap-1.5 px-3.5 rounded-xl text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors"
                                                     title="Editar"
+                                                    aria-label="Editar"
                                                 >
-                                                    <Pencil className="w-3.5 h-3.5" />
+                                                    <Pencil className="w-[18px] h-[18px]" />
                                                     <span className="hidden sm:inline">Editar</span>
                                                 </button>
                                                 <button
                                                     onClick={() => remove(item)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+                                                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-simar-coral-suave text-simar-coral hover:bg-[#A63F0E] hover:text-white transition-colors"
                                                     title="Eliminar"
+                                                    aria-label="Eliminar"
                                                 >
-                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                    <Trash2 className="w-[18px] h-[18px]" />
                                                 </button>
                                             </div>
                                         </td>
@@ -302,10 +304,10 @@ export function InventarioTab() {
                                 <tr>
                                     <td colSpan={7} className="px-6 py-16 text-center">
                                         <div className="inline-flex flex-col items-center gap-3">
-                                            <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                                <Package className="w-7 h-7 text-blue-500" />
+                                            <div className="w-14 h-14 rounded-full bg-simar-marea-suave flex items-center justify-center">
+                                                <Package className="w-7 h-7 text-simar-marea-tinta" />
                                             </div>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            <p className="text-base text-simar-texto-2">
                                                 Aún no hay residuos en el inventario. Agrega el primero para que las
                                                 asociaciones puedan solicitarlo.
                                             </p>
@@ -339,9 +341,9 @@ function FilaEdicion({
     onCancel: () => void;
 }) {
     const campo =
-        'px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+        'px-3 py-2 text-base rounded-lg border border-simar-campo-borde bg-simar-superficie text-simar-texto focus:ring-2 focus:ring-simar-marea-tinta focus:border-transparent';
     return (
-        <tr className="bg-blue-50/60 dark:bg-blue-900/10 animate-fade-in border-l-2 border-blue-500">
+        <tr className="bg-simar-marea-suave/60 border-l-2 border-simar-marea-tinta">
             <td className="px-4 md:px-5 py-3">
                 <select
                     value={draft.tipo}
@@ -369,19 +371,19 @@ function FilaEdicion({
                         onKeyDown={(e) => e.key === 'Enter' && onSave()}
                         className={`w-28 ${campo}`}
                     />
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-[15px] text-simar-texto-2">
                         {draft.tipo ? UNIDAD_POR_TIPO[draft.tipo] : ''}
                     </span>
                 </div>
             </td>
             <td className="px-4 md:px-5 py-3 hidden md:table-cell" />
             <td className="px-4 md:px-5 py-3">
-                <label className="inline-flex items-center gap-2 text-xs font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                <label className="inline-flex items-center gap-2 text-[15px] font-medium text-simar-texto cursor-pointer">
                     <input
                         type="checkbox"
                         checked={draft.publicado}
                         onChange={(e) => setDraft({ ...draft, publicado: e.target.checked })}
-                        className="w-4 h-4 rounded accent-blue-600"
+                        className="w-4 h-4 rounded accent-simar-marea-tinta"
                     />
                     Publicado
                 </label>
@@ -400,14 +402,14 @@ function FilaEdicion({
                     <button
                         onClick={onSave}
                         disabled={guardando}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-xs font-semibold shadow-sm transition-all active:scale-95"
+                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-white bg-[#127A5D] hover:bg-[#0E6A50] disabled:opacity-60 text-[15px] font-bold shadow-simar transition-all min-h-[52px]"
                     >
                         {guardando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                         Guardar
                     </button>
                     <button
                         onClick={onCancel}
-                        className="p-2 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+                        className="p-2 rounded-lg text-simar-texto-2 hover:text-simar-coral hover:bg-simar-coral-suave transition-all min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                         title="Cancelar"
                     >
                         <X className="w-4 h-4" />
@@ -420,7 +422,7 @@ function FilaEdicion({
 
 function Th({ children, className = '' }: { children?: React.ReactNode; className?: string }) {
     return (
-        <th className={`px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap ${className}`}>
+        <th className={`px-4 md:px-5 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 whitespace-nowrap ${className}`}>
             {children}
         </th>
     );
@@ -437,17 +439,15 @@ function KPI({
     icon: React.ReactNode;
     gradient: string;
 }) {
+    // Mismo dibujo que TarjetaDato (components/ui/simar.tsx); "gradient" es el tono del círculo
     return (
-        <div className="group relative bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`} />
-            <div className="relative flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
-                    <p className="mt-2 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{value}</p>
-                </div>
-                <div className={`flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                    {icon}
-                </div>
+        <div className="bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-5 flex items-center gap-4">
+            <span className={`w-14 h-14 flex-shrink-0 rounded-full flex items-center justify-center ${gradient}`}>
+                {icon}
+            </span>
+            <div className="min-w-0">
+                <p className="text-[17px] text-simar-texto-2 leading-tight">{label}</p>
+                <p className="text-[30px] font-extrabold leading-tight text-simar-texto">{value}</p>
             </div>
         </div>
     );

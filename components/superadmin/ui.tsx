@@ -40,18 +40,18 @@ export function Tarjeta({
 }) {
     return (
         <section
-            className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm ${className}`}
+            className={`bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar ${className}`}
         >
             {(titulo || acciones) && (
-                <header className="flex flex-wrap items-start justify-between gap-3 px-5 pt-5 pb-3">
+                <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-6 pb-3">
                     <div className="min-w-0">
-                        {titulo && <h2 className="text-sm font-bold text-gray-900 dark:text-white">{titulo}</h2>}
-                        {subtitulo && <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitulo}</p>}
+                        {titulo && <h2 className="text-[20px] font-extrabold text-simar-texto">{titulo}</h2>}
+                        {subtitulo && <p className="text-[15px] text-simar-texto-2 mt-0.5">{subtitulo}</p>}
                     </div>
                     {acciones && <div className="flex flex-wrap items-center gap-2">{acciones}</div>}
                 </header>
             )}
-            <div className={sinPadding ? '' : 'px-5 pb-5'}>{children}</div>
+            <div className={sinPadding ? '' : 'px-6 pb-6'}>{children}</div>
         </section>
     );
 }
@@ -72,21 +72,21 @@ export function Kpi({
     alerta?: boolean;
 }) {
     return (
-        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-5 shadow-sm">
+        <div className="bg-simar-superficie border border-simar-borde rounded-[22px] p-5 shadow-simar">
             <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">{label}</span>
+                <span className="text-[17px] text-simar-texto-2">{label}</span>
                 <span
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
                         alerta
-                            ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
-                            : 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300'
+                            ? 'bg-simar-coral-suave text-simar-coral'
+                            : 'bg-simar-violeta-suave text-simar-violeta'
                     }`}
                 >
-                    <Icono className="w-4 h-4" />
+                    <Icono className="w-6 h-6" />
                 </span>
             </div>
-            <p className="mt-3 text-2xl font-bold text-gray-900 dark:text-white">{valor}</p>
-            {detalle && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{detalle}</p>}
+            <p className="mt-3 text-[30px] font-extrabold leading-tight text-simar-texto">{valor}</p>
+            {detalle && <p className="mt-1 text-[15px] text-simar-texto-2">{detalle}</p>}
         </div>
     );
 }
@@ -102,7 +102,7 @@ const ICONO_ESTADO: Record<EstadoSuscripcion, LucideIcon> = {
 export function EstadoSuscripcionBadge({ estado }: { estado: EstadoSuscripcion | null }) {
     if (!estado) {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-semibold whitespace-nowrap bg-simar-papel text-simar-texto-2">
                 <Clock className="w-3.5 h-3.5" />
                 Sin suscripción
             </span>
@@ -111,7 +111,7 @@ export function EstadoSuscripcionBadge({ estado }: { estado: EstadoSuscripcion |
     const Icono = ICONO_ESTADO[estado];
     return (
         <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${ESTADO_SUSCRIPCION_COLOR[estado]}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-semibold whitespace-nowrap ${ESTADO_SUSCRIPCION_COLOR[estado]}`}
         >
             <Icono className="w-3.5 h-3.5" />
             {ESTADO_SUSCRIPCION_LABEL[estado]}
@@ -128,19 +128,19 @@ export const ROL_LABEL: Record<RolUsuario, string> = {
 export function RolBadge({ rol, superadmin = false }: { rol: RolUsuario; superadmin?: boolean }) {
     if (superadmin) {
         return (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[15px] font-semibold whitespace-nowrap bg-simar-violeta-suave text-simar-violeta">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Superadmin
             </span>
         );
     }
     const cls = {
-        admin: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-        recolector: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-        pendiente: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+        admin: 'bg-simar-marea-suave text-simar-marea-tinta',
+        recolector: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
+        pendiente: 'bg-simar-papel text-simar-texto-2',
     }[rol];
     return (
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>
+        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[15px] font-semibold whitespace-nowrap ${cls}`}>
             {ROL_LABEL[rol]}
         </span>
     );
@@ -166,13 +166,13 @@ export function Interruptor({
             aria-label={etiqueta}
             disabled={disabled}
             onClick={() => onChange(!activo)}
-            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-900 ${
-                activo ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-700'
+            className={`relative inline-flex h-8 w-14 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-simar-marea-tinta focus-visible:ring-offset-2 ${
+                activo ? 'bg-[#5B3FA8]' : 'bg-simar-campo-borde'
             }`}
         >
             <span
-                className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                    activo ? 'translate-x-5' : 'translate-x-0.5'
+                className={`inline-block h-7 w-7 rounded-full bg-white shadow-simar transition-transform ${
+                    activo ? 'translate-x-[26px]' : 'translate-x-0.5'
                 }`}
             />
         </button>
@@ -189,22 +189,22 @@ export function Pestanas<T extends string>({
     onChange: (id: T) => void;
 }) {
     return (
-        <div role="tablist" className="inline-flex p-1 rounded-xl bg-gray-100 dark:bg-gray-800/60 gap-1">
+        <div role="tablist" className="inline-flex flex-wrap p-1.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar gap-1">
             {pestanas.map((p) => (
                 <button
                     key={p.id}
                     role="tab"
                     aria-selected={activa === p.id}
                     onClick={() => onChange(p.id)}
-                    className={`px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                    className={`min-h-[48px] px-5 rounded-xl text-base font-bold transition-colors ${
                         activa === p.id
-                            ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                            ? 'bg-simar-marea text-white'
+                            : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
                     }`}
                 >
                     {p.label}
                     {!!p.contador && (
-                        <span className="ml-1.5 text-xs font-bold text-violet-600 dark:text-violet-300">{p.contador}</span>
+                        <span className={`ml-1.5 text-[15px] font-bold ${activa === p.id ? 'text-white' : 'text-simar-violeta'}`}>{p.contador}</span>
                     )}
                 </button>
             ))}
@@ -225,11 +225,11 @@ export function EstadoVacio({
 }) {
     return (
         <div className="flex flex-col items-center text-center py-12 px-4">
-            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center mb-3">
-                <Icono className="w-6 h-6" />
+            <div className="w-16 h-16 rounded-full bg-simar-papel text-simar-texto-2 flex items-center justify-center mb-3">
+                <Icono className="w-8 h-8" />
             </div>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">{titulo}</p>
-            {texto && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-sm">{texto}</p>}
+            <p className="text-lg font-bold text-simar-texto">{titulo}</p>
+            {texto && <p className="text-base text-simar-texto-2 mt-1 max-w-sm">{texto}</p>}
             {accion && <div className="mt-4">{accion}</div>}
         </div>
     );
@@ -248,13 +248,13 @@ export function BotonIcono({
             title={etiqueta}
             aria-label={etiqueta}
             {...props}
-            className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            className={`w-11 h-11 inline-flex items-center justify-center rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                 peligro
-                    ? 'text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/20'
-                    : 'text-gray-400 hover:text-gray-900 hover:bg-gray-100 dark:hover:text-white dark:hover:bg-gray-800'
+                    ? 'text-simar-texto-2 hover:text-simar-coral hover:bg-simar-coral-suave'
+                    : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
             }`}
         >
-            <Icono className="w-4 h-4" />
+            <Icono className="w-5 h-5" />
         </button>
     );
 }
@@ -298,12 +298,12 @@ export function ModalConfirmar({
 
     return (
         <Modal titulo={titulo} onClose={onClose}>
-            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+            <div className="space-y-4 text-base text-simar-texto-2">
                 {children}
                 {textoRequerido && (
-                    <label className="block">
-                        <span className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">
-                            Escribe <strong className="font-mono text-gray-900 dark:text-white">{textoRequerido}</strong> para confirmar
+                    <label className="block text-[17px] font-bold text-simar-texto">
+                        <span className="block text-[15px] font-semibold text-simar-texto-2 mb-1">
+                            Escribe <strong className="font-mono text-simar-texto">{textoRequerido}</strong> para confirmar
                         </span>
                         <input
                             className={inputCls}
@@ -314,15 +314,15 @@ export function ModalConfirmar({
                         />
                     </label>
                 )}
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex flex-wrap justify-end gap-3 pt-2">
                     <BotonSecundario onClick={onClose} disabled={enviando}>
                         Cancelar
                     </BotonSecundario>
                     <button
                         onClick={confirmar}
                         disabled={bloqueado || enviando}
-                        className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 ${
-                            peligro ? 'bg-red-600 hover:bg-red-700' : 'bg-violet-600 hover:bg-violet-700'
+                        className={`inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${
+                            peligro ? 'bg-[#A63F0E] hover:bg-[#8C340B]' : 'bg-[#5B3FA8] hover:bg-[#4A3289]'
                         }`}
                     >
                         {enviando ? 'Procesando…' : textoConfirmar}
@@ -337,8 +337,8 @@ export function ModalConfirmar({
 export const filtroCls = inputCls.replace('w-full ', '');
 
 export const thCls =
-    'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap';
-export const tdCls = 'px-4 py-3 text-sm text-gray-700 dark:text-gray-300 align-middle';
+    'px-4 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 whitespace-nowrap';
+export const tdCls = 'px-4 py-3 text-base text-simar-texto align-middle';
 
 // ─────────────────────────────────────────────────────────────────────
 // Formatos

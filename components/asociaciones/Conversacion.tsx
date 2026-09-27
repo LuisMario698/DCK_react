@@ -86,39 +86,34 @@ export function Conversacion({
         }
     };
 
-    const burbujaMia =
-        acento === 'blue'
-            ? 'bg-gradient-to-br from-blue-600 to-blue-700 shadow-blue-600/20'
-            : 'bg-gradient-to-br from-emerald-600 to-teal-600 shadow-emerald-600/20';
-    const boton =
-        acento === 'blue'
-            ? 'from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
-            : 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700';
+    // Colores sólidos del lenguaje SiMAR (sin degradados). Verde fijo #127A5D: 5.3:1 con blanco en ambos temas.
+    const burbujaMia = acento === 'blue' ? 'bg-simar-marea' : 'bg-[#127A5D]';
+    const boton = acento === 'blue' ? 'bg-simar-marea hover:bg-simar-marea-hover' : 'bg-[#127A5D] hover:bg-[#0E6A50]';
 
     return (
         <div className="flex flex-col min-h-0 flex-1">
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950/50 dark:to-gray-900 custom-scrollbar">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3 bg-simar-papel custom-scrollbar">
                 {cargando && (
-                    <div className="h-full flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Cargando mensajes…
+                    <div className="h-full flex items-center justify-center text-lg text-simar-texto-2 gap-2.5">
+                        <Loader2 className="w-5 h-5 animate-spin" /> Cargando mensajes…
                     </div>
                 )}
                 {!cargando && mensajes.length === 0 && (
-                    <div className="h-full flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">{vacio}</div>
+                    <div className="h-full flex items-center justify-center text-lg text-simar-texto-2">{vacio}</div>
                 )}
                 {mensajes.map((m) => {
                     const mio = m.autor_rol === miRol;
                     return (
-                        <div key={m.id} className={`flex animate-fade-in ${mio ? 'justify-end' : 'justify-start'}`}>
+                        <div key={m.id} className={`flex ${mio ? 'justify-end' : 'justify-start'}`}>
                             <div
-                                className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm shadow-sm ${
+                                className={`max-w-[75%] px-4 py-3 rounded-2xl text-lg ${
                                     mio
                                         ? `${burbujaMia} text-white rounded-br-md`
-                                        : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-bl-md'
+                                        : 'bg-simar-superficie text-simar-texto border border-simar-borde rounded-bl-md'
                                 }`}
                             >
                                 <p className="leading-relaxed whitespace-pre-wrap break-words">{m.texto}</p>
-                                <p className={`text-[10px] mt-1 font-medium ${mio ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>
+                                <p className={`text-[15px] mt-1 ${mio ? 'text-white/85' : 'text-simar-texto-2'}`}>
                                     {tiempoRelativo(m.created_at)}
                                     {mio && m.leido_at && ' · Leído'}
                                 </p>
@@ -128,8 +123,8 @@ export function Conversacion({
                 })}
             </div>
 
-            <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-                <div className="flex items-end gap-2 bg-gray-50 dark:bg-gray-800 rounded-xl p-2 border border-gray-200 dark:border-gray-700 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+            <div className="p-4 border-t border-simar-borde bg-simar-superficie">
+                <div className="flex items-end gap-2 bg-simar-superficie rounded-2xl p-2 border-2 border-simar-campo-borde focus-within:border-simar-marea-tinta transition-colors">
                     <textarea
                         value={borrador}
                         onChange={(e) => setBorrador(e.target.value)}
@@ -142,21 +137,21 @@ export function Conversacion({
                         placeholder="Escribe un mensaje…"
                         rows={1}
                         maxLength={2000}
-                        className="flex-1 resize-none px-2 py-1.5 max-h-32 text-sm bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none"
+                        className="flex-1 resize-none px-2 py-2.5 max-h-32 text-lg bg-transparent text-simar-texto placeholder:text-simar-texto-3 focus:outline-none"
                     />
                     <button
                         onClick={enviar}
                         disabled={!borrador.trim() || enviando}
-                        className={`p-2.5 rounded-lg bg-gradient-to-br ${boton} disabled:from-gray-300 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-700 disabled:cursor-not-allowed text-white shadow-md transition-all active:scale-95`}
+                        className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl ${boton} disabled:bg-simar-borde disabled:text-simar-texto-2 disabled:cursor-not-allowed text-white transition-colors`}
                         title="Enviar"
                         aria-label="Enviar"
                     >
-                        {enviando ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        {enviando ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     </button>
                 </div>
-                <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1.5 ml-2">
-                    <kbd className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800 font-mono text-[10px]">Enter</kbd> para enviar ·{' '}
-                    <kbd className="px-1 py-0.5 rounded bg-gray-100 dark:bg-gray-800 font-mono text-[10px]">Shift + Enter</kbd> para salto de línea
+                <p className="text-[15px] text-simar-texto-2 mt-2 ml-2">
+                    <kbd className="px-1.5 py-0.5 rounded-md bg-simar-papel font-sans font-bold text-[15px]">Enter</kbd> para enviar ·{' '}
+                    <kbd className="px-1.5 py-0.5 rounded-md bg-simar-papel font-sans font-bold text-[15px]">Shift + Enter</kbd> para salto de línea
                 </p>
             </div>
         </div>

@@ -92,12 +92,12 @@ export default function MapaPage() {
                         color: '#f59e0b',
                     },
                 ].map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm">
+                    <div key={label} className="bg-simar-superficie border border-simar-borde rounded-xl p-4 shadow-simar">
                         <div className="flex items-center gap-2 mb-2">
                             <Icon className="w-4 h-4" style={{ color }} />
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</span>
+                            <span className="text-[15px] font-medium text-simar-texto-2">{label}</span>
                         </div>
-                        <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">{value}</div>
+                        <div className="text-lg sm:text-2xl font-extrabold text-simar-texto truncate">{value}</div>
                     </div>
                 ))}
             </div>
@@ -109,29 +109,29 @@ export default function MapaPage() {
                 </div>
 
                 {/* Panel lateral: inventario del centro de acopio */}
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden flex flex-col shadow-sm" style={{ minHeight: 520 }}>
-                    <div className="p-5 border-b border-gray-200 dark:border-gray-800">
-                        <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                <div className="bg-simar-superficie border border-simar-borde rounded-xl overflow-hidden flex flex-col shadow-simar" style={{ minHeight: 520 }}>
+                    <div className="p-5 border-b border-simar-borde">
+                        <div className="flex items-center gap-2 text-[15px] text-simar-texto-2 mb-1">
                             <MapPin className="w-3.5 h-3.5" />
                             <span>{PUERTO_PENASCO.region}</span>
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <Anchor className="w-5 h-5 text-emerald-500" />
+                        <h3 className="text-xl font-extrabold text-simar-texto flex items-center gap-2">
+                            <Anchor className="w-5 h-5 text-simar-marea-tinta" />
                             {PUERTO_PENASCO.nombre}
                         </h3>
                         <span
-                            className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                            className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-bold ${
                                 disponibles.length > 0
-                                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
-                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                                    ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta'
+                                    : 'bg-simar-papel text-simar-texto-2'
                             }`}
                         >
-                            <span className={`w-1.5 h-1.5 rounded-full ${disponibles.length > 0 ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${disponibles.length > 0 ? 'bg-[#127A5D]' : 'bg-simar-campo-borde'}`} />
                             {disponibles.length > 0 ? 'Con residuos disponibles' : 'Sin disponibilidad por ahora'}
                         </span>
                     </div>
 
-                    <div className="relative w-full h-36 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <div className="relative w-full h-36 overflow-hidden border-b border-simar-borde">
                         <Image
                             src={PUERTO_PENASCO.imagen}
                             alt={`Vista de ${PUERTO_PENASCO.nombre}`}
@@ -143,11 +143,11 @@ export default function MapaPage() {
 
                     <div className="p-5 flex-1 overflow-y-auto">
                         <div className="flex items-center justify-between mb-3">
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-gray-500">Residuos publicados</p>
+                            <p className="text-[15px] font-bold text-simar-texto-2">Residuos publicados</p>
                             {misTipos.length > 0 && (
                                 <button
                                     onClick={() => setSoloMios((v) => !v)}
-                                    className={`inline-flex items-center gap-1 text-[11px] font-semibold ${soloMios ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'}`}
+                                    className={`inline-flex items-center gap-1 text-[15px] font-semibold ${soloMios ? 'text-simar-marea-tinta' : 'text-simar-texto-2'}`}
                                 >
                                     <Filter className="w-3 h-3" />
                                     {soloMios ? 'Sólo los que recolecto' : 'Todos'}
@@ -155,9 +155,9 @@ export default function MapaPage() {
                             )}
                         </div>
                         {visibles.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-simar-texto-2">
                                 <Package className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                                <p className="text-sm">El centro de acopio no tiene residuos publicados.</p>
+                                <p className="text-base">El centro de acopio no tiene residuos publicados.</p>
                             </div>
                         ) : (
                             <ul className="space-y-2.5">
@@ -167,22 +167,22 @@ export default function MapaPage() {
                                     return (
                                         <li
                                             key={r.id}
-                                            className="p-3 rounded-xl border transition-all"
+                                            className="p-3 rounded-xl border transition-all border-simar-borde"
                                             style={{ background: `${accent}0d`, borderColor: `${accent}33` }}
                                         >
                                             <div className="flex items-center justify-between gap-2">
-                                                <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                                                <span className="text-base font-semibold text-simar-texto">
                                                     {TIPO_RESIDUO_LABEL[r.tipo]}
                                                 </span>
-                                                <span className="text-sm font-bold tabular-nums" style={{ color: accent }}>
+                                                <span className="text-base font-bold tabular-nums" style={{ color: accent }}>
                                                     {formatCantidad(r.cantidad)} {r.unidad}
                                                 </span>
                                             </div>
-                                            {r.notas && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{r.notas}</p>}
+                                            {r.notas && <p className="text-[15px] text-simar-texto-2 mt-1">{r.notas}</p>}
                                             <button
                                                 onClick={() => setSolicitar(r)}
                                                 disabled={agotado || bloqueada}
-                                                className="mt-2 w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-lg text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                                className="mt-3 w-full min-h-[52px] inline-flex items-center justify-center gap-2 text-[17px] font-bold rounded-2xl text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all min-h-[52px]"
                                             >
                                                 <Send className="w-3.5 h-3.5" />
                                                 {agotado ? 'Agotado' : 'Solicitar recolección'}
@@ -194,9 +194,9 @@ export default function MapaPage() {
                         )}
                     </div>
 
-                    <div className="p-4 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
+                    <div className="p-4 border-t border-simar-borde text-[15px] text-simar-texto-2">
                         ¿Dudas sobre un residuo?{' '}
-                        <Link href={`/${locale}/dashboard-recolector/mensajes`} className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+                        <Link href={`/${locale}/dashboard-recolector/mensajes`} className="font-bold text-simar-marea-tinta underline-offset-4 hover:underline">
                             Escribe al centro de acopio
                         </Link>
                     </div>
@@ -282,7 +282,7 @@ function SolicitarModal({
                 </Campo>
                 <div className="grid grid-cols-2 gap-3 pt-1">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
-                    <BotonPrimario onClick={enviar} cargando={enviando} disabled={invalida} className="!bg-emerald-600 hover:!bg-emerald-700">
+                    <BotonPrimario onClick={enviar} cargando={enviando} disabled={invalida}>
                         <Send className="w-4 h-4" /> Enviar solicitud
                     </BotonPrimario>
                 </div>

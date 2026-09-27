@@ -1,52 +1,23 @@
+import { Menu } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
-import { usePathname } from 'next/navigation';
-import Image from 'next/image';
-import { useTheme } from '@/components/layout/ThemeContext';
+import { LogoSimar } from './LogoSimar';
 
-import logoMobile from '@/Contexto-DCK/logo_dck.png';
-import logoWhite from '@/assets/logo_dck_blanco.png';
-
+/** Barra superior sólo en móvil: botón de menú y logo, en vidrio flotante. */
 export function Header() {
   const { toggleSidebar } = useSidebar();
-  const pathname = usePathname();
-  const { theme } = useTheme();
-
-  // Extract locale from pathname (e.g., "/es/dashboard" -> "es")
-  const locale = (pathname.split('/')[1] || 'es') as 'es' | 'en';
-
-  const logoSrcMobile = theme === 'dark' ? logoWhite : logoMobile;
 
   return (
-    <header className=" lg:hidden h-14 sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 lg:px-6 sticky top-0 z-30 shadow-sm dark:shadow-gray-950/50">
-      {/* Botón hamburguesa para abrir el sidebar - Solo móvil */}
+    <header className="lg:hidden sticky top-3 z-30 mx-3 mt-3 h-16 rounded-3xl simar-vidrio flex items-center gap-3 px-2">
       <button
         onClick={toggleSidebar}
-        className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors flex-shrink-0 lg:hidden"
+        className="w-12 h-12 rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center flex-shrink-0"
         aria-label="Abrir menú"
       >
-        <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
+        <Menu className="w-6 h-6" />
       </button>
-
-      {/* Logo - Solo móvil (Centrado) */}
-      <div className="flex-1 lg:hidden flex justify-center">
-        <div className="relative w-32 h-10">
-          <Image
-            src={logoSrcMobile}
-            alt="SiMAR Logo"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-1 sm:gap-2">
-        {/* Theme Toggle removed - now floating */}
+      <div className="flex-1 flex justify-center pr-16">
+        <LogoSimar tamano={40} />
       </div>
     </header>
   );
 }
-
-

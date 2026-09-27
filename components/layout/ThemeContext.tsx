@@ -12,7 +12,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('dark');
+    const [theme, setTheme] = useState<Theme>('light'); // Diseño SiMAR: claro por defecto (ver DISEÑO_SIMAR.md)
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -29,13 +29,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                     document.documentElement.classList.remove('dark');
                 }
             } else {
-                setTheme('dark');
-                document.documentElement.classList.add('dark');
+                setTheme('light');
+                document.documentElement.classList.remove('dark');
             }
         } catch (e) {
             console.error('Error accessing localStorage:', e);
-            setTheme('dark');
-            document.documentElement.classList.add('dark');
+            setTheme('light');
+            document.documentElement.classList.remove('dark');
         }
     }, []);
 
@@ -58,7 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Renderizamos el Provider SIEMPRE para evitar errores en childrens que usen el hook.
     // Solo evitamos mostrar el contenido si es crítico para el layout shift, 
     // pero para una app dashboard es mejor mostrar contenido y que el tema se ajuste.
-    // Si mounted es false, usamos el valor por defecto ('dark') que es seguro porque es el estado inicial.
+    // Si mounted es false, usamos el valor por defecto ('light') que es seguro porque es el estado inicial.
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>

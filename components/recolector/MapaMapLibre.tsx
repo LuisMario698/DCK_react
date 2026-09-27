@@ -32,12 +32,12 @@ export default function MapaMapLibre({ zoom }: { zoom: number }) {
             <NavigationControl position="bottom-right" showCompass={false} />
             <Marker latitude={lat} longitude={lng} anchor="bottom">
                 <div className="flex flex-col items-center">
-                    <span className="mb-1 px-2.5 py-1 rounded-lg bg-gray-900/90 text-white text-[11px] font-semibold shadow-lg whitespace-nowrap">
+                    <span className="mb-1 px-2.5 py-1 rounded-lg bg-simar-abismo/90 text-white text-[15px] font-semibold shadow-simar whitespace-nowrap">
                         Centro de acopio
                     </span>
                     <span className="relative flex items-center justify-center w-9 h-9">
-                        <span className="absolute inset-0 rounded-full bg-emerald-500/40 animate-ping" />
-                        <span className="relative w-9 h-9 rounded-full bg-emerald-500 border-2 border-white shadow-lg flex items-center justify-center">
+                        <span className="absolute inset-0 rounded-full bg-[#127A5D]/40" />
+                        <span className="relative w-9 h-9 rounded-full bg-[#127A5D] border-2 border-white shadow-simar flex items-center justify-center">
                             <Anchor className="w-4 h-4 text-white" />
                         </span>
                     </span>

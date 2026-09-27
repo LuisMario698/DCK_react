@@ -24,11 +24,11 @@ import type { EntradaAuditoria } from '@/types/database';
 const DIAS_AVISO = 15;
 const ORDEN_ESTADOS: EstadoSuscripcion[] = ['activa', 'prueba', 'vencida', 'suspendida', 'cancelada'];
 const BARRA_ESTADO: Record<EstadoSuscripcion, string> = {
-    activa: 'bg-emerald-500',
-    prueba: 'bg-sky-500',
-    vencida: 'bg-amber-500',
-    suspendida: 'bg-red-500',
-    cancelada: 'bg-gray-400',
+    activa: 'bg-[#127A5D]',
+    prueba: 'bg-simar-marea',
+    vencida: 'bg-[#A63F0E]',
+    suspendida: 'bg-[#A63F0E]',
+    cancelada: 'bg-simar-campo-borde',
 };
 
 interface Datos {
@@ -161,7 +161,7 @@ export default function ResumenSuperadminPage() {
                         resumen.total12 > 0 && (
                             <button
                                 onClick={() => setVerTabla((v) => !v)}
-                                className="text-xs font-semibold text-violet-700 dark:text-violet-300 hover:underline"
+                                className="text-[15px] font-semibold text-simar-violeta hover:underline"
                             >
                                 {verTabla ? 'Ver gráfica' : 'Ver tabla'}
                             </button>
@@ -191,10 +191,10 @@ export default function ResumenSuperadminPage() {
                                 <li key={estado}>
                                     <div className="flex items-center justify-between gap-2">
                                         <EstadoSuscripcionBadge estado={estado} />
-                                        <span className="text-sm font-semibold text-gray-900 dark:text-white tabular-nums">{n}</span>
+                                        <span className="text-base font-semibold text-simar-texto tabular-nums">{n}</span>
                                     </div>
                                     <div
-                                        className="mt-1.5 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden"
+                                        className="mt-1.5 h-1.5 rounded-full bg-simar-papel overflow-hidden"
                                         role="img"
                                         aria-label={`${ESTADO_SUSCRIPCION_LABEL[estado]}: ${n}`}
                                     >
@@ -206,7 +206,7 @@ export default function ResumenSuperadminPage() {
                     </ul>
                     <Link
                         href={`${base}/suscripciones`}
-                        className="mt-5 inline-flex text-xs font-semibold text-violet-700 dark:text-violet-300 hover:underline"
+                        className="mt-5 inline-flex text-[15px] font-semibold text-simar-violeta hover:underline"
                     >
                         Gestionar suscripciones →
                     </Link>
@@ -218,12 +218,12 @@ export default function ResumenSuperadminPage() {
                     {resumen.atencion.length === 0 ? (
                         <EstadoVacio icono={CalendarClock} titulo="Nada por vencer" />
                     ) : (
-                        <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                        <ul className="divide-y divide-simar-borde-suave">
                             {resumen.atencion.map(({ asociacion, estado, dias }) => (
                                 <li key={asociacion.id} className="py-2.5 flex items-center justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{asociacion.nombre_asociacion}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        <p className="text-base font-medium text-simar-texto truncate">{asociacion.nombre_asociacion}</p>
+                                        <p className="text-[15px] text-simar-texto-2">
                                             {dias < 0 ? `Venció hace ${-dias} día(s)` : dias === 0 ? 'Vence hoy' : `Vence en ${dias} día(s)`} ·{' '}
                                             {formatoFecha(asociacion.suscripcion?.vence_el)}
                                         </p>
@@ -247,15 +247,15 @@ export default function ResumenSuperadminPage() {
                             ['Nuevas (30 días)', u.nuevos_30d],
                             ['Activas (30 días)', u.activos_30d],
                         ].map(([label, n]) => (
-                            <div key={label} className="rounded-xl bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5">
-                                <dt className="text-[11px] text-gray-500 dark:text-gray-400">{label}</dt>
-                                <dd className="text-lg font-bold text-gray-900 dark:text-white">{n}</dd>
+                            <div key={label} className="rounded-xl bg-simar-papel px-3 py-2.5">
+                                <dt className="text-[15px] text-simar-texto-2">{label}</dt>
+                                <dd className="text-lg font-bold text-simar-texto">{n}</dd>
                             </div>
                         ))}
                     </dl>
                     <Link
                         href={`${base}/cuentas`}
-                        className="mt-4 inline-flex text-xs font-semibold text-violet-700 dark:text-violet-300 hover:underline"
+                        className="mt-4 inline-flex text-[15px] font-semibold text-simar-violeta hover:underline"
                     >
                         Gestionar cuentas →
                     </Link>
@@ -270,15 +270,15 @@ export default function ResumenSuperadminPage() {
                                 <li key={e.id} className="flex items-start gap-3">
                                     <span
                                         className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
-                                            e.operacion === 'INSERT' ? 'bg-emerald-500' : e.operacion === 'DELETE' ? 'bg-red-500' : 'bg-sky-500'
+                                            e.operacion === 'INSERT' ? 'bg-[#127A5D]' : e.operacion === 'DELETE' ? 'bg-[#A63F0E]' : 'bg-simar-marea'
                                         }`}
                                     />
                                     <div className="min-w-0">
-                                        <p className="text-sm text-gray-900 dark:text-white">
+                                        <p className="text-base text-simar-texto">
                                             <span className="font-semibold">{e.operacion === 'INSERT' ? 'Alta' : e.operacion === 'DELETE' ? 'Baja' : 'Cambio'}</span>{' '}
-                                            en <span className="font-mono text-xs">{e.tabla}</span>
+                                            en <span className="font-mono text-[15px]">{e.tabla}</span>
                                         </p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                        <p className="text-[15px] text-simar-texto-2 truncate">
                                             {e.usuario_email ?? 'Sistema'} · {hace(e.created_at)}
                                         </p>
                                     </div>
@@ -288,14 +288,14 @@ export default function ResumenSuperadminPage() {
                     )}
                     <Link
                         href={`${base}/auditoria`}
-                        className="mt-4 inline-flex text-xs font-semibold text-violet-700 dark:text-violet-300 hover:underline"
+                        className="mt-4 inline-flex text-[15px] font-semibold text-simar-violeta hover:underline"
                     >
                         Ver bitácora completa →
                     </Link>
                 </Tarjeta>
             </div>
 
-            <p className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
+            <p className="flex items-center gap-2 text-[15px] text-simar-texto-2">
                 <CreditCard className="w-3.5 h-3.5" />
                 Importes en MXN. El ingreso mensual recurrente suma las suscripciones activas (las anuales cuentan 1/12 por mes).
             </p>

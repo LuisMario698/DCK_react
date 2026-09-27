@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 // maplibre-gl usa APIs del navegador (WebGL): se carga sólo en el cliente
 const MapaMapLibre = dynamic(() => import('./MapaMapLibre'), {
     ssr: false,
-    loading: () => <div className="w-full h-full animate-pulse bg-gray-100 dark:bg-gray-800" />,
+    loading: () => <div className="w-full h-full animate-pulse bg-simar-papel" />,
 });
 
 /**
@@ -24,7 +24,7 @@ export function MapaCentroAcopio({
     zoom?: number;
 }) {
     return (
-        <div className={`relative isolate w-full ${alto} rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800`}>
+        <div className={`relative isolate w-full ${alto} rounded-xl overflow-hidden bg-simar-papel`}>
             <MapaMapLibre zoom={zoom} />
         </div>
     );

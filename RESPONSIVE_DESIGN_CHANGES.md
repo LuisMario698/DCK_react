@@ -1,3 +1,6 @@
+> **Obsoleto.** Este documento describe el diseño anterior. El lenguaje de diseño vigente está en
+> [`DISEÑO_SIMAR.md`](./DISEÑO_SIMAR.md).
+
 # 📱 Cambios de Diseño Responsivo - Proyecto CIAD
 
 ## 🎯 Resumen General

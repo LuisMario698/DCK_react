@@ -8,14 +8,18 @@ import { useScrollReveal } from './useScrollReveal';
 import { CountUpNumber } from './CountUpNumber';
 import type { LandingStats } from '@/lib/services/landing_stats';
 import {
+    ArrowDown,
     ArrowRight,
+    BookOpen,
+    Clock,
     Droplets,
     Fish,
     Recycle,
     FileCheck,
     ShieldCheck,
+    Sprout,
+    TreePine,
     Waves,
-    Users,
     Anchor,
     LineChart,
     Quote,
@@ -23,7 +27,9 @@ import {
     X,
     ArrowLeft,
     SquareTerminal,
+    type LucideIcon,
 } from 'lucide-react';
+import { LogoSimar } from '@/components/layout/LogoSimar';
 
 type RolGuardado = 'admin' | 'recolector';
 // 'superadmin' = acceso de desarrollador (enlace discreto del footer); no se
@@ -77,6 +83,7 @@ const NAV_LINKS = [
     { href: '#impacto', label: 'Impacto' },
 ];
 
+// color = círculo del ícono, accent = cifra (franja oscura). Ver DISEÑO_SIMAR.md
 const AWARENESS_PANELS = [
     {
         icon: Droplets,
@@ -84,8 +91,8 @@ const AWARENESS_PANELS = [
         stat: '1 L',
         statLabel: 'contamina hasta 1,000,000 L de agua',
         desc: 'Los aceites usados y residuos de diésel derramados en el mar forman películas que impiden el intercambio de oxígeno y afectan toda la cadena alimentaria marina.',
-        color: 'from-amber-500/20 to-orange-500/20',
-        accent: 'text-amber-300',
+        color: 'bg-[rgba(242,193,78,0.16)] text-[#F2C14E]',
+        accent: 'text-[#F2C14E]',
     },
     {
         icon: Fish,
@@ -93,8 +100,8 @@ const AWARENESS_PANELS = [
         stat: '2,000+',
         statLabel: 'especies en el Mar de Cortés',
         desc: 'El Alto Golfo de California es santuario de la vaquita marina y hogar de una de las biodiversidades marinas más ricas del planeta. Cada registro cuenta.',
-        color: 'from-cyan-500/20 to-blue-500/20',
-        accent: 'text-cyan-300',
+        color: 'bg-[rgba(127,224,214,0.16)] text-[#7FE0D6]',
+        accent: 'text-[#7FE0D6]',
     },
     {
         icon: Recycle,
@@ -102,8 +109,8 @@ const AWARENESS_PANELS = [
         stat: '100%',
         statLabel: 'de residuos con destino verificado',
         desc: 'Cada filtro, cada litro de aceite y cada bolsa de basura es rastreada desde la embarcación hasta su disposición final certificada, cerrando el ciclo.',
-        color: 'from-emerald-500/20 to-teal-500/20',
-        accent: 'text-emerald-300',
+        color: 'bg-[rgba(95,209,160,0.16)] text-[#6FD9AE]',
+        accent: 'text-[#6FD9AE]',
     },
     {
         icon: ShieldCheck,
@@ -111,13 +118,13 @@ const AWARENESS_PANELS = [
         stat: 'Anexo V',
         statLabel: 'Convenio Internacional',
         desc: 'MARPOL es la norma internacional que regula la contaminación generada por buques. Nuestro sistema garantiza su cumplimiento con evidencia digital trazable.',
-        color: 'from-blue-500/20 to-indigo-500/20',
-        accent: 'text-blue-300',
+        color: 'bg-[rgba(138,180,248,0.16)] text-[#9DBEF7]',
+        accent: 'text-[#9DBEF7]',
     },
 ];
 
 interface EquivalenciaCard {
-    emoji: string;
+    icon: LucideIcon;
     label: string;
     inputValue: number;
     inputDecimals: number;
@@ -127,9 +134,8 @@ interface EquivalenciaCard {
     impactDecimals: number;
     impactUnit: string;
     impactDescription: string;
-    gradient: string;
-    glowColor: string;
-    accent: string;
+    /** Clases del círculo del ícono (ver DISEÑO_SIMAR.md) */
+    tono: string;
     featured?: boolean;
 }
 
@@ -148,22 +154,22 @@ function ModalRoleCard({
 }) {
     const s =
         accent === 'blue'
-            ? { wrap: 'hover:border-blue-500/60 hover:bg-blue-500/5', icon: 'bg-blue-500/10 text-blue-300', arrow: 'text-blue-400' }
-            : { wrap: 'hover:border-emerald-500/60 hover:bg-emerald-500/5', icon: 'bg-emerald-500/10 text-emerald-300', arrow: 'text-emerald-400' };
+            ? { wrap: 'hover:border-simar-marea-tinta', icon: 'bg-simar-marea-suave text-simar-marea-tinta', arrow: 'text-simar-marea-tinta' }
+            : { wrap: 'hover:border-simar-arrecife', icon: 'bg-simar-arrecife-suave text-simar-arrecife-tinta', arrow: 'text-simar-arrecife-tinta' };
     return (
         <button
             type="button"
             onClick={onClick}
-            className={`group text-left w-full border border-white/10 rounded-2xl p-5 transition-all duration-200 ${s.wrap} focus:outline-none`}
+            className={`group text-left w-full rounded-3xl border-2 border-simar-borde bg-simar-superficie p-5 md:p-6 flex flex-col gap-2.5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 ${s.wrap}`}
         >
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${s.icon}`}>
-                <Icon className="w-5 h-5" />
-            </div>
-            <p className="text-sm font-bold text-white mb-1">{title}</p>
-            <p className="text-xs text-slate-400 leading-snug">{desc}</p>
-            <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${s.arrow}`}>
-                Continuar <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
-            </div>
+            <span className={`w-14 h-14 rounded-full flex items-center justify-center ${s.icon}`}>
+                <Icon className="w-7 h-7" />
+            </span>
+            <span className="text-xl md:text-[21px] font-extrabold text-simar-texto">{title}</span>
+            <span className="text-[17px] leading-snug text-simar-texto-2">{desc}</span>
+            <span className={`mt-1 flex items-center gap-1.5 text-[17px] font-bold ${s.arrow}`}>
+                Continuar <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-0.5 transition-transform" />
+            </span>
         </button>
     );
 }
@@ -183,7 +189,7 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
 
     return [
         {
-            emoji: '🌊',
+            icon: Waves,
             label: 'Agua protegida',
             inputValue: aceite,
             inputDecimals: 1,
@@ -193,13 +199,11 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: piscinas >= 100 ? 0 : 1,
             impactUnit: 'piscinas olímpicas',
             impactDescription: 'de agua que no se contaminó',
-            gradient: 'from-amber-400 via-orange-400 to-amber-500',
-            glowColor: 'shadow-amber-500/40',
-            accent: 'text-amber-300',
+            tono: 'bg-white text-[#1B5FC9]',
             featured: true,
         },
         {
-            emoji: '🐢',
+            icon: Fish,
             label: 'Mar limpio',
             inputValue: basuraKg,
             inputDecimals: 1,
@@ -209,12 +213,10 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: 0,
             impactUnit: 'bolsas de plástico',
             impactDescription: 'que no llegaron al océano',
-            gradient: 'from-cyan-400 via-teal-400 to-cyan-500',
-            glowColor: 'shadow-cyan-500/40',
-            accent: 'text-cyan-300',
+            tono: 'bg-[#E4F5F7] text-[#0E7C8A]',
         },
         {
-            emoji: '🌳',
+            icon: TreePine,
             label: 'Árboles en pie',
             inputValue: hojas,
             inputDecimals: 0,
@@ -224,12 +226,10 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: arboles >= 10 ? 0 : 2,
             impactUnit: 'árboles',
             impactDescription: 'que siguen absorbiendo CO₂',
-            gradient: 'from-emerald-400 via-green-400 to-emerald-500',
-            glowColor: 'shadow-emerald-500/40',
-            accent: 'text-emerald-300',
+            tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
         },
         {
-            emoji: '🌱',
+            icon: Sprout,
             label: 'Suelo protegido',
             inputValue: totalFiltros,
             inputDecimals: 0,
@@ -239,12 +239,10 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: 0,
             impactUnit: 'litros de tierra',
             impactDescription: 'libres de contaminación',
-            gradient: 'from-orange-400 via-red-400 to-orange-500',
-            glowColor: 'shadow-orange-500/40',
-            accent: 'text-orange-300',
+            tono: 'bg-simar-coral-suave text-simar-coral',
         },
         {
-            emoji: '⏳',
+            icon: Clock,
             label: 'Tiempo liberado',
             inputValue: manifiestos,
             inputDecimals: 0,
@@ -254,12 +252,10 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: 0,
             impactUnit: 'horas',
             impactDescription: 'devueltas al cuidado del mar',
-            gradient: 'from-blue-400 via-indigo-400 to-blue-500',
-            glowColor: 'shadow-blue-500/40',
-            accent: 'text-blue-300',
+            tono: 'bg-simar-marea-suave text-simar-marea-tinta',
         },
         {
-            emoji: '📖',
+            icon: BookOpen,
             label: 'Historia viva',
             inputValue: manifiestos,
             inputDecimals: 0,
@@ -269,9 +265,7 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactDecimals: 0,
             impactUnit: 'años',
             impactDescription: 'del Mar de Cortés en evidencia',
-            gradient: 'from-violet-400 via-purple-400 to-violet-500',
-            glowColor: 'shadow-violet-500/40',
-            accent: 'text-violet-300',
+            tono: 'bg-simar-violeta-suave text-simar-violeta',
         },
     ];
 }
@@ -379,39 +373,30 @@ export function VariantCinematic({
     }, [showLoginModal]);
 
     return (
-        <div className="relative min-h-screen w-full overflow-x-hidden bg-slate-950 font-sans text-white selection:bg-cyan-500 selection:text-white antialiased">
-            {/* Navbar */}
+        <div className="simar-claro relative min-h-screen w-full overflow-x-hidden bg-simar-papel font-sans text-simar-texto antialiased">
+            {/* Navbar — vidrio flotante */}
             <nav
-                className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-                    scrolled
-                        ? 'bg-slate-950/85 backdrop-blur-md border-b border-white/10'
-                        : 'bg-gradient-to-b from-black/90 via-black/70 to-black/20'
+                aria-label="Principal"
+                className={`fixed top-3 md:top-6 inset-x-3 md:inset-x-8 z-50 rounded-[30px] transition-[background-color] duration-300 ${
+                    scrolled ? 'simar-vidrio-fuerte' : 'simar-vidrio'
                 }`}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 md:h-24 flex items-center justify-between">
-                    <a
-                        href="#top"
-                        className="group flex items-center gap-4 rounded-full px-3 py-2 transition-all duration-300 hover:bg-white/95 hover:shadow-xl cursor-pointer"
-                        aria-label="SiMAR - Inicio"
-                    >
-                        <img
-                            src="/assets/logo_simar.png"
-                            alt="SiMAR"
-                            className="h-12 md:h-14 w-auto object-contain drop-shadow-lg"
-                        />
-                        <div className="h-8 w-px bg-white/30 transition-colors duration-300 group-hover:bg-black/10 hidden sm:block" />
-                        <div className="hidden sm:flex items-center gap-3">
+                <div className="h-[72px] md:h-[84px] pl-4 md:pl-5 pr-2.5 md:pr-3 flex items-center gap-5">
+                    <a href="#top" className="flex items-center gap-4 rounded-2xl" aria-label="SiMAR - Inicio">
+                        <LogoSimar tamano={46} tono="claro" />
+                        <span aria-hidden="true" className="hidden sm:block h-9 w-px bg-simar-texto/20" />
+                        <span className="hidden sm:flex items-center gap-3">
                             <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
-                            <img src="/assets/logo_ICS.png" alt="ICS" className="h-10 w-auto object-contain" />
-                        </div>
+                            <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
+                        </span>
                     </a>
 
-                    <div className="hidden lg:flex items-center gap-8 text-sm font-semibold tracking-wide text-white/85">
+                    <div className="hidden xl:flex items-center gap-6 ml-auto">
                         {NAV_LINKS.map((link) => (
                             <a
                                 key={link.href}
                                 href={link.href}
-                                className="hover:text-cyan-300 transition-colors relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-[2px] after:bg-cyan-300 after:transition-all hover:after:w-full"
+                                className="min-h-[48px] flex items-center text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
                             >
                                 {link.label}
                             </a>
@@ -420,123 +405,123 @@ export function VariantCinematic({
 
                     <button
                         onClick={openLoginModal}
-                        className="px-5 py-2.5 md:px-6 md:py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-sm md:text-base font-bold rounded-full transition-all shadow-lg shadow-cyan-500/30 hover:scale-105 active:scale-95 cursor-pointer flex items-center gap-2"
+                        className="ml-auto xl:ml-0 min-h-[54px] md:min-h-[58px] px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold transition-colors flex items-center gap-2 cursor-pointer"
                     >
                         Iniciar sesión
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-5 h-5" strokeWidth={2.4} />
                     </button>
                 </div>
             </nav>
 
             {/* Hero */}
-            <header id="top" className="relative h-screen min-h-[640px] flex flex-col justify-center items-center text-center px-6 overflow-hidden">
-                <div className="absolute inset-0 z-0 bg-black">
-                    {MEDIA.map((item, index) => {
-                        const isActive = index === currentIndex;
-                        const isPrev = index === prevIndex;
-                        let zIndex = 0;
-                        let opacity = 'opacity-0';
-                        if (isActive) {
-                            zIndex = 20;
-                            opacity = 'opacity-100';
-                        } else if (isPrev) {
-                            zIndex = 10;
-                            opacity = 'opacity-100';
-                        }
-                        return (
-                            <div
-                                key={index}
-                                className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${opacity}`}
-                                style={{ zIndex }}
+            <header id="top" className="relative overflow-hidden">
+                <svg
+                    aria-hidden="true"
+                    width="900"
+                    height="760"
+                    viewBox="300 -200 600 520"
+                    className="absolute -right-32 top-10 pointer-events-none"
+                >
+                    <ellipse cx="560" cy="40" rx="230" ry="170" style={{ fill: 'var(--simar-blob-1)' }} />
+                    <ellipse cx="700" cy="200" rx="160" ry="120" style={{ fill: 'var(--simar-blob-2)' }} />
+                    <g style={{ fill: 'none', stroke: 'var(--simar-curva)', strokeWidth: 1.5 }}>
+                        <path d="M722 40 C718 57 690 72 674 86 C659 100 648 115 629 124 C610 133 585 136 560 139 C535 142 498 149 478 141 C457 132 448 106 438 89 C429 73 424 57 421 40 C419 23 412 -1 423 -15 C435 -30 466 -40 488 -47 C511 -55 537 -62 560 -60 C583 -59 601 -46 625 -39 C648 -32 685 -30 701 -17 C717 -4 726 23 722 40 Z" />
+                        <path d="M800 40 C791 66 745 84 724 107 C702 130 698 161 671 176 C644 192 598 197 560 198 C522 200 473 199 442 185 C412 171 394 139 377 115 C361 91 349 67 343 40 C337 13 324 -28 343 -49 C362 -70 421 -76 457 -86 C494 -96 525 -107 560 -107 C595 -108 630 -100 666 -90 C702 -81 754 -70 776 -49 C799 -27 809 14 800 40 Z" />
+                    </g>
+                </svg>
+
+                <div className="relative max-w-[1340px] mx-auto px-6 md:px-12 lg:px-24 pt-32 md:pt-44 pb-16 md:pb-24 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[100svh] lg:min-h-[900px]">
+                    <div className="simar-aparece">
+                        <p className="text-lg md:text-xl font-bold text-simar-marea-tinta">Puerto Peñasco · Sonora · México</p>
+                        <h1 className="mt-3.5 font-extrabold leading-none">
+                            <span className="block text-7xl md:text-[104px] tracking-tight">SiMAR</span>
+                            <span className="block mt-3.5 text-2xl md:text-[30px] leading-tight">
+                                Sistema Integral de Manejo Ambiental de Residuos
+                            </span>
+                        </h1>
+                        <p className="mt-6 text-lg md:text-[22px] leading-relaxed text-simar-texto-2 max-w-xl">
+                            Transformando la gestión de residuos marinos con <strong className="text-simar-texto">trazabilidad digital</strong> y
+                            compromiso con el <strong className="text-simar-texto">Mar de Cortés</strong>.
+                        </p>
+                        <div className="mt-8 md:mt-9 flex flex-col sm:flex-row sm:flex-wrap gap-3.5">
+                            <button
+                                onClick={openLoginModal}
+                                className="whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
                             >
+                                Acceder a la plataforma
+                                <ArrowRight className="w-[22px] h-[22px]" strokeWidth={2.4} />
+                            </button>
+                            <a
+                                href="#proyecto"
+                                className="whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-simar-texto text-simar-texto text-lg md:text-xl font-bold hover:bg-simar-superficie transition-colors flex items-center justify-center"
+                            >
+                                Conocer el proyecto
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Carrusel de fotografías del proyecto */}
+                    <figure className="simar-aparece relative m-0 h-[420px] sm:h-[520px] lg:h-[660px] rounded-[40px] overflow-hidden shadow-[0_30px_60px_-36px_rgba(11,34,54,0.6)]" style={{ animationDelay: '0.1s' }}>
+                        {MEDIA.map((item, index) => {
+                            const isActive = index === currentIndex;
+                            const isPrev = index === prevIndex;
+                            let zIndex = 0;
+                            let opacity = 'opacity-0';
+                            if (isActive) {
+                                zIndex = 20;
+                                opacity = 'opacity-100';
+                            } else if (isPrev) {
+                                zIndex = 10;
+                                opacity = 'opacity-100';
+                            }
+                            return (
                                 <img
+                                    key={index}
                                     src={item.src}
                                     alt=""
                                     aria-hidden="true"
-                                    className="h-full w-full object-cover animate-ken-burns"
+                                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[2000ms] ease-in-out ${opacity}`}
+                                    style={{ zIndex }}
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-b from-slate-950/85 via-slate-950/75 to-slate-950/95" />
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                        <div
+                            aria-label={`Fotografía ${currentIndex + 1} de ${MEDIA.length}`}
+                            className="simar-vidrio-fuerte absolute left-1/2 bottom-5 -translate-x-1/2 z-30 rounded-full px-4 py-3 flex items-center gap-2.5"
+                        >
+                            {MEDIA.map((_, index) => (
+                                <span
+                                    key={index}
+                                    aria-hidden="true"
+                                    className={`h-2.5 rounded-full transition-all duration-500 ${index === currentIndex ? 'w-7 bg-simar-texto' : 'w-2.5 bg-simar-texto/30'}`}
+                                />
+                            ))}
+                        </div>
+                    </figure>
                 </div>
 
-                <div className="relative z-30 max-w-5xl space-y-8 animate-fade-in-up">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-400/30 rounded-full backdrop-blur-md">
-                        <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                        <span className="text-cyan-200 text-xs md:text-sm font-semibold tracking-[0.2em] uppercase">
-                            Puerto Peñasco · Sonora · México
-                        </span>
-                    </div>
-
-                    <h1 className="text-5xl sm:text-7xl md:text-[7.5rem] font-extrabold leading-[0.95] tracking-tight text-white drop-shadow-2xl">
-                        SiMAR
-                        <span className="block mt-3 text-2xl sm:text-4xl md:text-6xl font-light text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-200 animate-shimmer-text">
-                            Sistema Integral de Manejo Ambiental de Residuos
-                        </span>
-                    </h1>
-
-                    <p className="text-lg sm:text-xl md:text-2xl text-slate-100 font-light max-w-3xl mx-auto leading-relaxed">
-                        Transformando la gestión de residuos marinos con <strong className="text-cyan-300 font-semibold">trazabilidad digital</strong> y
-                        compromiso con el <strong className="text-cyan-300 font-semibold">Mar de Cortés</strong>.
-                    </p>
-
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                        <button
-                            onClick={openLoginModal}
-                            className="group px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold tracking-wide transition-all shadow-xl shadow-cyan-500/30 flex items-center justify-center gap-2 rounded-full cursor-pointer hover:scale-105 active:scale-95 text-base"
-                        >
-                            Acceder a la plataforma
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                        <a
-                            href="#proyecto"
-                            className="px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold tracking-wide transition-all backdrop-blur-sm flex items-center justify-center gap-2 rounded-full cursor-pointer hover:scale-105 active:scale-95 text-base"
-                        >
-                            Conocer el proyecto
-                        </a>
-                    </div>
-                </div>
-
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 text-white/60 flex flex-col items-center gap-2">
-                    <span className="text-xs tracking-widest uppercase">Desliza</span>
-                    <div className="w-[2px] h-12 bg-gradient-to-b from-cyan-300 to-transparent animate-pulse" />
+                <div aria-hidden="true" className="hidden lg:flex absolute left-24 bottom-10 items-center gap-2.5 text-base text-simar-texto-2">
+                    <ArrowDown className="w-5 h-5" />
+                    Desliza
                 </div>
             </header>
 
             {/* Sección Proyecto */}
-            <section id="proyecto" ref={projectRef} className="relative py-24 md:py-32 px-6 bg-slate-950 overflow-hidden">
-                <div
-                    aria-hidden="true"
-                    className="absolute top-1/2 -left-40 w-[500px] h-[500px] rounded-full bg-cyan-500/10 blur-3xl"
-                />
-                <div
-                    aria-hidden="true"
-                    className="absolute bottom-0 -right-40 w-[500px] h-[500px] rounded-full bg-blue-500/10 blur-3xl"
-                />
-
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="max-w-3xl mb-16 reveal">
-                        <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            El Proyecto
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-                            Tecnología al servicio <br />
-                            del <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">mar</span>.
-                        </h2>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-                        <div className="space-y-6 text-lg leading-relaxed text-slate-300 reveal" data-direction="left">
+            <section id="proyecto" ref={projectRef} className="relative py-20 md:py-28 px-6 bg-simar-superficie overflow-hidden">
+                <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[1fr_540px] gap-12 lg:gap-16 items-center">
+                    <div className="reveal" data-direction="left">
+                        <p className="text-lg font-bold text-simar-marea-tinta">El proyecto</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Tecnología al servicio del mar.</h2>
+                        <div className="mt-6 space-y-4 text-lg md:text-xl leading-relaxed text-simar-texto-2">
                             <p>
                                 Nace de la colaboración entre{' '}
-                                <strong className="text-white">DCK Conciencia y Cultura</strong> —formada por
+                                <strong className="text-simar-texto">DCK Conciencia y Cultura</strong> —formada por
                                 Dayanara, Coral y Karitza— y el{' '}
-                                <strong className="text-white">Instituto Tecnológico Superior de Puerto Peñasco</strong>,
-                                bajo el respaldo de <strong className="text-white">SEMARNAT</strong>.
+                                <strong className="text-simar-texto">Instituto Tecnológico Superior de Puerto Peñasco</strong>,
+                                bajo el respaldo de <strong className="text-simar-texto">SEMARNAT</strong>.
                             </p>
                             <p>
-                                Desarrollamos un sistema web que <strong className="text-cyan-300">digitaliza y centraliza</strong> el
+                                Desarrollamos un sistema web que <strong className="text-simar-texto">digitaliza y centraliza</strong> el
                                 registro de residuos generados por embarcaciones pesqueras —aceites usados, filtros,
                                 plásticos y basura general— reemplazando procesos manuales que durante años
                                 dificultaron la trazabilidad.
@@ -546,127 +531,84 @@ export function VariantCinematic({
                                 un dato que cuenta una historia: la historia del compromiso de Puerto Peñasco
                                 con su mar.
                             </p>
-
-                            <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Users className="w-5 h-5 text-cyan-400" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-white">3</div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider">
-                                        Instituciones
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <FileCheck className="w-5 h-5 text-cyan-400" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-white">
-                                        {stats?.totalManifiestos
-                                            ? stats.totalManifiestos.toLocaleString('es-MX') + (stats.totalManifiestos >= 1000 ? '+' : '')
-                                            : '5,000+'}
-                                    </div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider">
-                                        Manifiestos
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Anchor className="w-5 h-5 text-cyan-400" />
-                                    </div>
-                                    <div className="text-2xl font-bold text-white">1</div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider">
-                                        Puerto pionero
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
-                        <div className="reveal relative h-[520px] rounded-3xl overflow-hidden shadow-2xl group" data-direction="right" data-delay="150">
-                            <img
-                                src="/assets/images/img3.jpeg"
-                                alt="Puerto Peñasco, Sonora"
-                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1500ms]"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-8">
-                                <div className="flex items-center gap-3 text-cyan-300 mb-3">
-                                    <Waves className="w-5 h-5" />
-                                    <span className="text-sm font-semibold tracking-widest uppercase">
-                                        Alto Golfo de California
-                                    </span>
+                        <div className="mt-8 pt-6 border-t border-simar-borde grid grid-cols-3 gap-5">
+                            <div>
+                                <div className="text-3xl md:text-[40px] font-extrabold">3</div>
+                                <div className="text-base md:text-[17px] text-simar-texto-2">Instituciones</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl md:text-[40px] font-extrabold">
+                                    {stats?.totalManifiestos
+                                        ? stats.totalManifiestos.toLocaleString('es-MX') + (stats.totalManifiestos >= 1000 ? '+' : '')
+                                        : '5,000+'}
                                 </div>
-                                <p className="text-white text-lg font-light">
-                                    Una de las regiones marinas más biodiversas y frágiles del planeta.
-                                </p>
+                                <div className="text-base md:text-[17px] text-simar-texto-2">Manifiestos</div>
+                            </div>
+                            <div>
+                                <div className="text-3xl md:text-[40px] font-extrabold">1</div>
+                                <div className="text-base md:text-[17px] text-simar-texto-2">Puerto pionero</div>
                             </div>
                         </div>
                     </div>
+
+                    <figure className="reveal relative m-0 h-[420px] md:h-[560px] rounded-[36px] overflow-hidden" data-direction="right" data-delay="150">
+                        <img
+                            src="/assets/images/img3.jpeg"
+                            alt="Puerto Peñasco, Sonora"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <figcaption className="simar-vidrio-fuerte absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4">
+                            <span className="block text-xl font-extrabold">Alto Golfo de California</span>
+                            <span className="block mt-0.5 text-[17px] text-simar-texto-2">
+                                Una de las regiones marinas más biodiversas y frágiles del planeta.
+                            </span>
+                        </figcaption>
+                    </figure>
                 </div>
             </section>
 
             {/* Don Francisco */}
-            <section
-                id="don-francisco"
-                ref={francoRef}
-                className="relative py-24 md:py-32 px-6 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden"
-            >
-                <div className="max-w-6xl mx-auto relative z-10">
-                    <div className="text-center mb-16 reveal">
-                        <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            El Protagonista
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
-                            Conoce a <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-cyan-300">Don Francisco</span>
-                        </h2>
+            <section id="don-francisco" ref={francoRef} className="relative py-20 md:py-28 px-6 overflow-hidden">
+                <div className="max-w-[1248px] mx-auto">
+                    <div className="reveal">
+                        <p className="text-lg font-bold text-simar-marea-tinta">El protagonista</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Conoce a Don Francisco</h2>
                     </div>
 
-                    <div className="grid md:grid-cols-[1fr_1.3fr] gap-12 items-center">
-                        <div className="reveal" data-direction="left">
-                            <div className="relative">
-                                <div className="absolute -inset-4 bg-gradient-to-br from-cyan-500/30 to-blue-500/20 rounded-3xl blur-2xl" />
-                                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 shadow-2xl">
-                                    <img
-                                        src="/assets/images/img5.jpeg"
-                                        alt="Don Francisco en Puerto Peñasco"
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-                                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                                        <p className="text-2xl font-bold text-white leading-tight">
-                                            Francisco Javier Bojórquez Ochoa
-                                        </p>
-                                        <p className="text-cyan-300 text-sm mt-1 font-medium">
-                                            SEMARNAT · Puerto Peñasco
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="mt-10 grid lg:grid-cols-[600px_1fr] gap-10 lg:gap-16 items-start">
+                        <figure className="reveal relative m-0 h-[360px] md:h-[440px] rounded-[36px] overflow-hidden" data-direction="left">
+                            <img
+                                src="/assets/images/img5.jpeg"
+                                alt="Don Francisco en Puerto Peñasco"
+                                className="absolute inset-0 w-full h-full object-cover object-[60%_40%]"
+                            />
+                            <figcaption className="simar-vidrio-fuerte absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5">
+                                <span className="block text-lg md:text-[19px] font-extrabold">Francisco Javier Bojórquez Ochoa</span>
+                                <span className="block text-base text-simar-texto-2">SEMARNAT · Puerto Peñasco</span>
+                            </figcaption>
+                        </figure>
 
-                        <div className="space-y-6 reveal" data-direction="right" data-delay="150">
-                            <div className="flex items-start gap-4">
-                                <Quote className="w-10 h-10 text-cyan-400 flex-shrink-0 mt-1" />
-                                <p className="text-xl md:text-2xl font-light text-slate-100 italic leading-relaxed">
-                                    "Son datos que tienen mucha importancia en el medio ambiente marítimo y terrestre
-                                    de Puerto Peñasco."
-                                </p>
-                            </div>
-
-                            <div className="pl-14 space-y-5 text-base md:text-lg leading-relaxed text-slate-300">
+                        <div className="reveal" data-direction="right" data-delay="150">
+                            <blockquote className="m-0 flex gap-3 text-2xl md:text-[26px] leading-snug font-bold">
+                                <Quote className="w-8 h-8 flex-shrink-0 mt-1 text-simar-marea-tinta" />
+                                <span>“Son datos que tienen mucha importancia en el medio ambiente marítimo y terrestre de Puerto Peñasco.”</span>
+                            </blockquote>
+                            <div className="mt-5 space-y-4 text-lg md:text-[19px] leading-relaxed text-simar-texto-2">
                                 <p>
                                     Don Francisco es responsable del área de residuos del recinto portuario de Puerto Peñasco.
                                     Durante años llenó manifiestos a mano, hoja por hoja, archivando papeles que el tiempo
                                     deterioraba hasta volverlos ilegibles.
                                 </p>
                                 <p>
-                                    Esta plataforma fue diseñada <strong className="text-white">con él y para él</strong>: con botones grandes,
+                                    Esta plataforma fue diseñada <strong className="text-simar-texto">con él y para él</strong>: con botones grandes,
                                     flujos lineales y lenguaje claro. Porque la tecnología solo sirve si llega a quien
                                     la necesita.
                                 </p>
                                 <p>
                                     Gracias a su experiencia de décadas cuidando el puerto, hoy más de{' '}
-                                    <strong className="text-white">
+                                    <strong className="text-simar-texto">
                                         {stats?.totalManifiestos
                                             ? stats.totalManifiestos.toLocaleString('es-MX')
                                             : '5,000'}
@@ -676,18 +618,14 @@ export function VariantCinematic({
                                 </p>
                             </div>
 
-                            <div className="pl-14 pt-6 grid grid-cols-2 gap-4">
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                    <div className="text-3xl font-bold text-cyan-300">2014</div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">
-                                        Histórico desde
-                                    </div>
+                            <div className="mt-6 grid grid-cols-2 gap-4">
+                                <div className="rounded-[22px] bg-simar-superficie border border-simar-borde shadow-simar px-5 py-4">
+                                    <div className="text-3xl font-extrabold">2014</div>
+                                    <div className="text-base md:text-[17px] text-simar-texto-2">Histórico desde</div>
                                 </div>
-                                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                                    <div className="text-3xl font-bold text-cyan-300">SEMARNAT</div>
-                                    <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">
-                                        Respaldo institucional
-                                    </div>
+                                <div className="rounded-[22px] bg-simar-superficie border border-simar-borde shadow-simar px-5 py-4">
+                                    <div className="text-3xl font-extrabold">SEMARNAT</div>
+                                    <div className="text-base md:text-[17px] text-simar-texto-2">Respaldo institucional</div>
                                 </div>
                             </div>
                         </div>
@@ -695,70 +633,34 @@ export function VariantCinematic({
                 </div>
             </section>
 
-            {/* Conciencia Azul — Paneles */}
-            <section
-                id="conciencia"
-                ref={awarenessRef}
-                className="relative py-24 md:py-32 px-6 bg-slate-950 overflow-hidden"
-            >
-                <div
-                    aria-hidden="true"
-                    className="absolute inset-0 opacity-30 pointer-events-none"
-                    style={{
-                        backgroundImage:
-                            'radial-gradient(circle at 80% 20%, rgba(34,211,238,0.18), transparent 50%), radial-gradient(circle at 20% 80%, rgba(59,130,246,0.12), transparent 50%)',
-                    }}
-                />
-
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="max-w-3xl mb-16 reveal">
-                        <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            Conciencia Azul
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
-                            ¿Por qué importan <br />
-                            los datos del mar?
-                        </h2>
-                        <p className="text-lg md:text-xl text-slate-300 leading-relaxed">
+            {/* Conciencia Azul — franja oscura */}
+            <section id="conciencia" ref={awarenessRef} className="relative py-20 md:py-28 px-6 bg-simar-abismo text-white overflow-hidden">
+                <div className="max-w-[1248px] mx-auto">
+                    <div className="max-w-3xl reveal">
+                        <p className="text-lg font-bold text-simar-espuma">Conciencia Azul</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">¿Por qué importan los datos del mar?</h2>
+                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD]">
                             Detrás de cada cifra hay un ecosistema. Detrás de cada manifiesto, una decisión
                             que puede proteger —o dañar— al Mar de Cortés por generaciones.
                         </p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+                    <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                         {AWARENESS_PANELS.map((panel, i) => {
                             const Icon = panel.icon;
                             return (
                                 <article
                                     key={panel.title}
-                                    className="reveal group relative p-8 md:p-10 rounded-3xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all duration-500 hover:-translate-y-1 overflow-hidden"
+                                    className="reveal rounded-[26px] bg-[#12304A] border border-white/10 p-6"
                                     data-delay={`${i * 100}`}
                                 >
-                                    <div
-                                        className={`absolute inset-0 bg-gradient-to-br ${panel.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                                    />
-
-                                    <div className="relative z-10">
-                                        <div className="flex items-start justify-between mb-6">
-                                            <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
-                                                <Icon className={`w-8 h-8 ${panel.accent}`} />
-                                            </div>
-                                            <div className="text-right">
-                                                <div className={`text-4xl md:text-5xl font-extrabold ${panel.accent} leading-none`}>
-                                                    {panel.stat}
-                                                </div>
-                                                <div className="text-xs text-slate-400 mt-1 uppercase tracking-wider max-w-[160px]">
-                                                    {panel.statLabel}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">
-                                            {panel.title}
-                                        </h3>
-                                        <p className="text-base md:text-lg text-slate-300 leading-relaxed">
-                                            {panel.desc}
-                                        </p>
-                                    </div>
+                                    <span className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${panel.color}`}>
+                                        <Icon className="w-[26px] h-[26px]" />
+                                    </span>
+                                    <h3 className="mt-4 text-xl md:text-[21px] font-extrabold">{panel.title}</h3>
+                                    <div className={`mt-2.5 text-[38px] font-extrabold leading-tight ${panel.accent}`}>{panel.stat}</div>
+                                    <div className="text-base text-[#C7D3DD]">{panel.statLabel}</div>
+                                    <p className="mt-3 text-base leading-relaxed text-[#C7D3DD]">{panel.desc}</p>
                                 </article>
                             );
                         })}
@@ -766,185 +668,96 @@ export function VariantCinematic({
                 </div>
             </section>
 
-            {/* Impacto / Stats */}
             {/* Equivalencias */}
-            <section
-                id="equivalencias"
-                ref={equivRef}
-                className="relative py-24 md:py-32 px-6 bg-slate-900 overflow-hidden"
-            >
-                {/* Fondo decorativo */}
-                <div
-                    aria-hidden="true"
-                    className="absolute inset-0 opacity-40 pointer-events-none"
-                    style={{
-                        backgroundImage:
-                            'radial-gradient(circle at 10% 50%, rgba(34,211,238,0.12), transparent 45%), radial-gradient(circle at 90% 50%, rgba(139,92,246,0.10), transparent 45%)',
-                    }}
-                />
-
-                <div className="max-w-7xl mx-auto relative z-10">
-                    {/* Encabezado */}
-                    <div className="max-w-3xl mx-auto text-center mb-16 reveal">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-400/30 rounded-full backdrop-blur-md mb-6">
-                            <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                            <span className="text-cyan-200 text-xs font-semibold tracking-widest uppercase">
-                                {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
-                            </span>
-                        </div>
-                        <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            ¿Cuánto es cuánto?
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05] mb-6">
-                            Equivalencias que{' '}
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-violet-300">
-                                te van a sorprender
-                            </span>
-                        </h2>
-                        <p className="text-lg md:text-xl text-slate-300 leading-relaxed">
+            <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-hidden">
+                <div className="max-w-[1248px] mx-auto">
+                    <div className="max-w-4xl reveal">
+                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold">
+                            <span className="w-2 h-2 rounded-full bg-simar-marea-tinta" />
+                            {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
+                        </span>
+                        <p className="mt-5 text-lg font-bold text-simar-marea-tinta">¿Cuánto es cuánto?</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Equivalencias que te van a sorprender</h2>
+                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-simar-texto-2">
                             {hayDatos
                                 ? 'Estos números vienen directamente de los registros que se están capturando en el sistema. Cada cifra es real, viva y crece con cada manifiesto que se registra.'
                                 : 'Los números por sí solos dicen poco. Aquí te mostramos lo que realmente significa cada residuo registrado, en cosas que conoces y entiendes.'}
                         </p>
                     </div>
 
-                    {/* Grid asimétrico: 1 card hero + 5 cards secundarios */}
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-5 auto-rows-auto">
+                    <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                         {buildEquivalencias(statsReales).map((eq, i) => {
-                            const isFeatured = eq.featured;
+                            const Icon = eq.icon;
+                            if (eq.featured) {
+                                return (
+                                    <article
+                                        key={eq.label}
+                                        data-delay={`${i * 70}`}
+                                        className="reveal md:col-span-2 lg:col-span-3 rounded-[30px] bg-simar-marea text-white p-7 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-8"
+                                    >
+                                        <span className="w-[72px] h-[72px] flex-shrink-0 rounded-full bg-white text-[#1B5FC9] flex items-center justify-center">
+                                            <Icon className="w-[34px] h-[34px]" />
+                                        </span>
+                                        <div className="flex-1">
+                                            <div className="text-lg md:text-[19px] font-bold text-[#DCE8FB]">{eq.label}</div>
+                                            <div className="mt-1 text-5xl md:text-[56px] font-extrabold leading-tight">
+                                                <CountUpNumber value={eq.impactValue} decimals={eq.impactDecimals} duration={2400} />{' '}
+                                                <span className="text-2xl md:text-[26px]">{eq.impactUnit}</span>
+                                            </div>
+                                            <div className="mt-1 text-lg md:text-[19px] text-[#E6EEFB]">{eq.impactDescription}</div>
+                                        </div>
+                                        <div className="md:w-[240px] md:pl-7 md:border-l border-white/30">
+                                            <div className="text-base text-[#DCE8FB]">Basado en</div>
+                                            <div className="text-2xl md:text-[26px] font-extrabold">
+                                                <CountUpNumber value={eq.inputValue} decimals={eq.inputDecimals} duration={1200} /> {eq.inputUnit}
+                                            </div>
+                                            <div className="text-base text-[#DCE8FB]">{eq.inputCaption}</div>
+                                        </div>
+                                    </article>
+                                );
+                            }
                             return (
                                 <article
                                     key={eq.label}
                                     data-delay={`${i * 70}`}
-                                    className={`reveal group relative overflow-hidden rounded-3xl bg-slate-900/70 border border-white/10 backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:border-white/25 ${eq.glowColor} hover:shadow-2xl
-                                        ${isFeatured
-                                            ? 'md:col-span-6 lg:col-span-6'
-                                            : 'md:col-span-3 lg:col-span-2'
-                                        }`}
+                                    className="reveal rounded-[26px] bg-simar-superficie border border-simar-borde shadow-simar p-6"
                                 >
-                                    {/* Gradiente de acento en borde superior */}
-                                    <div
-                                        aria-hidden="true"
-                                        className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${eq.gradient} opacity-70 group-hover:opacity-100 transition-opacity`}
-                                    />
-
-                                    {/* Emoji gigante de fondo */}
-                                    <div
-                                        aria-hidden="true"
-                                        className={`absolute select-none pointer-events-none transition-all duration-700 group-hover:scale-110
-                                            ${isFeatured
-                                                ? 'right-6 md:right-12 top-1/2 -translate-y-1/2 text-[180px] md:text-[260px] opacity-10 group-hover:opacity-15'
-                                                : 'right-4 top-4 text-7xl opacity-10 group-hover:opacity-20'
-                                            }`}
-                                    >
-                                        {eq.emoji}
+                                    <span className={`w-[52px] h-[52px] rounded-full flex items-center justify-center ${eq.tono}`}>
+                                        <Icon className="w-[26px] h-[26px]" />
+                                    </span>
+                                    <div className="mt-3.5 text-lg font-bold text-simar-texto-2">{eq.label}</div>
+                                    <div className="text-[38px] font-extrabold leading-tight">
+                                        <CountUpNumber value={eq.impactValue} decimals={eq.impactDecimals} duration={1800} />
                                     </div>
-
-                                    {/* Glow radial sutil */}
-                                    <div
-                                        aria-hidden="true"
-                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                                        style={{
-                                            background: isFeatured
-                                                ? 'radial-gradient(circle at 20% 50%, rgba(251,191,36,0.08), transparent 60%)'
-                                                : 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.04), transparent 60%)',
-                                        }}
-                                    />
-
-                                    <div className={`relative z-10 ${isFeatured ? 'p-8 md:p-12' : 'p-6 md:p-7'}`}>
-                                        {/* Label superior */}
-                                        <div className="flex items-center gap-2 mb-4">
-                                            <span className={`inline-block w-1.5 h-1.5 rounded-full bg-gradient-to-r ${eq.gradient}`} />
-                                            <span className={`text-[11px] font-bold tracking-[0.25em] uppercase ${eq.accent}`}>
-                                                {eq.label}
-                                            </span>
-                                        </div>
-
-                                        {/* CIFRA MASIVA: la equivalencia */}
-                                        <div className={isFeatured ? 'mb-6' : 'mb-5'}>
-                                            <div className={`font-black leading-[0.9] tracking-tight text-transparent bg-clip-text bg-gradient-to-br ${eq.gradient} ${
-                                                isFeatured
-                                                    ? 'text-7xl sm:text-8xl md:text-[10rem] lg:text-[12rem]'
-                                                    : 'text-5xl md:text-6xl'
-                                            }`}>
-                                                <CountUpNumber
-                                                    value={eq.impactValue}
-                                                    decimals={eq.impactDecimals}
-                                                    duration={isFeatured ? 2400 : 1800}
-                                                />
-                                            </div>
-                                            <p className={`font-semibold text-white mt-2 ${
-                                                isFeatured
-                                                    ? 'text-2xl md:text-3xl'
-                                                    : 'text-lg md:text-xl'
-                                            }`}>
-                                                {eq.impactUnit}
-                                            </p>
-                                            <p className={`text-slate-400 mt-1 ${
-                                                isFeatured ? 'text-base md:text-lg max-w-md' : 'text-sm'
-                                            }`}>
-                                                {eq.impactDescription}
-                                            </p>
-                                        </div>
-
-                                        {/* Input real (footer) */}
-                                        <div className="flex items-baseline gap-2 pt-4 border-t border-white/10">
-                                            <span className="text-xs text-slate-500 uppercase tracking-wider">Basado en</span>
-                                            <span className={`text-base md:text-lg font-bold ${eq.accent}`}>
-                                                <CountUpNumber
-                                                    value={eq.inputValue}
-                                                    decimals={eq.inputDecimals}
-                                                    duration={1200}
-                                                />{' '}
-                                                {eq.inputUnit}
-                                            </span>
-                                            <span className="text-xs text-slate-500 truncate">
-                                                {eq.inputCaption}
-                                            </span>
-                                        </div>
+                                    <div className="text-lg font-bold">{eq.impactUnit}</div>
+                                    <div className="text-[17px] text-simar-texto-2">{eq.impactDescription}</div>
+                                    <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2">
+                                        Basado en{' '}
+                                        <strong className="text-simar-texto">
+                                            <CountUpNumber value={eq.inputValue} decimals={eq.inputDecimals} duration={1200} /> {eq.inputUnit}
+                                        </strong>{' '}
+                                        {eq.inputCaption}
                                     </div>
                                 </article>
                             );
                         })}
+                        <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2" data-delay="200">
+                            Cifras calculadas en tiempo real con estándares internacionales (MARPOL · SEMARNAT).
+                            Cada registro que se captura hace crecer estos números.
+                        </p>
                     </div>
-
-                    {/* Nota al pie */}
-                    <p className="text-center text-xs md:text-sm text-slate-500 mt-12 reveal max-w-2xl mx-auto leading-relaxed" data-delay="200">
-                        Cifras calculadas en tiempo real con estándares internacionales (MARPOL · SEMARNAT).
-                        Cada registro que se captura hace crecer estos números.
-                    </p>
                 </div>
             </section>
 
             {/* Impacto / Stats */}
-            <section
-                id="impacto"
-                ref={statsRef}
-                className="relative py-24 md:py-32 px-6 overflow-hidden bg-gradient-to-br from-blue-950 via-slate-900 to-cyan-950"
-            >
-                <div
-                    aria-hidden="true"
-                    className="absolute inset-0 opacity-[0.08]"
-                    style={{
-                        backgroundImage:
-                            "url('https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&q=80')",
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        mixBlendMode: 'overlay',
-                    }}
-                />
-
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-                        <p className="text-cyan-300 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            Impacto Medible
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-white leading-tight">
-                            Nuestro avance hasta hoy
-                        </h2>
+            <section id="impacto" ref={statsRef} className="relative py-20 md:py-24 px-6 bg-simar-superficie overflow-hidden">
+                <div className="max-w-[1248px] mx-auto">
+                    <div className="reveal">
+                        <p className="text-lg font-bold text-simar-marea-tinta">Impacto medible</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Nuestro avance hasta hoy</h2>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
                         {[
                             {
                                 icon: FileCheck,
@@ -974,17 +787,13 @@ export function VariantCinematic({
                             return (
                                 <div
                                     key={stat.label}
-                                    className="reveal p-8 md:p-10 backdrop-blur-md bg-white/[0.06] rounded-3xl border border-white/15 hover:bg-white/[0.09] transition-colors"
+                                    className="reveal rounded-[26px] bg-simar-papel p-7"
                                     data-delay={`${i * 120}`}
                                 >
-                                    <Icon className="w-10 h-10 text-cyan-300 mb-6" />
-                                    <div className="text-5xl md:text-6xl font-extrabold text-white mb-3 leading-none">
-                                        {stat.value}
-                                    </div>
-                                    <div className="text-lg md:text-xl text-cyan-100 font-semibold mb-2">
-                                        {stat.label}
-                                    </div>
-                                    <div className="text-sm text-slate-300">{stat.detail}</div>
+                                    <Icon className="w-8 h-8 text-simar-marea-tinta" />
+                                    <div className="mt-4 text-4xl md:text-5xl font-extrabold leading-none">{stat.value}</div>
+                                    <div className="mt-2 text-xl font-extrabold">{stat.label}</div>
+                                    <div className="mt-1 text-[17px] text-simar-texto-2">{stat.detail}</div>
                                 </div>
                             );
                         })}
@@ -992,20 +801,13 @@ export function VariantCinematic({
                 </div>
             </section>
 
-            {/* Mapa Interactivo */}
-            <section id="mapa" ref={mapRef} className="relative py-24 md:py-32 px-6 bg-slate-950 overflow-hidden">
-                <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="max-w-3xl mb-16 reveal">
-                        <p className="text-cyan-400 text-sm font-bold tracking-[0.25em] uppercase mb-4">
-                            Mapa de Puertos
-                        </p>
-                        <h2 className="text-4xl md:text-6xl font-bold tracking-tight leading-[1.05]">
-                            Dónde estamos, <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">
-                                a dónde vamos.
-                            </span>
-                        </h2>
-                        <p className="text-lg md:text-xl text-slate-300 leading-relaxed mt-6">
+            {/* Mapa de puertos — franja oscura (el mapa interactivo está pensado para fondo oscuro) */}
+            <section id="mapa" ref={mapRef} className="relative py-20 md:py-28 px-6 bg-simar-abismo text-white overflow-hidden">
+                <div className="max-w-[1248px] mx-auto">
+                    <div className="max-w-3xl mb-10 md:mb-12 reveal">
+                        <p className="text-lg font-bold text-simar-espuma">Mapa de puertos</p>
+                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08]">Dónde estamos, a dónde vamos.</h2>
+                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD]">
                             El modelo está listo para escalar. Cada puerto pesquero de México puede sumarse
                             a una red nacional de trazabilidad ambiental.
                         </p>
@@ -1017,170 +819,146 @@ export function VariantCinematic({
                 </div>
             </section>
 
-            {/* Call to action final */}
-            <section
-                ref={ctaRef}
-                className="relative py-24 md:py-32 px-6 overflow-hidden bg-gradient-to-br from-cyan-950 via-blue-950 to-slate-950"
-            >
-                <div className="max-w-4xl mx-auto text-center relative z-10 reveal">
-                    <Waves className="w-14 h-14 text-cyan-300 mx-auto mb-8" />
-                    <h2 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
+            {/* Llamado final */}
+            <section ref={ctaRef} className="relative py-20 md:py-24 px-6 bg-simar-abismo text-white border-t border-white/10 overflow-hidden">
+                <div className="max-w-4xl mx-auto text-center reveal">
+                    <h2 className="text-4xl md:text-[50px] font-extrabold leading-tight">
                         Cada dato cuenta. <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-300">
-                            Cada mar lo agradece.
-                        </span>
+                        <span className="text-simar-espuma">Cada mar lo agradece.</span>
                     </h2>
-                    <p className="text-lg md:text-xl text-slate-200 mb-10 leading-relaxed max-w-2xl mx-auto">
+                    <p className="mt-4 text-lg md:text-[21px] text-[#C7D3DD] leading-relaxed max-w-2xl mx-auto">
                         Accede a la plataforma y sé parte del cambio en la gestión de residuos marinos.
                     </p>
                     <button
                         onClick={openLoginModal}
-                        className="group px-10 py-5 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold tracking-wide transition-all shadow-2xl shadow-cyan-500/30 inline-flex items-center gap-3 rounded-full cursor-pointer hover:scale-105 active:scale-95 text-lg"
+                        className="mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold transition-colors inline-flex items-center gap-2.5 cursor-pointer"
                     >
                         Iniciar sesión
-                        <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-[22px] h-[22px]" strokeWidth={2.4} />
                     </button>
                 </div>
             </section>
 
             {/* Footer */}
-            <footer className="bg-slate-950 py-16 md:py-20 px-6 border-t border-white/10">
-                <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10">
-                    <div className="md:col-span-2">
-                        <img
-                            src="/assets/logo_simar.png"
-                            alt="SiMAR Logo"
-                            className="h-14 w-auto object-contain mb-6"
-                        />
-
-                    </div>
-
+            <footer className="bg-simar-superficie py-12 md:py-14 px-6">
+                <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:items-center gap-8 md:gap-14">
+                    <LogoSimar tamano={60} tono="claro" />
                     <div>
-                        <h4 className="text-base font-bold mb-5 text-white uppercase tracking-widest">
-                            Instituciones
-                        </h4>
-                        <ul className="space-y-3 text-slate-400 text-sm">
+                        <h3 className="text-lg font-extrabold">Instituciones</h3>
+                        <ul className="mt-2 space-y-1 text-lg text-simar-texto-2">
                             <li>ITSPP</li>
                             <li>DCK Conciencia y Cultura</li>
                             <li>SEMARNAT</li>
                         </ul>
                     </div>
-                </div>
-
-                <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/5 flex flex-col-reverse items-center gap-4 md:flex-row md:justify-between text-slate-500 text-xs md:text-sm">
-                    <span>© 2025 DCK / ITSPP. Todos los derechos reservados.</span>
-                    {/* Acceso interno al panel de superadmin: discreto a propósito */}
-                    <button
-                        type="button"
-                        onClick={abrirAccesoDesarrollador}
-                        className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-violet-300 transition-colors cursor-pointer"
-                    >
-                        <SquareTerminal className="w-3.5 h-3.5" />
-                        Acceso desarrollador
-                    </button>
+                    <div className="md:ml-auto md:text-right">
+                        <p className="text-[17px] text-simar-texto-2">© 2025 DCK / ITSPP. Todos los derechos reservados.</p>
+                        {/* Acceso interno al panel de superadmin: discreto a propósito */}
+                        <button
+                            type="button"
+                            onClick={abrirAccesoDesarrollador}
+                            className="mt-1 min-h-[44px] inline-flex items-center gap-2 text-base font-bold text-simar-texto-2 hover:text-simar-texto transition-colors cursor-pointer"
+                        >
+                            <SquareTerminal className="w-[18px] h-[18px]" />
+                            Acceso desarrollador
+                        </button>
+                    </div>
                 </div>
             </footer>
 
             {/* Login Modal */}
             {showLoginModal && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Iniciar sesión"
                 >
                     <div
-                        className="absolute inset-0 bg-black/70 backdrop-blur-md animate-fade-in"
+                        className="fixed inset-0 bg-[rgba(11,34,54,0.42)] backdrop-blur-[6px] animate-fade-in"
                         onClick={cerrarLoginModal}
                     />
 
                     {/* PASO 1 — Selector de rol */}
                     {modalRole === null && (
-                        <div className="relative bg-slate-900 w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10">
+                        <div className="simar-vidrio-fuerte relative w-full max-w-[640px] rounded-[34px] p-7 md:p-9 animate-scale-in">
                             <button
                                 onClick={cerrarLoginModal}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
+                                className="absolute top-4 right-4 w-12 h-12 rounded-2xl bg-simar-texto/5 hover:bg-simar-texto/10 text-simar-texto flex items-center justify-center transition-colors z-10"
                                 aria-label="Cerrar"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-[22px] h-[22px]" />
                             </button>
-                            <div className="p-8">
-                                <div className="text-center mb-8">
-                                    <h2 className="text-2xl font-extrabold text-white">¿Cómo deseas ingresar?</h2>
-                                    <p className="text-sm text-slate-400 mt-2">
-                                        Selecciona tu tipo de usuario
-                                    </p>
-                                </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <ModalRoleCard
-                                        title="Administrador Portuario"
-                                        desc="Manifiestos, embarcaciones y estadísticas del puerto."
-                                        accent="blue"
-                                        Icon={Anchor}
-                                        onClick={() => selectModalRole('admin')}
-                                    />
-                                    <ModalRoleCard
-                                        title="Empresa Recolectora"
-                                        desc="Residuos disponibles, solicitudes de recolección, historial e impacto."
-                                        accent="emerald"
-                                        Icon={Recycle}
-                                        onClick={() => selectModalRole('recolector')}
-                                    />
-                                </div>
+                            <div className="text-center">
+                                <LogoSimar variante="simbolo" tamano={64} />
+                                <h2 className="mt-2 text-[28px] md:text-[32px] font-extrabold text-simar-texto">¿Cómo deseas ingresar?</h2>
+                                <p className="mt-1.5 text-lg text-simar-texto-2">Selecciona tu tipo de usuario</p>
+                            </div>
+                            <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <ModalRoleCard
+                                    title="Administrador Portuario"
+                                    desc="Manifiestos, embarcaciones y estadísticas del puerto."
+                                    accent="blue"
+                                    Icon={Anchor}
+                                    onClick={() => selectModalRole('admin')}
+                                />
+                                <ModalRoleCard
+                                    title="Empresa Recolectora"
+                                    desc="Residuos disponibles, solicitudes de recolección, historial e impacto."
+                                    accent="emerald"
+                                    Icon={Recycle}
+                                    onClick={() => selectModalRole('recolector')}
+                                />
                             </div>
                         </div>
                     )}
 
                     {/* PASO 2 — Formulario de login */}
                     {modalRole !== null && (
-                        <div className="relative bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-scale-in border border-white/10 dark">
+                        <div className="simar-vidrio-fuerte relative w-full max-w-[520px] rounded-[34px] p-7 md:p-9 animate-scale-in">
                             <button
                                 onClick={cerrarLoginModal}
-                                className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors z-10 p-2 rounded-full hover:bg-white/10"
+                                className="absolute top-4 right-4 w-12 h-12 rounded-2xl bg-simar-texto/5 hover:bg-simar-texto/10 text-simar-texto flex items-center justify-center transition-colors z-10"
                                 aria-label="Cerrar"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-[22px] h-[22px]" />
                             </button>
-                            <div className="p-8">
-                                {/* Badge de rol + botón volver (pr-8: deja libre el botón de cerrar) */}
-                                <div className="flex items-center justify-between mb-5 pr-8">
-                                    {modalRole === 'superadmin' ? (
-                                        <span />
-                                    ) : (
-                                        <button
-                                            onClick={clearModalRole}
-                                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
-                                        >
-                                            <ArrowLeft className="w-3.5 h-3.5" />
-                                            Cambiar
-                                        </button>
-                                    )}
-                                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold border ${
-                                        modalRole === 'recolector'
-                                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                                            : modalRole === 'superadmin'
-                                                ? 'bg-violet-500/10 border-violet-500/30 text-violet-300'
-                                                : 'bg-blue-500/10 border-blue-500/30 text-blue-300'
-                                    }`}>
-                                        {modalRole === 'recolector'
-                                            ? <><Recycle className="w-3.5 h-3.5" /> Empresa Recolectora</>
-                                            : modalRole === 'superadmin'
-                                                ? <><SquareTerminal className="w-3.5 h-3.5" /> Acceso de desarrollador</>
-                                                : <><Anchor className="w-3.5 h-3.5" /> Administrador Portuario</>
-                                        }
-                                    </span>
-                                </div>
-                                <LoginForm
-                                    showLogo={true}
-                                    // El desarrollador no se registra aquí: su cuenta ya existe y se marca como superadmin en la BD
-                                    permitirRegistro={modalRole !== 'superadmin'}
-                                    redirectTo={siguiente ?? DESTINO_POR_ROL[modalRole]}
-                                    // Tras iniciar sesión sólo se oculta el modal: tocar la URL aquí
-                                    // (replaceState de cerrarLoginModal) cancelaba la navegación
-                                    // al panel y el usuario se quedaba en la landing.
-                                    onSuccess={() => setShowLoginModal(false)}
-                                />
+                            {/* Rol elegido + volver (pr-14: deja libre el botón de cerrar) */}
+                            <div className="flex flex-wrap items-center gap-3 mb-4 pr-14">
+                                {modalRole !== 'superadmin' && (
+                                    <button
+                                        onClick={clearModalRole}
+                                        className="min-h-[48px] px-3.5 rounded-2xl bg-simar-texto/5 hover:bg-simar-texto/10 text-simar-texto text-[17px] font-bold flex items-center gap-2 transition-colors"
+                                    >
+                                        <ArrowLeft className="w-5 h-5" />
+                                        Cambiar
+                                    </button>
+                                )}
+                                <span className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-full text-base font-bold ${
+                                    modalRole === 'recolector'
+                                        ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta'
+                                        : modalRole === 'superadmin'
+                                            ? 'bg-simar-violeta-suave text-simar-violeta'
+                                            : 'bg-simar-marea-suave text-simar-marea-tinta'
+                                }`}>
+                                    {modalRole === 'recolector'
+                                        ? <><Recycle className="w-[18px] h-[18px]" /> Empresa Recolectora</>
+                                        : modalRole === 'superadmin'
+                                            ? <><SquareTerminal className="w-[18px] h-[18px]" /> Acceso de desarrollador</>
+                                            : <><Anchor className="w-[18px] h-[18px]" /> Administrador Portuario</>
+                                    }
+                                </span>
                             </div>
+                            <LoginForm
+                                showLogo={true}
+                                // El desarrollador no se registra aquí: su cuenta ya existe y se marca como superadmin en la BD
+                                permitirRegistro={modalRole !== 'superadmin'}
+                                redirectTo={siguiente ?? DESTINO_POR_ROL[modalRole]}
+                                // Tras iniciar sesión sólo se oculta el modal: tocar la URL aquí
+                                // (replaceState de cerrarLoginModal) cancelaba la navegación
+                                // al panel y el usuario se quedaba en la landing.
+                                onSuccess={() => setShowLoginModal(false)}
+                            />
                         </div>
                     )}
                 </div>

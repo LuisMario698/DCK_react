@@ -128,9 +128,9 @@ export function SolicitudesTab({
         <div className="space-y-6">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
                 {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6 bg-gray-50/50 dark:bg-gray-900/50">
+                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50">
                     <nav className="flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
                         {TABS.map((t) => {
                             const count =
@@ -142,14 +142,14 @@ export function SolicitudesTab({
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
-                                    className={`whitespace-nowrap py-3.5 px-4 text-sm font-semibold border-b-2 transition-all duration-200 ${
+                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 ${
                                         active
-                                            ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400'
-                                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:border-gray-300'
+                                            ? 'border-simar-marea-tinta text-simar-marea-tinta'
+                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta'
                                     }`}
                                 >
                                     {t.label}
-                                    <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-bold transition-colors ${active ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
+                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors ${active ? 'bg-simar-marea-suave text-simar-marea-tinta' : 'bg-simar-papel text-simar-texto-2'}`}>
                                         {count}
                                     </span>
                                 </button>
@@ -162,7 +162,7 @@ export function SolicitudesTab({
                 <div className="overflow-x-auto">
                     <table className="min-w-full border-collapse">
                         <thead>
-                            <tr className="bg-gray-50 dark:bg-slate-700/60 border-b border-gray-200 dark:border-slate-600">
+                            <tr className="bg-simar-papel border-b border-simar-borde">
                                 <Th>Asociación</Th>
                                 <Th>Residuo</Th>
                                 <Th className="hidden sm:table-cell">Cantidad</Th>
@@ -171,24 +171,24 @@ export function SolicitudesTab({
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60 bg-white dark:bg-slate-800">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
                             {filtradas.map((s, idx) => {
                                 const nombre = s.asociacion?.nombre_asociacion ?? 'Asociación';
                                 const cantidad = cantidadVigente(s);
                                 return (
                                     <tr
                                         key={s.id}
-                                        className="group bg-white dark:bg-slate-800 hover:bg-blue-50/30 dark:hover:bg-slate-700/30 transition-colors duration-150 animate-fade-in"
+                                        className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150"
                                         style={{ animationDelay: `${Math.min(idx * 30, 300)}ms` }}
                                     >
                                         <td className="px-4 md:px-5 py-3.5">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-simar-marea flex items-center justify-center text-white font-bold text-[15px] shadow-simar">
                                                     {nombre.charAt(0)}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{nombre}</p>
-                                                    <p className="text-xs text-gray-400 dark:text-gray-500 truncate hidden sm:block">
+                                                    <p className="text-base font-semibold text-simar-texto truncate">{nombre}</p>
+                                                    <p className="text-[15px] text-simar-texto-2 truncate hidden sm:block">
                                                         Solicitada {formatearFecha(s.created_at)}
                                                     </p>
                                                 </div>
@@ -198,20 +198,20 @@ export function SolicitudesTab({
                                             <ResiduoBadge tipo={s.tipo} />
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap">
-                                            <span className="text-sm font-bold text-gray-900 dark:text-white">{formatCantidad(cantidad)}</span>
-                                            <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">{s.unidad}</span>
+                                            <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
+                                            <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
                                             {s.recoleccion ? (
-                                                <span className="block text-[11px] text-gray-400">
+                                                <span className="block text-[15px] text-simar-texto-2">
                                                     recolectados · {s.recoleccion.folio}
                                                 </span>
                                             ) : (
                                                 s.cantidad_aprobada !== null &&
                                                 s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                    <span className="block text-[11px] text-gray-400">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    <span className="block text-[15px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
                                                 )
                                             )}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell whitespace-nowrap">
+                                        <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
                                             {formatearFecha(s.fecha_propuesta)}
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5">
@@ -258,9 +258,9 @@ export function SolicitudesTab({
                             {filtradas.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="py-16 text-center">
-                                        <div className="flex flex-col items-center gap-2 text-gray-400">
+                                        <div className="flex flex-col items-center gap-2 text-simar-texto-2">
                                             <Inbox className="w-10 h-10" />
-                                            <p className="text-sm font-medium">No hay solicitudes en esta categoría.</p>
+                                            <p className="text-base font-medium">No hay solicitudes en esta categoría.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -329,22 +329,22 @@ function DetalleModal({
                 <EstadoSolicitudBadge estado={s.estado} />
 
                 {a && (
-                    <div className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                    <div className="flex items-center gap-4 p-4 rounded-xl bg-simar-papel border border-simar-borde">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-simar-marea flex items-center justify-center text-white font-bold text-lg shadow-simar">
                             {a.nombre_asociacion.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="text-base font-semibold text-gray-900 dark:text-white truncate">{a.nombre_asociacion}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                            <p className="text-base font-semibold text-simar-texto truncate">{a.nombre_asociacion}</p>
+                            <p className="text-base text-simar-texto-2 truncate mt-0.5">
                                 {[a.ubicacion, a.telefono, a.email].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
                             </p>
                             {a.estado !== 'Activo' && (
-                                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1">Asociación {a.estado.toLowerCase()}</p>
+                                <p className="text-[15px] font-semibold text-simar-coral mt-1">Asociación {a.estado.toLowerCase()}</p>
                             )}
                         </div>
                         <button
                             onClick={onAbrirChat}
-                            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            className="flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-base font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors min-h-[52px]"
                         >
                             <MessageSquare className="w-4 h-4" />
                             <span className="hidden sm:inline">Chat</span>
@@ -369,24 +369,24 @@ function DetalleModal({
                         </InfoCard>
                     )}
                     <InfoCard label="Fecha propuesta">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatearFecha(s.fecha_propuesta)}</span>
+                        <span className="text-base font-medium text-simar-texto">{formatearFecha(s.fecha_propuesta)}</span>
                     </InfoCard>
                 </div>
 
                 {s.mensaje && <Nota titulo="Mensaje de la asociación">{s.mensaje}</Nota>}
                 {s.motivo_rechazo && <Nota titulo="Motivo del rechazo">{s.motivo_rechazo}</Nota>}
 
-                <p className="text-xs text-gray-400 dark:text-gray-500">
+                <p className="text-[15px] text-simar-texto-2">
                     Creada {formatearFecha(s.created_at)}
                     {s.resuelta_at && ` · actualizada ${formatearFecha(s.resuelta_at)}`}
                 </p>
 
                 {s.estado === 'pendiente' && (
                     <div className="grid grid-cols-2 gap-3 pt-1">
-                        <BotonSecundario onClick={() => onAccion('rechazar')} className="!text-red-600 dark:!text-red-400">
+                        <BotonSecundario onClick={() => onAccion('rechazar')} className="!text-simar-coral">
                             <XCircle className="w-4 h-4" /> Rechazar
                         </BotonSecundario>
-                        <BotonPrimario onClick={() => onAccion('aprobar')} className="!bg-emerald-600 hover:!bg-emerald-700">
+                        <BotonPrimario onClick={() => onAccion('aprobar')} className="!bg-[#127A5D] hover:!bg-[#0E6A50]">
                             <CheckCircle2 className="w-4 h-4" /> Aprobar
                         </BotonPrimario>
                     </div>
@@ -458,13 +458,13 @@ function AprobarModal({
                     />
                 </Campo>
                 {disponible < s.cantidad_solicitada && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <p className="text-[15px] text-simar-coral">
                         El inventario no alcanza para toda la solicitud; como máximo puedes aprobar {formatCantidad(disponible)} {s.unidad}.
                     </p>
                 )}
                 <div className="grid grid-cols-2 gap-3 pt-1">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
-                    <BotonPrimario onClick={aprobar} cargando={guardando} disabled={invalida} className="!bg-emerald-600 hover:!bg-emerald-700">
+                    <BotonPrimario onClick={aprobar} cargando={guardando} disabled={invalida} className="!bg-[#127A5D] hover:!bg-[#0E6A50]">
                         <CheckCircle2 className="w-4 h-4" /> Aprobar
                     </BotonPrimario>
                 </div>
@@ -512,7 +512,7 @@ function RechazarModal({
                 </Campo>
                 <div className="grid grid-cols-2 gap-3 pt-1">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
-                    <BotonPrimario onClick={rechazar} cargando={guardando} disabled={!motivo.trim()} className="!bg-red-600 hover:!bg-red-700">
+                    <BotonPrimario onClick={rechazar} cargando={guardando} disabled={!motivo.trim()} className="!bg-[#A63F0E] hover:!bg-[#8C340B]">
                         <XCircle className="w-4 h-4" /> Rechazar
                     </BotonPrimario>
                 </div>
@@ -596,7 +596,7 @@ function CompletarModal({
                         <Cantidad valor={aprobada} unidad={s.unidad} />
                     </InfoCard>
                     <InfoCard label="Fecha propuesta">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{formatearFecha(s.fecha_propuesta)}</span>
+                        <span className="text-base font-medium text-simar-texto">{formatearFecha(s.fecha_propuesta)}</span>
                     </InfoCard>
                 </div>
 
@@ -649,12 +649,12 @@ function AccionBtn({
     children: React.ReactNode;
 }) {
     const cls = {
-        emerald: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40',
-        red: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40',
-        blue: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40',
+        emerald: 'text-simar-arrecife-tinta bg-simar-arrecife-suave hover:bg-simar-arrecife-suave',
+        red: 'text-simar-coral bg-simar-coral-suave hover:bg-simar-coral-suave',
+        blue: 'text-simar-marea-tinta bg-simar-marea-suave hover:bg-simar-marea-suave',
     }[color];
     return (
-        <button onClick={onClick} className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all ${cls}`}>
+        <button onClick={onClick} className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all ${cls}`}>
             {icon}
             <span className="hidden sm:inline">{children}</span>
         </button>
@@ -667,7 +667,7 @@ function IconBtn({ title, onClick, children }: { title: string; onClick: () => v
             onClick={onClick}
             title={title}
             aria-label={title}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+            className="w-11 h-11 flex items-center justify-center rounded-xl text-simar-texto-2 hover:text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors"
         >
             {children}
         </button>
@@ -676,26 +676,26 @@ function IconBtn({ title, onClick, children }: { title: string; onClick: () => v
 
 function Cantidad({ valor, unidad }: { valor: number; unidad: string }) {
     return (
-        <span className="text-xl font-bold text-gray-900 dark:text-white tabular-nums leading-none">
+        <span className="text-xl font-extrabold text-simar-texto tabular-nums leading-none">
             {formatCantidad(valor)}
-            <span className="text-sm font-medium text-gray-400 ml-1">{unidad}</span>
+            <span className="text-base font-medium text-simar-texto-2 ml-1">{unidad}</span>
         </span>
     );
 }
 
 function Nota({ titulo, children }: { titulo: string; children: React.ReactNode }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-3.5">
-            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{titulo}</p>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{children}</p>
+        <div className="rounded-xl bg-simar-papel border border-simar-borde p-3.5">
+            <p className="text-[15px] font-semibold text-simar-texto-2 mb-1.5">{titulo}</p>
+            <p className="text-base text-simar-texto leading-relaxed whitespace-pre-wrap">{children}</p>
         </div>
     );
 }
 
 function InfoCard({ label, children }: { label: string; children: React.ReactNode }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-4">
-            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">{label}</p>
+        <div className="rounded-xl bg-simar-papel border border-simar-borde p-4">
+            <p className="text-[15px] font-semibold text-simar-texto-2 mb-2">{label}</p>
             <div>{children}</div>
         </div>
     );
@@ -703,7 +703,7 @@ function InfoCard({ label, children }: { label: string; children: React.ReactNod
 
 function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest whitespace-nowrap ${className}`}>
+        <th className={`px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2 whitespace-nowrap ${className}`}>
             {children}
         </th>
     );

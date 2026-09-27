@@ -487,19 +487,22 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
 
 ## 12. Tema y sistema de diseño
 
-- **Tema por defecto: oscuro.** `components/layout/ThemeContext.tsx` mantiene `theme` (`light` /
+- **Guía completa: [`DISEÑO_SIMAR.md`](./DISEÑO_SIMAR.md)** — principios (pensado para personas
+  mayores), tokens de color, tipografía Atkinson Hyperlegible Next, tamaños, vidrio, movimiento,
+  componentes con código, lista de verificación y pantallas pendientes de migrar.
+- **Tema por defecto: claro.** `components/layout/ThemeContext.tsx` mantiene `theme` (`light` /
   `dark`), lo persiste en `localStorage.theme` y alterna la clase `.dark` en
-  `document.documentElement`. Si no hay nada guardado, fuerza oscuro.
+  `document.documentElement`. Si no hay nada guardado, usa claro.
 - `app/globals.css` (Tailwind v4) define el modo oscuro **por selector**:
   `@variant dark (&:is(.dark *))`, más variables de tema, estilos personalizados para
   `react-datepicker` y varios keyframes (incluida una sección "LANDING PAGE": `ken-burns`,
   `fade-in-up`, `map-ping`, etc.). Respeta `prefers-reduced-motion`.
 - `components/layout/ThemeToggle.tsx` es un botón flotante global (arriba a la derecha), **oculto
   en la landing**.
-- Lenguaje visual: **"Glassmorphism elegante"** (transparencia + blur + bordes sutiles), paleta
-  azul / gris / blanco, transiciones ≤ 200 ms, espaciado en múltiplos de 4. Documentado en
-  `DESIGN_SYSTEM.md` (v2.0), `DESIGN_REFERENCE.md`, `DESIGN_SUMMARY.md`,
-  `RESPONSIVE_DESIGN_CHANGES.md`.
+- Lenguaje visual: **SiMAR** — papel cálido, azul de marea, líneas de profundidad y la ola del
+  logo; tokens `--simar-*` expuestos como clases `bg-simar-*`/`text-simar-*` que cambian solas
+  entre claro y oscuro; vidrio (`.simar-vidrio`) sólo en lo que flota. El "glassmorphism"
+  anterior (`DESIGN_SYSTEM.md` y compañía) queda obsoleto.
 
 ---
 
@@ -622,12 +625,11 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 | `Contexto-DCK/panel-superadmin.md` | Panel del desarrollador: suscripciones, cuentas, mantenimiento; decisiones y puesta en marcha. |
 | `Contexto-DCK/guia.md` | Guía de usuario final: cómo crear personas/embarcaciones/asociaciones y el flujo paso a paso del manifiesto. |
 | `BITACORA_PRUEBAS.md` | Bitácora de pruebas — lista los 77 procesos backend/frontend y su estado. |
-| `DESIGN_SYSTEM.md` | Lenguaje de diseño (glassmorphism, paleta, tipografía, animaciones). |
+| **`DISEÑO_SIMAR.md`** | Lenguaje de diseño actual: principios, tokens, tipografía, vidrio, movimiento, componentes y checklist. |
 | `SUPABASE_SERVICES.md` | Ejemplos de uso de la capa de servicios. |
 | `ESTRUCTURA_DE_COSTOS.md` | Ecosistema tecnológico y costos recurrentes. |
 | `estructura_completa.sql` | `pg_dump` completo — fuente de verdad del esquema. |
 | `GUIA_PDF_MANIFIESTOS.md`, `GUIA_IMAGENES_MANIFIESTOS.md`, `MANIFIESTOS_OPTIMIZATION_SUMMARY.md` | Detalle de generación de PDF y manejo de imágenes. |
-| `DESIGN_REFERENCE.md`, `DESIGN_SUMMARY.md`, `RESPONSIVE_DESIGN_CHANGES.md` | Complementos de diseño. |
 
 ### Obsoleto (no seguir)
 
@@ -637,6 +639,7 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 | `ESQUEMA_COMPLETO_BASE_DATOS.sql`, `zTablas.sql` | Diseño original con tablas ya eliminadas. |
 | `ANALISIS_DISENO_CDK.txt`, `ANALISIS_TABLAS_INNECESARIAS.md`, `RESUMEN_LIMPIEZA_CODIGO.md`, `REDISEÑO_MANIFIESTO.md`, `nuevoDiseño.tsx` | Notas de análisis puntuales ya aplicadas. |
 | `GUIA_ACTUALIZACION_MANIFIESTOS*.md` | Guías de migraciones ya ejecutadas. |
+| `DESIGN_SYSTEM.md`, `DESIGN_REFERENCE.md`, `DESIGN_SUMMARY.md`, `RESPONSIVE_DESIGN_CHANGES.md` | Lenguaje "glassmorphism" anterior. Sustituido por `DISEÑO_SIMAR.md`. |
 
 ### Scripts SQL de mantenimiento (raíz)
 

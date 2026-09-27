@@ -4,6 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { SidebarProvider, useSidebar } from './SidebarContext';
 import { AvisoGlobal } from './AvisoGlobal';
+import { FondoSimar } from './FondoSimar';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -27,22 +28,22 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [pathname, children]);
 
-  // Calculate padding based on sidebar state
+  // Espacio para el menú flotante de vidrio (276 px + 16 px de margen a cada lado)
   const getSidebarPadding = () => {
-    return isCollapsed ? 'pl-0 lg:pl-20' : 'pl-0 lg:pl-64';
+    return isCollapsed ? 'pl-0 lg:pl-[120px]' : 'pl-0 lg:pl-[308px]';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-simar-papel">
+      <FondoSimar />
       <Sidebar />
-      <div className={`flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${getSidebarPadding()}`}>
+      <div className={`relative flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${getSidebarPadding()}`}>
         <Header />
         <main
-          className={`flex-1 p-3 sm:p-4 md:p-6 lg:p-8 transition-opacity duration-150 ${transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
+          className={`flex-1 p-3 sm:p-4 md:p-6 lg:py-10 lg:pr-10 lg:pl-8 transition-opacity duration-150 ${transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
             }`}
         >
-          {/* lg:mr-20: el botón flotante de tema ocupa la esquina y tapaba la ✕ del aviso */}
-          <AvisoGlobal className="lg:mr-20" />
+          <AvisoGlobal className="max-w-[1600px]" />
           <div className="max-w-[100vw] overflow-x-hidden">
             {displayChildren}
           </div>

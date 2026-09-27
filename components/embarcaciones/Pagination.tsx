@@ -21,18 +21,19 @@ export function Pagination({
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="flex items-center justify-between mt-4 px-2">
-      <div className="text-xs text-gray-700 dark:text-gray-300">
-        Mostrando del <span className="font-medium text-gray-800 dark:text-white">{startItem}</span> al{' '}
-        <span className="font-medium text-gray-800 dark:text-white">{endItem}</span> de{' '}
-        <span className="font-medium text-gray-800 dark:text-white">{totalItems}</span> registros
+    <div className="flex flex-wrap items-center justify-between gap-3 mt-5 px-1">
+      <div className="text-base text-simar-texto-2">
+        Mostrando del <span className="font-bold text-simar-texto">{startItem}</span> al{' '}
+        <span className="font-bold text-simar-texto">{endItem}</span> de{' '}
+        <span className="font-bold text-simar-texto">{totalItems}</span> registros
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <select
+          aria-label="Registros por página"
           value={itemsPerPage}
           onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          className="px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 dark:focus:ring-blue-800 outline-none transition-all"
+          className="font-bold px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
         >
           <option value={10}>10</option>
           <option value={25}>25</option>
@@ -44,33 +45,33 @@ export function Pagination({
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="min-h-[44px] px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Primero
           </button>
           <button
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="min-h-[44px] px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Anterior
           </button>
 
-          <div className="min-w-[36px] px-3 py-1 text-xs bg-blue-500 dark:bg-blue-600 text-white font-medium rounded flex items-center justify-center">
+          <div aria-current="page" className="min-w-[44px] min-h-[44px] px-3 text-[15px] bg-simar-marea text-white font-bold rounded-xl flex items-center justify-center">
             {currentPage}
           </div>
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="min-h-[44px] px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Siguiente
           </button>
           <button
             onClick={() => onPageChange(totalPages)}
             disabled={currentPage === totalPages}
-            className="px-2 py-1 text-xs text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-800 dark:hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="min-h-[44px] px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             Último
           </button>

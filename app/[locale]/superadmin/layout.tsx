@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { SidebarSuperadmin } from '@/components/superadmin/SidebarSuperadmin';
 import { HeaderSuperadmin } from '@/components/superadmin/HeaderSuperadmin';
 import { AvisoGlobal } from '@/components/layout/AvisoGlobal';
+import { FondoSimar } from '@/components/layout/FondoSimar';
 
 /**
  * Panel del desarrollador / superadmin. El middleware sólo deja entrar a
@@ -15,16 +16,17 @@ export default function SuperadminLayout({ children }: { children: React.ReactNo
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="min-h-screen bg-simar-papel">
+            <FondoSimar />
             <SidebarSuperadmin
                 isOpen={isOpen}
                 isCollapsed={isCollapsed}
                 onClose={() => setIsOpen(false)}
                 onToggleCollapse={() => setIsCollapsed((c) => !c)}
             />
-            <div className={`flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${isCollapsed ? 'pl-0 lg:pl-20' : 'pl-0 lg:pl-64'}`}>
+            <div className={`relative flex flex-col min-h-screen w-full transition-all duration-300 ease-in-out ${isCollapsed ? 'pl-0 lg:pl-[120px]' : 'pl-0 lg:pl-[308px]'}`}>
                 <HeaderSuperadmin onOpenSidebar={() => setIsOpen(true)} />
-                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
+                <main className="flex-1 p-3 sm:p-4 md:p-6 lg:py-8 lg:pr-10 lg:pl-8">
                     <AvisoGlobal mostrarMantenimiento />
                     <div className="max-w-[100vw] overflow-x-hidden">{children}</div>
                 </main>

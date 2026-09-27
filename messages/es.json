@@ -1,17 +1,17 @@
 {
   "Sidebar": {
     "menu": {
-      "titulo": "Menú Principal",
+      "titulo": "Menú principal",
       "panel": "Panel",
       "personas": "Personas",
       "embarcaciones": "Embarcaciones",
       "logout": "Cerrar sesión",
       "manifiesto": "Manifiesto",
-      "manifiestoBasuron": "Recibo Relleno Sanitario",
+      "manifiestoBasuron": "Recibo relleno sanitario",
       "logout": "Cerrar sesión"
     },
     "externos": {
-      "titulo": "Gestión Externa",
+      "titulo": "Gestión externa",
       "asociaciones": "Asociaciones recolectoras"
     },
     "version": "CIAD Sistema v1.0"
@@ -33,18 +33,18 @@
       "titulo": "Accesos Rápidos",
       "nuevoManifiesto": "Nuevo Manifiesto",
       "nuevoBuque": "Nuevo Buque",
-      "nuevaPersona": "Nueva Persona",
+      "nuevaPersona": "Nueva persona",
       "nuevaAsociacion": "Nueva Asociación"
     }
   },
   "Personas": {
-    "titulo": "Gestión de Personas",
+    "titulo": "Gestión de personas",
     "subtitulo": "Administra las personas registradas en el sistema",
     "buscar": "Buscar persona...",
     "filtrarTipo": "Filtrar por tipo",
     "todosTipos": "Todos los tipos",
-    "nuevaPersona": "Nueva Persona",
-    "gestionarTipos": "Gestionar Tipos de Persona",
+    "nuevaPersona": "Nueva persona",
+    "gestionarTipos": "Gestionar tipos de persona",
     "tabla": {
       "nombre": "Nombre",
       "rut": "RUT",
@@ -65,23 +65,23 @@
       "de": "de"
     },
     "modal": {
-      "tituloCrear": "Crear Nueva Persona",
-      "tituloEditar": "Editar Persona",
+      "tituloCrear": "Crear nueva persona",
+      "tituloEditar": "Editar persona",
       "nombre": "Nombre completo",
       "rut": "RUT",
-      "tipo": "Tipo de Persona",
+      "tipo": "Tipo de persona",
       "seleccioneTipo": "Seleccione un tipo",
       "email": "Email",
       "telefono": "Teléfono",
       "cancelar": "Cancelar",
-      "crear": "Crear Persona",
-      "guardar": "Guardar Cambios"
+      "crear": "Crear persona",
+      "guardar": "Guardar cambios"
     },
     "modalTipos": {
-      "titulo": "Gestionar Tipos de Persona",
-      "nuevoTipo": "Nuevo Tipo",
+      "titulo": "Gestionar tipos de persona",
+      "nuevoTipo": "Nuevo tipo",
       "nombreTipo": "Nombre del tipo",
-      "agregar": "Agregar Tipo",
+      "agregar": "Agregar tipo",
       "eliminar": "Eliminar",
       "cerrar": "Cerrar"
     },
@@ -96,12 +96,12 @@
     }
   },
   "Embarcaciones": {
-    "titulo": "Gestión de Embarcaciones",
+    "titulo": "Gestión de embarcaciones",
     "subtitulo": "Administra las embarcaciones registradas en el sistema",
     "buscar": "Buscar embarcación...",
-    "nuevaEmbarcacion": "Nueva Embarcación",
+    "nuevaEmbarcacion": "Nueva embarcación",
     "tabla": {
-      "nombre": "Nombre del Buque",
+      "nombre": "Nombre del buque",
       "matricula": "Matrícula",
       "bandera": "Bandera",
       "tipo": "Tipo",
@@ -122,13 +122,13 @@
       "de": "de"
     },
     "modal": {
-      "tituloCrear": "Crear Nueva Embarcación",
-      "tituloEditar": "Editar Embarcación",
-      "nombreBuque": "Nombre del Buque",
+      "tituloCrear": "Crear nueva embarcación",
+      "tituloEditar": "Editar embarcación",
+      "nombreBuque": "Nombre del buque",
       "matricula": "Matrícula",
       "numeroOMI": "Número OMI",
       "bandera": "Bandera",
-      "tipoBuque": "Tipo de Buque",
+      "tipoBuque": "Tipo de buque",
       "seleccioneTipo": "Seleccione un tipo",
       "eslora": "Eslora (metros)",
       "manga": "Manga (metros)",
@@ -140,8 +140,8 @@
       "armador": "Armador",
       "seleccioneArmador": "Seleccione un armador",
       "cancelar": "Cancelar",
-      "crear": "Crear Embarcación",
-      "guardar": "Guardar Cambios"
+      "crear": "Crear embarcación",
+      "guardar": "Guardar cambios"
     },
     "mensajes": {
       "embarcacionCreada": "Embarcación creada exitosamente",

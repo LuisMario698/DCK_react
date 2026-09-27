@@ -42,9 +42,9 @@ import {
 type Estado = AsociacionRecolectora['estado'];
 
 const ESTADO_CLS: Record<Estado, string> = {
-    Activo: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-    Inactivo: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
-    Suspendido: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    Activo: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
+    Inactivo: 'bg-simar-papel text-simar-texto-2',
+    Suspendido: 'bg-simar-coral-suave text-simar-coral',
 };
 
 interface Metricas {
@@ -118,29 +118,29 @@ export function EmpresasTab({
         <div className="space-y-6">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm p-5 sm:p-6 transition-shadow hover:shadow-md">
+            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar p-5 sm:p-6 transition-shadow">
                 <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Asociaciones recolectoras</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                        <h3 className="text-lg font-bold text-simar-texto">Asociaciones recolectoras</h3>
+                        <p className="text-base text-simar-texto-2 mt-0.5">
                             Registra empresas, vincula a sus usuarios y controla su estado.
                         </p>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                         <div className="relative flex-1 sm:w-72">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 type="text"
                                 placeholder="Buscar por nombre, RFC o ubicación…"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
-                                className="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                className="w-full pl-10 pr-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                             />
                         </div>
                         <select
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value as Estado | 'todos')}
-                            className="py-2.5 px-3 text-sm rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white"
+                            className="px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                         >
                             <option value="todos">Todos los estados</option>
                             <option value="Activo">Activas</option>
@@ -159,36 +159,36 @@ export function EmpresasTab({
                         return (
                             <div
                                 key={emp.id}
-                                className="group relative border border-gray-200 dark:border-gray-800 rounded-2xl p-5 hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xl hover:shadow-blue-100 dark:hover:shadow-blue-900/20 hover:-translate-y-1 transition-all duration-300 bg-white dark:bg-gray-900 overflow-hidden animate-fade-in"
+                                className="group relative border border-simar-borde rounded-2xl p-5 hover:border-simar-marea-tinta/30 transition-all duration-300 bg-simar-superficie overflow-hidden"
                                 style={{ animationDelay: `${Math.min(idx * 60, 400)}ms` }}
                             >
-                                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-x-0 top-0 h-1 bg-simar-marea opacity-0 group-hover:opacity-100 transition-opacity" />
 
                                 <div className="flex items-start gap-3 mb-4">
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-blue-600/20 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-simar-marea flex items-center justify-center text-white font-extrabold text-xl shadow-simar group-hover:rotate-3 transition-transform duration-300">
                                         {emp.nombre_asociacion.charAt(0)}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{emp.nombre_asociacion}</p>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
+                                        <p className="text-base font-bold text-simar-texto truncate">{emp.nombre_asociacion}</p>
+                                        <p className="text-[15px] text-simar-texto-2 flex items-center gap-1 mt-1">
                                             <MapPin className="w-3 h-3 flex-shrink-0" />
                                             <span className="truncate">{emp.ubicacion || emp.direccion || 'Sin ubicación'}</span>
                                         </p>
                                     </div>
-                                    <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${ESTADO_CLS[emp.estado]}`}>
+                                    <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[15px] font-bold ${ESTADO_CLS[emp.estado]}`}>
                                         {emp.estado}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-3 text-xs mb-4 pb-4 border-b border-gray-100 dark:border-gray-800 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center gap-3 text-[15px] mb-4 pb-4 border-b border-simar-borde text-simar-texto-2">
                                     <span className="inline-flex items-center gap-1">
-                                        <Truck className="w-3.5 h-3.5 text-blue-500" />
-                                        <span className="font-semibold text-gray-900 dark:text-white">{m?.recolecciones ?? 0}</span> recolecciones
+                                        <Truck className="w-3.5 h-3.5 text-simar-marea-tinta" />
+                                        <span className="font-semibold text-simar-texto">{m?.recolecciones ?? 0}</span> recolecciones
                                     </span>
                                     {m?.porUnidad.kg ? (
                                         <span className="inline-flex items-center gap-1">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                                            <span className="font-semibold text-gray-900 dark:text-white">{formatCantidad(m.porUnidad.kg)}</span> kg
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-simar-arrecife-tinta" />
+                                            <span className="font-semibold text-simar-texto">{formatCantidad(m.porUnidad.kg)}</span> kg
                                         </span>
                                     ) : null}
                                 </div>
@@ -198,25 +198,25 @@ export function EmpresasTab({
                                         <ResiduoBadge key={t} tipo={t} />
                                     ))}
                                     {emp.tipos_residuo.length > 3 && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[15px] font-semibold bg-simar-papel text-simar-texto-2">
                                             +{emp.tipos_residuo.length - 3}
                                         </span>
                                     )}
                                     {emp.tipos_residuo.length === 0 && (
-                                        <span className="text-[11px] text-gray-400">Todos los residuos</span>
+                                        <span className="text-[15px] text-simar-texto-2">Todos los residuos</span>
                                     )}
                                 </div>
 
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setSeleccionada(emp)}
-                                        className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all hover:scale-[1.02] active:scale-95"
+                                        className="flex-1 px-4 py-2.5 text-base font-bold text-simar-texto bg-simar-papel hover:bg-simar-papel rounded-xl transition-all min-h-[52px]"
                                     >
                                         Ver perfil
                                     </button>
                                     <button
                                         onClick={() => onAbrirChat?.(emp.id)}
-                                        className="px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-xl shadow-md shadow-blue-600/20 hover:shadow-blue-600/40 transition-all inline-flex items-center gap-1.5 hover:scale-[1.02] active:scale-95"
+                                        className="px-4 py-2.5 text-base font-bold text-white bg-simar-marea hover:bg-simar-marea-hover rounded-xl shadow-simar transition-all inline-flex items-center gap-1.5 min-h-[52px]"
                                     >
                                         <MessageSquare className="w-4 h-4" />
                                         Chat
@@ -230,10 +230,10 @@ export function EmpresasTab({
                 {filtradas.length === 0 && (
                     <div className="text-center py-16">
                         <div className="inline-flex flex-col items-center gap-3">
-                            <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                <Building2 className="w-7 h-7 text-blue-500" />
+                            <div className="w-14 h-14 rounded-full bg-simar-marea-suave flex items-center justify-center">
+                                <Building2 className="w-7 h-7 text-simar-marea-tinta" />
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                            <p className="text-base text-simar-texto-2">
                                 {asociaciones.length === 0
                                     ? 'Aún no hay asociaciones registradas.'
                                     : 'No se encontraron asociaciones con ese criterio.'}
@@ -380,9 +380,9 @@ function PerfilModal({
         <Modal titulo={empresa.nombre_asociacion} subtitulo={empresa.rfc ? `RFC ${empresa.rfc}` : undefined} onClose={onClose} ancho="max-w-2xl">
             <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${ESTADO_CLS[empresa.estado]}`}>{empresa.estado}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-[15px] font-bold ${ESTADO_CLS[empresa.estado]}`}>{empresa.estado}</span>
                     {empresa.tipo_asociacion && (
-                        <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                        <span className="px-2.5 py-1 rounded-full text-[15px] font-semibold bg-simar-papel text-simar-texto-2">
                             {empresa.tipo_asociacion}
                         </span>
                     )}
@@ -397,16 +397,16 @@ function PerfilModal({
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                    <Stat label="Recolecciones" value={String(metricas?.recolecciones ?? 0)} icon={<Truck className="w-4 h-4 text-blue-500" />} />
-                    <Stat label="Sólidos" value={`${formatCantidad(metricas?.porUnidad.kg ?? 0)} kg`} icon={<Package className="w-4 h-4 text-emerald-500" />} />
-                    <Stat label="Líquidos" value={`${formatCantidad(metricas?.porUnidad.L ?? 0)} L`} icon={<CheckCircle2 className="w-4 h-4 text-orange-500" />} />
+                    <Stat label="Recolecciones" value={String(metricas?.recolecciones ?? 0)} icon={<Truck className="w-4 h-4 text-simar-marea-tinta" />} />
+                    <Stat label="Sólidos" value={`${formatCantidad(metricas?.porUnidad.kg ?? 0)} kg`} icon={<Package className="w-4 h-4 text-simar-arrecife-tinta" />} />
+                    <Stat label="Líquidos" value={`${formatCantidad(metricas?.porUnidad.L ?? 0)} L`} icon={<CheckCircle2 className="w-4 h-4 text-simar-coral" />} />
                 </div>
 
                 {empresa.descripcion && (
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{empresa.descripcion}</p>
+                    <p className="text-base text-simar-texto leading-relaxed">{empresa.descripcion}</p>
                 )}
 
-                <div className="space-y-2.5 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                <div className="space-y-2.5 p-4 rounded-xl bg-simar-papel border border-simar-borde">
                     {empresa.contacto_asociacion && <InfoLine icon={<Users className="w-4 h-4" />} text={empresa.contacto_asociacion} />}
                     {empresa.email && <InfoLine icon={<Mail className="w-4 h-4" />} text={empresa.email} />}
                     {empresa.telefono && <InfoLine icon={<Phone className="w-4 h-4" />} text={empresa.telefono} />}
@@ -415,54 +415,54 @@ function PerfilModal({
                     )}
                     {empresa.sitio_web && <InfoLine icon={<Globe className="w-4 h-4" />} text={empresa.sitio_web} />}
                     {!empresa.email && !empresa.telefono && !empresa.contacto_asociacion && (
-                        <p className="text-sm text-gray-400">Sin datos de contacto.</p>
+                        <p className="text-base text-simar-texto-2">Sin datos de contacto.</p>
                     )}
                 </div>
 
                 <div>
-                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Materiales que recolecta</p>
+                    <p className="text-[15px] font-semibold text-simar-texto-2 mb-2">Materiales que recolecta</p>
                     <div className="flex flex-wrap gap-1.5">
                         {empresa.tipos_residuo.length > 0 ? (
                             empresa.tipos_residuo.map((t) => <ResiduoBadge key={t} tipo={t} size="md" />)
                         ) : (
-                            <span className="text-sm text-gray-400">No especificado (recibe avisos de todos los residuos)</span>
+                            <span className="text-base text-simar-texto-2">No especificado (recibe avisos de todos los residuos)</span>
                         )}
                     </div>
                 </div>
 
                 {/* Accesos al portal */}
-                <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-4 space-y-3">
+                <div className="rounded-xl border border-simar-borde p-4 space-y-3">
                     <div>
-                        <p className="text-sm font-bold text-gray-900 dark:text-white">Usuarios con acceso al portal</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                        <p className="text-base font-bold text-simar-texto">Usuarios con acceso al portal</p>
+                        <p className="text-[15px] text-simar-texto-2">
                             Vincula el correo de la persona de la empresa. Si ya tiene cuenta obtiene acceso inmediato;
                             si no, al registrarse con ese correo.
                         </p>
                     </div>
                     <ul className="space-y-1.5">
                         {usuarios.map((u) => (
-                            <li key={u.id} className="flex items-center justify-between gap-2 text-sm px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800/60">
-                                <span className="truncate text-gray-800 dark:text-gray-200">
+                            <li key={u.id} className="flex items-center justify-between gap-2 text-base px-3 py-2 rounded-lg bg-simar-papel">
+                                <span className="truncate text-simar-texto">
                                     {u.full_name ? `${u.full_name} · ` : ''}{u.email}
                                 </span>
-                                <button onClick={() => quitarAcceso(u)} className="text-red-500 hover:text-red-600 p-1" title="Quitar acceso">
+                                <button onClick={() => quitarAcceso(u)} className="text-simar-coral hover:text-simar-coral p-1 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="Quitar acceso">
                                     <UserX className="w-4 h-4" />
                                 </button>
                             </li>
                         ))}
                         {invitaciones.map((i) => (
-                            <li key={i.id} className="flex items-center justify-between gap-2 text-sm px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/10">
-                                <span className="truncate text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                                    {i.email} <span className="text-xs text-amber-600 dark:text-amber-400">· pendiente de registro desde {formatearFecha(i.created_at)}</span>
+                            <li key={i.id} className="flex items-center justify-between gap-2 text-base px-3 py-2 rounded-lg bg-simar-coral-suave">
+                                <span className="truncate text-simar-texto flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5 text-simar-coral flex-shrink-0" />
+                                    {i.email} <span className="text-[15px] text-simar-coral">· pendiente de registro desde {formatearFecha(i.created_at)}</span>
                                 </span>
-                                <button onClick={() => borrarInvitacion(i)} className="text-gray-400 hover:text-red-500 p-1" title="Cancelar invitación">
+                                <button onClick={() => borrarInvitacion(i)} className="text-simar-texto-2 hover:text-simar-coral p-1 min-w-[44px] min-h-[44px] inline-flex items-center justify-center" title="Cancelar invitación">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </li>
                         ))}
                         {usuarios.length === 0 && invitaciones.length === 0 && (
-                            <li className="text-sm text-gray-400">Nadie tiene acceso todavía.</li>
+                            <li className="text-base text-simar-texto-2">Nadie tiene acceso todavía.</li>
                         )}
                     </ul>
                     <div className="flex gap-2">
@@ -482,19 +482,19 @@ function PerfilModal({
 
                 {/* Estado y eliminación */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 mr-1">Cambiar estado:</span>
+                    <span className="text-[15px] font-semibold text-simar-texto-2 mr-1">Cambiar estado:</span>
                     {(['Activo', 'Inactivo', 'Suspendido'] as Estado[])
                         .filter((e) => e !== empresa.estado)
                         .map((e) => (
                             <button
                                 key={e}
                                 onClick={() => cambiarEstado(e)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${ESTADO_CLS[e]} hover:opacity-80 transition-opacity`}
+                                className={`px-3 py-1.5 rounded-lg text-[15px] font-semibold ${ESTADO_CLS[e]} hover:opacity-80 transition-opacity`}
                             >
                                 {e === 'Activo' ? 'Activar' : e === 'Inactivo' ? 'Marcar inactiva' : 'Suspender'}
                             </button>
                         ))}
-                    <button onClick={eliminar} className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-red-600 dark:text-red-400 hover:underline">
+                    <button onClick={eliminar} className="ml-auto inline-flex items-center gap-1 text-[15px] font-semibold text-simar-coral hover:underline">
                         <Trash2 className="w-3.5 h-3.5" /> Eliminar
                     </button>
                 </div>
@@ -619,8 +619,8 @@ function FormularioModal({
                 </div>
 
                 <div>
-                    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                        Materiales que recolecta <span className="font-normal text-gray-400">(define qué avisos de inventario recibe)</span>
+                    <p className="text-[15px] font-semibold text-simar-texto-2 mb-2">
+                        Materiales que recolecta <span className="font-normal text-simar-texto-2">(define qué avisos de inventario recibe)</span>
                     </p>
                     <div className="flex flex-wrap gap-2">
                         {TIPOS_RESIDUO.map((t) => {
@@ -630,10 +630,10 @@ function FormularioModal({
                                     key={t}
                                     type="button"
                                     onClick={() => toggleTipo(t)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                                    className={`px-3 py-1.5 rounded-lg text-[15px] font-semibold border transition-all ${
                                         activo
-                                            ? 'bg-blue-600 border-blue-600 text-white'
-                                            : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-blue-400'
+                                            ? 'bg-simar-marea border-simar-marea-tinta text-white'
+                                            : 'border-simar-campo-borde text-simar-texto-2 hover:border-simar-marea-tinta/30'
                                     }`}
                                 >
                                     {TIPO_RESIDUO_LABEL[t]}
@@ -666,18 +666,18 @@ function FormularioModal({
 
 function Stat({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
     return (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+        <div className="bg-simar-papel rounded-xl p-3 text-center">
             <div className="flex items-center justify-center mb-1">{icon}</div>
-            <p className="text-base font-bold text-gray-900 dark:text-white">{value}</p>
-            <p className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+            <p className="text-base font-bold text-simar-texto">{value}</p>
+            <p className="text-[15px] font-semibold text-simar-texto-2">{label}</p>
         </div>
     );
 }
 
 function InfoLine({ icon, text }: { icon: React.ReactNode; text: string }) {
     return (
-        <div className="flex items-center gap-2.5 text-sm text-gray-700 dark:text-gray-300">
-            <span className="text-blue-500 flex-shrink-0">{icon}</span>
+        <div className="flex items-center gap-2.5 text-base text-simar-texto">
+            <span className="text-simar-marea-tinta flex-shrink-0">{icon}</span>
             <span className="truncate font-medium">{text}</span>
         </div>
     );

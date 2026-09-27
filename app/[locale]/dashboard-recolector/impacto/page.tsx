@@ -88,7 +88,7 @@ function delta(actual: number, anterior: number): number | 'nuevo' | 'sin_datos'
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { dataKey: string; name: string; value: number; color: string }[]; label?: string }) {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-xl shadow-xl px-4 py-3 border border-white/10 min-w-[160px]">
+        <div className="bg-simar-abismo text-white text-[15px] rounded-xl shadow-simar px-4 py-3 border border-white/10 min-w-[160px]">
             <p className="font-bold text-white mb-2">{label}</p>
             {payload.map((p) => (
                 <p key={p.dataKey} style={{ color: p.color }} className="font-semibold">
@@ -155,10 +155,10 @@ export default function ImpactoPage() {
 
     const { actual, anterior, serie, composicion, donut } = calculo;
     const cards = [
-        { label: 'CO₂e evitado (estimado)', value: `${formatCantidad(Math.round(actual.co2))} kg`, d: delta(actual.co2, anterior.co2), Icon: Leaf, bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', ic: 'text-emerald-500' },
-        { label: 'Material sólido recolectado', value: `${formatCantidad(actual.kg)} kg`, d: delta(actual.kg, anterior.kg), Icon: Package, bg: 'bg-purple-500/10 dark:bg-purple-500/20', ic: 'text-purple-400' },
-        { label: 'Aceite usado recolectado', value: `${formatCantidad(actual.litros)} L`, d: delta(actual.litros, anterior.litros), Icon: Droplets, bg: 'bg-amber-500/10 dark:bg-amber-500/20', ic: 'text-amber-400' },
-        { label: 'Recolecciones', value: String(actual.recolecciones), d: delta(actual.recolecciones, anterior.recolecciones), Icon: Truck, bg: 'bg-blue-500/10 dark:bg-blue-500/20', ic: 'text-blue-400' },
+        { label: 'CO₂e evitado (estimado)', value: `${formatCantidad(Math.round(actual.co2))} kg`, d: delta(actual.co2, anterior.co2), Icon: Leaf, bg: 'bg-[#127A5D]/10', ic: 'text-simar-arrecife-tinta' },
+        { label: 'Material sólido recolectado', value: `${formatCantidad(actual.kg)} kg`, d: delta(actual.kg, anterior.kg), Icon: Package, bg: 'bg-[#5B3FA8]/10', ic: 'text-simar-violeta' },
+        { label: 'Aceite usado recolectado', value: `${formatCantidad(actual.litros)} L`, d: delta(actual.litros, anterior.litros), Icon: Droplets, bg: 'bg-[#A63F0E]/10', ic: 'text-simar-coral' },
+        { label: 'Recolecciones', value: String(actual.recolecciones), d: delta(actual.recolecciones, anterior.recolecciones), Icon: Truck, bg: 'bg-simar-marea/10', ic: 'text-simar-marea-tinta' },
     ];
 
     return (
@@ -168,23 +168,24 @@ export default function ImpactoPage() {
             {/* Header + filtro */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Impacto ambiental</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    <h2 className="text-xl font-extrabold text-simar-texto">Impacto ambiental</h2>
+                    <p className="text-base text-simar-texto-2 mt-0.5">
                         Calculado a partir de tus recolecciones completadas.
                     </p>
                 </div>
-                <div className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+                <div role="group" aria-label="Periodo" className="inline-flex flex-wrap items-center gap-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-2xl p-1.5">
                     {(['1m', '3m', '6m', '1y'] as Periodo[]).map((p) => (
                         <button
                             key={p}
                             onClick={() => setPeriodo(p)}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                            aria-pressed={periodo === p}
+                            className={`min-h-[44px] px-4 rounded-xl text-base font-bold transition-colors ${
                                 periodo === p
-                                    ? 'bg-emerald-500 text-white shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                                    ? 'bg-simar-marea text-white'
+                                    : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
                             }`}
                         >
-                            {p}
+                            {{ '1m': '1 mes', '3m': '3 meses', '6m': '6 meses', '1y': '1 año' }[p]}
                         </button>
                     ))}
                 </div>
@@ -195,18 +196,18 @@ export default function ImpactoPage() {
                 {cards.map((c) => {
                     const Icon = c.Icon;
                     return (
-                        <div key={c.label} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm">
+                        <div key={c.label} className="bg-simar-superficie border border-simar-borde rounded-xl p-4 shadow-simar">
                             <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${c.bg}`}>
                                 <Icon className={`w-5 h-5 ${c.ic}`} />
                             </div>
-                            <p className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">{c.value}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{c.label}</p>
+                            <p className="text-2xl font-extrabold text-simar-texto leading-tight">{c.value}</p>
+                            <p className="text-[15px] text-simar-texto-2 mt-1">{c.label}</p>
                             {c.d === 'sin_datos' ? (
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Sin datos en este periodo</p>
+                                <p className="text-[15px] text-simar-texto-2 mt-2">Sin datos en este periodo</p>
                             ) : (
-                                <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${typeof c.d === 'number' && c.d < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                <p className={`text-[15px] font-semibold mt-2 flex items-center gap-1 ${typeof c.d === 'number' && c.d < 0 ? 'text-simar-coral' : 'text-simar-arrecife-tinta'}`}>
                                     <span>{c.d === 'nuevo' ? 'Nuevo' : `${c.d >= 0 ? '↑ +' : '↓ '}${c.d}%`}</span>
-                                    <span className="text-gray-400 dark:text-gray-500 font-normal">vs. periodo anterior</span>
+                                    <span className="text-simar-texto-2 font-normal">vs. periodo anterior</span>
                                 </p>
                             )}
                         </div>
@@ -216,8 +217,8 @@ export default function ImpactoPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Área */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+                <div className="lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-xl p-5 shadow-simar">
+                    <h3 className="text-base font-bold text-simar-texto mb-4">
                         Material sólido recolectado (kg): periodo actual vs. anterior
                     </h3>
                     <div className="h-72">
@@ -243,21 +244,21 @@ export default function ImpactoPage() {
                         </ResponsiveContainer>
                     </div>
                     <div className="flex items-center gap-5 mt-3 justify-center">
-                        <span className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-sm bg-emerald-500" /> Periodo actual
+                        <span className="flex items-center gap-2 text-[15px] text-simar-texto-2">
+                            <span className="w-3 h-3 rounded-sm bg-[#127A5D]" /> Periodo actual
                         </span>
-                        <span className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-sm bg-blue-400" /> Periodo anterior
+                        <span className="flex items-center gap-2 text-[15px] text-simar-texto-2">
+                            <span className="w-3 h-3 rounded-sm bg-simar-marea-suave" /> Periodo anterior
                         </span>
                     </div>
                 </div>
 
                 <div className="space-y-4">
                     {/* Composición */}
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Composición de materiales</h3>
+                    <div className="bg-simar-superficie border border-simar-borde rounded-xl p-5 shadow-simar">
+                        <h3 className="text-base font-bold text-simar-texto mb-4">Composición de materiales</h3>
                         {composicion.length === 0 ? (
-                            <p className="text-sm text-gray-400 py-6 text-center">Sin recolecciones en este periodo.</p>
+                            <p className="text-base text-simar-texto-2 py-6 text-center">Sin recolecciones en este periodo.</p>
                         ) : (
                             <>
                                 {donut.length > 0 && (
@@ -277,12 +278,12 @@ export default function ImpactoPage() {
                                 )}
                                 <ul className="space-y-2">
                                     {composicion.map((e) => (
-                                        <li key={e.tipo} className="flex items-center justify-between text-sm">
-                                            <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                        <li key={e.tipo} className="flex items-center justify-between text-base">
+                                            <span className="flex items-center gap-2 text-simar-texto">
                                                 <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TIPO_RESIDUO_HEX[e.tipo] }} />
                                                 {TIPO_RESIDUO_LABEL[e.tipo]}
                                             </span>
-                                            <span className="font-bold text-gray-900 dark:text-white">
+                                            <span className="font-bold text-simar-texto">
                                                 {formatCantidad(e.cantidad)} {e.unidad}
                                             </span>
                                         </li>
@@ -293,24 +294,24 @@ export default function ImpactoPage() {
                     </div>
 
                     {/* Equivalencia */}
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Equivalencia ecológica</h3>
+                    <div className="bg-simar-superficie border border-simar-borde rounded-xl p-5 shadow-simar">
+                        <h3 className="text-base font-bold text-simar-texto mb-4">Equivalencia ecológica</h3>
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-emerald-500/10">
-                                <TreeDeciduous className="w-5 h-5 text-emerald-500" />
+                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-[#127A5D]/10">
+                                <TreeDeciduous className="w-5 h-5 text-simar-arrecife-tinta" />
                             </div>
                             <div>
-                                <p className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                                <p className="text-xl font-extrabold text-simar-texto leading-tight">
                                     {formatCantidad(Math.round(actual.co2 / KG_CO2_POR_ARBOL_ANIO))}
                                 </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">árboles absorbiendo CO₂ durante un año</p>
+                                <p className="text-[15px] text-simar-texto-2">árboles absorbiendo CO₂ durante un año</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <p className="flex items-start gap-2 text-xs text-gray-400 dark:text-gray-500">
+            <p className="flex items-start gap-2 text-[15px] text-simar-texto-2">
                 <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 El CO₂e evitado es una estimación con factores de referencia por tipo de material; no sustituye un
                 inventario de emisiones certificado.

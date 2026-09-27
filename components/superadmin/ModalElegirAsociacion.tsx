@@ -63,14 +63,14 @@ export function ModalElegirAsociacion({
             {!asociaciones ? (
                 <Cargando />
             ) : asociaciones.length === 0 ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400 py-6 text-center">
+                <p className="text-base text-simar-texto-2 py-6 text-center">
                     No hay asociaciones registradas. Créalas en el recinto portuario → Asociaciones recolectoras.
                 </p>
             ) : (
                 <div className="space-y-4">
                     {asociaciones.length > 5 && (
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
                                 placeholder="Buscar asociación"
@@ -92,27 +92,27 @@ export function ModalElegirAsociacion({
                                         onClick={() => setElegida(a.id)}
                                         className={`w-full flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
                                             activa
-                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                                                : 'border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                                                ? 'border-simar-arrecife bg-simar-arrecife-suave'
+                                                : 'border-simar-borde hover:bg-simar-papel'
                                         }`}
                                     >
-                                        <span className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">
+                                        <span className="w-9 h-9 rounded-lg bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center flex-shrink-0">
                                             <Recycle className="w-4 h-4" />
                                         </span>
                                         <span className="min-w-0 flex-1">
-                                            <span className="block text-sm font-semibold text-gray-900 dark:text-white">{a.nombre_asociacion}</span>
-                                            <span className="block text-xs text-gray-500 dark:text-gray-400">
+                                            <span className="block text-base font-semibold text-simar-texto">{a.nombre_asociacion}</span>
+                                            <span className="block text-[15px] text-simar-texto-2">
                                                 {a.estado !== 'Activo' ? `Asociación ${a.estado.toLowerCase()} · ` : ''}
                                                 {a.rfc || 'Sin RFC'}
                                             </span>
                                         </span>
-                                        {activa && <Check className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />}
+                                        {activa && <Check className="w-5 h-5 text-simar-arrecife-tinta flex-shrink-0" />}
                                     </button>
                                 </li>
                             );
                         })}
                     </ul>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-[15px] text-simar-texto-2">
                         Sigues siendo administrador del recinto portuario. En el portal, las solicitudes y los mensajes que
                         envíes quedan a nombre de la asociación elegida.
                     </p>
@@ -122,7 +122,7 @@ export function ModalElegirAsociacion({
                                 type="button"
                                 onClick={() => guardar(null)}
                                 disabled={guardando}
-                                className="text-sm font-semibold text-red-600 dark:text-red-400 hover:underline disabled:opacity-50"
+                                className="text-base font-semibold text-simar-coral hover:underline disabled:opacity-50"
                             >
                                 Quitar vínculo
                             </button>

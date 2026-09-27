@@ -83,16 +83,16 @@ export default function SolicitudesPage() {
             <div className="flex justify-end">
                 <Link
                     href={`/${locale}/dashboard-recolector/mapa`}
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"
+                    className="inline-flex items-center gap-2 bg-simar-marea hover:bg-simar-marea-hover text-white text-base font-semibold px-4 py-2 rounded-lg shadow-simar transition-colors"
                 >
                     <Plus className="w-4 h-4" />
                     Nueva solicitud
                 </Link>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+            <div className="bg-simar-superficie border border-simar-borde rounded-xl shadow-simar overflow-hidden">
                 {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6">
+                <div className="border-b border-simar-borde px-4 sm:px-6">
                     <nav className="flex gap-1 sm:gap-4 overflow-x-auto -mb-px">
                         {TABS.map((t) => {
                             const count =
@@ -104,14 +104,14 @@ export default function SolicitudesPage() {
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
-                                    className={`whitespace-nowrap py-3 px-3 text-sm font-semibold border-b-2 transition-colors ${
+                                    className={`whitespace-nowrap py-3 px-3 text-base font-semibold border-b-2 transition-colors ${
                                         active
-                                            ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400'
-                                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                            ? 'border-simar-marea-tinta text-simar-marea-tinta'
+                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto'
                                     }`}
                                 >
                                     {t.label}
-                                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                    <span className={`ml-2 text-[15px] px-1.5 py-0.5 rounded-full ${active ? 'bg-simar-marea-suave' : 'bg-simar-papel'}`}>
                                         {count}
                                     </span>
                                 </button>
@@ -122,8 +122,8 @@ export default function SolicitudesPage() {
 
                 {/* Tabla */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                        <thead className="bg-gray-50 dark:bg-gray-800/50">
+                    <table className="min-w-full divide-y divide-simar-borde-suave">
+                        <thead className="bg-simar-papel">
                             <tr>
                                 <Th>Residuo</Th>
                                 <Th>Cantidad</Th>
@@ -133,59 +133,62 @@ export default function SolicitudesPage() {
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
                             {filtradas.map((s) => (
-                                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <tr key={s.id} className="hover:bg-simar-papel transition-colors">
                                     <td className="px-4 sm:px-6 py-4">
                                         <ResiduoBadge tipo={s.tipo} />
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-base font-semibold text-simar-texto whitespace-nowrap">
                                         {formatCantidad(cantidadVigente(s))} {s.unidad}
                                         {s.recoleccion ? (
-                                            <span className="block text-[11px] font-normal text-gray-400">recolectados</span>
+                                            <span className="block text-[15px] font-normal text-simar-texto-2">recolectados</span>
                                         ) : (
                                             s.cantidad_aprobada !== null &&
                                             s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                <span className="block text-[11px] font-normal text-gray-400">
+                                                <span className="block text-[15px] font-normal text-simar-texto-2">
                                                     de {formatCantidad(s.cantidad_solicitada)} solicitados
                                                 </span>
                                             )
                                         )}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto hidden sm:table-cell whitespace-nowrap">
                                         {formatearFecha(s.fecha_propuesta)}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
                                         {formatearFecha(s.created_at)}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4">
                                         <EstadoSolicitudBadge estado={s.estado} />
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                        <div className="inline-flex items-center gap-2">
                                         <button
                                             onClick={() => setDetalle(s)}
-                                            className="p-1.5 rounded-md text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                            className="min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors inline-flex items-center gap-1.5"
                                             title="Ver detalle"
                                             aria-label="Ver detalle"
                                         >
-                                            <Eye className="w-4 h-4" />
+                                            <Eye className="w-[18px] h-[18px]" />
+                                            <span className="hidden sm:inline">Ver</span>
                                         </button>
                                         {s.estado === 'pendiente' && (
                                             <button
                                                 onClick={() => cancelar(s)}
-                                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                className="w-11 h-11 rounded-xl bg-simar-coral-suave text-simar-coral hover:bg-[#A63F0E] hover:text-white transition-colors inline-flex items-center justify-center"
                                                 title="Cancelar solicitud"
                                                 aria-label="Cancelar solicitud"
                                             >
-                                                <Ban className="w-4 h-4" />
+                                                <Ban className="w-[18px] h-[18px]" />
                                             </button>
                                         )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {filtradas.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-base text-simar-texto-2">
                                         <Inbox className="w-8 h-8 mx-auto mb-2 opacity-40" />
                                         {solicitudes.length === 0
                                             ? 'Aún no has enviado solicitudes. Revisa los residuos disponibles para crear la primera.'
@@ -205,7 +208,7 @@ export default function SolicitudesPage() {
                             <EstadoSolicitudBadge estado={detalle.estado} />
                             <ResiduoBadge tipo={detalle.tipo} />
                         </div>
-                        <dl className="grid grid-cols-2 gap-3 text-sm">
+                        <dl className="grid grid-cols-2 gap-3 text-base">
                             <Dato label="Solicitado" valor={`${formatCantidad(detalle.cantidad_solicitada)} ${detalle.unidad}`} />
                             <Dato
                                 label="Aprobado"
@@ -223,7 +226,7 @@ export default function SolicitudesPage() {
                         {detalle.mensaje && <Nota titulo="Tu mensaje">{detalle.mensaje}</Nota>}
                         {detalle.motivo_rechazo && <Nota titulo="Motivo del rechazo">{detalle.motivo_rechazo}</Nota>}
                         {detalle.estado === 'aprobada' && (
-                            <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                            <p className="text-base text-simar-marea-tinta">
                                 Preséntate en el centro de acopio en la fecha acordada. Al recoger, el personal registrará
                                 la cantidad real y tu comprobante aparecerá en el historial.
                             </p>
@@ -231,13 +234,13 @@ export default function SolicitudesPage() {
                         {detalle.estado === 'completada' && (
                             <Link
                                 href={`/${locale}/dashboard-recolector/historial`}
-                                className="inline-block text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                                className="inline-block text-base font-semibold text-simar-marea-tinta hover:underline"
                             >
                                 Ver comprobante en el historial →
                             </Link>
                         )}
                         {detalle.estado === 'pendiente' && (
-                            <BotonSecundario onClick={() => cancelar(detalle)} className="w-full !text-red-600 dark:!text-red-400">
+                            <BotonSecundario onClick={() => cancelar(detalle)} className="w-full !text-simar-coral">
                                 <Ban className="w-4 h-4" /> Cancelar solicitud
                             </BotonSecundario>
                         )}
@@ -250,25 +253,25 @@ export default function SolicitudesPage() {
 
 function Dato({ label, valor }: { label: string; valor: string }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 p-3">
-            <dt className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</dt>
-            <dd className="mt-1 font-semibold text-gray-900 dark:text-white">{valor}</dd>
+        <div className="rounded-xl bg-simar-papel p-3">
+            <dt className="text-[15px] font-semibold text-simar-texto-2">{label}</dt>
+            <dd className="mt-1 font-semibold text-simar-texto">{valor}</dd>
         </div>
     );
 }
 
 function Nota({ titulo, children }: { titulo: string; children: React.ReactNode }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-3.5">
-            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{titulo}</p>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{children}</p>
+        <div className="rounded-xl bg-simar-papel border border-simar-borde p-3.5">
+            <p className="text-[15px] font-semibold text-simar-texto-2 mb-1.5">{titulo}</p>
+            <p className="text-base text-simar-texto leading-relaxed whitespace-pre-wrap">{children}</p>
         </div>
     );
 }
 
 function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ${className}`}>
+        <th className={`px-4 sm:px-6 py-3 text-left text-[15px] font-semibold text-simar-texto-2 ${className}`}>
             {children}
         </th>
     );

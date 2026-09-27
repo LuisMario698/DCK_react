@@ -68,7 +68,7 @@ export default function PlanesPage() {
     return (
         <div className="space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
+                <p className="text-base text-simar-texto-2 max-w-2xl">
                     Un plan desactivado ya no se ofrece en suscripciones nuevas, pero las existentes lo conservan. Los precios
                     son una referencia: cada suscripción guarda el precio acordado.
                 </p>
@@ -79,7 +79,7 @@ export default function PlanesPage() {
             </div>
 
             {planes.length === 0 ? (
-                <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl">
+                <div className="bg-simar-superficie border border-simar-borde rounded-2xl">
                     <EstadoVacio
                         icono={Layers}
                         titulo="Todavía no hay planes"
@@ -138,7 +138,7 @@ export default function PlanesPage() {
                     }}
                 >
                     <p>
-                        Se eliminará el plan <strong className="text-gray-900 dark:text-white">{borrando.nombre}</strong>. Queda
+                        Se eliminará el plan <strong className="text-simar-texto">{borrando.nombre}</strong>. Queda
                         registro en la bitácora.
                     </p>
                 </ModalConfirmar>
@@ -166,43 +166,43 @@ function TarjetaPlan({
 
     return (
         <article
-            className={`flex flex-col bg-white dark:bg-gray-900 border rounded-2xl p-5 shadow-sm ${
-                plan.activo ? 'border-gray-200 dark:border-gray-800' : 'border-dashed border-gray-300 dark:border-gray-700 opacity-75'
+            className={`flex flex-col bg-simar-superficie border rounded-2xl p-5 shadow-simar ${
+                plan.activo ? 'border-simar-borde' : 'border-dashed border-simar-campo-borde opacity-75'
             }`}
         >
             <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white">{plan.nombre}</h3>
-                    {plan.descripcion && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{plan.descripcion}</p>}
+                    <h3 className="text-base font-bold text-simar-texto">{plan.nombre}</h3>
+                    {plan.descripcion && <p className="text-base text-simar-texto-2 mt-0.5">{plan.descripcion}</p>}
                 </div>
                 <Interruptor activo={plan.activo} onChange={onActivo} etiqueta={`Plan ${plan.nombre} activo`} />
             </div>
 
             <p className="mt-4">
-                <span className="text-3xl font-bold text-gray-900 dark:text-white">{formatoMXN(mensual)}</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400"> / mes</span>
+                <span className="text-3xl font-extrabold text-simar-texto">{formatoMXN(mensual)}</span>
+                <span className="text-base text-simar-texto-2"> / mes</span>
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-[15px] text-simar-texto-2 mt-1">
                 {anual !== null
                     ? `${formatoMXN(anual)} al año${ahorro && ahorro > 0 ? ` · ${ahorro} % de ahorro` : ''}`
                     : 'Sin precio anual (se cobra 12 × mensual)'}
             </p>
 
-            <ul className="mt-4 space-y-1.5 text-sm text-gray-700 dark:text-gray-300 flex-1">
+            <ul className="mt-4 space-y-1.5 text-base text-simar-texto flex-1">
                 <li className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+                    <Users className="w-4 h-4 text-simar-violeta" />
                     {plan.limite_usuarios ? `Hasta ${plan.limite_usuarios} usuario(s) por asociación` : 'Usuarios ilimitados'}
                 </li>
                 {plan.caracteristicas.map((c) => (
                     <li key={c} className="flex items-start gap-2">
-                        <Check className="w-4 h-4 mt-0.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                        <Check className="w-4 h-4 mt-0.5 text-simar-arrecife-tinta flex-shrink-0" />
                         {c}
                     </li>
                 ))}
             </ul>
 
-            <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-5 pt-4 border-t border-simar-borde flex items-center justify-between">
+                <span className="text-[15px] text-simar-texto-2">
                     {uso === 0 ? 'Sin suscripciones' : `${uso} suscripción(es)`}
                 </span>
                 <div>
@@ -316,8 +316,8 @@ function ModalPlan({
                     </Campo>
                 </div>
 
-                <label className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 dark:border-gray-800 px-4 py-3">
-                    <span className="text-sm font-medium text-gray-900 dark:text-white">Disponible para nuevas suscripciones</span>
+                <label className="flex items-center justify-between gap-3 rounded-xl border border-simar-borde px-4 py-3">
+                    <span className="text-base font-medium text-simar-texto">Disponible para nuevas suscripciones</span>
                     <Interruptor activo={activo} onChange={setActivo} etiqueta="Plan activo" />
                 </label>
 

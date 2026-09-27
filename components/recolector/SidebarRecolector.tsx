@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-    LayoutDashboard,
+    LayoutGrid,
     Map,
     ClipboardList,
     History,
@@ -12,19 +12,32 @@ import {
     Bell,
     MessageSquare,
     LogOut,
-    Recycle,
     ChevronsLeft,
     X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { useRecolector } from './RecolectorContext';
 import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
+import { LogoSimar } from '@/components/layout/LogoSimar';
+import { BotonTema } from '@/components/layout/ThemeToggle';
 
 interface SidebarRecolectorProps {
     isOpen: boolean;
     isCollapsed: boolean;
     onClose: () => void;
     onToggleCollapse: () => void;
+}
+
+/** Línea de marea (la ola del logo) bajo la sección activa. */
+function LineaMarea() {
+    return (
+        <svg aria-hidden="true" width="46" height="8" viewBox="0 0 44 8" className="absolute left-0 -bottom-[9px]">
+            <path
+                d="M0 4 Q2.75 0 5.5 4 T11 4 T16.5 4 T22 4 T27.5 4 T33 4 T38.5 4 T44 4"
+                style={{ fill: 'none', stroke: 'var(--simar-golfo)', strokeWidth: 2, strokeLinecap: 'round' }}
+            />
+        </svg>
+    );
 }
 
 export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarRecolectorProps) {
@@ -35,7 +48,7 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
     const base = `/${locale}/dashboard-recolector`;
 
     const items = [
-        { label: 'Inicio', href: base, icon: LayoutDashboard },
+        { label: 'Inicio', href: base, icon: LayoutGrid },
         { label: 'Residuos disponibles', href: `${base}/mapa`, icon: Map },
         { label: 'Mis solicitudes', href: `${base}/solicitudes`, icon: ClipboardList },
         { label: 'Historial', href: `${base}/historial`, icon: History },
@@ -52,41 +65,42 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
         <>
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-40 lg:hidden bg-black/50 backdrop-blur-sm"
+                    className="fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]"
                     onClick={onClose}
                 />
             )}
 
             <aside
                 className={`
-                    fixed inset-y-0 left-0 h-full
-                    ${isCollapsed ? 'w-20' : 'w-64'}
-                    bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-                    z-50 transition-all duration-300 ease-in-out
-                    ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                    shadow-lg dark:shadow-gray-950/50
-                    flex flex-col overflow-x-hidden
+                    simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
+                    w-[276px] ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-[276px]'}
+                    px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden
+                    transition-all duration-300 ease-in-out
+                    ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
                 `}
             >
-                <div className={`h-20 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-gray-100 dark:border-gray-800`}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md flex-shrink-0">
-                            <Recycle className="w-5 h-5" />
-                        </div>
-                        {!isCollapsed && (
-                            <div className="flex flex-col">
-                                <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">SiMAR</span>
-                                <span className="text-[10px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-semibold">Recolector</span>
-                            </div>
+                <div className={`relative flex items-center ${isCollapsed ? 'lg:justify-center' : ''} px-2.5`}>
+                    <div className="rounded-xl">
+                        {isCollapsed ? (
+                            <>
+                                <LogoSimar variante="simbolo" tamano={46} className="hidden lg:inline-flex" />
+                                <LogoSimar tamano={46} className="lg:hidden" />
+                            </>
+                        ) : (
+                            <LogoSimar tamano={46} />
                         )}
                     </div>
-                    <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                        <X className="w-5 h-5" />
+                    <button
+                        onClick={onClose}
+                        aria-label="Cerrar menú"
+                        className="lg:hidden absolute right-0 w-12 h-12 rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
+                    >
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto py-6">
-                    <nav className="px-3 space-y-1">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
+                    <nav aria-label="Menú de la empresa" className="flex flex-col gap-1">
                         {items.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -95,24 +109,25 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                                     key={item.href}
                                     href={item.href}
                                     onClick={onClose}
+                                    aria-current={active ? 'page' : undefined}
                                     title={isCollapsed ? item.label : ''}
-                                    className={`
-                                        group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2.5 rounded-lg transition-all duration-200
-                                        ${active
-                                            ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 font-semibold'
-                                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
-                                        }
-                                    `}
+                                    className={`flex items-center gap-3.5 min-h-[54px] rounded-2xl transition-colors ${isCollapsed ? 'lg:justify-center lg:px-0 px-4' : 'px-4'} ${active
+                                        ? 'bg-simar-superficie text-simar-texto font-bold shadow-[0_4px_14px_-8px_rgba(11,34,54,0.3)]'
+                                        : 'text-simar-texto-2 font-medium hover:bg-white/60 dark:hover:bg-white/5 hover:text-simar-texto'
+                                        }`}
                                 >
                                     <span className="relative flex-shrink-0">
-                                        <Icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} />
+                                        <Icon className="w-6 h-6" strokeWidth={2} />
                                         {isCollapsed && !!item.badge && (
-                                            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-emerald-500" />
+                                            <span className="hidden lg:block absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#A63F0E]" />
                                         )}
                                     </span>
-                                    {!isCollapsed && <span className="ml-3 text-sm flex-1">{item.label}</span>}
-                                    {!isCollapsed && !!item.badge && (
-                                        <span className="ml-2 min-w-[20px] h-5 px-1.5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center">
+                                    <span className={`relative flex-1 text-lg leading-tight ${isCollapsed ? 'lg:hidden' : ''}`}>
+                                        {item.label}
+                                        {active && <LineaMarea />}
+                                    </span>
+                                    {!!item.badge && (
+                                        <span className={`min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold flex items-center justify-center ${isCollapsed ? 'lg:hidden' : ''}`}>
                                             {item.badge > 99 ? '99+' : item.badge}
                                         </span>
                                     )}
@@ -120,41 +135,42 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                             );
                         })}
                     </nav>
-                    <div className="px-3 mt-6 empty:hidden">
+                    <div className="mt-4 empty:hidden">
                         <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} onNavegar={onClose} />
                     </div>
                 </div>
 
-                <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1">
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2`}>
-                        <div className="w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-sm border border-emerald-200 dark:border-emerald-800 flex-shrink-0">
+                <div className="flex flex-col gap-2.5">
+                    <div className={`flex items-center gap-3 rounded-[18px] bg-simar-superficie p-2.5 ${isCollapsed ? 'lg:justify-center' : ''}`}>
+                        <span className="w-[46px] h-[46px] flex-shrink-0 rounded-full bg-simar-texto text-simar-superficie flex items-center justify-center text-lg font-bold">
                             {(asociacion?.nombre_asociacion || user?.email || 'E').charAt(0).toUpperCase()}
-                        </div>
-                        {!isCollapsed && (
-                            <div className="flex flex-col overflow-hidden">
-                                <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
-                                    {asociacion?.nombre_asociacion || user?.user_metadata?.full_name || 'Empresa'}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</span>
-                            </div>
-                        )}
+                        </span>
+                        <span className={`min-w-0 ${isCollapsed ? 'lg:hidden' : ''}`}>
+                            <span className="block text-[17px] font-bold text-simar-texto truncate">
+                                {asociacion?.nombre_asociacion || user?.user_metadata?.full_name || 'Empresa'}
+                            </span>
+                            <span className="block text-[15px] text-simar-texto-2 truncate">{user?.email}</span>
+                        </span>
                     </div>
 
+                    <div className={`flex gap-2 ${isCollapsed ? 'lg:flex-col' : ''}`}>
+                        <BotonTema colapsado={isCollapsed} />
+                        <button
+                            onClick={onToggleCollapse}
+                            aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+                            title={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+                            className="hidden lg:flex w-[52px] min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 transition-colors flex-shrink-0 self-center"
+                        >
+                            <ChevronsLeft className={`w-[22px] h-[22px] transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+                        </button>
+                    </div>
                     <button
                         onClick={signOut}
-                        className={`flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors`}
                         title={isCollapsed ? 'Cerrar sesión' : ''}
+                        className="w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
                     >
-                        <LogOut className="w-5 h-5 flex-shrink-0" />
-                        {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
-                    </button>
-
-                    <button
-                        onClick={onToggleCollapse}
-                        className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors`}
-                    >
-                        <ChevronsLeft className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
-                        {!isCollapsed && <span className="text-xs font-semibold uppercase">Colapsar</span>}
+                        <LogOut className="w-[22px] h-[22px] flex-shrink-0" />
+                        <span className={isCollapsed ? 'lg:hidden' : ''}>Cerrar sesión</span>
                     </button>
                 </div>
             </aside>

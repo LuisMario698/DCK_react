@@ -69,12 +69,13 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
               : { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', href: elegirUrl, icon: Recycle },
     ];
 
-    const itemCls = `group flex items-center ${colapsado ? 'justify-center px-0' : 'px-3'} py-2.5 rounded-lg w-full text-left transition-colors text-gray-500 dark:text-gray-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 hover:text-violet-700 dark:hover:text-violet-300`;
+    // Mismo tamaño que los items del menú lateral; violeta = superadmin (ver DISEÑO_SIMAR.md)
+    const itemCls = `group flex items-center ${colapsado ? 'justify-center px-0' : 'px-4'} min-h-[54px] py-2 rounded-2xl w-full text-left transition-colors text-simar-texto-2 font-medium hover:bg-simar-violeta-suave hover:text-simar-texto`;
 
     return (
         <div className="space-y-1">
             {!colapsado && (
-                <p className="px-3 text-xs font-semibold text-violet-600/80 dark:text-violet-400/80 uppercase tracking-wider mb-2">
+                <p className="px-4 text-[15px] font-bold text-simar-violeta mb-1">
                     Superadmin
                 </p>
             )}
@@ -84,11 +85,11 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
                     const Icono = i.icon;
                     const contenido = (
                         <>
-                            <Icono className="w-5 h-5 flex-shrink-0" />
+                            <Icono className="w-6 h-6 flex-shrink-0" strokeWidth={2} />
                             {!colapsado && (
-                                <span className="ml-3 min-w-0 flex-1">
-                                    <span className="block text-sm font-medium truncate">{i.label}</span>
-                                    {i.detalle && <span className="block text-[11px] text-gray-400 dark:text-gray-500 truncate">{i.detalle}</span>}
+                                <span className="ml-3.5 min-w-0 flex-1">
+                                    <span className="block text-lg leading-tight truncate">{i.label}</span>
+                                    {i.detalle && <span className="block text-[15px] text-simar-texto-2 truncate">{i.detalle}</span>}
                                 </span>
                             )}
                         </>
@@ -111,8 +112,8 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
                     title={colapsado ? 'Cambiar asociación' : undefined}
                     className={itemCls}
                 >
-                    <ArrowLeftRight className="w-5 h-5 flex-shrink-0" />
-                    {!colapsado && <span className="ml-3 text-sm font-medium">Cambiar asociación</span>}
+                    <ArrowLeftRight className="w-6 h-6 flex-shrink-0" strokeWidth={2} />
+                    {!colapsado && <span className="ml-3.5 text-lg leading-tight">Cambiar asociación</span>}
                 </button>
             )}
 

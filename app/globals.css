@@ -3,27 +3,169 @@
 /* Configuración de Dark Mode para Tailwind v4 - Selector-based */
 @variant dark (&:is(.dark *));
 
+/* ============================================
+   LENGUAJE DE DISEÑO SiMAR — tokens
+   Guía completa: DISEÑO_SIMAR.md (raíz del repo).
+   Los colores se usan con clases de Tailwind generadas desde @theme:
+   bg-simar-papel, text-simar-texto, border-simar-borde, bg-simar-marea, etc.
+   Cambian solos entre modo claro y oscuro; no hace falta escribir dark:.
+   ============================================ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #E9E4D9;
+  --foreground: #0B2236;
+
+  --simar-papel: #E9E4D9;          /* fondo de la app (tarjeta blanca encima: 1.27:1) */
+  --simar-superficie: #FFFFFF;     /* tarjetas, formularios, listas */
+  --simar-borde: #D6CEBD;          /* borde de tarjetas */
+  --simar-borde-suave: #E6E0D4;    /* separadores dentro de tarjetas */
+  --simar-campo-borde: #9C927D;    /* borde de campos: 3:1 sobre blanco (WCAG 1.4.11) */
+  --simar-texto: #0B2236;          /* Abismo: texto principal (16:1) */
+  --simar-texto-2: #3E5163;        /* Pizarra: texto de apoyo (8:1) */
+  --simar-texto-3: #6B7785;        /* placeholders */
+  --simar-marea: #1B5FC9;          /* acción principal (texto blanco 6:1) */
+  --simar-marea-hover: #154DA6;
+  --simar-marea-tinta: #1B5FC9;    /* enlaces e íconos azules */
+  --simar-marea-suave: #EAF1FB;
+  --simar-golfo: #20B2C4;          /* línea de marea, foco (decorativo) */
+  --simar-arrecife: #127A5D;       /* firmado, guardado, completado */
+  --simar-arrecife-tinta: #0E6A50;
+  --simar-arrecife-suave: #E3F2EC;
+  --simar-coral: #A63F0E;          /* requerido, sin leer, pendiente */
+  --simar-coral-suave: #FBEADF;
+  --simar-violeta: #5B3FA8;        /* Estadísticas y avisos de superadmin */
+  --simar-violeta-suave: #EEEAF8;
+  --simar-abismo: #0B2236;         /* bandas oscuras (landing) */
+  --simar-espuma: #7FE0D6;         /* acento sobre fondo oscuro */
+
+  /* Vidrio (sólo en lo que flota) */
+  --simar-vidrio: rgba(255, 255, 255, 0.56);
+  --simar-vidrio-fuerte: rgba(255, 255, 255, 0.82);
+  --simar-vidrio-borde: rgba(255, 255, 255, 0.7);
+  --simar-vidrio-brillo: rgba(255, 255, 255, 0.95);
+  --simar-vidrio-sombra: rgba(11, 34, 54, 0.35);
+  --simar-blob-1: rgba(32, 178, 196, 0.16);
+  --simar-blob-2: rgba(27, 95, 201, 0.10);
+  --simar-curva: #8CC3D1;
+
+  /* Sombra de tarjetas: separa la tarjeta del papel sin depender sólo del borde */
+  --simar-sombra: 0 1px 2px rgba(11, 34, 54, 0.06), 0 10px 28px -16px rgba(11, 34, 54, 0.30);
 }
 
 .dark {
-  --background: #030712;
-  --foreground: #f3f4f6;
+  --background: #081624;
+  --foreground: #EEF3F7;
+
+  --simar-papel: #081624;
+  --simar-superficie: #132D45;
+  --simar-borde: #294B68;
+  --simar-borde-suave: #1E3B56;
+  --simar-campo-borde: #57789A;
+  --simar-texto: #EEF3F7;
+  --simar-texto-2: #B7C4D0;
+  --simar-texto-3: #8FA3B4;
+  --simar-marea: #1B5FC9;
+  --simar-marea-hover: #2F6FD6;
+  --simar-marea-tinta: #8AB4F8;
+  --simar-marea-suave: rgba(27, 95, 201, 0.22);
+  --simar-golfo: #20B2C4;
+  --simar-arrecife: #1E9B77;
+  --simar-arrecife-tinta: #5FD6A8;
+  --simar-arrecife-suave: rgba(18, 122, 93, 0.26);
+  --simar-coral: #F2A37C;
+  --simar-coral-suave: rgba(166, 63, 14, 0.30);
+  --simar-violeta: #B8A6F0;
+  --simar-violeta-suave: rgba(91, 63, 168, 0.30);
+  --simar-abismo: #06121E;
+  --simar-espuma: #7FE0D6;
+
+  --simar-vidrio: rgba(19, 45, 69, 0.62);
+  --simar-vidrio-fuerte: rgba(19, 45, 69, 0.88);
+  --simar-vidrio-borde: rgba(255, 255, 255, 0.12);
+  --simar-vidrio-brillo: rgba(255, 255, 255, 0.16);
+  --simar-vidrio-sombra: rgba(0, 0, 0, 0.55);
+  --simar-blob-1: rgba(32, 178, 196, 0.14);
+  --simar-blob-2: rgba(27, 95, 201, 0.16);
+  --simar-curva: #2C5A74;
+
+  --simar-sombra: 0 1px 2px rgba(0, 0, 0, 0.30), 0 12px 30px -16px rgba(0, 0, 0, 0.65);
+}
+
+/* La landing siempre se ve en claro (como el diseño aprobado), aunque el usuario
+   tenga guardado el modo oscuro. Reaplica los valores claros dentro de .simar-claro. */
+.simar-claro {
+  color-scheme: light;
+  --simar-papel: #E9E4D9;
+  --simar-superficie: #FFFFFF;
+  --simar-borde: #D6CEBD;
+  --simar-borde-suave: #E6E0D4;
+  --simar-campo-borde: #9C927D;
+  --simar-texto: #0B2236;
+  --simar-texto-2: #3E5163;
+  --simar-texto-3: #6B7785;
+  --simar-marea: #1B5FC9;
+  --simar-marea-hover: #154DA6;
+  --simar-marea-tinta: #1B5FC9;
+  --simar-marea-suave: #EAF1FB;
+  --simar-golfo: #20B2C4;
+  --simar-arrecife: #127A5D;
+  --simar-arrecife-tinta: #0E6A50;
+  --simar-arrecife-suave: #E3F2EC;
+  --simar-coral: #A63F0E;
+  --simar-coral-suave: #FBEADF;
+  --simar-violeta: #5B3FA8;
+  --simar-violeta-suave: #EEEAF8;
+  --simar-abismo: #0B2236;
+  --simar-espuma: #7FE0D6;
+  --simar-vidrio: rgba(255, 255, 255, 0.56);
+  --simar-vidrio-fuerte: rgba(255, 255, 255, 0.82);
+  --simar-vidrio-borde: rgba(255, 255, 255, 0.7);
+  --simar-vidrio-brillo: rgba(255, 255, 255, 0.95);
+  --simar-vidrio-sombra: rgba(11, 34, 54, 0.35);
+  --simar-blob-1: rgba(32, 178, 196, 0.16);
+  --simar-blob-2: rgba(27, 95, 201, 0.10);
+  --simar-curva: #8CC3D1;
+
+  /* Sombra de tarjetas: separa la tarjeta del papel sin depender sólo del borde */
+  --simar-sombra: 0 1px 2px rgba(11, 34, 54, 0.06), 0 10px 28px -16px rgba(11, 34, 54, 0.30);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
   --font-mono: var(--font-mono);
+
+  --color-simar-papel: var(--simar-papel);
+  --color-simar-superficie: var(--simar-superficie);
+  --color-simar-borde: var(--simar-borde);
+  --color-simar-borde-suave: var(--simar-borde-suave);
+  --color-simar-campo-borde: var(--simar-campo-borde);
+  --color-simar-texto: var(--simar-texto);
+  --color-simar-texto-2: var(--simar-texto-2);
+  --color-simar-texto-3: var(--simar-texto-3);
+  --color-simar-marea: var(--simar-marea);
+  --color-simar-marea-hover: var(--simar-marea-hover);
+  --color-simar-marea-tinta: var(--simar-marea-tinta);
+  --color-simar-marea-suave: var(--simar-marea-suave);
+  --color-simar-golfo: var(--simar-golfo);
+  --color-simar-arrecife: var(--simar-arrecife);
+  --color-simar-arrecife-tinta: var(--simar-arrecife-tinta);
+  --color-simar-arrecife-suave: var(--simar-arrecife-suave);
+  --color-simar-coral: var(--simar-coral);
+  --color-simar-coral-suave: var(--simar-coral-suave);
+  --color-simar-violeta: var(--simar-violeta);
+  --color-simar-violeta-suave: var(--simar-violeta-suave);
+  --color-simar-abismo: var(--simar-abismo);
+  --color-simar-espuma: var(--simar-espuma);
+
+  --shadow-simar: var(--simar-sombra);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-atkinson), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Animación suave para transiciones de página */
@@ -1004,4 +1146,248 @@ input[type="time"]::-webkit-datetime-edit-minute-field:focus {
 @media (prefers-reduced-motion: reduce) {
   .mapa-silueta-contorno { animation: none; stroke-dashoffset: 0; }
   .mapa-silueta-ruta { animation: none; }
+}
+
+/* ============================================
+   LENGUAJE DE DISEÑO SiMAR — utilidades
+   Ver DISEÑO_SIMAR.md antes de usarlas.
+   ============================================ */
+
+/* Vidrio (tipo "liquid glass"). SÓLO en lo que flota sobre el contenido:
+   menú lateral, botón de tema, encabezado del portal, barra de guardar,
+   ventana de acceso y etiquetas sobre fotos. Nunca en formularios ni listas.
+   El elemento debe tener position (relative/absolute/fixed/sticky). */
+.simar-vidrio,
+.simar-vidrio-fuerte {
+  background: var(--simar-vidrio);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid var(--simar-vidrio-borde);
+  box-shadow: inset 0 1px 0 var(--simar-vidrio-brillo), 0 12px 32px -18px var(--simar-vidrio-sombra);
+}
+/* Más opaco: para vidrio que lleva texto encima de fotos o ventanas modales */
+.simar-vidrio-fuerte {
+  background: var(--simar-vidrio-fuerte);
+}
+/* Borde de luz del vidrio */
+.simar-vidrio::after,
+.simar-vidrio-fuerte::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(140deg, var(--simar-vidrio-brillo), transparent 35%, transparent 70%, var(--simar-vidrio-borde));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Foco visible y claro para teclado */
+.simar :focus-visible,
+.simar-foco:focus-visible {
+  outline: 3px solid var(--simar-marea-tinta);
+  outline-offset: 3px;
+}
+
+/* Movimiento 1: aparecer al abrir (0.4 s, sin rebote). Escalonar con style={{ animationDelay }} */
+@keyframes simar-aparece {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.simar-aparece {
+  animation: simar-aparece 0.4s ease-out both;
+}
+
+/* Movimiento 2: confirmar (firma dibujada y palomita) */
+@keyframes simar-trazo {
+  to { stroke-dashoffset: 0; }
+}
+.simar-trazo {
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: simar-trazo 0.7s ease-out forwards;
+}
+@keyframes simar-confirma {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+.simar-confirma {
+  animation: simar-confirma 0.35s ease-out both;
+}
+
+/* Tarjeta de acción que se levanta al pasar el cursor */
+.simar-tarjeta-accion {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
+}
+.simar-tarjeta-accion:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px -18px rgba(11, 34, 54, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simar-aparece,
+  .simar-confirma,
+  .simar-trazo {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .simar-tarjeta-accion,
+  .simar-tarjeta-accion:hover {
+    transition: none;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .simar-vidrio,
+  .simar-vidrio-fuerte {
+    background: var(--simar-superficie);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+/* ============================================
+   LENGUAJE DE DISEÑO SiMAR — calendario y reloj
+   Re-pinta react-datepicker y el TimePicker con los tokens (claro y oscuro).
+   "body.simar" gana a los estilos anteriores (incluido ".dark ...").
+   ============================================ */
+body.simar .react-datepicker__input-container input {
+  color: var(--simar-texto) !important;
+}
+body.simar .react-datepicker,
+body.simar .react-datepicker--time-only {
+  font-family: var(--font-atkinson), system-ui, sans-serif !important;
+  background: var(--simar-superficie) !important;
+  border-radius: 22px !important;
+  box-shadow: 0 18px 40px -18px rgba(11, 34, 54, 0.45), 0 0 0 1px var(--simar-borde) !important;
+}
+body.simar .react-datepicker__header,
+body.simar .react-datepicker__header--time,
+body.simar .react-datepicker__month,
+body.simar .react-datepicker__time-container,
+body.simar .react-datepicker__time-container .react-datepicker__time {
+  background: var(--simar-superficie) !important;
+  border-color: var(--simar-borde-suave) !important;
+}
+body.simar .react-datepicker__current-month,
+body.simar .react-datepicker-time__header {
+  color: var(--simar-texto) !important;
+  font-weight: 800 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0 !important;
+}
+body.simar .react-datepicker__day-name {
+  color: var(--simar-texto-2) !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  width: 2.75rem !important;
+}
+body.simar .react-datepicker__day {
+  color: var(--simar-texto) !important;
+  font-size: 1.05rem !important;
+  width: 2.75rem !important;
+  line-height: 2.75rem !important;
+}
+body.simar .react-datepicker__day:hover,
+body.simar .react-datepicker__time-list-item:hover {
+  background: var(--simar-papel) !important;
+  color: var(--simar-texto) !important;
+}
+body.simar .react-datepicker__day--today {
+  color: var(--simar-marea-tinta) !important;
+  border-color: var(--simar-marea-tinta) !important;
+  line-height: calc(2.75rem - 4px) !important;
+}
+body.simar .react-datepicker__day--selected,
+body.simar .react-datepicker__day--keyboard-selected,
+body.simar .react-datepicker__day--range-start,
+body.simar .react-datepicker__day--range-end,
+body.simar .react-datepicker__day--today.react-datepicker__day--selected,
+body.simar .react-datepicker__time-list-item--selected {
+  background: var(--simar-marea) !important;
+  color: #fff !important;
+  border: none !important;
+  line-height: 2.75rem !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+body.simar .react-datepicker__day--selected:hover,
+body.simar .react-datepicker__day--keyboard-selected:hover,
+body.simar .react-datepicker__time-list-item--selected:hover {
+  background: var(--simar-marea-hover) !important;
+  color: #fff !important;
+}
+body.simar .react-datepicker__day--outside-month {
+  color: var(--simar-texto-3) !important;
+}
+body.simar .react-datepicker__day--in-range,
+body.simar .react-datepicker__day--in-selecting-range {
+  background: var(--simar-marea-suave) !important;
+  color: var(--simar-texto) !important;
+}
+body.simar .react-datepicker__navigation {
+  width: 44px !important;
+  height: 44px !important;
+  top: 14px !important;
+}
+body.simar .react-datepicker__navigation:hover {
+  background: var(--simar-papel) !important;
+}
+body.simar .react-datepicker__navigation-icon::before {
+  border-color: var(--simar-texto-2) !important;
+}
+body.simar .react-datepicker__month-select,
+body.simar .react-datepicker__year-select,
+body.simar .timepicker-select,
+body.simar .timepicker-select-large {
+  background-color: var(--simar-superficie) !important;
+  color: var(--simar-texto) !important;
+  border: 2px solid var(--simar-campo-borde) !important;
+  font-weight: 700 !important;
+}
+body.simar .react-datepicker__month-select,
+body.simar .react-datepicker__year-select {
+  min-height: 44px !important;
+  font-size: 1rem !important;
+  border-radius: 12px !important;
+}
+body.simar .react-datepicker__month-select:hover,
+body.simar .react-datepicker__year-select:hover,
+body.simar .react-datepicker__month-select:focus,
+body.simar .react-datepicker__year-select:focus,
+body.simar .timepicker-select:hover,
+body.simar .timepicker-select-large:hover,
+body.simar .timepicker-select:focus,
+body.simar .timepicker-select-large:focus {
+  background-color: var(--simar-superficie) !important;
+  border-color: var(--simar-marea-tinta) !important;
+  box-shadow: none !important;
+}
+body.simar .react-datepicker__month-select option,
+body.simar .react-datepicker__year-select option,
+body.simar .timepicker-select option,
+body.simar .timepicker-select-large option {
+  background-color: var(--simar-superficie) !important;
+  color: var(--simar-texto) !important;
+}
+body.simar .react-datepicker__today-button {
+  background: var(--simar-papel) !important;
+  color: var(--simar-marea-tinta) !important;
+  border-top: 1px solid var(--simar-borde-suave) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  min-height: 52px;
+}
+body.simar .react-datepicker__today-button:hover {
+  background: var(--simar-marea-suave) !important;
+  color: var(--simar-marea-tinta) !important;
+}
+body.simar .react-datepicker__time-list-item {
+  color: var(--simar-texto) !important;
 }

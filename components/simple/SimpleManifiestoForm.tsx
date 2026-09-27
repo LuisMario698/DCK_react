@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { Check, Droplet, Filter, Fuel, Ship, Trash2, Wind, X } from 'lucide-react';
 import { hoyLocal } from '@/lib/utils/fechas';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
 import { getBuques } from '@/lib/services/buques';
@@ -165,31 +166,31 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
     renderItem: (item: T) => React.ReactNode;
   }) {
     return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
-          <div className="p-5 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
-            <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
-            <button onClick={() => { onClose(); setSearch(''); }} className="p-2 hover:bg-gray-200 rounded-lg text-2xl text-gray-600">✕</button>
+      <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+        <div className="simar-aparece bg-simar-superficie rounded-[28px] w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl">
+          <div className="p-5 border-b flex justify-between items-center bg-simar-papel rounded-t-2xl border-simar-borde">
+            <h3 className="text-2xl font-extrabold text-simar-texto">{title}</h3>
+            <button onClick={() => { onClose(); setSearch(''); }} aria-label="Cerrar" className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-superficie text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors"><X className="w-6 h-6" /></button>
           </div>
-          <div className="p-4 border-b">
+          <div className="p-4 border-b border-simar-borde">
             <input
               type="text"
-              placeholder="🔍 Buscar..."
+              placeholder="Buscar..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full p-4 border-2 border-gray-300 rounded-xl text-lg text-gray-800 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none"
+              className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               autoFocus
             />
           </div>
           <div className="flex-1 overflow-y-auto p-3">
             {items.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No se encontraron resultados</p>
+              <p className="text-center text-simar-texto-2 py-8">No se encontraron resultados</p>
             ) : (
               items.map((item) => (
                 <button
                   key={item.id}
                   onClick={() => { onSelect(item.id); onClose(); setSearch(''); }}
-                  className="w-full p-4 text-left hover:bg-blue-50 rounded-xl flex items-center gap-4 mb-2 border-2 border-transparent hover:border-blue-300 transition-all"
+                  className="w-full p-4 text-left hover:bg-simar-marea-suave rounded-xl flex items-center gap-4 mb-2 border-2 border-transparent hover:border-simar-marea-tinta/30 transition-all"
                 >
                   {renderItem(item)}
                 </button>
@@ -203,14 +204,14 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
 
   if (showSuccess) {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-white rounded-2xl p-8 text-center shadow-2xl">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4">
+        <div className="simar-aparece bg-simar-superficie rounded-[28px] p-8 text-center shadow-2xl">
+          <div className="w-16 h-16 bg-simar-arrecife-suave rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-simar-arrecife-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">¡Guardado!</h3>
+          <h3 className="text-2xl font-extrabold text-simar-texto">¡Guardado!</h3>
         </div>
       </div>
     );
@@ -222,103 +223,103 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
 
         {/* COLUMNA 1: Info + Observaciones (5 cols) */}
         <div className="col-span-5 flex flex-col gap-2">
-          <div className="bg-white rounded-xl p-3 shadow-sm border">
-            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
-              <span className="w-7 h-7 bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+          <div className="bg-simar-superficie rounded-xl p-3 shadow-simar border border-simar-borde">
+            <h3 className="font-bold text-simar-texto text-lg flex items-center gap-2 pb-1 border-b mb-2 border-simar-borde">
+              <span className="w-7 h-7 bg-simar-texto-2 text-white rounded-full flex items-center justify-center text-base font-bold">1</span>
               Información
             </h3>
             <div className="space-y-2">
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-0.5">📅 Fecha</label>
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">Fecha</label>
                 <input
                   type="date"
                   value={formData.fecha}
                   onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
-                  className="w-full px-3 py-2 text-lg font-medium text-gray-800 border border-gray-300 rounded-lg focus:border-slate-500 focus:outline-none"
+                  className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                 />
               </div>
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-0.5">🚢 Embarcación</label>
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">Embarcación</label>
                 <button
                   onClick={() => setShowBuqueList(true)}
                   className={`w-full p-2 rounded-lg border text-left flex items-center justify-between ${
-                    selectedBuque ? 'bg-slate-50 border-slate-400' : 'bg-white border-gray-300'
+                    selectedBuque ? 'bg-simar-papel border-simar-campo-borde' : 'bg-simar-superficie border-simar-campo-borde'
                   }`}
                 >
-                  <span className={`truncate text-lg ${selectedBuque ? 'font-bold text-slate-700' : 'text-gray-500'}`}>
+                  <span className={`truncate text-lg ${selectedBuque ? 'font-bold text-simar-texto' : 'text-simar-texto-2'}`}>
                     {selectedBuque?.nombre_buque || 'Seleccionar...'}
                   </span>
-                  <span className="text-slate-500 text-2xl">›</span>
+                  <span className="text-simar-texto-2 text-2xl">›</span>
                 </button>
               </div>
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-0.5">👨‍🍳 Cocinero</label>
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">Cocinero</label>
                 <button
                   onClick={() => setShowCocineroList(true)}
                   className={`w-full p-2 rounded-lg border text-left flex items-center justify-between ${
-                    selectedCocinero ? 'bg-slate-50 border-slate-400' : 'bg-white border-gray-300'
+                    selectedCocinero ? 'bg-simar-papel border-simar-campo-borde' : 'bg-simar-superficie border-simar-campo-borde'
                   }`}
                 >
-                  <span className={`truncate text-lg ${selectedCocinero ? 'font-bold text-slate-700' : 'text-gray-500'}`}>
+                  <span className={`truncate text-lg ${selectedCocinero ? 'font-bold text-simar-texto' : 'text-simar-texto-2'}`}>
                     {selectedCocinero?.nombre || 'Seleccionar...'}
                   </span>
-                  <span className="text-slate-500 text-2xl">›</span>
+                  <span className="text-simar-texto-2 text-2xl">›</span>
                 </button>
               </div>
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-0.5">🔧 Motorista</label>
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">Motorista</label>
                 <button
                   onClick={() => setShowMotoristaList(true)}
                   className={`w-full p-2 rounded-lg border text-left flex items-center justify-between ${
-                    selectedMotorista ? 'bg-slate-50 border-slate-400' : 'bg-white border-gray-300'
+                    selectedMotorista ? 'bg-simar-papel border-simar-campo-borde' : 'bg-simar-superficie border-simar-campo-borde'
                   }`}
                 >
-                  <span className={`truncate text-lg ${selectedMotorista ? 'font-bold text-slate-700' : 'text-gray-500'}`}>
+                  <span className={`truncate text-lg ${selectedMotorista ? 'font-bold text-simar-texto' : 'text-simar-texto-2'}`}>
                     {selectedMotorista?.nombre || 'Seleccionar...'}
                   </span>
-                  <span className="text-slate-500 text-2xl">›</span>
+                  <span className="text-simar-texto-2 text-2xl">›</span>
                 </button>
               </div>
               <div>
-                <label className="block text-base font-semibold text-gray-700 mb-0.5">💧 Resp. Líquidos</label>
+                <label className="block text-[17px] font-bold text-simar-texto mb-2">Resp. de líquidos</label>
                 <button
                   onClick={() => setShowLiquidosList(true)}
                   className={`w-full p-2 rounded-lg border text-left flex items-center justify-between ${
-                    selectedLiquidos ? 'bg-slate-50 border-slate-400' : 'bg-white border-gray-300'
+                    selectedLiquidos ? 'bg-simar-papel border-simar-campo-borde' : 'bg-simar-superficie border-simar-campo-borde'
                   }`}
                 >
-                  <span className={`truncate text-lg ${selectedLiquidos ? 'font-bold text-slate-700' : 'text-gray-500'}`}>
+                  <span className={`truncate text-lg ${selectedLiquidos ? 'font-bold text-simar-texto' : 'text-simar-texto-2'}`}>
                     {selectedLiquidos?.nombre || 'Seleccionar...'}
                   </span>
-                  <span className="text-slate-500 text-2xl">›</span>
+                  <span className="text-simar-texto-2 text-2xl">›</span>
                 </button>
               </div>
             </div>
           </div>
           
           {/* Observaciones */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border flex-1 min-h-0">
-            <label className="block text-base font-semibold text-gray-700 mb-1">📝 Observaciones</label>
+          <div className="bg-simar-superficie rounded-xl p-3 shadow-simar border flex-1 min-h-0 border-simar-borde">
+            <label className="block text-[17px] font-bold text-simar-texto mb-2">Observaciones</label>
             <textarea
               value={formData.observaciones}
               onChange={(e) => setFormData(prev => ({ ...prev, observaciones: e.target.value }))}
               placeholder="Notas adicionales..."
-              className="w-full h-[calc(100%-2rem)] px-3 py-2 text-lg text-gray-800 border border-gray-300 rounded-lg resize-none focus:border-slate-500 focus:outline-none"
+              className="w-full h-[calc(100%-2rem)] resize-none px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
             />
           </div>
         </div>
 
         {/* COLUMNA 2: Residuos en grid vertical (3 cols - centro) */}
-        <div className="col-span-3 bg-white rounded-xl p-3 shadow-sm border flex flex-col" style={{minWidth: 0}}>
-          <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
-            <span className="w-7 h-7 bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+        <div className="col-span-3 bg-simar-superficie rounded-xl p-3 shadow-simar border flex flex-col border-simar-borde" style={{minWidth: 0}}>
+          <h3 className="font-bold text-simar-texto text-lg flex items-center gap-2 pb-1 border-b mb-2 border-simar-borde">
+            <span className="w-7 h-7 bg-simar-texto-2 text-white rounded-full flex items-center justify-center text-base font-bold">2</span>
             Residuos
           </h3>
           <div className="flex-1 flex flex-col gap-1 min-h-0">
-            <div className="flex-1 bg-amber-50/50 rounded-xl p-2 border border-amber-200/50 flex items-center gap-3">
-              <span className="text-2xl">🛢️</span>
+            <div className="flex-1 bg-simar-coral-suave/50 rounded-xl p-2 border border-simar-coral/30 flex items-center gap-3">
+              <Droplet className="w-6 h-6 text-simar-marea-tinta" />
               <div className="flex-1">
-                <label className="block text-base font-bold text-amber-800/70">Aceite (L)</label>
+                <label className="block text-[17px] font-bold text-simar-coral">Aceite (L)</label>
               </div>
               <input
                 ref={aceiteRef}
@@ -327,13 +328,13 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                 value={formData.aceiteUsado || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, aceiteUsado: parseFloat(e.target.value) || 0 }))}
                 onKeyDown={(e) => handleKeyDown(e, filtrosAceiteRef)}
-                className="w-24 p-1.5 text-2xl font-bold text-center text-gray-800 border border-amber-300/50 rounded-lg bg-white focus:border-amber-400 focus:outline-none"
+                className="w-24 text-2xl font-extrabold text-center px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               />
             </div>
-            <div className="flex-1 bg-blue-50/50 rounded-xl p-2 border border-blue-200/50 flex items-center gap-3">
-              <span className="text-2xl">🔧</span>
+            <div className="flex-1 bg-simar-marea-suave/50 rounded-xl p-2 border border-simar-marea-tinta/30 flex items-center gap-3">
+              <Filter className="w-6 h-6 text-simar-marea-tinta" />
               <div className="flex-1">
-                <label className="block text-base font-bold text-blue-800/70">Filtros Aceite</label>
+                <label className="block text-[17px] font-bold text-simar-marea-tinta">Filtros Aceite</label>
               </div>
               <input
                 ref={filtrosAceiteRef}
@@ -342,13 +343,13 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                 value={formData.filtrosAceite || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, filtrosAceite: parseInt(e.target.value) || 0 }))}
                 onKeyDown={(e) => handleKeyDown(e, filtrosDieselRef)}
-                className="w-24 p-1.5 text-2xl font-bold text-center text-gray-800 border border-blue-300/50 rounded-lg bg-white focus:border-blue-400 focus:outline-none"
+                className="w-24 text-2xl font-extrabold text-center px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               />
             </div>
-            <div className="flex-1 bg-orange-50/50 rounded-xl p-2 border border-orange-200/50 flex items-center gap-3">
-              <span className="text-2xl">⛽</span>
+            <div className="flex-1 bg-simar-coral-suave/50 rounded-xl p-2 border border-simar-coral/30 flex items-center gap-3">
+              <Fuel className="w-6 h-6 text-simar-marea-tinta" />
               <div className="flex-1">
-                <label className="block text-base font-bold text-orange-800/70">Filtros Diesel</label>
+                <label className="block text-[17px] font-bold text-simar-coral">Filtros Diesel</label>
               </div>
               <input
                 ref={filtrosDieselRef}
@@ -357,13 +358,13 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                 value={formData.filtrosDiesel || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, filtrosDiesel: parseInt(e.target.value) || 0 }))}
                 onKeyDown={(e) => handleKeyDown(e, filtrosAireRef)}
-                className="w-24 p-1.5 text-2xl font-bold text-center text-gray-800 border border-orange-300/50 rounded-lg bg-white focus:border-orange-400 focus:outline-none"
+                className="w-24 text-2xl font-extrabold text-center px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               />
             </div>
-            <div className="flex-1 bg-cyan-50/50 rounded-xl p-2 border border-cyan-200/50 flex items-center gap-3">
-              <span className="text-2xl">💨</span>
+            <div className="flex-1 bg-simar-marea-suave/50 rounded-xl p-2 border border-simar-marea-tinta/30 flex items-center gap-3">
+              <Wind className="w-6 h-6 text-simar-marea-tinta" />
               <div className="flex-1">
-                <label className="block text-base font-bold text-cyan-800/70">Filtros Aire</label>
+                <label className="block text-[17px] font-bold text-simar-marea-tinta">Filtros Aire</label>
               </div>
               <input
                 ref={filtrosAireRef}
@@ -372,13 +373,13 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                 value={formData.filtrosAire || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, filtrosAire: parseInt(e.target.value) || 0 }))}
                 onKeyDown={(e) => handleKeyDown(e, basuraRef)}
-                className="w-24 p-1.5 text-2xl font-bold text-center text-gray-800 border border-cyan-300/50 rounded-lg bg-white focus:border-cyan-400 focus:outline-none"
+                className="w-24 text-2xl font-extrabold text-center px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               />
             </div>
-            <div className="flex-1 bg-gray-100/50 rounded-xl p-2 border border-gray-200 flex items-center gap-3">
-              <span className="text-2xl">🗑️</span>
+            <div className="flex-1 bg-simar-papel/50 rounded-xl p-2 border border-simar-borde flex items-center gap-3">
+              <Trash2 className="w-6 h-6 text-simar-marea-tinta" />
               <div className="flex-1">
-                <label className="block text-base font-bold text-gray-600">Basura (kg)</label>
+                <label className="block text-[17px] font-bold text-simar-texto">Basura (kg)</label>
               </div>
               <input
                 ref={basuraRef}
@@ -386,7 +387,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
                 min="0"
                 value={formData.basura || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, basura: parseFloat(e.target.value) || 0 }))}
-                className="w-24 p-1.5 text-2xl font-bold text-center text-gray-800 border border-gray-300 rounded-lg bg-white focus:border-gray-400 focus:outline-none"
+                className="w-24 text-2xl font-extrabold text-center px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
               />
             </div>
           </div>
@@ -395,12 +396,12 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
         {/* COLUMNA 3: Firma + Botones (4 cols) */}
         <div className="col-span-4 flex flex-col gap-2">
           {/* Firma */}
-          <div className="flex-1 bg-white rounded-xl p-3 shadow-sm border flex flex-col min-h-0">
-            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2 pb-1 border-b mb-2">
-              <span className="w-7 h-7 bg-slate-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
-              ✍️ FIRMA DEL RESPONSABLE
+          <div className="flex-1 bg-simar-superficie rounded-xl p-3 shadow-simar border flex flex-col min-h-0 border-simar-borde">
+            <h3 className="font-bold text-simar-texto text-lg flex items-center gap-2 pb-1 border-b mb-2 border-simar-borde">
+              <span className="w-7 h-7 bg-simar-texto-2 text-white rounded-full flex items-center justify-center text-base font-bold">3</span>
+              Firma del responsable
             </h3>
-            <div className="flex-1 border border-gray-300 rounded-xl overflow-hidden bg-gray-50 min-h-0">
+            <div className="flex-1 border border-simar-campo-borde rounded-xl overflow-hidden bg-simar-papel min-h-0">
               <SignaturePad 
                 ref={firmaRef}
                 label=""
@@ -414,7 +415,7 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           <div className="flex gap-4">
             <button
               onClick={onBack}
-              className="px-10 py-4 rounded-xl font-bold text-xl text-gray-600 bg-gray-200 hover:bg-gray-300 transition-all"
+              className="px-10 py-4 rounded-xl font-extrabold text-xl text-simar-texto-2 bg-simar-borde-suave hover:bg-simar-campo-borde transition-all min-h-[52px]"
             >
               ← Volver
             </button>
@@ -423,14 +424,14 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
               disabled={isSaving || !formData.buqueId || !formData.responsableCocineroId || !formData.responsableMotoristaid}
               className={`flex-1 py-4 rounded-xl font-bold text-2xl flex items-center justify-center gap-2 transition-all ${
                 formData.buqueId && formData.responsableCocineroId && formData.responsableMotoristaid
-                  ? 'bg-slate-700 text-white hover:bg-slate-800 shadow-lg'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-simar-abismo text-white hover:bg-simar-abismo shadow-simar'
+                  : 'bg-simar-campo-borde text-simar-texto-2 cursor-not-allowed'
               }`}
             >
               {isSaving ? (
                 <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full" />
               ) : (
-                <>✓ GUARDAR MANIFIESTO</>
+                <><Check className="w-6 h-6" strokeWidth={2.6} /> Guardar manifiesto</>
               )}
             </button>
           </div>
@@ -446,10 +447,10 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           onClose={() => setShowBuqueList(false)}
           renderItem={(b) => (
             <>
-              <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center text-2xl">🚢</div>
+              <div className="w-12 h-12 bg-simar-marea-suave text-simar-marea-tinta rounded-full flex items-center justify-center"><Ship className="w-6 h-6" /></div>
               <div>
-                <p className="font-bold text-lg text-gray-800">{b.nombre_buque}</p>
-                <p className="text-base text-gray-600">{b.matricula || 'Sin matrícula'}</p>
+                <p className="font-bold text-lg text-simar-texto">{b.nombre_buque}</p>
+                <p className="text-base text-simar-texto-2">{b.matricula || 'Sin matrícula'}</p>
               </div>
             </>
           )}
@@ -464,12 +465,12 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           onClose={() => setShowCocineroList(false)}
           renderItem={(p) => (
             <>
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xl text-slate-600">
+              <div className="w-12 h-12 bg-simar-papel rounded-full flex items-center justify-center font-extrabold text-xl text-simar-texto-2">
                 {p.nombre.charAt(0)}
               </div>
               <div>
-                <p className="font-bold text-lg text-gray-800">{p.nombre}</p>
-                <p className="text-base text-gray-600">{p.tipo_persona?.nombre_tipo || ''}</p>
+                <p className="font-bold text-lg text-simar-texto">{p.nombre}</p>
+                <p className="text-base text-simar-texto-2">{p.tipo_persona?.nombre_tipo || ''}</p>
               </div>
             </>
           )}
@@ -484,12 +485,12 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           onClose={() => setShowMotoristaList(false)}
           renderItem={(p) => (
             <>
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xl text-slate-600">
+              <div className="w-12 h-12 bg-simar-papel rounded-full flex items-center justify-center font-extrabold text-xl text-simar-texto-2">
                 {p.nombre.charAt(0)}
               </div>
               <div>
-                <p className="font-bold text-lg text-gray-800">{p.nombre}</p>
-                <p className="text-base text-gray-600">{p.tipo_persona?.nombre_tipo || ''}</p>
+                <p className="font-bold text-lg text-simar-texto">{p.nombre}</p>
+                <p className="text-base text-simar-texto-2">{p.tipo_persona?.nombre_tipo || ''}</p>
               </div>
             </>
           )}
@@ -504,12 +505,12 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
           onClose={() => setShowLiquidosList(false)}
           renderItem={(p) => (
             <>
-              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-xl text-slate-600">
+              <div className="w-12 h-12 bg-simar-papel rounded-full flex items-center justify-center font-extrabold text-xl text-simar-texto-2">
                 {p.nombre.charAt(0)}
               </div>
               <div>
-                <p className="font-bold text-lg text-gray-800">{p.nombre}</p>
-                <p className="text-base text-gray-600">{p.tipo_persona?.nombre_tipo || ''}</p>
+                <p className="font-bold text-lg text-simar-texto">{p.nombre}</p>
+                <p className="text-base text-simar-texto-2">{p.tipo_persona?.nombre_tipo || ''}</p>
               </div>
             </>
           )}
