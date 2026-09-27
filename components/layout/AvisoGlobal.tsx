@@ -29,7 +29,13 @@ const CLAVE_CERRADO = 'simar_aviso_cerrado';
  * (queda cerrado en esta pestaña hasta que cambie el mensaje).
  * Con `mostrarMantenimiento` avisa además de que el modo mantenimiento está activo.
  */
-export function AvisoGlobal({ mostrarMantenimiento = false }: { mostrarMantenimiento?: boolean }) {
+export function AvisoGlobal({
+    mostrarMantenimiento = false,
+    className = '',
+}: {
+    mostrarMantenimiento?: boolean;
+    className?: string;
+}) {
     const [config, setConfig] = useState<ConfiguracionPublica | null>(null);
     const [cerrado, setCerrado] = useState<string | null>(() => {
         try {
@@ -69,7 +75,8 @@ export function AvisoGlobal({ mostrarMantenimiento = false }: { mostrarMantenimi
     };
 
     return (
-        <div className="mb-5 space-y-3">
+        // relative z-10: el fondo decorativo del inicio del recinto es una capa fixed que lo tapaba
+        <div className={`relative z-10 mb-5 space-y-3 ${className}`}>
             {verMantenimiento && (
                 <div className="flex items-start gap-3 rounded-xl border border-violet-200 dark:border-violet-900/40 bg-violet-50 dark:bg-violet-900/10 p-4 text-sm text-violet-800 dark:text-violet-300">
                     <Wrench className="w-5 h-5 flex-shrink-0 mt-0.5" />

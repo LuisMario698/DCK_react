@@ -37,6 +37,7 @@ import {
     formatoFecha,
     formatoFechaHora,
     hace,
+    filtroCls,
     tdCls,
     thCls,
 } from '@/components/superadmin/ui';
@@ -150,7 +151,7 @@ export default function CuentasPage() {
                             />
                         </div>
                         <select
-                            className={`${inputCls} w-auto`}
+                            className={`${filtroCls} w-auto`}
                             value={filtroRol}
                             onChange={(e) => setFiltroRol(e.target.value as FiltroRol)}
                             aria-label="Filtrar por rol"
@@ -162,7 +163,7 @@ export default function CuentasPage() {
                             <option value="pendiente">Pendientes</option>
                         </select>
                         <select
-                            className={`${inputCls} w-auto`}
+                            className={`${filtroCls} w-auto`}
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value as FiltroEstado)}
                             aria-label="Filtrar por estado"
@@ -275,7 +276,7 @@ export default function CuentasPage() {
                     asociaciones={asociaciones}
                     onClose={() => setAccion(null)}
                     onGuardar={(rol, asociacionId) =>
-                        ejecutar(() => actualizarCuenta(cuenta.id, rol, asociacionId), 'Acceso actualizado')
+                        ejecutar(() => actualizarCuenta(cuenta.id, rol, asociacionId, cuenta.es_superadmin), 'Acceso actualizado')
                     }
                 />
             )}
@@ -453,20 +454,26 @@ function SelectorAsociacion({
     asociaciones,
     valor,
     onChange,
+    opcional = false,
 }: {
     asociaciones: AsociacionRecolectora[];
     valor: number | null;
     onChange: (id: number | null) => void;
+    /** Superadmin: la asociación sólo sirve para usar el portal recolector. */
+    opcional?: boolean;
 }) {
     return (
-        <Campo label="Asociación">
+        <Campo
+            label={opcional ? 'Asociación para el portal recolector' : 'Asociación'}
+            ayuda={opcional ? 'Opcional: con ella puede usar el portal a nombre de esa asociación.' : undefined}
+        >
             <select
                 className={inputCls}
                 value={valor ?? ''}
                 onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
-                required
+                required={!opcional}
             >
-                <option value="">Selecciona una asociación…</option>
+                <option value="">{opcional ? 'Sin asociación' : 'Selecciona una asociación…'}</option>
                 {asociaciones.map((a) => (
                     <option key={a.id} value={a.id}>
                         {a.nombre_asociacion}
@@ -513,7 +520,7 @@ function ModalEditarAcceso({
                     label="Rol"
                     ayuda={
                         cuenta.es_superadmin
-                            ? 'Es superadmin: quita primero ese permiso para cambiarle el rol.'
+                            ? 'Es superadmin (siempre administrador): quita primero ese permiso para cambiarle el rol.'
                             : 'Pendiente = sin acceso a ningún panel.'
                     }
                 >
@@ -528,14 +535,19 @@ function ModalEditarAcceso({
                         <option value="pendiente">Pendiente (sin acceso)</option>
                     </select>
                 </Campo>
-                {rol === 'recolector' && (
-                    <SelectorAsociacion asociaciones={asociaciones} valor={asociacionId} onChange={setAsociacionId} />
+                {(rol === 'recolector' || cuenta.es_superadmin) && (
+                    <SelectorAsociacion
+                        asociaciones={asociaciones}
+                        valor={asociacionId}
+                        onChange={setAsociacionId}
+                        opcional={cuenta.es_superadmin}
+                    />
                 )}
                 <div className="flex justify-end gap-2 pt-2">
                     <BotonSecundario type="button" onClick={onClose}>
                         Cancelar
                     </BotonSecundario>
-                    <BotonPrimario type="submit" cargando={guardando} disabled={cuenta.es_superadmin}>
+                    <BotonPrimario type="submit" cargando={guardando}>
                         Guardar
                     </BotonPrimario>
                 </div>

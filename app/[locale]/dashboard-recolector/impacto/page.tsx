@@ -19,6 +19,7 @@ import { KG_CO2_POR_ARBOL_ANIO, co2eEvitadoKg } from '@/lib/constants/impacto';
 import { parseFechaLocal } from '@/lib/utils/fechas';
 import { Recoleccion } from '@/types/database';
 import { getRecolecciones } from '@/lib/services/recolecciones';
+import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
 
 type Periodo = '1m' | '3m' | '6m' | '1y';
@@ -103,13 +104,15 @@ export default function ImpactoPage() {
     const [recolecciones, setRecolecciones] = useState<Recoleccion[]>([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const asociacionId = useRecolector().asociacion?.id;
 
     useEffect(() => {
-        getRecolecciones()
+        if (!asociacionId) return;
+        getRecolecciones(asociacionId)
             .then(setRecolecciones)
             .catch((err) => setError(mensajeError(err, 'No se pudieron cargar tus recolecciones.')))
             .finally(() => setCargando(false));
-    }, []);
+    }, [asociacionId]);
 
     const calculo = useMemo(() => {
         const hoy = new Date();

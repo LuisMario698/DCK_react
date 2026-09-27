@@ -289,6 +289,9 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
   RPC `sa_*`, que validan `is_superadmin()` en la base de datos.
 - Se entra desde la landing: enlace **Acceso desarrollador** en el footer, que abre el modal de
   login en modo desarrollador (sin registro) y redirige a `/superadmin`.
+- El superadmin también puede **operar como asociación**: se vincula a una desde su panel y usa
+  el portal recolector a su nombre. Los tres sidebars le muestran accesos para saltar entre
+  superadmin, recinto portuario y portal (migración `20260926000006`).
 - Sólo otro superadmin o el SQL Editor la otorgan; un admin normal no puede modificar la cuenta
   de un superadmin.
 - **Cuentas suspendidas** (`profiles.suspendido_at`): `is_admin()`, `get_my_role()` y

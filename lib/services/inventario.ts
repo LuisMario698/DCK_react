@@ -6,14 +6,14 @@ import type { TipoResiduo, UnidadResiduo } from '@/lib/constants/residuos'
  * Inventario de residuos. El admin ve todo; el recolector sólo lo publicado
  * (lo filtra la política RLS).
  */
-export async function getInventario() {
+/** Con `soloPublicado` devuelve lo que ve una asociación (el portal recolector). */
+export async function getInventario(soloPublicado = false) {
   const supabase = createClient()
 
-  const { data, error } = await supabase
-    .from('inventario_residuos')
-    .select('*')
-    .order('tipo')
+  let query = supabase.from('inventario_residuos').select('*').order('tipo')
+  if (soloPublicado) query = query.eq('publicado', true)
 
+  const { data, error } = await query
   if (error) throw error
   return (data as InventarioResiduo[]).map((i) => ({ ...i, cantidad: Number(i.cantidad) }))
 }

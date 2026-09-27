@@ -29,8 +29,16 @@ export default function DashboardRecolectorPage() {
     const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
     const [cargando, setCargando] = useState(true);
 
+    // Todo se filtra por la asociación: un superadmin en el portal también es admin y la RLS le mostraría todo
+    const asociacionId = asociacion?.id;
     useEffect(() => {
-        Promise.all([getInventario(), getSolicitudes(), getRecolecciones(), getNotificaciones(5)])
+        if (!asociacionId) return;
+        Promise.all([
+            getInventario(true),
+            getSolicitudes({ asociacionId }),
+            getRecolecciones(asociacionId),
+            getNotificaciones(5, { destinatario: 'recolector', asociacionId }),
+        ])
             .then(([inv, sol, rec, notif]) => {
                 setInventario(inv);
                 setSolicitudes(sol);
@@ -39,14 +47,14 @@ export default function DashboardRecolectorPage() {
             })
             .catch((err) => console.error('Error cargando el inicio del recolector:', err))
             .finally(() => setCargando(false));
-    }, []);
+    }, [asociacionId]);
 
     const disponibles = inventario.filter((i) => i.cantidad > 0);
     const activas = solicitudes.filter((s) => s.estado === 'pendiente' || s.estado === 'aprobada').length;
     const kgRecolectados = recolecciones.filter((r) => r.unidad === 'kg').reduce((s, r) => s + r.cantidad, 0);
     const co2 = recolecciones.reduce((s, r) => s + co2eEvitadoKg(r.tipo, r.cantidad), 0);
 
-    if (cargando || cargandoPerfil) return <Cargando />;
+    if (cargandoPerfil || (asociacionId && cargando)) return <Cargando />;
 
     const kpis = [
         {

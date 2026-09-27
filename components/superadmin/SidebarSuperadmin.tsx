@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-    ArrowLeftRight,
     ChevronsLeft,
     CreditCard,
     Layers,
@@ -16,6 +15,7 @@ import {
     X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
+import { EnlacesPaneles } from './EnlacesPaneles';
 
 interface SidebarSuperadminProps {
     isOpen: boolean;
@@ -104,14 +104,7 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                     </nav>
 
                     <div className="px-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-                        <Link
-                            href={`/${locale}/dashboard`}
-                            title={isCollapsed ? 'Panel del centro de acopio' : ''}
-                            className={itemCls(false)}
-                        >
-                            <ArrowLeftRight className="w-5 h-5 flex-shrink-0" />
-                            {!isCollapsed && <span className="ml-3 text-sm flex-1">Panel del centro de acopio</span>}
-                        </Link>
+                        <EnlacesPaneles actual="superadmin" colapsado={isCollapsed} onNavegar={onClose} />
                     </div>
                 </div>
 

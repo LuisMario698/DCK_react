@@ -38,6 +38,7 @@ import {
     Tarjeta,
     formatoFecha,
     hace,
+    filtroCls,
     tdCls,
     thCls,
 } from '@/components/superadmin/ui';
@@ -205,7 +206,7 @@ export default function SuscripcionesPage() {
                             />
                         </div>
                         <select
-                            className={`${inputCls} w-auto`}
+                            className={`${filtroCls} w-auto`}
                             value={filtro}
                             onChange={(e) => setFiltro(e.target.value as FiltroEstado)}
                             aria-label="Filtrar por estado de la suscripción"
@@ -462,7 +463,7 @@ function TablaPagos({
         <>
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <select
-                    className={`${inputCls} w-auto`}
+                    className={`${filtroCls} w-auto`}
                     value={filtro}
                     onChange={(e) => onFiltro(e.target.value === 'todas' ? 'todas' : Number(e.target.value))}
                     aria-label="Filtrar pagos por asociación"

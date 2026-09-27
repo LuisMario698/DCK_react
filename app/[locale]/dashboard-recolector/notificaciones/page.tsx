@@ -8,6 +8,7 @@ import { Notificacion } from '@/types/database';
 import {
     getNotificaciones,
     marcarNotificacionesLeidas,
+    perteneceAlcance,
     suscribirNotificaciones,
 } from '@/lib/services/notificaciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
@@ -15,28 +16,35 @@ import { NotifIcon } from '@/components/recolector/NotifIcon';
 import { Cargando, mensajeError } from '@/components/asociaciones/ui';
 
 export default function NotificacionesPage() {
-    const { recargarContadores } = useRecolector();
+    const { recargarContadores, asociacion, esSuperadmin } = useRecolector();
+    const asociacionId = asociacion?.id;
     const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
     const [cargando, setCargando] = useState(true);
 
     const cargar = useCallback(async () => {
+        if (!asociacionId) return;
         try {
-            setNotificaciones(await getNotificaciones(100));
+            setNotificaciones(await getNotificaciones(100, { destinatario: 'recolector', asociacionId }));
         } catch (err) {
             toast.error(mensajeError(err, 'No se pudieron cargar las notificaciones.'));
         } finally {
             setCargando(false);
         }
-    }, []);
+    }, [asociacionId]);
 
     useEffect(() => {
+        if (!asociacionId) return;
         cargar();
-        return suscribirNotificaciones((n) => setNotificaciones((prev) => [n, ...prev]));
-    }, [cargar]);
+        // Un superadmin recibe también las de admin: sólo se agregan las de su asociación
+        const alcance = { destinatario: 'recolector' as const, asociacionId };
+        return suscribirNotificaciones((n) => {
+            if (perteneceAlcance(n, alcance)) setNotificaciones((prev) => [n, ...prev]);
+        });
+    }, [asociacionId, cargar]);
 
     const marcar = async (ids?: number[]) => {
         try {
-            await marcarNotificacionesLeidas(ids);
+            await marcarNotificacionesLeidas(ids, esSuperadmin);
             setNotificaciones((prev) => prev.map((n) => (!ids || ids.includes(n.id) ? { ...n, leida: true } : n)));
             recargarContadores();
         } catch (err) {

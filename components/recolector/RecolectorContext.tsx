@@ -19,6 +19,12 @@ interface RecolectorContextType {
      *  puede consultar pero no crear solicitudes. */
     bloqueada: boolean;
     motivoBloqueo: 'asociacion' | 'suscripcion' | null;
+    /**
+     * Un superadmin usando el portal a nombre de su asociación vinculada. Como
+     * sigue siendo admin, las páginas filtran siempre por `asociacion.id` y las
+     * RPC de leídos/mensajes se llaman «como asociación».
+     */
+    esSuperadmin: boolean;
     recargarPerfil: () => Promise<void>;
     recargarContadores: () => Promise<void>;
 }
@@ -51,28 +57,39 @@ export function RecolectorProvider({ children }: { children: React.ReactNode }) 
         }
     }, []);
 
+    const asociacion = perfil?.asociacion ?? null;
+    const asociacionId = asociacion?.id;
+
     const recargarContadores = useCallback(async () => {
+        if (!asociacionId) return;
         try {
-            const [n, m] = await Promise.all([contarNotificacionesNoLeidas(), contarMensajesNoLeidos('admin')]);
+            const [n, m] = await Promise.all([
+                contarNotificacionesNoLeidas({ destinatario: 'recolector', asociacionId }),
+                contarMensajesNoLeidos('admin', asociacionId),
+            ]);
             setNotificaciones(n);
             setMensajes(m);
         } catch (err) {
             console.error('Error cargando contadores:', err);
         }
-    }, []);
+    }, [asociacionId]);
 
     useEffect(() => {
         recargarPerfil();
+    }, [recargarPerfil]);
+
+    // Los contadores dependen de la asociación (se conoce al cargar el perfil)
+    useEffect(() => {
+        if (!asociacionId) return;
         recargarContadores();
         const off1 = suscribirNotificaciones(() => recargarContadores());
-        const off2 = suscribirMensajes(() => recargarContadores());
+        const off2 = suscribirMensajes(() => recargarContadores(), asociacionId);
         return () => {
             off1();
             off2();
         };
-    }, [recargarPerfil, recargarContadores]);
+    }, [asociacionId, recargarContadores]);
 
-    const asociacion = perfil?.asociacion ?? null;
     const motivoBloqueo =
         asociacion && asociacion.estado !== 'Activo'
             ? 'asociacion'
@@ -91,6 +108,7 @@ export function RecolectorProvider({ children }: { children: React.ReactNode }) 
                 suscripcion,
                 bloqueada: motivoBloqueo !== null,
                 motivoBloqueo,
+                esSuperadmin: !!perfil?.es_superadmin,
                 recargarPerfil,
                 recargarContadores,
             }}

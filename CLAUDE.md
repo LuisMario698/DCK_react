@@ -56,7 +56,9 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
   `/[locale]/superadmin` (cuentas, suscripciones, planes, auditoría, mantenimiento). Las RPC
   `sa_*` validan `is_superadmin()`. Una cuenta con `suspendido_at` pierde el acceso en todas las
   funciones de RLS. Las suscripciones son de las **asociaciones recolectoras** y el cobro es
-  manual (MXN). Ver `Contexto-DCK/panel-superadmin.md`.
+  manual (MXN). Un superadmin puede además vincularse a una asociación y usar el portal
+  recolector a su nombre: por eso **las consultas del portal filtran siempre por
+  `asociacion.id`** (no confíes sólo en RLS ahí). Ver `Contexto-DCK/panel-superadmin.md`.
 - **Solicitudes de recolección sólo se escriben por RPC** (`crear_solicitud`,
   `aprobar_solicitud`, `rechazar_solicitud`, `cancelar_solicitud`, `completar_solicitud`); la
   tabla no tiene políticas de escritura. No hagas `insert`/`update` directos.

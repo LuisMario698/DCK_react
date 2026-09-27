@@ -18,9 +18,12 @@ export function Conversacion({
     acento = 'blue',
     onLeidos,
     vacio = 'Inicia la conversación.',
+    comoAsociacion = false,
 }: {
     asociacionId: number;
     miRol: 'admin' | 'recolector';
+    /** Superadmin en el portal recolector: escribe y marca leídos a nombre de su asociación. */
+    comoAsociacion?: boolean;
     acento?: 'blue' | 'emerald';
     onLeidos?: () => void;
     vacio?: string;
@@ -40,7 +43,7 @@ export function Conversacion({
         setCargando(true);
 
         const marcar = () =>
-            marcarMensajesLeidos(asociacionId)
+            marcarMensajesLeidos(asociacionId, comoAsociacion)
                 .then(() => onLeidosRef.current?.())
                 .catch(() => undefined);
 
@@ -62,7 +65,7 @@ export function Conversacion({
             activo = false;
             off();
         };
-    }, [asociacionId, miRol]);
+    }, [asociacionId, miRol, comoAsociacion]);
 
     useEffect(() => {
         scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -73,7 +76,7 @@ export function Conversacion({
         if (!texto || enviando) return;
         setEnviando(true);
         try {
-            const nuevo = await enviarMensaje(asociacionId, texto);
+            const nuevo = await enviarMensaje(asociacionId, texto, comoAsociacion);
             setMensajes((prev) => (prev.some((m) => m.id === nuevo.id) ? prev : [...prev, nuevo]));
             setBorrador('');
         } catch (err) {

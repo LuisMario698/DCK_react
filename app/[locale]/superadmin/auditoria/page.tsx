@@ -2,8 +2,8 @@
 
 import { Fragment, useCallback, useEffect, useState } from 'react';
 import { ChevronDown, ChevronLeft, ChevronRight, ScrollText, X } from 'lucide-react';
-import { Cargando, ErrorCarga, inputCls, mensajeError } from '@/components/asociaciones/ui';
-import { EstadoVacio, Tarjeta, formatoFechaHora, tdCls, thCls } from '@/components/superadmin/ui';
+import { Cargando, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
+import { EstadoVacio, Tarjeta, filtroCls, formatoFechaHora, tdCls, thCls } from '@/components/superadmin/ui';
 import { getAuditoria, type FiltrosAuditoria } from '@/lib/services/superadmin';
 import type { EntradaAuditoria } from '@/types/database';
 
@@ -83,7 +83,7 @@ export default function AuditoriaPage() {
         <div className="space-y-5">
             <div className="flex flex-wrap items-end gap-3">
                 <select
-                    className={`${inputCls} w-auto`}
+                    className={`${filtroCls} w-auto`}
                     value={filtros.tabla ?? ''}
                     onChange={(e) => filtrar({ tabla: e.target.value || undefined })}
                     aria-label="Tabla"
@@ -96,7 +96,7 @@ export default function AuditoriaPage() {
                     ))}
                 </select>
                 <select
-                    className={`${inputCls} w-auto`}
+                    className={`${filtroCls} w-auto`}
                     value={filtros.operacion ?? ''}
                     onChange={(e) => filtrar({ operacion: (e.target.value || undefined) as FiltrosAuditoria['operacion'] })}
                     aria-label="Operación"
@@ -107,7 +107,7 @@ export default function AuditoriaPage() {
                     <option value="DELETE">Bajas</option>
                 </select>
                 <input
-                    className={`${inputCls} w-56`}
+                    className={`${filtroCls} w-56`}
                     placeholder="Correo de quien hizo el cambio"
                     value={usuario}
                     onChange={(e) => setUsuario(e.target.value)}
@@ -117,7 +117,7 @@ export default function AuditoriaPage() {
                     Desde
                     <input
                         type="date"
-                        className={`${inputCls} w-auto block mt-1`}
+                        className={`${filtroCls} w-auto block mt-1`}
                         value={filtros.desde ?? ''}
                         onChange={(e) => filtrar({ desde: e.target.value || undefined })}
                     />
@@ -126,7 +126,7 @@ export default function AuditoriaPage() {
                     Hasta
                     <input
                         type="date"
-                        className={`${inputCls} w-auto block mt-1`}
+                        className={`${filtroCls} w-auto block mt-1`}
                         value={filtros.hasta ?? ''}
                         onChange={(e) => filtrar({ hasta: e.target.value || undefined })}
                     />

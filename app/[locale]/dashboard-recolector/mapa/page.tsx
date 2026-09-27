@@ -46,7 +46,7 @@ export default function MapaPage() {
 
     const cargar = useCallback(async () => {
         try {
-            setInventario(await getInventario());
+            setInventario(await getInventario(true));
             setError(null);
         } catch (err) {
             setError(mensajeError(err, 'No se pudo cargar el inventario.'));

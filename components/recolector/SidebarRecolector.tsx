@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { useRecolector } from './RecolectorContext';
+import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 
 interface SidebarRecolectorProps {
     isOpen: boolean;
@@ -119,6 +120,9 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                             );
                         })}
                     </nav>
+                    <div className="px-3 mt-6 empty:hidden">
+                        <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} onNavegar={onClose} />
+                    </div>
                 </div>
 
                 <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1">

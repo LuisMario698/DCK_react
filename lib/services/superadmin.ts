@@ -16,13 +16,14 @@ export async function getCuentas() {
   return data as CuentaUsuario[]
 }
 
-export async function actualizarCuenta(usuarioId: string, rol: RolUsuario, asociacionId: number | null) {
+/** `esSuperadmin`: la cuenta conserva una asociación (opcional) para el portal recolector. */
+export async function actualizarCuenta(usuarioId: string, rol: RolUsuario, asociacionId: number | null, esSuperadmin = false) {
   const supabase = createClient()
 
   const { error } = await supabase.rpc('sa_actualizar_usuario', {
     p_usuario: usuarioId,
     p_rol: rol,
-    p_asociacion_id: rol === 'recolector' ? asociacionId : null,
+    p_asociacion_id: rol === 'recolector' || esSuperadmin ? asociacionId : null,
   })
   if (error) throw error
 }
@@ -46,6 +47,17 @@ export async function cambiarSuperadmin(usuarioId: string, valor: boolean) {
   const supabase = createClient()
 
   const { error } = await supabase.rpc('sa_cambiar_superadmin', { p_usuario: usuarioId, p_valor: valor })
+  if (error) throw error
+}
+
+/**
+ * Asociación con la que el superadmin usa el portal recolector (`null` la
+ * quita). Sigue siendo admin del recinto portuario.
+ */
+export async function vincularMiAsociacion(asociacionId: number | null) {
+  const supabase = createClient()
+
+  const { error } = await supabase.rpc('sa_vincular_mi_asociacion', { p_asociacion_id: asociacionId })
   if (error) throw error
 }
 

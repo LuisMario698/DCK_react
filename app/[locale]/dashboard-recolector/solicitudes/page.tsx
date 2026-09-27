@@ -10,6 +10,7 @@ import { formatearFecha } from '@/lib/utils/fechas';
 import { SolicitudConAsociacion } from '@/types/database';
 import { cancelarSolicitud, cantidadVigente, getSolicitudes } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
+import { useRecolector } from '@/components/recolector/RecolectorContext';
 import {
     BotonSecundario,
     Cargando,
@@ -39,17 +40,19 @@ export default function SolicitudesPage() {
     const [error, setError] = useState<string | null>(null);
     const [tab, setTab] = useState<Filtro>('todas');
     const [detalle, setDetalle] = useState<SolicitudConAsociacion | null>(null);
+    const asociacionId = useRecolector().asociacion?.id;
 
     const cargar = useCallback(async () => {
+        if (!asociacionId) return;
         try {
-            setSolicitudes(await getSolicitudes());
+            setSolicitudes(await getSolicitudes({ asociacionId }));
             setError(null);
         } catch (err) {
             setError(mensajeError(err, 'No se pudieron cargar tus solicitudes.'));
         } finally {
             setCargando(false);
         }
-    }, []);
+    }, [asociacionId]);
 
     useEffect(() => {
         cargar();

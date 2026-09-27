@@ -333,6 +333,9 @@ export function ModalConfirmar({
     );
 }
 
+/** Controles de filtro: como inputCls pero sin w-full (Tailwind no garantiza que w-auto le gane). */
+export const filtroCls = inputCls.replace('w-full ', '');
+
 export const thCls =
     'px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap';
 export const tdCls = 'px-4 py-3 text-sm text-gray-700 dark:text-gray-300 align-middle';

@@ -41,7 +41,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           className={`flex-1 p-3 sm:p-4 md:p-6 lg:p-8 transition-opacity duration-150 ${transitionStage === 'fadeOut' ? 'opacity-0' : 'opacity-100'
             }`}
         >
-          <AvisoGlobal />
+          {/* lg:mr-20: el botón flotante de tema ocupa la esquina y tapaba la ✕ del aviso */}
+          <AvisoGlobal className="lg:mr-20" />
           <div className="max-w-[100vw] overflow-x-hidden">
             {displayChildren}
           </div>

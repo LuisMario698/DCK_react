@@ -7,7 +7,7 @@ import { Cargando } from '@/components/asociaciones/ui';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 
 export default function MensajesPage() {
-    const { asociacion, cargando, recargarContadores } = useRecolector();
+    const { asociacion, cargando, recargarContadores, esSuperadmin } = useRecolector();
 
     if (cargando) return <Cargando />;
     if (!asociacion) {
@@ -28,6 +28,7 @@ export default function MensajesPage() {
             <Conversacion
                 asociacionId={asociacion.id}
                 miRol="recolector"
+                comoAsociacion={esSuperadmin}
                 acento="emerald"
                 onLeidos={recargarContadores}
                 vacio="Escribe tu primer mensaje al centro de acopio."

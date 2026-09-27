@@ -45,27 +45,38 @@ export async function getResumenConversaciones(): Promise<ResumenConversacion[]>
   return [...porAsociacion.values()]
 }
 
-/** No leídos para el usuario actual (mensajes que envió la otra parte). */
-export async function contarMensajesNoLeidos(deRol: 'admin' | 'recolector') {
+/**
+ * No leídos para el usuario actual (mensajes que envió la otra parte). En el
+ * portal recolector se pasa la asociación: un superadmin, al ser admin, vería
+ * los de todas.
+ */
+export async function contarMensajesNoLeidos(deRol: 'admin' | 'recolector', asociacionId?: number) {
   const supabase = createClient()
 
-  const { count, error } = await supabase
+  let query = supabase
     .from('mensajes')
     .select('id', { count: 'exact', head: true })
     .eq('autor_rol', deRol)
     .is('leido_at', null)
 
+  if (asociacionId) query = query.eq('asociacion_id', asociacionId)
+
+  const { count, error } = await query
   if (error) throw error
   return count ?? 0
 }
 
-/** El autor y su rol los asigna la base de datos a partir de la sesión. */
-export async function enviarMensaje(asociacionId: number, texto: string) {
+/**
+ * El autor y su rol los asigna la base de datos a partir de la sesión. Con
+ * `comoAsociacion` un superadmin escribe a nombre de su asociación vinculada
+ * (portal recolector); para cualquier otro usuario la BD lo ignora.
+ */
+export async function enviarMensaje(asociacionId: number, texto: string, comoAsociacion = false) {
   const supabase = createClient()
 
   const { data, error } = await supabase
     .from('mensajes')
-    .insert({ asociacion_id: asociacionId, texto })
+    .insert({ asociacion_id: asociacionId, texto, ...(comoAsociacion ? { autor_rol: 'recolector' } : {}) })
     .select()
     .single()
 
@@ -73,10 +84,13 @@ export async function enviarMensaje(asociacionId: number, texto: string) {
   return data as Mensaje
 }
 
-export async function marcarMensajesLeidos(asociacionId: number) {
+export async function marcarMensajesLeidos(asociacionId: number, comoAsociacion = false) {
   const supabase = createClient()
 
-  const { error } = await supabase.rpc('marcar_mensajes_leidos', { p_asociacion_id: asociacionId })
+  const { error } = await supabase.rpc('marcar_mensajes_leidos', {
+    p_asociacion_id: asociacionId,
+    ...(comoAsociacion ? { p_como: 'recolector' } : {}),
+  })
   if (error) throw error
 }
 

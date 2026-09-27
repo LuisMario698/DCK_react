@@ -16,6 +16,8 @@ asociaciones recolectoras, configuración global y bitácora. Migración:
 | Límite de usuarios | Si el plan tiene `limite_usuarios`, `invitar_usuario` no deja pasar de ahí. El superadmin sí puede vincular de más desde Cuentas. | `invitar_usuario` |
 | Suspender una cuenta | Corta el acceso a datos al instante (las funciones de RLS ya no reconocen su rol), cierra sus sesiones y bloquea el inicio de sesión (`auth.users.banned_until`). No borra nada. | RPC `sa_suspender_usuario` |
 | Eliminar una cuenta | Borra la fila de `auth.users`; el perfil cae en cascada y los registros que la referencian quedan con el autor en `null`. Pide escribir el correo. | RPC `sa_eliminar_usuario` |
+| Superadmin como asociación | El superadmin sigue siendo admin del recinto y además puede vincularse a una asociación (la elige en su panel: **Portal de asociación**). Usa el portal recolector a nombre de ella: sus solicitudes y mensajes quedan como de esa asociación. Como la RLS le deja ver todo, el portal filtra siempre por la asociación y las RPC de leídos reciben `p_como = 'recolector'`. | Migración `20260926000006_superadmin_como_asociacion.sql`, `EnlacesPaneles.tsx` |
+| Navegación | Los tres sidebars (superadmin, recinto y portal) muestran a los superadmins una sección **Superadmin** para saltar entre paneles. En el portal hay además un aviso de «modo superadmin». | `components/superadmin/EnlacesPaneles.tsx` |
 | Dónde se entra | Enlace discreto «Acceso desarrollador» en el footer de la landing, no en el panel admin. Si una cuenta sin el permiso entra por ahí, el middleware la manda a su panel normal. | `VariantCinematic.tsx` (footer y modal) |
 | Modo mantenimiento | Lo aplica el middleware: todo el que entra a un panel va a `/mantenimiento`, salvo superadmins. La landing sigue arriba. | Clave `mantenimiento` |
 | Bitácora | `audit_log` ahora guarda el correo de quien hizo el cambio y cubre también perfiles, planes, suscripciones, pagos y configuración. | `audit_trigger_fn()` |
@@ -33,8 +35,9 @@ asociaciones recolectoras, configuración global y bitácora. Migración:
 
 ## Puesta en marcha
 
-1. Aplicar `supabase/migrations/20260925000005_panel_superadmin.sql` en el SQL Editor (es
-   idempotente).
+1. Aplicar en el SQL Editor, en orden (son idempotentes):
+   `supabase/migrations/20260925000005_panel_superadmin.sql` y
+   `supabase/migrations/20260926000006_superadmin_como_asociacion.sql`.
 2. Nombrar al primer superadmin, una sola vez, en el SQL Editor:
 
    ```sql

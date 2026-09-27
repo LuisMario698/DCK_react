@@ -13,6 +13,7 @@ import logoExpanded from '@/Contexto-DCK/logo_dck.png';
 import logoCollapsed from '@/Contexto-DCK/logo_dck_no_letras.png';
 import logoWhite from '@/assets/logo_dck_blanco.png';
 import { UserProfileModal } from '@/components/layout/UserProfileModal';
+import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
@@ -155,6 +156,8 @@ export function Sidebar() {
                 </Link>
               ))}
             </div>
+
+            <EnlacesPaneles actual="recinto" colapsado={isCollapsed} />
           </nav>
         </div>
 

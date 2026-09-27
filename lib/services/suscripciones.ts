@@ -54,13 +54,13 @@ export interface SuscripcionConPlan extends Suscripcion {
 
 export interface AsociacionConSuscripcion extends AsociacionRecolectora {
   suscripcion: SuscripcionConPlan | null
-  /** Cuentas vinculadas a la asociación. */
+  /** Usuarios recolectores vinculados a la asociación. */
   usuarios: number
 }
 
 type FilaAsociacion = AsociacionRecolectora & {
   suscripcion: SuscripcionConPlan | SuscripcionConPlan[] | null
-  usuarios: { count: number }[]
+  usuarios: { rol: string }[]
 }
 
 /** Todas las asociaciones con su suscripción, plan y número de usuarios. */
@@ -69,7 +69,7 @@ export async function getAsociacionesConSuscripcion() {
 
   const { data, error } = await supabase
     .from('asociaciones_recolectoras')
-    .select('*, suscripcion:suscripciones(*, plan:planes(*)), usuarios:profiles(count)')
+    .select('*, suscripcion:suscripciones(*, plan:planes(*)), usuarios:profiles(rol)')
     .order('nombre_asociacion')
 
   if (error) throw error
@@ -77,7 +77,8 @@ export async function getAsociacionesConSuscripcion() {
     ...asociacion,
     // asociacion_id es único: PostgREST lo devuelve como objeto, pero por si acaso
     suscripcion: Array.isArray(suscripcion) ? suscripcion[0] ?? null : suscripcion,
-    usuarios: usuarios?.[0]?.count ?? 0,
+    // Sólo recolectores: un superadmin vinculado no ocupa lugar del plan
+    usuarios: (usuarios ?? []).filter((u) => u.rol === 'recolector').length,
   })) as AsociacionConSuscripcion[]
 }
 

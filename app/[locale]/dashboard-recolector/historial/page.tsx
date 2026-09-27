@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Download, FileDown, Loader2, Truck } from 'lucide-react';
 import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad } from '@/lib/constants/residuos';
 import { formatearFecha, hoyLocal } from '@/lib/utils/fechas';
 import { RecoleccionConAsociacion } from '@/types/database';
 import { abrirComprobante, getRecolecciones } from '@/lib/services/recolecciones';
+import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
 
 export default function HistorialPage() {
@@ -15,18 +16,21 @@ export default function HistorialPage() {
     const [error, setError] = useState<string | null>(null);
     const [abriendo, setAbriendo] = useState<number | null>(null);
 
-    const cargar = () => {
+    const asociacionId = useRecolector().asociacion?.id;
+
+    const cargar = useCallback(() => {
+        if (!asociacionId) return;
         setCargando(true);
-        getRecolecciones()
+        getRecolecciones(asociacionId)
             .then((r) => {
                 setHistorial(r);
                 setError(null);
             })
             .catch((err) => setError(mensajeError(err, 'No se pudo cargar el historial.')))
             .finally(() => setCargando(false));
-    };
+    }, [asociacionId]);
 
-    useEffect(cargar, []);
+    useEffect(cargar, [cargar]);
 
     const descargarCSV = () => {
         const filas = [

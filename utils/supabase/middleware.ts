@@ -15,6 +15,8 @@ const INICIO_POR_ROL: Record<Rol, string> = {
 interface Acceso {
     rol: Rol
     es_superadmin: boolean
+    /** Asociación con la que un superadmin usa el portal recolector. */
+    asociacion_id: number | null
     suspendida: boolean
     mantenimiento: boolean
 }
@@ -97,6 +99,15 @@ export async function updateSession(request: NextRequest) {
             return supabaseResponse
         }
 
+        // El superadmin entra al recinto (es admin) y al portal recolector a
+        // nombre de su asociación; si aún no eligió una, la elige en su panel.
+        if (acceso.es_superadmin) {
+            if (isRecolectorArea && !acceso.asociacion_id) {
+                return redirigir(`/${locale}/superadmin`, { elegir_asociacion: '1' })
+            }
+            return supabaseResponse
+        }
+
         const { rol } = acceso
         if (rol === 'pendiente') {
             return redirigir(`/${locale}${INICIO_POR_ROL.pendiente}`)
@@ -128,6 +139,7 @@ async function leerAcceso(supabase: SupabaseClient, userId: string): Promise<Acc
     return {
         rol: (perfil?.rol as Rol) ?? 'pendiente',
         es_superadmin: false,
+        asociacion_id: null,
         suspendida: false,
         mantenimiento: false,
     }
