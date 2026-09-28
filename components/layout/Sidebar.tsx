@@ -125,15 +125,12 @@ export function Sidebar() {
 
             <p className={`mt-3 mb-1 px-4 text-[15px] font-bold text-simar-texto-2 ${isCollapsed ? 'lg:hidden' : ''}`}>Externos</p>
             {externosItems.map(renderItem)}
-
-            <div className="mt-3">
-              <EnlacesPaneles actual="recinto" colapsado={isCollapsed} />
-            </div>
           </nav>
         </div>
 
-        {/* Perfil, tema, colapsar y cerrar sesión */}
+        {/* Accesos de superadmin (fijos, siempre a la vista), perfil, tema, colapsar y cerrar sesión */}
         <div className="flex flex-col gap-2.5">
+          <EnlacesPaneles actual="recinto" colapsado={isCollapsed} variante="barra" />
           <button
             onClick={() => setIsProfileOpen(true)}
             title={isCollapsed ? nombre : ''}

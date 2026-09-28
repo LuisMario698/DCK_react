@@ -1761,8 +1761,8 @@ export default function ManifiestosPage() {
                     <tr className="bg-simar-papel border-b border-simar-borde">
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Número</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Buque</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden md:table-cell">Motorista</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden lg:table-cell">Cocinero</th>
+                      {/* Motorista y cocinero en una columna: separados, con letra grande, los nombres se partían en 4 renglones */}
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden min-[1360px]:table-cell">Tripulación</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden sm:table-cell">Fecha</th>
                       <th className="px-4 md:px-5 py-3 text-right text-[15px] font-bold text-simar-texto-2">Acciones</th>
                     </tr>
@@ -1770,7 +1770,7 @@ export default function ManifiestosPage() {
                   <tbody className="block sm:table-row-group divide-y divide-simar-borde-suave">
                     {manifiestos.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-16 text-center">
+                        <td colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-3 text-simar-texto-3">
                             <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1782,7 +1782,7 @@ export default function ManifiestosPage() {
                       </tr>
                     ) : manifiestosPagina.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="py-16 text-center">
+                        <td colSpan={5} className="py-16 text-center">
                           <div className="flex flex-col items-center gap-2 text-simar-texto-3">
                             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1820,7 +1820,7 @@ export default function ManifiestosPage() {
                                   {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </span>
                               </p>
-                              <p className="sm:hidden text-[15px] text-simar-texto-2">Motorista: {respPrincipal}</p>
+                              <p className="min-[1360px]:hidden sm:mt-1.5 text-[15px] text-simar-texto-2">Motorista: {respPrincipal}</p>
                             </td>
                             <td className="hidden sm:table-cell px-4 md:px-5 py-3.5">
                               <div className="flex items-center gap-2">
@@ -1832,11 +1832,15 @@ export default function ManifiestosPage() {
                                 <span className="text-base font-bold text-simar-texto truncate max-w-[160px]">{buqueNombre}</span>
                               </div>
                             </td>
-                            <td className="px-4 md:px-5 py-3.5 hidden md:table-cell">
-                              <span className="text-base text-simar-texto">{respPrincipal}</span>
-                            </td>
-                            <td className="px-4 md:px-5 py-3.5 hidden lg:table-cell">
-                              <span className="text-base text-simar-texto-2">{respSecundario || <span className="text-simar-texto-3">—</span>}</span>
+                            {/* w-full + max-w-0: la columna toma sólo el ancho que sobra y recorta; un renglón por
+                                persona (el nombre completo va en el título y en «Ver») */}
+                            <td className="px-4 md:px-5 py-3.5 hidden min-[1360px]:table-cell w-full max-w-0">
+                              <span className="block truncate text-base text-simar-texto" title={`Motorista: ${respPrincipal}`}>
+                                {respPrincipal}
+                              </span>
+                              <span className="block truncate text-[15px] text-simar-texto-2" title={`Cocinero: ${respSecundario || '—'}`}>
+                                Cocinero: {respSecundario || <span className="text-simar-texto-3">—</span>}
+                              </span>
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
                               <span className="text-base text-simar-texto-2 whitespace-nowrap">

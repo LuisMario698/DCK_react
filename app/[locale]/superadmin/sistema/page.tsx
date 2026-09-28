@@ -121,7 +121,7 @@ function TarjetaMantenimiento({
                 </div>
                 <Campo label="Mensaje para los usuarios" ayuda="Se muestra en la página de mantenimiento.">
                     <textarea
-                        className={`${inputCls} min-h-[80px]`}
+                        className={`${inputCls} min-h-[120px]`}
                         value={mensaje}
                         onChange={(e) => setMensaje(e.target.value)}
                         placeholder="Estamos actualizando SiMAR. Vuelve a intentarlo en unos minutos."
@@ -205,7 +205,7 @@ function TarjetaAviso({
                 </Campo>
                 <Campo label="Mensaje">
                     <textarea
-                        className={`${inputCls} min-h-[80px]`}
+                        className={`${inputCls} min-h-[120px]`}
                         value={mensaje}
                         onChange={(e) => setMensaje(e.target.value)}
                         placeholder="El sábado de 22:00 a 23:00 h el sistema estará en mantenimiento."

@@ -28,7 +28,6 @@
     "recharts": "^3.5.1",
     "sonner": "^2.0.7",
     "xlsx": "^0.18.5"
-    
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -41,5 +40,4 @@
     "tailwindcss": "^4",
     "typescript": "^5"
   }
-  
 }

@@ -184,18 +184,18 @@ export default function CuentasPage() {
                                     <thead className="border-b border-simar-borde">
                                         <tr>
                                             <th className={thCls}>Usuario</th>
-                                            <th className={thCls}>Rol</th>
-                                            <th className={thCls}>Asociación</th>
-                                            <th className={thCls}>Alta</th>
-                                            <th className={thCls}>Último acceso</th>
-                                            <th className={thCls}>Estado</th>
-                                            <th className={`${thCls} text-right`}>Acciones</th>
+                                            {/* En celular sólo queda «Usuario»: lo demás va debajo del nombre */}
+                                            <th className={`${thCls} hidden md:table-cell`}>Rol</th>
+                                            <th className={`${thCls} hidden lg:table-cell`}>Asociación</th>
+                                            <th className={`${thCls} hidden xl:table-cell`}>Alta</th>
+                                            <th className={`${thCls} hidden lg:table-cell`}>Último acceso</th>
+                                            <th className={`${thCls} hidden md:table-cell`}>Estado</th>
+                                            <th className={`${thCls} hidden md:table-cell text-right`}>Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-simar-borde-suave">
                                         {filtradas.map((c) => {
                                             const esYo = c.id === user?.id;
-                                            const protegida = esYo || c.es_superadmin;
                                             return (
                                                 <tr key={c.id} className="hover:bg-simar-papel">
                                                     <td className={tdCls}>
@@ -203,54 +203,34 @@ export default function CuentasPage() {
                                                             {c.full_name || 'Sin nombre'}
                                                             {esYo && <span className="ml-1.5 text-[15px] font-normal text-simar-texto-2">(tú)</span>}
                                                         </p>
-                                                        <p className="text-[15px] text-simar-texto-2">{c.email}</p>
+                                                        <p className="text-[15px] text-simar-texto-2 break-all">{c.email}</p>
+                                                        <div className="md:hidden mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                                                            <RolBadge rol={c.rol} superadmin={c.es_superadmin} />
+                                                            <EstadoCuenta cuenta={c} />
+                                                        </div>
+                                                        <p className="lg:hidden mt-1.5 text-[15px] text-simar-texto-2">
+                                                            {c.asociacion_nombre && <>{c.asociacion_nombre} · </>}
+                                                            Último acceso: {hace(c.ultimo_acceso).toLowerCase()}
+                                                        </p>
+                                                        <div className="md:hidden mt-2 -ml-2">
+                                                            <AccionesCuenta cuenta={c} esYo={esYo} onAccion={(tipo) => setAccion({ tipo, cuenta: c })} />
+                                                        </div>
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} hidden md:table-cell`}>
                                                         <RolBadge rol={c.rol} superadmin={c.es_superadmin} />
                                                     </td>
-                                                    <td className={tdCls}>{c.asociacion_nombre ?? <span className="text-simar-texto-2">—</span>}</td>
-                                                    <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(c.creado_at)}</td>
-                                                    <td className={`${tdCls} whitespace-nowrap`} title={formatoFechaHora(c.ultimo_acceso)}>
+                                                    <td className={`${tdCls} hidden lg:table-cell`}>
+                                                        {c.asociacion_nombre ?? <span className="text-simar-texto-2">—</span>}
+                                                    </td>
+                                                    <td className={`${tdCls} hidden xl:table-cell whitespace-nowrap`}>{formatoFecha(c.creado_at)}</td>
+                                                    <td className={`${tdCls} hidden lg:table-cell whitespace-nowrap`} title={formatoFechaHora(c.ultimo_acceso)}>
                                                         {hace(c.ultimo_acceso)}
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} hidden md:table-cell`}>
                                                         <EstadoCuenta cuenta={c} />
                                                     </td>
-                                                    <td className={`${tdCls} text-right whitespace-nowrap`}>
-                                                        <BotonIcono
-                                                            icono={Pencil}
-                                                            etiqueta={esYo ? 'No puedes cambiar tu propio rol' : 'Cambiar rol o asociación'}
-                                                            disabled={esYo}
-                                                            onClick={() => setAccion({ tipo: 'editar', cuenta: c })}
-                                                        />
-                                                        <BotonIcono
-                                                            icono={c.es_superadmin ? ShieldMinus : ShieldPlus}
-                                                            etiqueta={c.es_superadmin ? 'Quitar superadmin' : 'Hacer superadmin'}
-                                                            disabled={esYo || !!c.suspendido_at}
-                                                            onClick={() => setAccion({ tipo: 'superadmin', cuenta: c })}
-                                                        />
-                                                        {c.suspendido_at ? (
-                                                            <BotonIcono
-                                                                icono={RotateCcw}
-                                                                etiqueta="Reactivar cuenta"
-                                                                onClick={() => setAccion({ tipo: 'reactivar', cuenta: c })}
-                                                            />
-                                                        ) : (
-                                                            <BotonIcono
-                                                                icono={Ban}
-                                                                etiqueta={protegida ? 'No se puede suspender' : 'Suspender cuenta'}
-                                                                disabled={protegida}
-                                                                peligro
-                                                                onClick={() => setAccion({ tipo: 'suspender', cuenta: c })}
-                                                            />
-                                                        )}
-                                                        <BotonIcono
-                                                            icono={Trash2}
-                                                            etiqueta={protegida ? 'No se puede eliminar' : 'Eliminar cuenta'}
-                                                            disabled={protegida}
-                                                            peligro
-                                                            onClick={() => setAccion({ tipo: 'eliminar', cuenta: c })}
-                                                        />
+                                                    <td className={`${tdCls} hidden md:table-cell text-right whitespace-nowrap`}>
+                                                        <AccionesCuenta cuenta={c} esYo={esYo} onAccion={(tipo) => setAccion({ tipo, cuenta: c })} />
                                                     </td>
                                                 </tr>
                                             );
@@ -372,6 +352,52 @@ export default function CuentasPage() {
                 />
             )}
         </div>
+    );
+}
+
+function AccionesCuenta({
+    cuenta: c,
+    esYo,
+    onAccion,
+}: {
+    cuenta: CuentaUsuario;
+    esYo: boolean;
+    onAccion: (tipo: Accion) => void;
+}) {
+    const protegida = esYo || c.es_superadmin;
+    return (
+        <span className="inline-flex items-center">
+            <BotonIcono
+                icono={Pencil}
+                etiqueta={esYo ? 'No puedes cambiar tu propio rol' : 'Cambiar rol o asociación'}
+                disabled={esYo}
+                onClick={() => onAccion('editar')}
+            />
+            <BotonIcono
+                icono={c.es_superadmin ? ShieldMinus : ShieldPlus}
+                etiqueta={c.es_superadmin ? 'Quitar superadmin' : 'Hacer superadmin'}
+                disabled={esYo || !!c.suspendido_at}
+                onClick={() => onAccion('superadmin')}
+            />
+            {c.suspendido_at ? (
+                <BotonIcono icono={RotateCcw} etiqueta="Reactivar cuenta" onClick={() => onAccion('reactivar')} />
+            ) : (
+                <BotonIcono
+                    icono={Ban}
+                    etiqueta={protegida ? 'No se puede suspender' : 'Suspender cuenta'}
+                    disabled={protegida}
+                    peligro
+                    onClick={() => onAccion('suspender')}
+                />
+            )}
+            <BotonIcono
+                icono={Trash2}
+                etiqueta={protegida ? 'No se puede eliminar' : 'Eliminar cuenta'}
+                disabled={protegida}
+                peligro
+                onClick={() => onAccion('eliminar')}
+            />
+        </span>
     );
 }
 

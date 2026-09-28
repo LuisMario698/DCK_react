@@ -15,7 +15,12 @@ export type PanelSuperadmin = 'superadmin' | 'recinto' | 'asociacion';
  * portuario y portal de asociación). Se monta en los tres sidebars y no
  * muestra nada a quien no sea superadmin.
  */
-export function EnlacesPaneles(props: { actual: PanelSuperadmin; colapsado: boolean; onNavegar?: () => void }) {
+/**
+ * `variante="barra"`: dos botones fijos junto al perfil, para los sidebars del
+ * recinto y del portal. Como lista dentro del menú quedaban fuera de la vista
+ * en pantallas de 900 px de alto o menos (el menú tiene letra y botones grandes).
+ */
+export function EnlacesPaneles(props: { actual: PanelSuperadmin; colapsado: boolean; onNavegar?: () => void; variante?: 'lista' | 'barra' }) {
     // useSearchParams (?elegir_asociacion=1) necesita un límite de Suspense para el prerender
     return (
         <Suspense fallback={null}>
@@ -24,7 +29,17 @@ export function EnlacesPaneles(props: { actual: PanelSuperadmin; colapsado: bool
     );
 }
 
-function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; colapsado: boolean; onNavegar?: () => void }) {
+function Enlaces({
+    actual,
+    colapsado,
+    onNavegar,
+    variante = 'lista',
+}: {
+    actual: PanelSuperadmin;
+    colapsado: boolean;
+    onNavegar?: () => void;
+    variante?: 'lista' | 'barra';
+}) {
     const pathname = usePathname();
     const router = useRouter();
     const locale = pathname.split('/')[1] || 'es';
@@ -71,6 +86,38 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
 
     // Mismo tamaño que los items del menú lateral; violeta = superadmin (ver DISEÑO_SIMAR.md)
     const itemCls = `group flex items-center ${colapsado ? 'justify-center px-0' : 'px-4'} min-h-[54px] py-2 rounded-2xl w-full text-left transition-colors text-simar-texto-2 font-medium hover:bg-simar-violeta-suave hover:text-simar-texto`;
+
+    if (variante === 'barra') {
+        const CORTO: Record<PanelSuperadmin, string> = { superadmin: 'Superadmin', recinto: 'Recinto', asociacion: 'Portal' };
+        return (
+            <div
+                role="group"
+                aria-label="Accesos de superadmin"
+                className={`flex gap-1.5 rounded-[18px] bg-simar-violeta-suave p-1.5 ${colapsado ? 'lg:flex-col' : ''}`}
+            >
+                {items
+                    .filter((i) => i.clave !== actual)
+                    .map((i) => {
+                        const Icono = i.icon;
+                        const titulo = `${i.label}${i.detalle ? ` · ${i.detalle}` : ''}`;
+                        return (
+                            <Link
+                                key={i.clave}
+                                href={i.href ?? elegirUrl}
+                                onClick={onNavegar}
+                                title={titulo}
+                                aria-label={titulo}
+                                className="flex-1 min-w-0 min-h-[56px] rounded-2xl flex flex-col items-center justify-center gap-0.5 px-1.5 py-1.5 text-[15px] font-bold leading-tight text-simar-violeta hover:bg-simar-superficie transition-colors"
+                            >
+                                {/* Ícono arriba y palabra abajo: en fila, «Superadmin» no cabía */}
+                                <Icono className="w-5 h-5 flex-shrink-0" strokeWidth={2} />
+                                <span className={`max-w-full truncate ${colapsado ? 'lg:hidden' : ''}`}>{CORTO[i.clave]}</span>
+                            </Link>
+                        );
+                    })}
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-1">

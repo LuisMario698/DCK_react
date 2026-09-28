@@ -124,12 +124,10 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                             );
                         })}
                     </nav>
-                    <div className="mt-4 empty:hidden">
-                        <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} onNavegar={onClose} />
-                    </div>
                 </div>
 
                 <div className="flex flex-col gap-2.5">
+                    <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} onNavegar={onClose} variante="barra" />
                     <div className={`flex items-center gap-3 rounded-[18px] bg-simar-superficie p-2.5 ${isCollapsed ? 'lg:justify-center' : ''}`}>
                         <span className="w-[46px] h-[46px] flex-shrink-0 rounded-full bg-simar-texto text-simar-superficie flex items-center justify-center text-lg font-bold">
                             {(asociacion?.nombre_asociacion || user?.email || 'E').charAt(0).toUpperCase()}
