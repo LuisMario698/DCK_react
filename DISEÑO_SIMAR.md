@@ -673,8 +673,9 @@ el modo simple (`/dashboard/simple`).
 En celular (menos de 640 px) SiMAR es **compacto**: se ve más en cada pantalla y se baja menos.
 Es una decisión del proyecto (sep-2026): en teléfono el espacio manda, pero nada baja de los
 mínimos de tacto y lectura (botones ≥ 38–46 px, texto ≥ 13–14 px). **Tableta y escritorio
-conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen el recinto (`DashboardLayout`)
-y la landing; el portal de empresas y el superadmin sólo comparten la barra inferior.
+conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen el recinto (`DashboardLayout`),
+el portal de empresas (`dashboard-recolector/layout.tsx`, con las mismas reglas que el recinto) y la
+landing; el superadmin sólo comparte la barra inferior.
 
 ### 16.1 Dos herramientas (en `app/globals.css`)
 
@@ -688,11 +689,18 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
 - La landing no lleva la escala automática (sus títulos son expresivos): sólo usa `movil:`.
 - Lo que se oculta en celular con `movil:hidden` debe estar en otro lado (pestaña, hoja, "Leer
   más") o ser un texto de apoyo repetido. Nunca se pierde una función.
+- Si en celular la pantalla es **otra** (no sólo otro acomodo) y esconderla con CSS dejaría algo
+  pesado montado de balde, como un mapa, la pantalla elige con `useEsCelular()`
+  (`components/layout/useEsCelular.ts`, mismo corte de 640 px). Hoy sólo Residuos del portal.
 
 ### 16.2 Navegación
 
 - **Encabezado móvil** (`Header`): píldora de vidrio de 56 px con el logo (lleva al Panel), el tema
-  y el perfil. Se esconde al bajar y vuelve al subir o al recibir el foco.
+  y el perfil. Se esconde al bajar y vuelve al subir o al recibir el foco. En el portal
+  (`HeaderRecolector`, menos de 1024 px) es la misma píldora con la campana de notificaciones en
+  lugar del perfil; como sus pantallas no traen título propio, `TituloPantallaRecolector` pone uno
+  con `EncabezadoPantalla` (salvo en Inicio, que tiene su saludo, y en Mensajes, donde manda el chat).
+  En escritorio el portal conserva su encabezado con el título.
 - **Barra inferior** (`BarraInferior`): cápsula de **cristal líquido** plano (16.4) flotante a 10 px del
   borde (respeta la zona segura del teléfono). Cuatro secciones + un botón al final. Palabras de
   9.5–12 px: `BarraInferior` mide la palabra más larga con la fuente real y el ancho que tendrá
@@ -718,8 +726,11 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
 - **Hoja "Más"** (`HojaMas` sobre `HojaInferior`): en el recinto el último botón abre una hoja
   desde abajo con el perfil, las otras secciones en mosaico de tres, los accesos de superadmin,
   el tema y cerrar sesión. Se cierra con el fondo, con Escape, arrastrando la agarradera o al
-  elegir una sección; bloquea el desplazamiento de atrás y devuelve el foco al botón. En el
-  portal y el superadmin el botón sigue siendo "Menú" y abre el menú lateral.
+  elegir una sección; bloquea el desplazamiento de atrás y devuelve el foco al botón. El portal
+  tiene la suya (`HojaMasRecolector`): la empresa arriba (lleva a su perfil), Historial, Impacto y
+  Notificaciones (con su aviso) en mosaico, accesos de superadmin, tema y cerrar sesión; su barra es
+  Inicio · Residuos · Solicitudes · Mensajes (con los sin leer) + "Más", y su menú lateral sólo existe
+  en escritorio. En el superadmin el botón sigue siendo "Menú" y abre el menú lateral.
 - Contenido: `pb-[calc(100px+env(safe-area-inset-bottom))]` en `main` para que la barra no tape
   lo último. Las barras pegadas abajo usan `simar-pegada-abajo` (quedan encima de la barra).
 
@@ -733,14 +744,19 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
 | Barra de guardar en una fila | Manifiesto, Basurón | Estado corto a la izquierda ("Aún no hay firmas.") y el botón a la derecha |
 | Fila de chips que se desliza | Filtros, accesos rápidos, pesos rápidos, puertos | `simar-desliza` + `movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4`, chips con `flex-shrink-0 whitespace-nowrap` |
 | Renglón de lista con acciones arriba | Registros de manifiestos y recibos | La celda de acciones va `movil:absolute` a la derecha de la primera línea; ahorra una línea por registro |
-| Tabla que se vuelve bloques | Inventario y Solicitudes (Asociaciones) | `movil:block` en tabla y tbody, `movil:hidden` en thead y `movil:grid` en cada fila con celdas colocadas |
-| Conteos en fila | Personas, Embarcaciones, Asociaciones, Inventario | `TarjetaDato apilada`: ícono y número en la primera línea, etiqueta debajo; tres por fila |
+| Tabla que se vuelve bloques | Inventario y Solicitudes (Asociaciones); Mis solicitudes e Historial (portal) | `movil:block` en tabla y tbody, `movil:hidden` en thead y `movil:grid` en cada fila con celdas colocadas |
+| Conteos en fila | Personas, Embarcaciones, Inventario; Inicio e Impacto (portal) | `TarjetaDato apilada`: ícono y número en la primera línea, etiqueta debajo; tres por fila (dos si llevan flecha o comparación, como en el portal) |
 | KPI compacto | Estadísticas | Ícono y título en una línea, número debajo; dos por fila |
-| Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
-| Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación) e Inventario (Agregar residuo) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
-| Pestañas con su número | Asociaciones | En celular las tarjetas de conteo se ocultan y cada número va en la esquina de su pestaña (pendientes y sin leer en coral; asociaciones activas en neutro); las cuatro pestañas en una fila, ícono arriba y palabra abajo |
-| Filtros en cuadrícula, sin deslizar | Asociaciones → Solicitudes (6 estados) | Si las opciones no caben en una fila, en celular van en una cuadrícula de 3 columnas con **el número arriba y la palabra abajo** (`movil:grid-cols-3`, palabra con `clamp(10.5px, 3.2vw, 12.5px)`): todas a la vista y de paso sirven de resumen. Nada de filas que hay que deslizar para ver opciones |
-| Chat al alto de la pantalla | Asociaciones → Mensajes | La caja del chat mide `100dvh` menos lo de arriba y la barra: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado |
+| Lo que se usa, primero | Portal: Inicio | En celular el mapa (sólo muestra dónde está el centro de acopio) baja con `movil:order-2`: primero la actividad reciente |
+| Pantalla para pedir | Portal: Residuos disponibles | Vista propia en celular (`ResiduosCelular`). Arriba, el centro de acopio en una tarjeta corta: foto de 68 px, nombre y cuántos residuos hay, con **Ver mapa** (el mapa sube en una hoja con "Cómo llegar", que abre Google Maps) y **Escribir** (Mensajes). Debajo, los residuos en renglones de una sola tarjeta: círculo con el color y el ícono del material, nombre, cantidad en texto oscuro, notas y **Solicitar** a la derecha ("Agotado" si no hay). Si la empresa eligió sus materiales, `ControlSegmentado` "Todos · Los que recolecto". Las cuatro tarjetas de datos de escritorio no están: el número de residuos va en la tarjeta del centro y "Actualizado hace…" en la de la lista. La hoja de solicitar no abre el teclado sola y su botón principal lleva el ancho sobrante |
+| Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y del portal, y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
+| Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación), Inventario (Agregar residuo) y Mis solicitudes del portal (Nueva solicitud, lleva a Residuos) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
+| Pestañas con su aviso | Asociaciones | En celular las tarjetas de conteo se ocultan. Las cuatro secciones en una fila (ícono arriba, palabra abajo) y **sólo los avisos** van en la esquina del ícono, en coral con un aro del color de fondo (pendientes, sin leer), como en las apps del teléfono. Un número que no pide nada (asociaciones activas) no va en la pestaña: va dentro de su sección ("3 activas de 4 registradas") |
+| Jerarquía de navegación | Asociaciones | Tres niveles que no se parecen: la **barra inferior** (cristal), las **secciones** de la pantalla (pastilla azul rellena, el único azul) y los **filtros** de cada sección (`ControlSegmentado`: canal gris y la opción elegida en blanco). Dos niveles con el mismo azul relleno se leen como uno solo |
+| Filtro segmentado de pocas opciones | Asociaciones → Solicitudes y Asociaciones; portal: Mis solicitudes e Impacto (periodo) | `ControlSegmentado` (`components/asociaciones/ui.tsx`): una fila sin deslizar, palabra de `clamp(12px, 3.6vw, 14px)`. Va dentro de una tarjeta blanca (su canal gris no se ve sobre el fondo de la página). Si hay muchas opciones, se agrupan y se afinan con un selector nativo ("Mostrar: Completadas (3)"): en el recinto **Pendientes · Por recolectar · Historial** (lo que hay que atender primero, con su número; coral si hay pendientes); en el portal **Todas · Activas · Terminadas** ("Activas" como en su Inicio). En tableta y escritorio siguen las pestañas de siempre |
+| Renglón de solicitud | Asociaciones → Solicitudes | Nombre en hasta dos líneas (`movil:line-clamp-2`) con la fecha de recolección debajo; estado a la derecha (etiqueta angosta en celular); residuo y cantidad; la acción principal **con su palabra** (Aprobar, Rechazar, Completar, Comprobante) a la izquierda y las de ícono a la derecha |
+| Formulario en hoja, no en la fila | Asociaciones → Inventario (agregar y editar residuo) | En celular no se edita dentro del renglón: se abre un `Modal` (que ya sube como hoja inferior) como el de "Nueva asociación". El tipo se elige tocando cuadros de dos columnas (color del material y su unidad), la unidad va dentro del campo de cantidad y "Publicado" es un interruptor que ocupa toda la fila. La pantalla decide al abrir con `matchMedia('(max-width: 639px)')`; en tableta y escritorio sigue la edición en la fila |
+| Chat al alto de la pantalla | Asociaciones → Mensajes; Mensajes del portal | La caja del chat mide `100dvh` menos lo de arriba y la barra (deja 8 px de respiro). En el portal lo de arriba cambia (aviso de superadmin o de suscripción), así que la pantalla mide dónde empieza la caja y lo pasa como `--arriba`: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado. En una columna (< 768 px) primero se ve la lista de conversaciones, salvo que se llegue con "Abrir chat"; para volver, botón de flecha junto al nombre |
 | "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
 | Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
 

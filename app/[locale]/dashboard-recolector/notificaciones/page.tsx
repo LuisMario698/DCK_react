@@ -58,20 +58,23 @@ export default function NotificacionesPage() {
     if (cargando) return <Cargando texto="Cargando notificaciones…" />;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 movil:space-y-3">
             <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
-                <div className="px-5 sm:px-6 py-4 border-b border-simar-borde flex flex-wrap items-center justify-between gap-3">
-                    <h2 className="text-[21px] font-extrabold text-simar-texto">
-                        Todas las notificaciones
-                        {noLeidas > 0 && <span className="ml-2 text-base font-bold text-simar-marea-tinta">{noLeidas} sin leer</span>}
+                {/* En celular el título ya está arriba: en este renglón sólo cuántas faltan y el botón */}
+                <div className="px-5 sm:px-6 py-4 border-b border-simar-borde flex flex-wrap items-center justify-between gap-3 movil:flex-nowrap movil:px-3.5 movil:py-2.5">
+                    <h2 className="text-[21px] font-extrabold text-simar-texto movil:text-[15px] movil:font-bold">
+                        <span className="movil:hidden">Todas las notificaciones</span>
+                        {noLeidas > 0 && <span className="ml-2 text-base font-bold text-simar-marea-tinta movil:ml-0 movil:text-[15px]">{noLeidas} sin leer</span>}
+                        {noLeidas === 0 && <span className="hidden movil:inline text-simar-texto-2">Todo leído</span>}
                     </h2>
                     <button
                         onClick={() => marcar()}
                         disabled={noLeidas === 0}
-                        className="simar-presiona min-h-[48px] px-4 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-base font-bold hover:border-simar-marea-tinta disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
+                        className="simar-presiona min-h-[48px] px-4 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-base font-bold hover:border-simar-marea-tinta disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 movil:flex-shrink-0 movil:px-3 movil:text-[14px]"
                     >
                         <CheckCheck className="w-5 h-5 text-simar-marea-tinta" />
-                        Marcar todas como leídas
+                        <span className="movil:hidden">Marcar todas como leídas</span>
+                        <span className="hidden movil:inline">Marcar como leídas</span>
                     </button>
                 </div>
                 {notificaciones.length === 0 ? (

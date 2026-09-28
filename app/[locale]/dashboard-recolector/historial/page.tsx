@@ -78,28 +78,32 @@ export default function HistorialPage() {
     if (cargando) return <Cargando texto="Cargando historial…" />;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p className="text-lg text-simar-texto-2">
+            {/* En celular el conteo y la descarga comparten renglón */}
+            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 movil:flex-row movil:items-center movil:justify-between">
+                <p className="text-lg text-simar-texto-2 movil:text-[15px] movil:leading-snug">
                     <strong className="text-simar-texto">{historial.length}</strong>{' '}
                     {historial.length === 1 ? 'recolección registrada' : 'recolecciones registradas'}
                 </p>
                 <button
                     onClick={descargarCSV}
                     disabled={historial.length === 0}
-                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2"
+                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:flex-shrink-0 movil:min-h-[42px] movil:px-4 movil:rounded-[14px]"
                 >
                     <FileDown className="w-[22px] h-[22px]" />
-                    Descargar historial (CSV)
+                    <span className="movil:hidden">Descargar historial (CSV)</span>
+                    <span className="hidden movil:inline">Descargar CSV</span>
                 </button>
             </div>
 
             <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden" style={{ animationDelay: '0.06s' }}>
+                {/* En celular cada recolección es un bloque: residuo, cantidad, fecha y folio a la izquierda y
+                    el comprobante a la derecha */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-simar-borde-suave">
-                        <thead className="bg-simar-papel">
+                    <table className="min-w-full divide-y divide-simar-borde-suave movil:block">
+                        <thead className="bg-simar-papel movil:hidden">
                             <tr>
                                 <Th className="hidden sm:table-cell">Folio</Th>
                                 <Th className="hidden sm:table-cell">Fecha</Th>
@@ -109,12 +113,15 @@ export default function HistorialPage() {
                                 <Th className="text-right">Comprobante</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie movil:block">
                             {historial.map((h) => (
-                                <tr key={h.id} className="hover:bg-simar-papel transition-colors">
+                                <tr
+                                    key={h.id}
+                                    className="hover:bg-simar-papel transition-colors movil:grid movil:grid-cols-[1fr_auto] movil:items-center movil:gap-x-3 movil:px-3.5 movil:py-3"
+                                >
                                     <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-mono font-bold text-simar-texto whitespace-nowrap">{h.folio}</td>
                                     <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] text-simar-texto whitespace-nowrap">{formatearFecha(h.fecha)}</td>
-                                    <td className="px-4 sm:px-6 py-4">
+                                    <td className="px-4 sm:px-6 py-4 movil:p-0 movil:min-w-0">
                                         <ResiduoBadge tipo={h.tipo} />
                                         {/* En celular: cantidad, fecha y folio debajo del residuo (no se corta a la derecha) */}
                                         <div className="sm:hidden mt-2 space-y-0.5">
@@ -129,7 +136,7 @@ export default function HistorialPage() {
                                         {formatCantidad(h.cantidad)} {h.unidad}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-[17px] text-simar-texto-2 hidden md:table-cell">{h.recibido_por || '—'}</td>
-                                    <td className="px-4 sm:px-6 py-4 text-right">
+                                    <td className="px-4 sm:px-6 py-4 text-right movil:p-0">
                                         <button
                                             onClick={() => verComprobante(h)}
                                             className="simar-presiona min-h-[44px] px-3.5 rounded-xl border-2 border-simar-campo-borde bg-simar-superficie text-[15px] font-bold text-simar-marea-tinta hover:border-simar-marea-tinta disabled:opacity-50 inline-flex items-center gap-1.5"
@@ -137,14 +144,16 @@ export default function HistorialPage() {
                                             aria-label={`Descargar comprobante ${h.folio} en PDF`}
                                         >
                                             {abriendo === h.id ? <Loader2 className="w-[18px] h-[18px] animate-spin" /> : <Download className="w-[18px] h-[18px]" />}
-                                            PDF
+                                            {/* En celular no está la columna "Comprobante": la palabra va en el botón */}
+                                            <span className="movil:hidden">PDF</span>
+                                            <span className="hidden movil:inline">Comprobante</span>
                                         </button>
                                     </td>
                                 </tr>
                             ))}
                             {historial.length === 0 && (
-                                <tr>
-                                    <td colSpan={6}>
+                                <tr className="movil:block">
+                                    <td colSpan={6} className="movil:block">
                                         <EstadoVacio icono={Truck} titulo="Aún no hay recolecciones">
                                             Cuando el centro de acopio complete una de tus solicitudes, su comprobante aparecerá aquí.
                                         </EstadoVacio>

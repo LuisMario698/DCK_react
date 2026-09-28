@@ -26,8 +26,9 @@ export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
     } as const;
     const { Icon, cls } = map[estado];
     return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[15px] font-bold whitespace-nowrap ${cls}`}>
-            <Icon className="w-4 h-4" strokeWidth={2.2} />
+        // En celular más angosta, para dejarle espacio al nombre de la asociación en la misma línea
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[15px] font-bold whitespace-nowrap movil:gap-1 movil:px-2.5 movil:text-[13px] ${cls}`}>
+            <Icon className="w-4 h-4 movil:w-3.5 movil:h-3.5" strokeWidth={2.2} />
             {ESTADO_SOLICITUD_LABEL[estado]}
         </span>
     );
@@ -109,6 +110,60 @@ export function Modal({
                 <div className="px-7 pb-7 overflow-y-auto">{children}</div>
             </div>
         </div>
+    );
+}
+
+/**
+ * Filtro dentro de una sección, en celular (segundo nivel): canal gris y la opción elegida en blanco.
+ * Más discreto que la pastilla azul de las secciones, para que se lea qué manda sobre qué. El número
+ * de cada opción es opcional: en coral o azul si hay algo que atender, neutro si está en cero.
+ * Sólo se muestra en la zona compacta de celular; tableta y escritorio usan sus pestañas de siempre.
+ */
+export function ControlSegmentado<T extends string>({
+    opciones,
+    valor,
+    onCambiar,
+    etiqueta,
+}: {
+    opciones: { valor: T; texto: string; conteo?: number; tono?: 'coral' | 'marea' }[];
+    valor: T;
+    onCambiar: (valor: T) => void;
+    /** Nombre del grupo para el lector de pantalla */
+    etiqueta: string;
+}) {
+    return (
+        <nav aria-label={etiqueta} className="hidden movil:flex gap-0.5 p-[3px] rounded-[14px] bg-simar-papel">
+            {opciones.map((o) => {
+                const activo = o.valor === valor;
+                const n = o.conteo ?? 0;
+                const tonoConteo =
+                    n > 0 && o.tono === 'coral'
+                        ? 'bg-[#A63F0E] text-white'
+                        : n > 0 && o.tono === 'marea'
+                          ? 'bg-simar-marea-suave text-simar-marea-tinta'
+                          : activo
+                            ? 'bg-simar-papel text-simar-texto-2'
+                            : 'bg-simar-superficie text-simar-texto-2';
+                return (
+                    <button
+                        key={o.valor}
+                        type="button"
+                        onClick={() => onCambiar(o.valor)}
+                        aria-pressed={activo}
+                        className={`simar-presiona flex-auto min-w-0 min-h-[42px] px-1.5 rounded-[11px] inline-flex items-center justify-center gap-1 text-[clamp(12px,3.6vw,14px)] font-bold leading-tight transition-colors ${
+                            activo ? 'bg-simar-superficie text-simar-texto shadow-simar' : 'text-simar-texto-2'
+                        }`}
+                    >
+                        {o.texto}
+                        {o.conteo !== undefined && (
+                            <span className={`flex-shrink-0 min-w-[20px] h-[20px] px-1 rounded-full text-[12px] font-bold tabular-nums inline-flex items-center justify-center ${tonoConteo}`}>
+                                {o.conteo}
+                            </span>
+                        )}
+                    </button>
+                );
+            })}
+        </nav>
     );
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Search, MessageSquare, Mail } from 'lucide-react';
+import { ChevronLeft, Search, MessageSquare, Mail } from 'lucide-react';
 import { AsociacionRecolectora } from '@/types/database';
 import { getAsociaciones } from '@/lib/services/asociaciones';
 import { getResumenConversaciones, suscribirMensajes, type ResumenConversacion } from '@/lib/services/mensajes';
@@ -35,7 +35,10 @@ export function ChatTab({
             .then(([a, r]) => {
                 setAsociaciones(a);
                 setResumen(r);
-                setActiva((actual) => actual ?? r[r.length - 1]?.asociacion_id ?? null);
+                // Menos de 768 px se ve una cosa a la vez: si no se pidió una conversación (Abrir chat),
+                // primero la lista; en dos columnas se abre la más reciente
+                const unaColumna = window.matchMedia('(max-width: 767px)').matches;
+                setActiva((actual) => actual ?? (unaColumna ? null : r[r.length - 1]?.asociacion_id ?? null));
             })
             .finally(() => setCargando(false));
         return suscribirMensajes(() => {
@@ -64,9 +67,9 @@ export function ChatTab({
     if (cargando) return <Cargando texto="Cargando conversaciones…" />;
 
     // En celular el chat mide lo que queda entre las pestañas y la barra de navegación: así el campo
-    // para escribir siempre queda a la vista, arriba de la barra
+    // para escribir siempre queda a la vista, arriba de la barra (con un respiro de 8 px)
     return (
-        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-300px)] min-h-[560px] grid grid-cols-1 md:grid-cols-[320px_1fr] movil:h-[calc(100dvh-292px-env(safe-area-inset-bottom))] movil:min-h-[340px]">
+        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-300px)] min-h-[560px] grid grid-cols-1 md:grid-cols-[320px_1fr] movil:h-[calc(100dvh-300px-env(safe-area-inset-bottom))] movil:min-h-[340px]">
             {/* Lista de conversaciones */}
             <aside className={`border-r border-simar-borde flex-col bg-simar-papel min-h-0 ${actual ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-simar-borde">
@@ -141,8 +144,13 @@ export function ChatTab({
                 {actual ? (
                     <>
                         <header className="px-5 py-4 border-b border-simar-borde flex items-center gap-3 bg-simar-superficie shadow-simar">
-                            <button onClick={() => setActiva(null)} className="md:hidden text-base text-simar-marea-tinta font-semibold mr-1">
-                                ←
+                            <button
+                                onClick={() => setActiva(null)}
+                                aria-label="Volver a las conversaciones"
+                                title="Volver a las conversaciones"
+                                className="simar-presiona md:hidden w-11 h-11 -ml-2 flex-shrink-0 rounded-xl flex items-center justify-center text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors"
+                            >
+                                <ChevronLeft className="w-6 h-6" strokeWidth={2.4} />
                             </button>
                             <div className="w-11 h-11 rounded-xl bg-simar-marea flex items-center justify-center text-white font-bold text-base shadow-simar">
                                 {actual.nombre_asociacion.charAt(0)}

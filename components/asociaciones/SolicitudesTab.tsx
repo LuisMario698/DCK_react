@@ -25,6 +25,7 @@ import {
     BotonSecundario,
     Campo,
     Cargando,
+    ControlSegmentado,
     ErrorCarga,
     EstadoSolicitudBadge,
     Modal,
@@ -33,7 +34,8 @@ import {
     mensajeError,
 } from './ui';
 
-type Filtro = EstadoSolicitud | 'todas';
+// 'historial' (completadas, rechazadas y canceladas juntas) sólo se elige en celular
+type Filtro = EstadoSolicitud | 'todas' | 'historial';
 
 const TABS: { value: Filtro; label: string }[] = [
     { value: 'pendiente', label: 'Pendientes' },
@@ -43,6 +45,29 @@ const TABS: { value: Filtro; label: string }[] = [
     { value: 'cancelada', label: 'Canceladas' },
     { value: 'todas', label: 'Todas' },
 ];
+
+const ESTADOS_HISTORIAL: EstadoSolicitud[] = ['completada', 'rechazada', 'cancelada'];
+
+// Celular: lo que hay que atender va primero (Pendientes, Por recolectar); lo terminado se junta en
+// "Historial" y se afina con este selector. Así caben en una fila sin deslizar
+const OPCIONES_HISTORIAL: { value: Filtro; label: string }[] = [
+    { value: 'historial', label: 'Todo el historial' },
+    { value: 'completada', label: 'Completadas' },
+    { value: 'rechazada', label: 'Rechazadas' },
+    { value: 'cancelada', label: 'Canceladas' },
+    { value: 'todas', label: 'Todas, también las activas' },
+];
+
+const VACIO: Partial<Record<Filtro, { titulo: string; texto: string }>> = {
+    pendiente: {
+        titulo: 'No hay solicitudes pendientes.',
+        texto: 'Cuando una empresa pida residuos del inventario, aparecerá aquí para que la apruebes.',
+    },
+    aprobada: {
+        titulo: 'No hay nada por recolectar.',
+        texto: 'Las solicitudes que apruebes esperan aquí hasta que registres la recolección.',
+    },
+};
 
 type Accion = { tipo: 'detalle' | 'aprobar' | 'rechazar' | 'completar'; solicitud: SolicitudConAsociacion };
 
@@ -85,7 +110,11 @@ export function SolicitudesTab({
         onCambio?.();
     };
 
-    const filtradas = tab === 'todas' ? solicitudes : solicitudes.filter((s) => s.estado === tab);
+    const coincide = (s: SolicitudConAsociacion, f: Filtro) =>
+        f === 'todas' || (f === 'historial' ? ESTADOS_HISTORIAL.includes(s.estado) : s.estado === f);
+    const conteo = (f: Filtro) => solicitudes.filter((s) => coincide(s, f)).length;
+    const filtradas = solicitudes.filter((s) => coincide(s, tab));
+    const enHistorial = tab !== 'pendiente' && tab !== 'aprobada';
     const disponibleDe = (s: SolicitudConAsociacion) => inventario.find((i) => i.tipo === s.tipo)?.cantidad ?? 0;
 
     const cancelar = async (s: SolicitudConAsociacion) => {
@@ -129,30 +158,25 @@ export function SolicitudesTab({
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
-                {/* Tabs. En celular: cuadrícula de 3 × 2 con las seis a la vista (el número arriba y la
-                    palabra abajo), sin deslizar de lado; de paso sirve de resumen */}
-                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:px-2 movil:pt-2 movil:pb-2 movil:bg-transparent">
-                    <nav aria-label="Estado de las solicitudes" className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px movil:grid movil:grid-cols-3 movil:gap-1.5 movil:overflow-visible movil:mb-0">
+                {/* Tabs (tableta y escritorio) */}
+                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:hidden">
+                    <nav aria-label="Estado de las solicitudes" className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
                         {TABS.map((t) => {
-                            const count =
-                                t.value === 'todas'
-                                    ? solicitudes.length
-                                    : solicitudes.filter((s) => s.estado === t.value).length;
                             const active = tab === t.value;
                             return (
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
                                     aria-pressed={active}
-                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 movil:flex movil:flex-col-reverse movil:items-center movil:justify-center movil:min-h-[52px] movil:px-1 movil:py-1.5 movil:rounded-[14px] movil:border-b-0 movil:text-[clamp(10.5px,3.2vw,12.5px)] movil:leading-tight movil:font-bold ${
+                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 ${
                                         active
-                                            ? 'border-simar-marea-tinta text-simar-marea-tinta movil:bg-simar-marea movil:text-white'
-                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta movil:bg-simar-papel'
+                                            ? 'border-simar-marea-tinta text-simar-marea-tinta'
+                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta'
                                     }`}
                                 >
                                     {t.label}
-                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors movil:ml-0 movil:p-0 movil:bg-transparent movil:text-[17px] movil:font-extrabold movil:leading-none movil:mb-0.5 ${active ? 'bg-simar-marea-suave text-simar-marea-tinta movil:text-white' : 'bg-simar-papel text-simar-texto-2 movil:text-simar-texto'}`}>
-                                        {count}
+                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors ${active ? 'bg-simar-marea-suave text-simar-marea-tinta' : 'bg-simar-papel text-simar-texto-2'}`}>
+                                        {conteo(t.value)}
                                     </span>
                                 </button>
                             );
@@ -160,7 +184,39 @@ export function SolicitudesTab({
                     </nav>
                 </div>
 
-                {/* Tabla (en celular cada solicitud es un bloque: empresa y estado; residuo y cantidad; acciones) */}
+                {/* Celular: control segmentado (más discreto que las secciones de arriba). Sólo lo que hay
+                    que atender lleva su número; el total del historial va en su selector */}
+                <div className="hidden movil:block border-b border-simar-borde p-2 space-y-2">
+                    <ControlSegmentado
+                        etiqueta="Estado de las solicitudes"
+                        valor={enHistorial ? 'historial' : tab}
+                        onCambiar={setTab}
+                        opciones={[
+                            { valor: 'pendiente', texto: 'Pendientes', conteo: conteo('pendiente'), tono: 'coral' },
+                            { valor: 'aprobada', texto: 'Por recolectar', conteo: conteo('aprobada'), tono: 'marea' },
+                            { valor: 'historial', texto: 'Historial' },
+                        ]}
+                    />
+                    {enHistorial && (
+                        <label className="flex items-center gap-2.5 pl-1">
+                            <span className="text-[14px] font-semibold text-simar-texto-2">Mostrar</span>
+                            <select
+                                value={tab}
+                                onChange={(e) => setTab(e.target.value as Filtro)}
+                                className="flex-1 min-w-0 min-h-[40px] px-3 rounded-[12px] border-2 border-simar-campo-borde bg-simar-superficie text-[15px] font-semibold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors"
+                            >
+                                {OPCIONES_HISTORIAL.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                        {o.label} ({conteo(o.value)})
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+                </div>
+
+                {/* Tabla (en celular cada solicitud es un bloque: empresa, fecha y estado; residuo y
+                    cantidad; la acción principal con su palabra a la izquierda y las demás a la derecha) */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full border-collapse movil:block">
                         <thead className="movil:hidden">
@@ -184,14 +240,18 @@ export function SolicitudesTab({
                                         style={{ animationDelay: `${Math.min(idx * 30, 300)}ms` }}
                                     >
                                         <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-span-2 movil:min-w-0">
-                                            <div className="flex items-center gap-2.5">
+                                            <div className="flex items-center gap-2.5 movil:items-start">
                                                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-simar-marea flex items-center justify-center text-white font-bold text-[15px] shadow-simar">
                                                     {nombre.charAt(0)}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-base font-semibold text-simar-texto truncate">{nombre}</p>
+                                                    <p className="text-base font-semibold text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:leading-snug">{nombre}</p>
                                                     <p className="text-[15px] text-simar-texto-2 truncate hidden sm:block">
                                                         Solicitada {formatearFecha(s.created_at)}
+                                                    </p>
+                                                    {/* En celular no está la columna Recolección: su fecha va aquí */}
+                                                    <p className="hidden movil:block text-[13px] text-simar-texto-2 truncate">
+                                                        Recolección {formatearFecha(s.fecha_propuesta)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -199,28 +259,30 @@ export function SolicitudesTab({
                                         <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:row-start-2">
                                             <ResiduoBadge tipo={s.tipo} />
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2">
+                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2 movil:min-w-0 movil:whitespace-normal">
                                             <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
                                             <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
                                             {s.recoleccion ? (
-                                                <span className="block text-[15px] text-simar-texto-2">
-                                                    recolectados · {s.recoleccion.folio}
+                                                <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">
+                                                    <span className="movil:hidden">recolectados · </span>
+                                                    <span className="hidden movil:inline">Folio </span>
+                                                    {s.recoleccion.folio}
                                                 </span>
                                             ) : (
                                                 s.cantidad_aprobada !== null &&
                                                 s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                    <span className="block text-[15px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
                                                 )
                                             )}
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
                                             {formatearFecha(s.fecha_propuesta)}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end">
+                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end movil:self-start">
                                             <EstadoSolicitudBadge estado={s.estado} />
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 text-right movil:p-0 movil:col-span-3 movil:text-left">
-                                            <div className="inline-flex items-center gap-1 movil:flex-wrap movil:gap-1.5">
+                                            <div className="inline-flex items-center gap-1 movil:flex movil:flex-wrap movil:gap-1.5">
                                                 {s.estado === 'pendiente' && (
                                                     <>
                                                         <AccionBtn color="emerald" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
@@ -241,17 +303,19 @@ export function SolicitudesTab({
                                                         Comprobante
                                                     </AccionBtn>
                                                 )}
-                                                <IconBtn title="Ver detalle" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
-                                                    <Eye className="w-4 h-4" />
-                                                </IconBtn>
-                                                <IconBtn title="Abrir chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
-                                                    <MessageSquare className="w-4 h-4" />
-                                                </IconBtn>
-                                                {(s.estado === 'pendiente' || s.estado === 'aprobada') && (
-                                                    <IconBtn title="Cancelar solicitud" onClick={() => cancelar(s)}>
-                                                        <Ban className="w-4 h-4" />
+                                                <span className="inline-flex items-center gap-1 movil:ml-auto movil:gap-0.5">
+                                                    <IconBtn title="Ver detalle" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
+                                                        <Eye className="w-4 h-4" />
                                                     </IconBtn>
-                                                )}
+                                                    <IconBtn title="Abrir chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
+                                                        <MessageSquare className="w-4 h-4" />
+                                                    </IconBtn>
+                                                    {(s.estado === 'pendiente' || s.estado === 'aprobada') && (
+                                                        <IconBtn title="Cancelar solicitud" onClick={() => cancelar(s)}>
+                                                            <Ban className="w-4 h-4" />
+                                                        </IconBtn>
+                                                    )}
+                                                </span>
                                             </div>
                                         </td>
                                     </tr>
@@ -260,9 +324,10 @@ export function SolicitudesTab({
                             {filtradas.length === 0 && (
                                 <tr className="movil:block">
                                     <td colSpan={6} className="py-16 text-center movil:block movil:py-10 movil:px-4">
-                                        <div className="flex flex-col items-center gap-2 text-simar-texto-2">
+                                        <div className="flex flex-col items-center gap-2 text-simar-texto-2 max-w-md mx-auto">
                                             <Inbox className="w-10 h-10" />
-                                            <p className="text-base font-medium">No hay solicitudes en esta categoría.</p>
+                                            <p className="text-base font-medium">{VACIO[tab]?.titulo ?? 'No hay solicitudes en esta categoría.'}</p>
+                                            {VACIO[tab] && <p className="text-[15px] leading-snug">{VACIO[tab].texto}</p>}
                                         </div>
                                     </td>
                                 </tr>
@@ -656,9 +721,13 @@ function AccionBtn({
         blue: 'text-simar-marea-tinta bg-simar-marea-suave hover:bg-simar-marea-suave',
     }[color];
     return (
-        <button onClick={onClick} className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all ${cls}`}>
+        // En celular lleva siempre su palabra (sólo el ícono no dice si aprueba o rechaza) y mide 40 px
+        <button
+            onClick={onClick}
+            className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[14px] movil:font-bold ${cls}`}
+        >
             {icon}
-            <span className="hidden sm:inline">{children}</span>
+            <span>{children}</span>
         </button>
     );
 }

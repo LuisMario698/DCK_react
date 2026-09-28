@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Eye, Ban, Plus, Inbox, FileText } from 'lucide-react';
 import { PUERTO_PENASCO, formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
@@ -14,6 +14,7 @@ import { useRecolector } from '@/components/recolector/RecolectorContext';
 import {
     BotonSecundario,
     Cargando,
+    ControlSegmentado,
     ErrorCarga,
     EstadoSolicitudBadge,
     Modal,
@@ -21,8 +22,10 @@ import {
     mensajeError,
 } from '@/components/asociaciones/ui';
 import { Aviso, EstadoVacio, claseChip } from '@/components/ui/simar';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 
-type Filtro = EstadoSolicitud | 'todas';
+// 'activas' y 'terminadas' (grupos de estados) sólo se eligen en celular
+type Filtro = EstadoSolicitud | 'todas' | 'activas' | 'terminadas';
 
 const TABS: { value: Filtro; label: string }[] = [
     { value: 'todas', label: 'Todas' },
@@ -33,8 +36,28 @@ const TABS: { value: Filtro; label: string }[] = [
     { value: 'cancelada', label: 'Canceladas' },
 ];
 
+const ACTIVAS: Filtro[] = ['pendiente', 'aprobada'];
+const TERMINADAS: Filtro[] = ['completada', 'rechazada', 'cancelada'];
+
+// Celular: tres grupos en el control segmentado y un selector para afinar dentro del grupo (como
+// Asociaciones → Solicitudes en el recinto). "Activas" es lo mismo que cuenta el Inicio
+const OPCIONES_GRUPO: Record<'activas' | 'terminadas', { value: Filtro; label: string }[]> = {
+    activas: [
+        { value: 'activas', label: 'Todas las activas' },
+        { value: 'pendiente', label: 'Pendientes' },
+        { value: 'aprobada', label: 'Aprobadas' },
+    ],
+    terminadas: [
+        { value: 'terminadas', label: 'Todas las terminadas' },
+        { value: 'completada', label: 'Completadas' },
+        { value: 'rechazada', label: 'Rechazadas' },
+        { value: 'cancelada', label: 'Canceladas' },
+    ],
+};
+
 export default function SolicitudesPage() {
     const pathname = usePathname();
+    const router = useRouter();
     const locale = pathname.split('/')[1] || 'es';
     const [solicitudes, setSolicitudes] = useState<SolicitudConAsociacion[]>([]);
     const [cargando, setCargando] = useState(true);
@@ -73,23 +96,53 @@ export default function SolicitudesPage() {
         }
     };
 
-    const filtradas = tab === 'todas' ? solicitudes : solicitudes.filter((s) => s.estado === tab);
+    const coincide = (s: SolicitudConAsociacion, f: Filtro) =>
+        f === 'todas' ||
+        (f === 'activas' ? ACTIVAS.includes(s.estado) : f === 'terminadas' ? TERMINADAS.includes(s.estado) : s.estado === f);
+    const conteo = (f: Filtro) => solicitudes.filter((s) => coincide(s, f)).length;
+    const filtradas = solicitudes.filter((s) => coincide(s, tab));
+    const grupo: 'todas' | 'activas' | 'terminadas' =
+        tab === 'todas' ? 'todas' : tab === 'activas' || ACTIVAS.includes(tab) ? 'activas' : 'terminadas';
 
     if (cargando) return <Cargando texto="Cargando solicitudes…" />;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
             <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
                 {/* Filtros (fichas de 48 px con su conteo) y la acción principal en la misma franja */}
-                <div className="px-4 sm:px-6 py-5 border-b border-simar-borde flex flex-col xl:flex-row xl:items-center gap-4">
-                    <nav aria-label="Filtrar solicitudes por estado" className="flex flex-wrap gap-2.5 flex-1">
+                <div className="px-4 sm:px-6 py-5 border-b border-simar-borde flex flex-col xl:flex-row xl:items-center gap-4 movil:p-2 movil:gap-2">
+                    {/* Celular: control segmentado (discreto: las secciones están en la barra de abajo) */}
+                    <ControlSegmentado
+                        etiqueta="Filtrar solicitudes por estado"
+                        valor={grupo}
+                        onCambiar={setTab}
+                        opciones={[
+                            { valor: 'todas', texto: 'Todas', conteo: conteo('todas') },
+                            { valor: 'activas', texto: 'Activas', conteo: conteo('activas'), tono: 'marea' },
+                            { valor: 'terminadas', texto: 'Terminadas', conteo: conteo('terminadas') },
+                        ]}
+                    />
+                    {grupo !== 'todas' && (
+                        <label className="hidden movil:flex items-center gap-2.5 pl-1">
+                            <span className="text-[14px] font-semibold text-simar-texto-2">Mostrar</span>
+                            <select
+                                value={tab}
+                                onChange={(e) => setTab(e.target.value as Filtro)}
+                                className="flex-1 min-w-0 min-h-[40px] px-3 rounded-[12px] border-2 border-simar-campo-borde bg-simar-superficie text-[15px] font-semibold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors"
+                            >
+                                {OPCIONES_GRUPO[grupo].map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                        {o.label} ({conteo(o.value)})
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+                    <nav aria-label="Filtrar solicitudes por estado" className="flex flex-wrap gap-2.5 flex-1 movil:hidden">
                         {TABS.map((t) => {
-                            const count =
-                                t.value === 'todas'
-                                    ? solicitudes.length
-                                    : solicitudes.filter((s) => s.estado === t.value).length;
+                            const count = conteo(t.value);
                             const active = tab === t.value;
                             return (
                                 <button
@@ -110,19 +163,21 @@ export default function SolicitudesPage() {
                             );
                         })}
                     </nav>
+                    {/* En celular esta acción va en la burbuja flotante */}
                     <Link
                         href={`/${locale}/dashboard-recolector/mapa`}
-                        className="simar-presiona flex-shrink-0 min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2"
+                        className="simar-presiona flex-shrink-0 min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:hidden"
                     >
                         <Plus className="w-[22px] h-[22px]" strokeWidth={2.4} />
                         Nueva solicitud
                     </Link>
                 </div>
 
-                {/* Tabla. En celular, cantidad, fecha y estado van debajo del residuo (no se corta a la derecha) */}
+                {/* Tabla. En celular cada solicitud es un bloque: residuo y estado; cantidad y fecha de
+                    recolección; las acciones con su palabra */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-simar-borde-suave">
-                        <thead className="bg-simar-papel">
+                    <table className="min-w-full divide-y divide-simar-borde-suave movil:block">
+                        <thead className="bg-simar-papel movil:hidden">
                             <tr>
                                 <Th>Residuo</Th>
                                 <Th className="hidden sm:table-cell">Cantidad</Th>
@@ -132,27 +187,29 @@ export default function SolicitudesPage() {
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie movil:block">
                             {filtradas.map((s) => (
-                                <tr key={s.id} className="hover:bg-simar-papel transition-colors">
-                                    <td className="px-4 sm:px-6 py-4">
+                                <tr
+                                    key={s.id}
+                                    className="hover:bg-simar-papel transition-colors movil:grid movil:grid-cols-[1fr_auto] movil:items-start movil:gap-x-3 movil:gap-y-2.5 movil:px-3.5 movil:py-3"
+                                >
+                                    <td className="px-4 sm:px-6 py-4 movil:p-0 movil:min-w-0">
                                         <ResiduoBadge tipo={s.tipo} />
-                                        <div className="sm:hidden mt-2 space-y-1.5">
+                                        <div className="sm:hidden mt-2 space-y-0.5">
                                             <p className="text-[17px] font-bold text-simar-texto">
                                                 {formatCantidad(cantidadVigente(s))} {s.unidad}
-                                                <span className="font-normal text-simar-texto-2"> · {formatearFecha(s.fecha_propuesta)}</span>
+                                                {s.recoleccion ? (
+                                                    <span className="text-[14px] font-normal text-simar-texto-2"> recolectados</span>
+                                                ) : (
+                                                    s.cantidad_aprobada !== null &&
+                                                    s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                        <span className="text-[14px] font-normal text-simar-texto-2">
+                                                            {' '}de {formatCantidad(s.cantidad_solicitada)} solicitados
+                                                        </span>
+                                                    )
+                                                )}
                                             </p>
-                                            {s.recoleccion ? (
-                                                <p className="text-[15px] text-simar-texto-2">recolectados</p>
-                                            ) : (
-                                                s.cantidad_aprobada !== null &&
-                                                s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                    <p className="text-[15px] text-simar-texto-2">
-                                                        de {formatCantidad(s.cantidad_solicitada)} solicitados
-                                                    </p>
-                                                )
-                                            )}
-                                            <EstadoSolicitudBadge estado={s.estado} />
+                                            <p className="text-[13px] text-simar-texto-2">Recolección {formatearFecha(s.fecha_propuesta)}</p>
                                         </div>
                                     </td>
                                     <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-bold text-simar-texto whitespace-nowrap">
@@ -174,11 +231,11 @@ export default function SolicitudesPage() {
                                     <td className="px-4 sm:px-6 py-4 text-base text-simar-texto-2 hidden lg:table-cell whitespace-nowrap">
                                         {formatearFecha(s.created_at)}
                                     </td>
-                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4">
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4 movil:block movil:p-0 movil:col-start-2 movil:row-start-1">
                                         <EstadoSolicitudBadge estado={s.estado} />
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-right">
-                                        <div className="inline-flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                    <td className="px-4 sm:px-6 py-4 text-right movil:p-0 movil:col-span-2 movil:text-left">
+                                        <div className="inline-flex flex-col sm:flex-row items-stretch sm:items-center gap-2 movil:flex movil:flex-row">
                                         <button
                                             onClick={() => setDetalle(s)}
                                             className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta inline-flex items-center justify-center gap-1.5"
@@ -204,8 +261,8 @@ export default function SolicitudesPage() {
                                 </tr>
                             ))}
                             {filtradas.length === 0 && (
-                                <tr>
-                                    <td colSpan={6}>
+                                <tr className="movil:block">
+                                    <td colSpan={6} className="movil:block">
                                         <EstadoVacio icono={Inbox} titulo={solicitudes.length === 0 ? 'Aún no hay solicitudes' : 'Nada en esta categoría'}>
                                             {solicitudes.length === 0
                                                 ? 'Aún no has enviado solicitudes. Revisa los residuos disponibles para crear la primera.'
@@ -219,6 +276,9 @@ export default function SolicitudesPage() {
                 </div>
             </div>
 
+            {/* Celular: "Nueva solicitud" flota encima de la barra de navegación (lleva a Residuos) */}
+            <BotonFlotante icono={Plus} etiqueta="Nueva solicitud" onClick={() => router.push(`/${locale}/dashboard-recolector/mapa`)} />
+
             {detalle && (
                 <Modal titulo={`Solicitud #${detalle.id}`} subtitulo={PUERTO_PENASCO.nombre} onClose={() => setDetalle(null)}>
                     <div className="space-y-4">
@@ -226,7 +286,7 @@ export default function SolicitudesPage() {
                             <EstadoSolicitudBadge estado={detalle.estado} />
                             <ResiduoBadge tipo={detalle.tipo} />
                         </div>
-                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 movil:grid-cols-2 movil:gap-2">
                             <Dato label="Solicitado" valor={`${formatCantidad(detalle.cantidad_solicitada)} ${detalle.unidad}`} />
                             <Dato
                                 label="Aprobado"
@@ -272,9 +332,9 @@ export default function SolicitudesPage() {
 
 function Dato({ label, valor }: { label: string; valor: string }) {
     return (
-        <div className="rounded-2xl bg-simar-papel px-4 py-3.5">
+        <div className="rounded-2xl bg-simar-papel px-4 py-3.5 movil:px-3 movil:py-2.5">
             <dt className="text-[15px] font-bold text-simar-texto-2">{label}</dt>
-            <dd className="mt-0.5 text-[20px] font-extrabold leading-tight text-simar-texto">{valor}</dd>
+            <dd className="mt-0.5 text-[20px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{valor}</dd>
         </div>
     );
 }

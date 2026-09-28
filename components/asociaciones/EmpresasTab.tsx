@@ -32,6 +32,7 @@ import {
     BotonSecundario,
     Campo,
     Cargando,
+    ControlSegmentado,
     ErrorCarga,
     Modal,
     ResiduoBadge,
@@ -128,6 +129,11 @@ export function EmpresasTab({
                             Registra empresas, vincula a sus usuarios y controla su estado.
                         </p>
                     </div>
+                    {/* En celular la tarjeta "Asociaciones activas" se oculta: su número va aquí */}
+                    <p className="hidden movil:block basis-full px-0.5 text-[14px] text-simar-texto-2">
+                        <span className="font-bold text-simar-texto">{asociaciones.filter((a) => a.estado === 'Activo').length}</span>{' '}
+                        activas de {asociaciones.length} registradas
+                    </p>
                     <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
                         <div className="relative flex-1 sm:w-72 movil:basis-full">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
@@ -139,11 +145,12 @@ export function EmpresasTab({
                                 className="w-full pl-10 pr-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                             />
                         </div>
+                        {/* En celular el estado se elige con el control segmentado de abajo */}
                         <select
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value as Estado | 'todos')}
                             aria-label="Filtrar por estado"
-                            className="movil:flex-1 px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
+                            className="px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60 movil:hidden"
                         >
                             <option value="todos">Todos los estados</option>
                             <option value="Activo">Activas</option>
@@ -153,6 +160,19 @@ export function EmpresasTab({
                         <BotonPrimario onClick={() => setFormulario('nueva')} className="movil:hidden">
                             <Plus className="w-4 h-4" /> Nueva
                         </BotonPrimario>
+                    </div>
+                    <div className="hidden movil:block basis-full">
+                        <ControlSegmentado
+                            etiqueta="Filtrar por estado"
+                            valor={filtroEstado}
+                            onCambiar={setFiltroEstado}
+                            opciones={[
+                                { valor: 'todos', texto: 'Todas' },
+                                { valor: 'Activo', texto: 'Activas' },
+                                { valor: 'Inactivo', texto: 'Inactivas' },
+                                { valor: 'Suspendido', texto: 'Suspendidas' },
+                            ]}
+                        />
                     </div>
                 </div>
 
@@ -172,7 +192,7 @@ export function EmpresasTab({
                                         {emp.nombre_asociacion.charAt(0)}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-base font-bold text-simar-texto truncate">{emp.nombre_asociacion}</p>
+                                        <p className="text-base font-bold text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:leading-snug">{emp.nombre_asociacion}</p>
                                         <p className="text-[15px] text-simar-texto-2 flex items-center gap-1 mt-1">
                                             <MapPin className="w-3 h-3 flex-shrink-0" />
                                             <span className="truncate">{emp.ubicacion || emp.direccion || 'Sin ubicación'}</span>

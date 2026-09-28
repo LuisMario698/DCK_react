@@ -20,13 +20,14 @@ import { parseFechaLocal } from '@/lib/utils/fechas';
 import { Recoleccion } from '@/types/database';
 import { getRecolecciones } from '@/lib/services/recolecciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
-import { Cargando, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
+import { Cargando, ControlSegmentado, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
 import { TarjetaDato } from '@/components/ui/simar';
 import { NumeroAnimado } from '@/components/ui/movimiento';
 
 type Periodo = '1m' | '3m' | '6m' | '1y';
 
-const MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const NOMBRE_PERIODO: Record<Periodo, string> = { '1m': '1 mes', '3m': '3 meses', '6m': '6 meses', '1y': '1 año' };
+const MESES_CORTOS =['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 const MESES_POR_PERIODO: Record<Exclude<Periodo, '1m'>, number> = { '3m': 3, '6m': 6, '1y': 12 };
 
 interface Bucket {
@@ -183,13 +184,23 @@ export default function ImpactoPage() {
     ];
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} />}
 
-            {/* Filtro de periodo (el título ya está en la barra de arriba) */}
-            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p className="text-lg text-simar-texto-2">Calculado a partir de tus recolecciones completadas.</p>
-                <div role="group" aria-label="Periodo" className="inline-flex flex-wrap items-center gap-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-2xl p-1.5">
+            {/* Filtro de periodo (el título ya está en la barra de arriba). En celular, el control segmentado
+                de los filtros (el azul relleno queda para la sección activa de la barra) */}
+            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 movil:gap-2">
+                <p className="text-lg text-simar-texto-2 movil:text-[14px]">Calculado a partir de tus recolecciones completadas.</p>
+                {/* Sobre una tarjeta: su canal gris no se ve directo en el fondo de la página */}
+                <div className="hidden movil:block bg-simar-superficie border border-simar-borde rounded-[18px] p-1.5 shadow-simar">
+                    <ControlSegmentado
+                        etiqueta="Periodo"
+                        valor={periodo}
+                        onCambiar={setPeriodo}
+                        opciones={(['1m', '3m', '6m', '1y'] as Periodo[]).map((p) => ({ valor: p, texto: NOMBRE_PERIODO[p] }))}
+                    />
+                </div>
+                <div role="group" aria-label="Periodo" className="inline-flex flex-wrap items-center gap-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-2xl p-1.5 movil:hidden">
                     {(['1m', '3m', '6m', '1y'] as Periodo[]).map((p) => (
                         <button
                             key={p}
@@ -201,17 +212,18 @@ export default function ImpactoPage() {
                                     : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
                             }`}
                         >
-                            {{ '1m': '1 mes', '3m': '3 meses', '6m': '6 meses', '1y': '1 año' }[p]}
+                            {NOMBRE_PERIODO[p]}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Datos del periodo: formato común (TarjetaDato) con la comparación debajo */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            {/* Datos del periodo: formato común (TarjetaDato) con la comparación debajo (en celular, dos por fila) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 movil:grid-cols-2 movil:gap-2.5">
                 {cards.map((c, i) => (
                     <TarjetaDato
                         key={c.label}
+                        apilada
                         etiqueta={c.label}
                         valor={c.value}
                         icono={c.Icon}
@@ -234,13 +246,13 @@ export default function ImpactoPage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 movil:gap-3">
                 {/* Área */}
                 <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar" style={{ animationDelay: '0.2s' }}>
-                    <h3 className="text-[21px] font-extrabold leading-tight text-simar-texto mb-5">
+                    <h3 className="text-[21px] font-extrabold leading-tight text-simar-texto mb-5 movil:mb-3">
                         Material sólido recolectado (kg): periodo actual vs. anterior
                     </h3>
-                    <div className="h-80">
+                    <div className="h-80 movil:h-56">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={serie} margin={{ top: 8, right: 12, left: -4, bottom: 0 }}>
                                 <defs>
@@ -269,7 +281,7 @@ export default function ImpactoPage() {
                     </div>
                 </div>
 
-                <div className="space-y-5">
+                <div className="space-y-5 movil:space-y-3">
                     {/* Composición */}
                     <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar" style={{ animationDelay: '0.26s' }}>
                         <h3 className="text-[21px] font-extrabold text-simar-texto mb-4">Composición de materiales</h3>

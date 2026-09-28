@@ -5,9 +5,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-import { CheckCircle2, MapPin, Anchor, RefreshCw, Package, Filter, Send } from 'lucide-react';
+import {
+    CheckCircle2,
+    MapPin,
+    Anchor,
+    RefreshCw,
+    Package,
+    Filter,
+    Send,
+    Droplets,
+    Map as MapIcon,
+    MessageSquare,
+    Navigation,
+} from 'lucide-react';
 import {
     PUERTO_PENASCO,
+    TIPO_RESIDUO_COLOR,
     TIPO_RESIDUO_HEX,
     TIPO_RESIDUO_LABEL,
     formatCantidad,
@@ -26,6 +39,7 @@ import {
     BotonSecundario,
     Campo,
     Cargando,
+    ControlSegmentado,
     ErrorCarga,
     Modal,
     ResiduoBadge,
@@ -33,11 +47,13 @@ import {
     mensajeError,
 } from '@/components/asociaciones/ui';
 import { TarjetaDato, claseChip } from '@/components/ui/simar';
+import { useEsCelular } from '@/components/layout/useEsCelular';
 
 export default function MapaPage() {
     const pathname = usePathname();
     const locale = pathname.split('/')[1] || 'es';
     const { asociacion, bloqueada } = useRecolector();
+    const esCelular = useEsCelular();
 
     const [inventario, setInventario] = useState<InventarioResiduo[]>([]);
     const [cargando, setCargando] = useState(true);
@@ -70,6 +86,41 @@ export default function MapaPage() {
     );
 
     if (cargando) return <Cargando texto="Cargando residuos disponibles…" />;
+
+    const ventanaSolicitar = solicitar && (
+        <SolicitarModal
+            residuo={solicitar}
+            onClose={() => setSolicitar(null)}
+            onCreada={() => {
+                setSolicitar(null);
+                cargar();
+            }}
+            locale={locale}
+            enfocar={!esCelular}
+        />
+    );
+
+    // Celular: otra pantalla, pensada para pedir rápido (sin montar el mapa escondido)
+    if (esCelular) {
+        return (
+            <ResiduosCelular
+                inventario={inventario}
+                visibles={visibles}
+                disponibles={disponibles.length}
+                ultimaActualizacion={ultimaActualizacion}
+                misTipos={misTipos}
+                soloMios={soloMios}
+                onSoloMios={setSoloMios}
+                bloqueada={bloqueada}
+                locale={locale}
+                error={error}
+                onReintentar={cargar}
+                onSolicitar={setSolicitar}
+            >
+                {ventanaSolicitar}
+            </ResiduosCelular>
+        );
+    }
 
     return (
         <div className="space-y-5">
@@ -212,17 +263,215 @@ export default function MapaPage() {
                 </div>
             </div>
 
-            {solicitar && (
-                <SolicitarModal
-                    residuo={solicitar}
-                    onClose={() => setSolicitar(null)}
-                    onCreada={() => {
-                        setSolicitar(null);
-                        cargar();
-                    }}
-                    locale={locale}
-                />
+            {ventanaSolicitar}
+        </div>
+    );
+}
+
+/**
+ * Residuos disponibles en celular (menos de 640 px). Lo que la empresa viene a hacer es pedir, así que:
+ * - arriba, el centro de acopio en una tarjeta corta (foto, nombre, cuántos residuos hay) con el mapa
+ *   y el chat a un toque: el mapa sube en una hoja con "Cómo llegar", en vez de ocupar media pantalla;
+ * - debajo, la lista en renglones: color e ícono del material, nombre, cantidad y "Solicitar" a la
+ *   derecha (antes cada residuo era una tarjeta alta con un botón a todo lo ancho);
+ * - si la empresa eligió sus materiales, el control segmentado "Todos · Los que recolecto".
+ * Ver DISEÑO_SIMAR.md → "Versión móvil".
+ */
+function ResiduosCelular({
+    inventario,
+    visibles,
+    disponibles,
+    ultimaActualizacion,
+    misTipos,
+    soloMios,
+    onSoloMios,
+    bloqueada,
+    locale,
+    error,
+    onReintentar,
+    onSolicitar,
+    children,
+}: {
+    inventario: InventarioResiduo[];
+    visibles: InventarioResiduo[];
+    disponibles: number;
+    ultimaActualizacion: string | null;
+    misTipos: TipoResiduo[];
+    soloMios: boolean;
+    onSoloMios: (v: boolean) => void;
+    bloqueada: boolean;
+    locale: string;
+    error: string | null;
+    onReintentar: () => void;
+    onSolicitar: (r: InventarioResiduo) => void;
+    /** Ventana de solicitar (la maneja la pantalla) */
+    children?: React.ReactNode;
+}) {
+    const [mapaAbierto, setMapaAbierto] = useState(false);
+    const botonSecundario =
+        'simar-presiona min-h-[42px] rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-[14px] font-bold text-simar-texto hover:border-simar-marea-tinta inline-flex items-center justify-center gap-2';
+
+    return (
+        <div className="space-y-3">
+            {error && <ErrorCarga mensaje={error} onReintentar={onReintentar} />}
+
+            {/* Centro de acopio */}
+            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] p-3">
+                <div className="flex items-center gap-3">
+                    <div className="relative w-[68px] h-[68px] flex-shrink-0 rounded-[16px] overflow-hidden bg-simar-papel">
+                        <Image src={PUERTO_PENASCO.imagen} alt={`Vista de ${PUERTO_PENASCO.nombre}`} fill className="object-cover" sizes="68px" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1 text-[13px] text-simar-texto-2">
+                            <Anchor className="w-3.5 h-3.5 flex-shrink-0 text-simar-marea-tinta" />
+                            Centro de acopio · {PUERTO_PENASCO.region}
+                        </p>
+                        <h2 className="text-[18px] font-extrabold leading-tight text-simar-texto">{PUERTO_PENASCO.nombre}</h2>
+                        <p
+                            className={`mt-1 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[13px] font-bold ${
+                                disponibles > 0 ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' : 'bg-simar-papel text-simar-texto-2'
+                            }`}
+                        >
+                            <span className={`w-1.5 h-1.5 rounded-full ${disponibles > 0 ? 'bg-[#127A5D]' : 'bg-simar-campo-borde'}`} />
+                            {disponibles > 0
+                                ? `${disponibles} ${disponibles === 1 ? 'residuo disponible' : 'residuos disponibles'}`
+                                : 'Sin disponibilidad por ahora'}
+                        </p>
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-3">
+                    <button type="button" onClick={() => setMapaAbierto(true)} className={botonSecundario}>
+                        <MapIcon className="w-[18px] h-[18px] text-simar-marea-tinta" />
+                        Ver mapa
+                    </button>
+                    <Link href={`/${locale}/dashboard-recolector/mensajes`} className={botonSecundario}>
+                        <MessageSquare className="w-[18px] h-[18px] text-simar-marea-tinta" />
+                        Escribir
+                    </Link>
+                </div>
+            </section>
+
+            {/* Residuos publicados */}
+            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] overflow-hidden" style={{ animationDelay: '0.06s' }}>
+                <div className="px-3.5 pt-3 pb-2.5 border-b border-simar-borde space-y-2.5">
+                    <div className="flex items-baseline justify-between gap-2">
+                        <h3 className="text-[16px] font-extrabold text-simar-texto">Residuos publicados</h3>
+                        {ultimaActualizacion && (
+                            <span className="text-[13px] text-simar-texto-2 whitespace-nowrap">
+                                Actualizado {tiempoRelativo(ultimaActualizacion).toLowerCase()}
+                            </span>
+                        )}
+                    </div>
+                    {misTipos.length > 0 && (
+                        <ControlSegmentado
+                            etiqueta="Qué residuos ver"
+                            valor={soloMios ? 'mios' : 'todos'}
+                            onCambiar={(v) => onSoloMios(v === 'mios')}
+                            opciones={[
+                                { valor: 'todos', texto: 'Todos', conteo: inventario.length },
+                                {
+                                    valor: 'mios',
+                                    texto: 'Los que recolecto',
+                                    conteo: inventario.filter((i) => misTipos.includes(i.tipo)).length,
+                                },
+                            ]}
+                        />
+                    )}
+                </div>
+
+                {visibles.length === 0 ? (
+                    <div className="flex flex-col items-center gap-2 px-5 py-9 text-center text-simar-texto-2">
+                        <Package className="w-9 h-9 opacity-40" />
+                        {soloMios && inventario.length > 0 ? (
+                            <>
+                                <p className="text-[15px] font-bold text-simar-texto">Ahora no hay de los residuos que recolectas.</p>
+                                <button type="button" onClick={() => onSoloMios(false)} className="min-h-[40px] text-[14px] font-bold text-simar-marea-tinta underline underline-offset-4">
+                                    Ver todos los residuos
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-[15px] font-bold text-simar-texto">El centro de acopio no tiene residuos publicados.</p>
+                                <p className="text-[14px] leading-snug">Te avisaremos en Notificaciones cuando publique uno.</p>
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-simar-borde-suave">
+                        {visibles.map((r, i) => {
+                            // Color del material en el círculo (siempre con su nombre escrito); la cantidad en
+                            // texto oscuro: en color no se leía (DISEÑO_SIMAR.md → categorías)
+                            const agotado = r.cantidad <= 0;
+                            const Icono = r.unidad === 'L' ? Droplets : Package;
+                            return (
+                                <li
+                                    key={r.id}
+                                    className="simar-aparece flex items-center gap-3 px-3.5 py-3"
+                                    style={{ animationDelay: `${0.1 + Math.min(i, 6) * 0.04}s` }}
+                                >
+                                    <span className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center ${TIPO_RESIDUO_COLOR[r.tipo]}`}>
+                                        <Icono className="w-5 h-5" />
+                                    </span>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[16px] font-bold leading-tight text-simar-texto">{TIPO_RESIDUO_LABEL[r.tipo]}</p>
+                                        <p className="text-[14px] text-simar-texto-2 mt-0.5">
+                                            <strong className="text-[16px] font-extrabold tabular-nums text-simar-texto">
+                                                {formatCantidad(r.cantidad)}
+                                            </strong>{' '}
+                                            {r.unidad}
+                                            {!agotado && ' disponibles'}
+                                        </p>
+                                        {r.notas && <p className="text-[13px] leading-snug text-simar-texto-2 mt-0.5 line-clamp-2">{r.notas}</p>}
+                                    </div>
+                                    {agotado ? (
+                                        <span className="flex-shrink-0 px-3 py-1.5 rounded-full bg-simar-papel text-[13px] font-bold text-simar-texto-2">
+                                            Agotado
+                                        </span>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => onSolicitar(r)}
+                                            disabled={bloqueada}
+                                            aria-label={`Solicitar recolección de ${TIPO_RESIDUO_LABEL[r.tipo].toLowerCase()}`}
+                                            className="simar-presiona flex-shrink-0 min-h-[42px] px-3.5 rounded-[14px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[14px] font-bold inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                                        >
+                                            <Send className="w-4 h-4" />
+                                            Solicitar
+                                        </button>
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
+            </section>
+
+            {/* El mapa sube en una hoja: sólo se monta al abrirla */}
+            {mapaAbierto && (
+                <Modal
+                    titulo="Centro de acopio"
+                    subtitulo={`${PUERTO_PENASCO.nombre}, ${PUERTO_PENASCO.region}`}
+                    onClose={() => setMapaAbierto(false)}
+                >
+                    <div className="space-y-3">
+                        <div className="h-[46dvh] min-h-[240px] rounded-[16px] overflow-hidden border border-simar-borde-suave">
+                            <MapaCentroAcopio alto="h-full" zoom={15} />
+                        </div>
+                        <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${PUERTO_PENASCO.lat},${PUERTO_PENASCO.lng}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="simar-presiona w-full min-h-[46px] rounded-[14px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[16px] font-bold inline-flex items-center justify-center gap-2"
+                        >
+                            <Navigation className="w-5 h-5" />
+                            Cómo llegar
+                        </a>
+                        <p className="text-center text-[13px] text-simar-texto-2">Se abre en Google Maps.</p>
+                    </div>
+                </Modal>
             )}
+
+            {children}
         </div>
     );
 }
@@ -232,11 +481,14 @@ function SolicitarModal({
     onClose,
     onCreada,
     locale,
+    enfocar = true,
 }: {
     residuo: InventarioResiduo;
     onClose: () => void;
     onCreada: () => void;
     locale: string;
+    /** En celular no: el teclado taparía media hoja antes de ver qué se pide */
+    enfocar?: boolean;
 }) {
     const hoy = hoyLocal();
     const [cantidad, setCantidad] = useState(String(residuo.cantidad));
@@ -273,13 +525,14 @@ function SolicitarModal({
                     <Campo label={`Cantidad (${residuo.unidad})`} ayuda={`Máximo ${formatCantidad(residuo.cantidad)} ${residuo.unidad}`}>
                         <input
                             type="number"
+                            inputMode="decimal"
                             min={0}
                             step="0.01"
                             max={residuo.cantidad}
                             value={cantidad}
                             onChange={(e) => setCantidad(e.target.value)}
                             className={inputCls}
-                            autoFocus
+                            autoFocus={enfocar}
                         />
                     </Campo>
                     <Campo label="Fecha propuesta de recolección">
@@ -289,7 +542,8 @@ function SolicitarModal({
                 <Campo label="Mensaje (opcional)" ayuda="Horario, tipo de unidad que enviarás, persona que recoge…">
                     <textarea rows={3} value={mensaje} onChange={(e) => setMensaje(e.target.value)} className={inputCls} />
                 </Campo>
-                <div className="grid grid-cols-2 gap-3 pt-1">
+                {/* En celular la acción principal lleva el ancho sobrante: "Enviar solicitud" en una línea */}
+                <div className="grid grid-cols-2 gap-3 pt-1 movil:grid-cols-[auto_1fr]">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
                     <BotonPrimario onClick={enviar} cargando={enviando} disabled={invalida}>
                         <Send className="w-4 h-4" /> Enviar solicitud

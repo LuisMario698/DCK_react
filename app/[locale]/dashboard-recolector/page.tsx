@@ -91,14 +91,14 @@ export default function DashboardRecolectorPage() {
     ];
 
     return (
-        <div className="space-y-5 max-w-[1600px]">
+        <div className="space-y-5 max-w-[1600px] movil:space-y-3">
             {/* Saludo: símbolo SiMAR (como el Panel del recinto) y la acción principal a la derecha */}
             <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 sm:p-8 flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-8">
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                     <LogoSimar variante="simbolo" tamano={84} className="hidden sm:inline-flex flex-shrink-0" />
                     <div className="min-w-0">
                         <p className="text-base text-simar-texto-2">¡Bienvenido de vuelta!</p>
-                        <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5">{asociacion?.nombre_asociacion ?? 'Empresa recolectora'}</h2>
+                        <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5 movil:text-[21px]">{asociacion?.nombre_asociacion ?? 'Empresa recolectora'}</h2>
                         <p className="text-[17px] sm:text-lg leading-relaxed text-simar-texto-2 mt-2 max-w-2xl">
                             Tienes <strong className="text-simar-texto">{activas} {activas === 1 ? 'solicitud activa' : 'solicitudes activas'}</strong> y el
                             centro de acopio de {PUERTO_PENASCO.nombre} tiene{' '}
@@ -115,11 +115,12 @@ export default function DashboardRecolectorPage() {
                 </Link>
             </section>
 
-            {/* Datos: toda la tarjeta lleva a su pantalla */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            {/* Datos: toda la tarjeta lleva a su pantalla (en celular, dos por fila) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 movil:grid-cols-2 movil:gap-2.5">
                 {kpis.map((kpi, i) => (
                     <TarjetaDato
                         key={kpi.label}
+                        apilada
                         etiqueta={kpi.label}
                         valor={kpi.value}
                         icono={kpi.icon}
@@ -131,9 +132,10 @@ export default function DashboardRecolectorPage() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Mapa: crece hasta la altura de "Actividad reciente" (acomodo a escuadra) */}
-                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6 flex flex-col" style={{ animationDelay: '0.24s' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 movil:gap-3">
+                {/* Mapa: crece hasta la altura de "Actividad reciente" (acomodo a escuadra). En celular va
+                    después de la actividad, que es lo que cambia */}
+                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6 flex flex-col movil:order-2" style={{ animationDelay: '0.24s' }}>
                     <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
                             <h3 className="text-[22px] font-extrabold text-simar-texto">Centro de acopio</h3>
@@ -148,7 +150,7 @@ export default function DashboardRecolectorPage() {
                             Ver inventario <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
-                    <div className="flex-1 min-h-[320px] rounded-[18px] overflow-hidden border border-simar-borde-suave">
+                    <div className="flex-1 min-h-[320px] rounded-[18px] overflow-hidden border border-simar-borde-suave movil:min-h-[210px]">
                         <MapaCentroAcopio alto="h-full" />
                     </div>
                 </section>

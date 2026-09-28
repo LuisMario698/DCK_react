@@ -67,18 +67,18 @@ export default function PerfilPage() {
         set('tipos_residuo', datos.tipos_residuo.includes(t) ? datos.tipos_residuo.filter((x) => x !== t) : [...datos.tipos_residuo, t]);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 movil:space-y-3">
             {/* Empresa a la izquierda; tipos de residuo y seguridad en la columna derecha (sin huecos) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start movil:gap-3">
                 {/* Empresa */}
                 <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar">
-                    <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-simar-borde-suave">
+                    <div className="flex flex-wrap items-center justify-between gap-4 pb-5 mb-6 border-b border-simar-borde-suave movil:gap-3 movil:pb-4 movil:mb-4">
                         <div className="flex items-center gap-4 min-w-0">
                             <span className="w-14 h-14 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center flex-shrink-0">
                                 <Building2 className="w-7 h-7" strokeWidth={2} />
                             </span>
                             <div className="min-w-0">
-                                <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate">{asociacion.nombre_asociacion}</h3>
+                                <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate movil:whitespace-normal">{asociacion.nombre_asociacion}</h3>
                                 <p className="text-base text-simar-texto-2">
                                     {asociacion.tipo_asociacion || 'Asociación recolectora'} · {asociacion.estado}
                                 </p>
@@ -108,7 +108,7 @@ export default function PerfilPage() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 movil:gap-y-3.5">
                         <Field label="RFC" icon={FileText} value={asociacion.rfc ?? ''} editing={false} ayuda={editing ? 'Sólo el centro de acopio puede cambiarlo' : undefined} />
                         <Field label="Persona de contacto" icon={User} value={datos.contacto_asociacion ?? ''} editing={editing} onChange={(v) => set('contacto_asociacion', v || null)} />
                         <Field label="Email" icon={Mail} value={datos.email ?? ''} editing={editing} onChange={(v) => set('email', v || null)} />
@@ -120,7 +120,7 @@ export default function PerfilPage() {
                     </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-6 movil:space-y-3">
                     {/* Tipos de residuo */}
                     <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.06s' }}>
                         <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Tipos de residuo</h3>

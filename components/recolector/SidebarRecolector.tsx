@@ -13,7 +13,6 @@ import {
     MessageSquare,
     LogOut,
     ChevronsLeft,
-    X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { useRecolector } from './RecolectorContext';
@@ -23,13 +22,15 @@ import { BotonTema } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 
 interface SidebarRecolectorProps {
-    isOpen: boolean;
     isCollapsed: boolean;
-    onClose: () => void;
     onToggleCollapse: () => void;
 }
 
-export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarRecolectorProps) {
+/**
+ * Menú lateral del portal, sólo en escritorio (desde 1024 px). En celular y tableta las secciones
+ * están en la barra inferior y la hoja "Más" (HojaMasRecolector), como en el recinto.
+ */
+export function SidebarRecolector({ isCollapsed, onToggleCollapse }: SidebarRecolectorProps) {
     const pathname = usePathname();
     const { signOut, user } = useAuth();
     const { asociacion, mensajesNoLeidos, notificacionesNoLeidas } = useRecolector();
@@ -51,41 +52,18 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
         href === base ? pathname === base || pathname === `${base}/` : pathname.startsWith(href);
 
     return (
-        <>
-            {isOpen && (
-                <div
-                    className="simar-velo fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]"
-                    onClick={onClose}
-                />
-            )}
-
             <aside
                 className={`
                     simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
-                    w-[276px] ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-[276px]'}
-                    px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden
+                    ${isCollapsed ? 'w-[88px]' : 'w-[276px]'}
+                    px-4 pt-6 pb-4 hidden lg:flex flex-col gap-5 overflow-x-hidden
                     transition-all duration-300 ease-in-out
-                    ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
                 `}
             >
-                <div className={`relative flex items-center ${isCollapsed ? 'lg:justify-center' : ''} px-2.5`}>
+                <div className={`relative flex items-center ${isCollapsed ? 'justify-center' : ''} px-2.5`}>
                     <div className="rounded-xl">
-                        {isCollapsed ? (
-                            <>
-                                <LogoSimar variante="simbolo" tamano={46} className="hidden lg:inline-flex" />
-                                <LogoSimar tamano={46} className="lg:hidden" />
-                            </>
-                        ) : (
-                            <LogoSimar tamano={46} />
-                        )}
+                        <LogoSimar variante={isCollapsed ? 'simbolo' : 'horizontal'} tamano={46} />
                     </div>
-                    <button
-                        onClick={onClose}
-                        aria-label="Cerrar menú"
-                        className="lg:hidden absolute right-0 w-12 h-12 rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
@@ -97,7 +75,6 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    onClick={onClose}
                                     aria-current={active ? 'page' : undefined}
                                     title={isCollapsed ? item.label : ''}
                                     className={`flex items-center gap-3.5 min-h-[54px] rounded-2xl transition-colors ${isCollapsed ? 'lg:justify-center lg:px-0 px-4' : 'px-4'} ${active
@@ -125,7 +102,7 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                         })}
                     </nav>
                     <div className="mt-4 empty:hidden">
-                        <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} onNavegar={onClose} />
+                        <EnlacesPaneles actual="asociacion" colapsado={isCollapsed} />
                     </div>
                 </div>
 
@@ -163,6 +140,5 @@ export function SidebarRecolector({ isOpen, isCollapsed, onClose, onToggleCollap
                     </button>
                 </div>
             </aside>
-        </>
     );
 }
