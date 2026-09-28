@@ -123,7 +123,7 @@ export default function PersonasPage() {
   const roles = ['Todos', 'Motorista', 'Cocinero'];
 
   return (
-    <div className="max-w-[1600px] space-y-6">
+    <div className="max-w-[1600px] space-y-6 movil:space-y-3">
       {/* Lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
       <EncabezadoPantalla
         icono={Users}
@@ -138,7 +138,7 @@ export default function PersonasPage() {
       />
 
       {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
-      <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4" style={{ animationDelay: '0.06s' }}>
+      <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:gap-2" style={{ animationDelay: '0.06s' }}>
         <TarjetaDato apilada etiqueta="Total de personas" valor={estadisticas.total} icono={Users} />
         <TarjetaDato apilada etiqueta="Motoristas" valor={estadisticas.motoristas} icono={Wrench} tono="neutro" />
         <TarjetaDato apilada etiqueta="Cocineros" valor={estadisticas.cocineros} icono={ChefHat} tono="neutro" />
@@ -155,7 +155,7 @@ export default function PersonasPage() {
       )}
 
       {/* Búsqueda y filtro por rol */}
-      <Tarjeta className="simar-aparece p-5 flex flex-col md:flex-row md:items-center gap-4">
+      <Tarjeta className="simar-aparece p-5 flex flex-col md:flex-row md:items-center gap-4 movil:p-3 movil:gap-2.5">
         <CampoBusqueda
           className="flex-1"
           value={searchQuery}

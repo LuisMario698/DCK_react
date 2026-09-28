@@ -125,13 +125,13 @@ export function SolicitudesTab({
     if (cargando) return <Cargando texto="Cargando solicitudes…" />;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
                 {/* Tabs */}
-                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50">
-                    <nav className="flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
+                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:px-2">
+                    <nav className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
                         {TABS.map((t) => {
                             const count =
                                 t.value === 'todas'
@@ -142,7 +142,7 @@ export function SolicitudesTab({
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
-                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 ${
+                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 movil:px-3 movil:py-3 ${
                                         active
                                             ? 'border-simar-marea-tinta text-simar-marea-tinta'
                                             : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta'
@@ -158,10 +158,10 @@ export function SolicitudesTab({
                     </nav>
                 </div>
 
-                {/* Tabla */}
+                {/* Tabla (en celular cada solicitud es un bloque: empresa y estado; residuo y cantidad; acciones) */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full border-collapse">
-                        <thead>
+                    <table className="min-w-full border-collapse movil:block">
+                        <thead className="movil:hidden">
                             <tr className="bg-simar-papel border-b border-simar-borde">
                                 <Th>Asociación</Th>
                                 <Th>Residuo</Th>
@@ -171,17 +171,17 @@ export function SolicitudesTab({
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie movil:block">
                             {filtradas.map((s, idx) => {
                                 const nombre = s.asociacion?.nombre_asociacion ?? 'Asociación';
                                 const cantidad = cantidadVigente(s);
                                 return (
                                     <tr
                                         key={s.id}
-                                        className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150"
+                                        className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-2.5 movil:gap-y-2 movil:px-3.5 movil:py-3"
                                         style={{ animationDelay: `${Math.min(idx * 30, 300)}ms` }}
                                     >
-                                        <td className="px-4 md:px-5 py-3.5">
+                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-span-2 movil:min-w-0">
                                             <div className="flex items-center gap-2.5">
                                                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-simar-marea flex items-center justify-center text-white font-bold text-[15px] shadow-simar">
                                                     {nombre.charAt(0)}
@@ -194,10 +194,10 @@ export function SolicitudesTab({
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5">
+                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:row-start-2">
                                             <ResiduoBadge tipo={s.tipo} />
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap">
+                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2">
                                             <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
                                             <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
                                             {s.recoleccion ? (
@@ -214,11 +214,11 @@ export function SolicitudesTab({
                                         <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
                                             {formatearFecha(s.fecha_propuesta)}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5">
+                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end">
                                             <EstadoSolicitudBadge estado={s.estado} />
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-right">
-                                            <div className="inline-flex items-center gap-1">
+                                        <td className="px-4 md:px-5 py-3.5 text-right movil:p-0 movil:col-span-3 movil:text-left">
+                                            <div className="inline-flex items-center gap-1 movil:flex-wrap movil:gap-1.5">
                                                 {s.estado === 'pendiente' && (
                                                     <>
                                                         <AccionBtn color="emerald" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>

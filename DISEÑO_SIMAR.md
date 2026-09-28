@@ -218,6 +218,8 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-presiona` | El botón se hunde 1 px al presionarlo | Ya lo lleva `Button`; úsalo en botones principales hechos a mano |
 | `simar-tarjeta-accion` | Sube 3 px con sombra al pasar el cursor y baja al presionarla | Sólo tarjetas que llevan a otra pantalla (Panel, KPIs del portal) |
 | `simar-esqueleto` | Bloque con un brillo lento | Sólo esqueletos de carga (es un indicador de carga, por eso puede repetirse) |
+| `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
+| `simar-encabezado-movil` | Con `data-oculto="true"` sube y se desvanece | Encabezado móvil del recinto: se esconde al bajar y vuelve al subir (`useOcultarAlBajar`) |
 | `simar-trazo` | Trazo con `stroke-dasharray: 420` | Heredada; para trazos nuevos usa `simar-dibuja` |
 
 Curvas: `--simar-frena` (sale rápido y frena suave, para lo que entra) y `--simar-acelera` (para
@@ -312,8 +314,8 @@ van en coral con número (`SidebarRecolector`).
    el botón de colapsar (sólo escritorio).
 3. "Cerrar sesión" a lo ancho.
 
-Con el menú colapsado los botones quedan sólo con ícono y `title`. En celular el tema se cambia
-abriendo el menú.
+Con el menú colapsado los botones quedan sólo con ícono y `title`. En celular el tema está en el
+encabezado móvil y en la hoja "Más" (ver 16.2).
 
 ### 10.3 Tarjeta de acción (Panel)
 
@@ -484,6 +486,8 @@ No dibujes a mano lo que ya existe. Estas piezas ya siguen el lenguaje:
 | `components/embarcaciones/Pagination.tsx` | Paginación de 44 px |
 | `components/asociaciones/ui.tsx` | `Modal`, `Campo` + `inputCls`, `BotonPrimario`, `BotonSecundario`, `EstadoSolicitudBadge`, `ResiduoBadge`, `Cargando`, `ErrorCarga` |
 | `components/superadmin/ui.tsx` | `Tarjeta`, `Kpi`, `Pestanas`, `Interruptor`, `BotonIcono`, `ModalConfirmar`, `EstadoVacio` |
+| `components/ui/simar.tsx` → `PestanasMovil` | Pestañas que sólo existen en celular ("Nuevo" / "Registros"). Ver 16 |
+| `components/layout/BarraInferior.tsx`, `HojaInferior.tsx`, `HojaMas.tsx` | Barra de navegación inferior, hoja que sube desde abajo y el menú "Más" del recinto. Ver 16 |
 
 Ejemplo de pantalla de lista (así están Embarcaciones y Personas):
 
@@ -612,7 +616,8 @@ basura marea, basurón arrecife.
 - [ ] ¿Vidrio sólo en lo que flota?
 - [ ] ¿Sólo movimiento de la sección 8 (entrar, crecer, dibujar, confirmar, cargar) y nada en bucle?
 - [ ] ¿Las ventanas llevan `simar-velo` + `simar-ventana`? ¿Se ve igual con "reducir movimiento"?
-- [ ] ¿Se ve bien en claro, oscuro y a 390 px de ancho?
+- [ ] ¿Se ve bien en claro, oscuro y a 390 px de ancho? ¿En celular cabe lo principal sin bajar
+      mucho (sección 16)?
 - [ ] ¿Se puede recorrer con el teclado y el foco se ve?
 - [ ] ¿Las acciones se ven sin pasar el cursor?
 - [ ] ¿La lógica quedó igual? (`python3 scripts/comparar-manejadores.py archivo.tsx` → "iguales")
@@ -660,3 +665,103 @@ el modo simple (`/dashboard/simple`).
   `globals.css` con "Invalid dangling combinator in selector", aun sin cambios nuestros.
 - La fuente usa `adjustFontFallback: false` porque Next no tiene métricas de Atkinson
   Hyperlegible Next; así el build no avisa.
+
+---
+
+## 16. Versión móvil
+
+En celular (menos de 640 px) SiMAR es **compacto**: se ve más en cada pantalla y se baja menos.
+Es una decisión del proyecto (sep-2026): en teléfono el espacio manda, pero nada baja de los
+mínimos de tacto y lectura (botones ≥ 38–46 px, texto ≥ 13–14 px). **Tableta y escritorio
+conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen el recinto (`DashboardLayout`)
+y la landing; el portal de empresas y el superadmin sólo comparten la barra inferior.
+
+### 16.1 Dos herramientas (en `app/globals.css`)
+
+| Qué | Cómo | Para qué |
+|---|---|---|
+| Escala compacta automática | Clase `simar-compacto` en el contenedor del panel (ya la pone `DashboardLayout`) | Baja de una vez `--spacing` (p-6, gap-5, w-6… al 87.5 %), los tamaños con nombre (`text-lg`, `rounded-2xl`…) y los tamaños fijos del lenguaje: 15→14, 17→15, 19→16, 22/23→18, 28→21 px; controles 64→50, 60→46, 56→44, 52→42, 48/44→38 px; esquinas 28→20, 18→14, 14→12 px |
+| Variante `movil:` | `movil:grid-cols-2`, `movil:hidden`, `movil:text-[15px]`… | Cambiar el **acomodo** en celular: columnas, ocultar, deslizar, pestañas. Funciona dentro de `.simar-compacto` y de `.simar-landing`. Un valor `movil:` es **exacto**: le gana a la escala automática |
+
+- Para portar otro panel a la versión móvil basta con poner `simar-compacto` en su contenedor y
+  luego ajustar el acomodo con `movil:`.
+- La landing no lleva la escala automática (sus títulos son expresivos): sólo usa `movil:`.
+- Lo que se oculta en celular con `movil:hidden` debe estar en otro lado (pestaña, hoja, "Leer
+  más") o ser un texto de apoyo repetido. Nunca se pierde una función.
+
+### 16.2 Navegación
+
+- **Encabezado móvil** (`Header`): píldora de vidrio de 56 px con el logo (lleva al Panel), el tema
+  y el perfil. Se esconde al bajar y vuelve al subir o al recibir el foco.
+- **Barra inferior** (`BarraInferior`): cápsula de **cristal líquido** plano (16.4) flotante a 10 px del
+  borde (respeta la zona segura del teléfono). Cuatro secciones + un botón al final. Palabras de
+  10–12 px (`clamp(10px, 2.9vw, 12px)`). **Todos los botones miden lo mismo** (`flex-1`, sin huecos
+  entre ellos) y la gota también; así "Estadísticas" cabe en 360 px. La palabra activa no cambia de
+  peso (sólo de color) para que no salte cuando llega la gota.
+  - **Se minimiza al bajar** (`data-mini`): las palabras se cierran, baja de 70 a 56 px y se
+    angosta a sólo íconos; al subir, al volver arriba o al abrir "Más" regresa. Lo que va pegado
+    abajo (`simar-pegada-abajo`) baja con ella (`html[data-barra-mini]`).
+  - **La gota** (`simar-gota`) marca la sección activa: un tinte plano y translúcido (gris suave en
+    claro, blanco suave en oscuro, sin brillos ni sombras) en forma de **cápsula**. Con la barra
+    completa es 6 px más ancha por lado que su botón, para que su curva no corte las letras (en las
+    orillas se recorre hacia adentro y queda concéntrica con la barra); minimizada mide lo mismo que
+    el botón. Se desliza con física de resorte (la orilla de adelante tira, la de atrás la sigue: se estira, se aplana y se
+    asienta con un vaivén corto). Se va a la sección en cuanto se toca, sin esperar a que cargue.
+  - **Arrastrar**: deslizar el dedo de lado sobre la barra levanta la gota, que sigue al dedo; al
+    soltar abre la sección que quedó debajo. Un toque normal sigue funcionando igual.
+  - La sección activa, además de la gota, lleva ícono y palabra en `simar-marea-tinta` y negritas
+    (el color nunca va solo).
+- **Hoja "Más"** (`HojaMas` sobre `HojaInferior`): en el recinto el último botón abre una hoja
+  desde abajo con el perfil, las otras secciones en mosaico de tres, los accesos de superadmin,
+  el tema y cerrar sesión. Se cierra con el fondo, con Escape, arrastrando la agarradera o al
+  elegir una sección; bloquea el desplazamiento de atrás y devuelve el foco al botón. En el
+  portal y el superadmin el botón sigue siendo "Menú" y abre el menú lateral.
+- Contenido: `pb-[calc(100px+env(safe-area-inset-bottom))]` en `main` para que la barra no tape
+  lo último. Las barras pegadas abajo usan `simar-pegada-abajo` (quedan encima de la barra).
+
+### 16.3 Patrones de pantalla
+
+| Patrón | Dónde | Cómo |
+|---|---|---|
+| Pestañas "Nuevo / Registros" | Manifiesto, Basurón | `PestanasMovil` + `movil:hidden` en la parte que no toca. En tableta y escritorio se ve todo como siempre |
+| Campos cortos en dos columnas | Residuos del manifiesto, fecha y hora del recibo | `movil:grid-cols-2`; el último impar con `movil:col-span-2` |
+| Firmar al lado del nombre | Firmas del manifiesto | `movil:grid-cols-[1fr_auto]`; ya firmado, la firma ocupa el renglón (`movil:col-span-2`) |
+| Barra de guardar en una fila | Manifiesto, Basurón | Estado corto a la izquierda ("Aún no hay firmas.") y el botón a la derecha |
+| Fila de chips que se desliza | Filtros, accesos rápidos, pesos rápidos, puertos | `simar-desliza` + `movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4`, chips con `flex-shrink-0 whitespace-nowrap` |
+| Renglón de lista con acciones arriba | Registros de manifiestos y recibos | La celda de acciones va `movil:absolute` a la derecha de la primera línea; ahorra una línea por registro |
+| Tabla que se vuelve bloques | Inventario y Solicitudes (Asociaciones) | `movil:block` en tabla y tbody, `movil:hidden` en thead y `movil:grid` en cada fila con celdas colocadas |
+| Conteos en fila | Personas, Embarcaciones, Asociaciones, Inventario | `TarjetaDato apilada`: ícono y número en la primera línea, etiqueta debajo; tres por fila |
+| KPI compacto | Estadísticas | Ícono y título en una línea, número debajo; dos por fila |
+| Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
+| "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
+| Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
+
+### 16.4 Cristal líquido
+
+`components/ui/vidrioLiquido.tsx` + clase `simar-cristal`. Es el vidrio de la barra inferior, su
+gota y el encabezado móvil (sólo lo que flota, sección 7).
+
+- **Plano, como iOS 26.** Vidrio translúcido parejo, una línea fina de borde y una sombra suave.
+  Nada de brillos, degradados, sombras internas ni reflejos: se ve "3D" y no es el estilo.
+- **Con refracción sutil.** `useRefraccion()` dibuja en un `<canvas>` un mapa de
+  desplazamiento del tamaño exacto del elemento (rectángulo redondeado: fuerte en el canto, nada en
+  el centro) y lo usa en un filtro SVG (`feDisplacementMap`) como `backdrop-filter`. El fondo se
+  dobla un poco en la orilla, como en un cristal grueso; el centro lleva un desenfoque moderado
+  (4 px) para que las palabras se lean sobre cualquier contenido.
+- **Sólo Chromium** (Chrome, Edge, Android) sabe aplicar filtros SVG al fondo. En Safari/iPhone y
+  Firefox queda el vidrio de la clase: más opaco y con desenfoque normal. Con "reducir
+  transparencia" es sólido. El elemento lleva `data-refraccion` cuando la refracción está activa.
+- El hook devuelve `[ref, { filtro, estilo, activo }]`: la ref va al elemento, `filtro` (el `<svg>`)
+  se dibuja junto a él y `estilo` lleva el `backdrop-filter`.
+- Los hijos del cristal van con `z-index: 1` para quedar encima de la gota.
+- **Excepción al movimiento (sección 8):** el vaivén de la gota es el único "rebote" permitido en
+  los paneles. Es corto (< 0.5 s), sólo ocurre cuando la persona cambia de sección y con "reducir
+  movimiento" la gota salta directo.
+
+### 16.5 Cuidado
+
+- No uses `overflow-x-hidden` en un contenedor que tenga barras `sticky` adentro: lo vuelve
+  contenedor de desplazamiento y la barra deja de flotar. Usa `overflow-x-clip`.
+- Una cuadrícula que tiene una fila deslizable adentro necesita columnas con `minmax(0, 1fr)`
+  (`grid-cols-1`); si no, crece al ancho de todos los chips.
+- Revisa cada pantalla a 390 px **y** a 360 px, en claro y en oscuro.

@@ -3,6 +3,19 @@
 /* Configuración de Dark Mode para Tailwind v4 - Selector-based */
 @variant dark (&:is(.dark *));
 
+/* Celular (menos de 640 px) dentro de una zona con versión móvil: el recinto (.simar-compacto,
+   que además baja la escala sola) y la landing (.simar-landing, que conserva sus títulos grandes).
+   Ej.: movil:hidden, movil:grid-cols-2, movil:text-[15px]. El :root sube la especificidad a
+   (0,3,0): así un valor movil: es exacto y le gana a la escala compacta automática (0,2,0,
+   bloque "VERSIÓN MÓVIL"). Ver DISEÑO_SIMAR.md → "Versión móvil". */
+@custom-variant movil {
+  @media (max-width: 639px) {
+    &:is(:root :is(.simar-compacto, .simar-landing), :root :is(.simar-compacto, .simar-landing) *) {
+      @slot;
+    }
+  }
+}
+
 /* ============================================
    LENGUAJE DE DISEÑO SiMAR — tokens
    Guía completa: DISEÑO_SIMAR.md (raíz del repo).
@@ -1417,13 +1430,14 @@ body.simar [data-sonner-toast] [data-close-button] {
 }
 
 /* ============================================
-   VERSIÓN MÓVIL — barra inferior de los paneles (DISEÑO_SIMAR.md → "Versión móvil")
+   VERSIÓN MÓVIL — barra inferior, hoja "Más" y escala compacta
+   (DISEÑO_SIMAR.md → "Versión móvil")
    ============================================ */
 
 /* Barras pegadas abajo (guardar manifiesto, recibo): en celular quedan encima de la barra
-   inferior; desde 1024 px (menú lateral) vuelven a 16 px del borde. */
+   inferior flotante; desde 1024 px (menú lateral) vuelven a 16 px del borde. */
 .simar-pegada-abajo {
-  bottom: calc(96px + env(safe-area-inset-bottom));
+  bottom: calc(84px + env(safe-area-inset-bottom));
 }
 @media (min-width: 1024px) {
   .simar-pegada-abajo {
@@ -1434,8 +1448,303 @@ body.simar [data-sonner-toast] [data-close-button] {
 /* Los avisos (toasts) salen arriba de la barra inferior, no encima de ella */
 @media (max-width: 1023px) {
   body:has(.simar-barra-inferior) [data-sonner-toaster][data-y-position='bottom'] {
-    --offset-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-    --mobile-offset-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    --offset-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    --mobile-offset-bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Hoja que sube desde abajo (menú "Más" y ventanas en celular). Entra frenando, sale acelerando. */
+@keyframes simar-hoja-entra {
+  from { transform: translateY(100%); }
+}
+@keyframes simar-hoja-sale {
+  to { transform: translateY(100%); }
+}
+.simar-hoja {
+  animation: simar-hoja-entra 0.36s var(--simar-frena) backwards;
+}
+.simar-hoja-sale {
+  animation: simar-hoja-sale 0.2s var(--simar-acelera) both;
+}
+
+/* ---------- Cristal líquido (barra inferior y encabezado móvil) ----------
+   Como la barra de pestañas de iOS 26: plano. Vidrio translúcido parejo, una línea fina de
+   borde y una sombra suave; nada de brillos, degradados ni sombras internas (se veía "3D").
+   Si el navegador puede (Chromium), components/ui/vidrioLiquido.tsx le pone además un filtro
+   SVG que refracta el fondo en la orilla (data-refraccion): el fondo se dobla un poco en el
+   canto, como un cristal grueso. */
+.simar-cristal {
+  position: relative;
+  background: rgba(255, 255, 255, 0.62);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 0 0 0.5px rgba(11, 34, 54, 0.08),
+    0 10px 30px -12px rgba(11, 34, 54, 0.28);
+}
+.simar-cristal[data-refraccion] {
+  background: rgba(255, 255, 255, 0.5);
+}
+/* El contenido va encima de la gota */
+.simar-cristal > :not(.simar-gota) {
+  position: relative;
+  z-index: 1;
+}
+.dark .simar-cristal {
+  background: rgba(19, 45, 69, 0.6);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 0 0 0.5px rgba(0, 0, 0, 0.3),
+    0 10px 30px -12px rgba(0, 0, 0, 0.55);
+}
+.dark .simar-cristal[data-refraccion] {
+  background: rgba(12, 30, 48, 0.46);
+}
+
+/* La gota que marca la sección activa: un tinte plano y translúcido, sin brillos ni sombras.
+   La mueve BarraInferior (física de resorte) con transform. */
+.simar-gota {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  /* Cápsula. Con la barra completa BarraInferior la hace 6 px más ancha por lado que su botón,
+     para que la curva no corte las letras. */
+  border-radius: 9999px;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: center;
+  will-change: transform;
+  background: rgba(11, 34, 54, 0.08);
+  transition: opacity 0.25s ease, background-color 0.2s ease;
+}
+/* Arrastrándola con el dedo se aclara un poco (se "levanta") */
+.simar-gota[data-levantada] {
+  background: rgba(11, 34, 54, 0.12);
+}
+.dark .simar-gota {
+  background: rgba(255, 255, 255, 0.13);
+}
+.dark .simar-gota[data-levantada] {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Barra inferior: minimizada al bajar (data-mini) quedan sólo los íconos, más baja y angosta */
+.simar-barra-cristal {
+  padding: 4px;
+  transition: max-width 0.44s var(--simar-frena), padding 0.32s var(--simar-frena);
+}
+.simar-barra-boton {
+  min-height: 58px;
+  gap: 2px;
+  transition: min-height 0.34s var(--simar-frena), gap 0.34s var(--simar-frena);
+}
+.simar-barra-etiqueta {
+  display: block;
+  /* Nunca más ancha que su botón (todos miden lo mismo); si no cupiera, termina en "…" */
+  max-width: min(96px, 100%);
+  max-height: 16px;
+  overflow: hidden;
+  transition: max-width 0.34s var(--simar-frena), max-height 0.3s var(--simar-frena), opacity 0.18s ease, color 0.2s ease;
+}
+.simar-barra-cristal[data-mini] {
+  padding: 4px;
+}
+.simar-barra-cristal[data-mini] .simar-barra-boton {
+  min-height: 46px;
+  gap: 0;
+}
+.simar-barra-cristal[data-mini] .simar-barra-etiqueta {
+  max-width: 0;
+  max-height: 0;
+  opacity: 0;
+}
+/* Lo que va pegado abajo (guardar manifiesto) baja junto con la barra minimizada */
+.simar-pegada-abajo {
+  transition: bottom 0.4s var(--simar-frena);
+}
+@media (max-width: 1023px) {
+  html[data-barra-mini] .simar-pegada-abajo {
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .simar-cristal,
+  .simar-cristal[data-refraccion],
+  .dark .simar-cristal,
+  .dark .simar-cristal[data-refraccion] {
+    background: var(--simar-superficie);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .simar-barra-cristal,
+  .simar-barra-boton,
+  .simar-barra-etiqueta,
+  .simar-pegada-abajo {
+    transition: none;
+  }
+}
+
+/* Encabezado móvil: se esconde al bajar (deja ver más) y vuelve al subir */
+.simar-encabezado-movil {
+  transition: transform 0.28s var(--simar-frena), opacity 0.2s ease;
+}
+.simar-encabezado-movil[data-oculto='true'] {
+  transform: translateY(calc(-100% - 16px));
+  opacity: 0;
+}
+
+/* Filas que se deslizan de lado (chips de filtro, carruseles): sin barra visible */
+.simar-desliza {
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.simar-desliza::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simar-hoja,
+  .simar-hoja-sale {
+    animation: none;
+  }
+  .simar-encabezado-movil {
+    transition: none;
+  }
+}
+
+/* Escala compacta: SÓLO en celular (< 640 px) y dentro de .simar-compacto (recinto y landing).
+   Tableta y escritorio conservan la escala grande del lenguaje SiMAR. Baja de una vez:
+   - el espaciado de Tailwind (p-6, gap-5, w-6…) al 87.5 % cambiando --spacing,
+   - los tamaños con nombre (text-lg, rounded-2xl…) cambiando sus variables,
+   - los tamaños fijos del lenguaje SiMAR (text-[17px], min-h-[60px], rounded-[28px]…).
+   Van en la capa utilities con especificidad (0,2,0): le ganan a la utilidad normal (0,1,0) y
+   pierden contra la variante movil: (0,3,0). Para cambiar el acomodo (columnas, ocultar,
+   deslizar) o fijar un tamaño exacto en celular, usa movil: en el componente. */
+@layer utilities {
+@media (max-width: 639px) {
+  .simar-compacto {
+    --spacing: 0.21875rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1rem;
+    --text-xl: 1.0625rem;
+    --text-2xl: 1.25rem;
+    --text-3xl: 1.375rem;
+    --text-4xl: 1.625rem;
+    --radius-xl: 0.625rem;
+    --radius-2xl: 0.875rem;
+    --radius-3xl: 1.25rem;
+  }
+
+  /* Texto: apoyo 14, normal 15, títulos 18–22 */
+  .simar-compacto .text-\[15px\] { font-size: 14px; }
+  .simar-compacto .text-\[17px\] { font-size: 15px; }
+  .simar-compacto .text-\[19px\] { font-size: 16px; }
+  .simar-compacto .text-\[21px\] { font-size: 17px; }
+  .simar-compacto .text-\[22px\] { font-size: 18px; }
+  .simar-compacto .text-\[23px\] { font-size: 18px; }
+  .simar-compacto .text-\[24px\] { font-size: 19px; }
+  .simar-compacto .text-\[26px\] { font-size: 20px; }
+  .simar-compacto .text-\[28px\] { font-size: 21px; }
+  .simar-compacto .text-\[30px\] { font-size: 22px; }
+  .simar-compacto .text-\[32px\],
+  .simar-compacto .text-\[34px\] { font-size: 22px; }
+  .simar-compacto .text-\[38px\] { font-size: 24px; }
+
+  /* Controles: principal 46, secundario 44, ícono 42, chip 38 */
+  .simar-compacto .min-h-\[64px\] { min-height: 50px; }
+  .simar-compacto .min-h-\[60px\] { min-height: 46px; }
+  .simar-compacto .min-h-\[56px\],
+  .simar-compacto .min-h-\[54px\] { min-height: 44px; }
+  .simar-compacto .min-h-\[52px\] { min-height: 42px; }
+  .simar-compacto .min-h-\[48px\] { min-height: 38px; }
+  .simar-compacto .min-h-\[44px\] { min-height: 38px; }
+  .simar-compacto .min-w-\[44px\] { min-width: 38px; }
+  .simar-compacto .h-\[52px\] { height: 42px; }
+  .simar-compacto .w-\[52px\] { width: 42px; }
+
+  /* Íconos fijos */
+  .simar-compacto .w-\[30px\] { width: 24px; }
+  .simar-compacto .h-\[30px\] { height: 24px; }
+  .simar-compacto .w-\[22px\] { width: 19px; }
+  .simar-compacto .h-\[22px\] { height: 19px; }
+
+  /* Esquinas */
+  .simar-compacto .rounded-\[30px\] { border-radius: 22px; }
+  .simar-compacto .rounded-\[28px\] { border-radius: 20px; }
+  .simar-compacto .rounded-\[22px\] { border-radius: 18px; }
+  .simar-compacto .rounded-\[20px\] { border-radius: 16px; }
+  .simar-compacto .rounded-\[18px\] { border-radius: 14px; }
+  .simar-compacto .rounded-\[14px\] { border-radius: 12px; }
+
+}
+}
+
+@media (max-width: 639px) {
+  /* Avisos (toasts) más discretos */
+  body.simar:has(.simar-compacto) [data-sonner-toast][data-styled='true'] {
+    font-size: 15px;
+    padding: 14px 16px;
+  }
+
+  /* Ventanas (fondo fixed › panel simar-ventana): en celular suben desde abajo como hoja, a todo
+     lo ancho, con esquinas sólo arriba. Así el pulgar alcanza sus botones y no hay márgenes
+     perdidos. Van fuera de @layer porque tienen que ganarle a la animación de simar-ventana. */
+  :is(.simar-compacto, .simar-landing) .fixed:has(> .simar-ventana, > .simar-ventana-sale) {
+    align-items: flex-end;
+    padding: 0;
+  }
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana,
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
+    width: 100%;
+    max-width: none;
+    max-height: 92dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 24px 24px 0 0;
+    /* Deja libre la zona de la barra de inicio del teléfono (el fondo del panel se ve debajo del borde) */
+    border-bottom: env(safe-area-inset-bottom, 0px) solid transparent;
+  }
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana {
+    animation: simar-hoja-entra 0.36s var(--simar-frena) backwards;
+  }
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
+    animation: simar-hoja-sale 0.2s var(--simar-acelera) both;
+  }
+
+  /* Landing: tarjetas en carrusel que se desliza de lado (Conciencia Azul) */
+  .simar-landing .simar-carrusel {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-inline: -20px;
+    padding: 0 20px 4px;
+    scroll-padding-inline: 20px;
+    scrollbar-width: none;
+  }
+  .simar-landing .simar-carrusel::-webkit-scrollbar {
+    display: none;
+  }
+  .simar-landing .simar-carrusel > * {
+    flex: 0 0 84%;
+    scroll-snap-align: start;
+  }
+  /* Las tarjetas que entran de lado ya se ven: no esperan al "reveal" vertical */
+  .simar-landing .simar-carrusel > .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 639px) and (prefers-reduced-motion: reduce) {
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana,
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
+    animation: none;
   }
 }
 

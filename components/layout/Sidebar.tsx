@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
 import {
   BarChart3,
   Building2,
@@ -19,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/components/layout/AuthProvider';
-import { UserProfileModal } from '@/components/layout/UserProfileModal';
 import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
@@ -28,9 +26,8 @@ import { LineaMarea } from '@/components/layout/LineaMarea';
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();
-  const { isCollapsed, isOpen, closeSidebar, toggleCollapse } = useSidebar();
+  const { isCollapsed, isOpen, closeSidebar, toggleCollapse, abrirPerfil } = useSidebar();
   const { signOut, user } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const locale = pathname.split('/')[1] || 'es';
 
@@ -85,8 +82,6 @@ export function Sidebar() {
         />
       )}
 
-      <UserProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} />
-
       <aside
         className={`
           simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
@@ -135,7 +130,7 @@ export function Sidebar() {
         {/* Perfil, tema, colapsar y cerrar sesión */}
         <div className="flex flex-col gap-2.5">
           <button
-            onClick={() => setIsProfileOpen(true)}
+            onClick={abrirPerfil}
             title={isCollapsed ? nombre : ''}
             className={`flex items-center gap-3 rounded-[18px] bg-simar-superficie p-2.5 text-left hover:shadow-[0_6px_18px_-12px_rgba(11,34,54,0.5)] transition-shadow ${isCollapsed ? 'lg:justify-center' : ''}`}
           >

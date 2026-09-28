@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import DatePicker, { registerLocale } from 'react-datepicker';
-import { CalendarDays, Check, Download, FileText, List, PenLine, Search, Upload } from 'lucide-react';
+import { CalendarDays, Check, Download, FilePlus2, FileText, List, PenLine, Search, Upload } from 'lucide-react';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
@@ -14,6 +14,7 @@ import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
+import { PestanasMovil } from '@/components/ui/simar';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -27,6 +28,8 @@ export default function ManifiestosPage() {
   const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null);
   const [showValidation, setShowValidation] = useState(false);
+  // Sólo en celular: el formulario y la lista van en pestañas (en pantallas grandes se ven los dos)
+  const [vistaMovil, setVistaMovil] = useState<'nuevo' | 'registros'>('nuevo');
 
   const [buques, setBuques] = useState<Buque[]>([]);
   const [personas, setPersonas] = useState<PersonaConTipo[]>([]);
@@ -898,38 +901,50 @@ export default function ManifiestosPage() {
   const selectedResponsableSecundario = personas.find(p => p.id === parseInt(formData.responsable_secundario_id));
   // Sólo para el texto de la barra de guardar
   const firmasListas = [oficialSignature, motoristaSignature, cocineroSignature, liquidosSignature].filter(Boolean).length;
+  // En celular, con la pestaña "Registros" el formulario se oculta (y al revés)
+  const soloEnNuevo = vistaMovil === 'registros' ? 'movil:hidden' : '';
 
   return (
-    <div className="max-w-[1600px] space-y-6">
+    <div className="max-w-[1600px] space-y-6 movil:space-y-4">
       {/* Formulario de manifiesto — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
-      <div className="space-y-6">
+      <div className="space-y-6 movil:space-y-4">
         {/* Encabezado del documento */}
-        <header className="simar-aparece flex flex-wrap items-center gap-5">
-          <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
-            <FileText className="w-[30px] h-[30px]" strokeWidth={2} />
+        <header className="simar-aparece flex flex-wrap items-center gap-5 movil:gap-x-3 movil:gap-y-2">
+          <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center movil:w-[40px] movil:h-[40px] movil:self-start movil:mt-0.5">
+            <FileText className="w-[30px] h-[30px] movil:w-[22px] movil:h-[22px]" strokeWidth={2} />
           </span>
-          <div className="flex-1 min-w-[240px]">
-            <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto">Manifiesto de entrega-recepción</h1>
-            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+          <div className="flex-1 min-w-[240px] movil:min-w-0">
+            <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Manifiesto de entrega-recepción</h1>
+            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
           </div>
           {formData.numero_manifiesto && (
-            <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right">
+            <div className={`px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:w-full movil:flex movil:items-center movil:justify-between movil:px-4 movil:py-2 ${soloEnNuevo}`}>
               <p className="text-[15px] text-simar-texto-2">Folio No.</p>
               <p className="text-[21px] font-extrabold tracking-wide text-simar-texto">{formData.numero_manifiesto}</p>
             </div>
           )}
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6">
+        <PestanasMovil
+          etiqueta="Vista del manifiesto"
+          valor={vistaMovil}
+          onCambiar={setVistaMovil}
+          opciones={[
+            { valor: 'nuevo', texto: 'Nuevo', icono: FilePlus2 },
+            { valor: 'registros', texto: 'Registros', icono: List, conteo: manifiestos.length },
+          ]}
+        />
+
+        <div className={`grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6 movil:gap-4 ${soloEnNuevo}`}>
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
-          <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.06s' }}>
+          <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.06s' }}>
             <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del manifiesto</h2>
 
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-[210px_1fr] gap-4">
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-[210px_1fr] gap-4 movil:mt-3 movil:gap-3">
               {/* FECHA */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
                   <DatePicker
                     selected={formData.fecha_emision ? new Date(formData.fecha_emision + 'T00:00:00') : null}
@@ -962,7 +977,7 @@ export default function ManifiestosPage() {
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Barco</label>
                 <div className="relative">
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <Search className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
                     <input
                       ref={buqueInputRef}
@@ -1034,12 +1049,12 @@ export default function ManifiestosPage() {
               </div>
             </div>
 
-            {/* RESIDUOS */}
-            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* RESIDUOS (en celular, dos por fila: son números cortos con su unidad) */}
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 movil:mt-3 movil:grid-cols-2 movil:gap-x-2.5 movil:gap-y-3">
               {/* ACEITE USADO */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={aceiteRef}
                     type="number"
@@ -1060,7 +1075,7 @@ export default function ManifiestosPage() {
               {/* FILTROS DE ACEITE */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aceite</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosAceiteRef}
                     type="number"
@@ -1080,7 +1095,7 @@ export default function ManifiestosPage() {
               {/* FILTROS DE DIESEL */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de diésel</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosDieselRef}
                     type="number"
@@ -1100,7 +1115,7 @@ export default function ManifiestosPage() {
               {/* FILTROS DE AIRE */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aire</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosAireRef}
                     type="number"
@@ -1118,9 +1133,9 @@ export default function ManifiestosPage() {
               </div>
 
               {/* BASURA */}
-              <div>
+              <div className="movil:col-span-2">
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Basura</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={basuraRef}
                     type="number"
@@ -1140,7 +1155,7 @@ export default function ManifiestosPage() {
             </div>
 
             {/* Observaciones (crece para que la tarjeta termine a la par de Firmas) */}
-            <div className="mt-5 flex-1 flex flex-col">
+            <div className="mt-5 flex-1 flex flex-col movil:mt-3">
               <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
               <textarea
                 value={formData.observaciones}
@@ -1149,14 +1164,14 @@ export default function ManifiestosPage() {
                 onBlur={() => setActiveField(null)}
                 rows={3}
                 placeholder="Notas adicionales..."
-                className={`w-full flex-1 min-h-[120px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                className={`w-full flex-1 min-h-[120px] movil:min-h-[80px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
               />
             </div>
           </section>
 
           {/* COLUMNA DERECHA - Firmas */}
           <div className="flex flex-col">
-            <section className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] px-6 md:px-7 pt-6 pb-2" style={{ animationDelay: '0.12s' }}>
+            <section className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] px-6 md:px-7 pt-6 pb-2 movil:px-4 movil:pt-4 movil:pb-0" style={{ animationDelay: '0.12s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Firmas</h2>
 
               {/* FIRMA OFICIAL COMISIONADO */}
@@ -1168,7 +1183,7 @@ export default function ManifiestosPage() {
                     <button
                       type="button"
                       onClick={() => openSignatureModal('oficial')}
-                      className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors"
+                      className="w-full min-h-[60px] movil:px-4 rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors"
                     >
                       <PenLine className="w-5 h-5" />
                       Firmar
@@ -1194,7 +1209,7 @@ export default function ManifiestosPage() {
               <div className="py-4 border-b border-simar-borde-suave">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Motorista</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos</p>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
                   <div className="relative">
                     <input
                       ref={motoristaRef}
@@ -1250,10 +1265,10 @@ export default function ManifiestosPage() {
                     {showValidation && !formData.responsable_principal_id && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
                   </div>
 
-                  <div>
+                  <div className={motoristaSignature ? 'movil:col-span-2' : ''}>
                     {!motoristaSignature ? (
                       <button type="button" onClick={() => openSignatureModal('motorista')}
-                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        className="w-full min-h-[60px] movil:px-4 rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
                         <PenLine className="w-5 h-5" />
                         Firmar
                       </button>
@@ -1278,7 +1293,7 @@ export default function ManifiestosPage() {
               {/* FIRMA COCINERO */}
               <div className="py-4 border-b border-simar-borde-suave">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Cocinero</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
                   <div className="relative">
                     <input
                       ref={cocineroRef}
@@ -1332,10 +1347,10 @@ export default function ManifiestosPage() {
                     )}
                   </div>
 
-                  <div>
+                  <div className={cocineroSignature ? 'movil:col-span-2' : ''}>
                     {!cocineroSignature ? (
                       <button type="button" onClick={() => openSignatureModal('cocinero')}
-                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        className="w-full min-h-[60px] movil:px-4 rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
                         <PenLine className="w-5 h-5" />
                         Firmar
                       </button>
@@ -1361,7 +1376,7 @@ export default function ManifiestosPage() {
               <div className="py-4">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Resp. de líquidos</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
                 <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos (aceite usado)</p>
-                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
                   <div className="relative">
                     <input
                       type="text"
@@ -1394,10 +1409,10 @@ export default function ManifiestosPage() {
                     )}
                   </div>
 
-                  <div>
+                  <div className={liquidosSignature ? 'movil:col-span-2' : ''}>
                     {!liquidosSignature ? (
                       <button type="button" onClick={() => openSignatureModal('liquidos')}
-                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        className="w-full min-h-[60px] movil:px-4 rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
                         <PenLine className="w-5 h-5" />
                         Firmar
                       </button>
@@ -1423,9 +1438,9 @@ export default function ManifiestosPage() {
         </div>
 
         {/* Adjuntar documento y descargar borrador */}
-        <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7" style={{ animationDelay: '0.18s' }}>
+        <section className={`simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7 movil:p-4 movil:gap-3 ${soloEnNuevo}`} style={{ animationDelay: '0.18s' }}>
           <div className="flex items-center gap-3 lg:w-[290px] flex-shrink-0">
-            <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
+            <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center movil:w-10 movil:h-10">
               <Upload className="w-6 h-6" />
             </span>
             <div>
@@ -1434,7 +1449,7 @@ export default function ManifiestosPage() {
             </div>
           </div>
 
-          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 movil:grid-cols-2 movil:gap-2">
             <div
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -1445,7 +1460,7 @@ export default function ManifiestosPage() {
               <input type="file" id="file-upload" onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
 
               {!archivo ? (
-                <label htmlFor="file-upload" className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 text-[17px] font-bold text-simar-texto cursor-pointer">
+                <label htmlFor="file-upload" className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 text-[17px] font-bold text-simar-texto cursor-pointer movil:text-center">
                   <Upload className="w-5 h-5" />
                   Elegir archivo
                 </label>
@@ -1463,23 +1478,24 @@ export default function ManifiestosPage() {
             <button
               type="button"
               onClick={handleDescargarBorrador}
-              className="min-h-[64px] px-4 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto flex items-center gap-2.5 text-left hover:border-simar-marea-tinta transition-colors"
+              className="min-h-[64px] px-4 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto flex items-center gap-2.5 text-left hover:border-simar-marea-tinta transition-colors movil:px-3 movil:gap-2 movil:py-2"
               title="Descargar datos actuales para firmar"
             >
               <Download className="w-5 h-5 flex-shrink-0" />
               <span>
-                <span className="block text-[17px] font-bold">Descargar borrador</span>
-                <span className="block text-[15px] text-simar-texto-2">Imprimir y firmar a mano</span>
+                <span className="block text-[17px] font-bold leading-tight">Descargar borrador</span>
+                <span className="block text-[15px] text-simar-texto-2 leading-tight movil:text-[13px]">Imprimir y firmar a mano</span>
               </span>
             </button>
           </div>
         </section>
 
         {/* Barra de guardar (vidrio, flota sobre el formulario) */}
-        <div className="simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
-          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto">
+        {/* En celular va en una sola fila: estado corto a la izquierda y el botón a la derecha */}
+        <div className={`simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`}>
+          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[14px] movil:leading-snug">
             {firmasListas === 0
-              ? 'Aún no hay firmas. También puedes adjuntar el documento firmado.'
+              ? <><span className="movil:hidden">Aún no hay firmas. También puedes adjuntar el documento firmado.</span><span className="hidden movil:inline">Aún no hay firmas.</span></>
               : firmasListas === 1 ? '1 firma lista.' : `${firmasListas} firmas listas.`}
           </span>
           <button
@@ -1492,7 +1508,7 @@ export default function ManifiestosPage() {
           <button
             onClick={handleSubmit}
             disabled={saving}
-            className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed movil:w-auto movil:flex-shrink-0 movil:px-5"
           >
             {saving ? (
               <>
@@ -1510,14 +1526,14 @@ export default function ManifiestosPage() {
       </div>
 
       {/* Tabla de Manifiestos */}
-      <div id="registros-list" className="bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7">
-        <div className="mb-4 sm:mb-6">
+      <div id="registros-list" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 movil:p-4 ${vistaMovil === 'nuevo' ? 'movil:hidden' : ''}`}>
+        <div className="mb-4 sm:mb-6 movil:mb-3">
           <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto break-words">Manifiestos registrados</h2>
-          <p className="text-simar-texto-2 mt-1 text-base sm:text-lg">Lista de todos los manifiestos creados en el sistema</p>
+          <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">Lista de todos los manifiestos creados en el sistema</p>
         </div>
 
         {/* Barra de búsqueda y filtros */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-6 space-y-4 movil:mb-3 movil:space-y-3">
           {/* Barra de búsqueda */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1545,11 +1561,11 @@ export default function ManifiestosPage() {
             )}
           </div>
 
-          {/* Botones de filtros */}
-          <div className="flex flex-wrap gap-2">
+          {/* Botones de filtros (en celular, una sola fila que se desliza de lado) */}
+          <div className="simar-desliza flex flex-wrap gap-2 movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4">
             <button
               onClick={() => { setFiltroActivo('todos'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'todos'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'todos'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1558,7 +1574,7 @@ export default function ManifiestosPage() {
             </button>
             <button
               onClick={() => { setFiltroActivo('buque'); setShowFiltroFecha(false); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'buque'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'buque'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1567,7 +1583,7 @@ export default function ManifiestosPage() {
             </button>
             <button
               onClick={() => { setFiltroActivo('motorista'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionCocinero(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'motorista'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'motorista'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1576,7 +1592,7 @@ export default function ManifiestosPage() {
             </button>
             <button
               onClick={() => { setFiltroActivo('cocinero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'cocinero'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'cocinero'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1585,7 +1601,7 @@ export default function ManifiestosPage() {
             </button>
             <button
               onClick={() => { setFiltroActivo('numero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'numero'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'numero'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1594,7 +1610,7 @@ export default function ManifiestosPage() {
             </button>
             <button
               onClick={() => { setFiltroActivo('fecha'); setShowFiltroFecha(!showFiltroFecha); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'fecha'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors whitespace-nowrap flex-shrink-0 movil:px-4 ${filtroActivo === 'fecha'
                 ? 'bg-simar-marea text-white'
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
@@ -1615,7 +1631,7 @@ export default function ManifiestosPage() {
                   setFiltroSeleccionMotorista(null);
                   setFiltroSeleccionCocinero(null);
                 }}
-                className="min-h-[48px] px-5 rounded-full text-base font-bold bg-simar-coral-suave text-simar-coral hover:underline"
+                className="min-h-[48px] px-5 rounded-full text-base font-bold bg-simar-coral-suave text-simar-coral hover:underline whitespace-nowrap flex-shrink-0 movil:px-4"
               >
                 Limpiar filtros
               </button>
@@ -1805,22 +1821,23 @@ export default function ManifiestosPage() {
                         return (
                           <tr
                             key={manifiesto.id}
-                            className="group block sm:table-row bg-simar-superficie hover:bg-simar-papel transition-colors duration-150"
+                            className="group block sm:table-row bg-simar-superficie hover:bg-simar-papel transition-colors duration-150 movil:relative"
                             style={{ animationDelay: `${idx * 20}ms` }}
                           >
-                            <td className="block sm:table-cell px-4 pt-4 sm:pt-3.5 pb-0 sm:pb-3.5 md:px-5">
-                              <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">
+                            <td className="block sm:table-cell px-4 pt-4 sm:pt-3.5 pb-0 sm:pb-3.5 md:px-5 movil:px-3.5 movil:pt-3 movil:pb-3">
+                              {/* En celular las acciones van a la derecha de esta primera línea (ver la última celda) */}
+                              <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap movil:mt-[5px] movil:inline-block movil:align-top movil:truncate movil:max-w-[calc(100%-148px)] movil:text-[13px] movil:px-2">
                                 {manifiesto.numero_manifiesto}
                               </span>
                               {/* En celular: barco y fecha debajo del folio (sin columnas que se corten) */}
-                              <p className="sm:hidden mt-2 text-[17px] font-bold text-simar-texto">
+                              <p className="sm:hidden mt-2 text-[17px] font-bold text-simar-texto movil:mt-2.5 movil:text-[15px]">
                                 {buqueNombre}
                                 <span className="font-normal text-simar-texto-2">
                                   {' · '}
                                   {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </span>
                               </p>
-                              <p className="sm:hidden text-[15px] text-simar-texto-2">Motorista: {respPrincipal}</p>
+                              <p className="sm:hidden text-[15px] text-simar-texto-2 movil:text-[14px] movil:truncate">Motorista: {respPrincipal}</p>
                             </td>
                             <td className="hidden sm:table-cell px-4 md:px-5 py-3.5">
                               <div className="flex items-center gap-2">
@@ -1843,11 +1860,11 @@ export default function ManifiestosPage() {
                                 {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
                             </td>
-                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:py-3.5 md:px-5">
-                              <div className="flex items-center justify-start sm:justify-end gap-2">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:py-3.5 md:px-5 movil:absolute movil:top-[10px] movil:right-3 movil:p-0">
+                              <div className="flex items-center justify-start sm:justify-end gap-2 movil:gap-1.5">
                                 <button
                                   onClick={() => setViewingManifiesto(manifiesto)}
-                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
+                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap movil:px-3"
                                   title="Ver detalles"
                                 >
                                   <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

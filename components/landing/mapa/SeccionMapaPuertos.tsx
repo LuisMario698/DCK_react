@@ -80,7 +80,7 @@ export function SeccionMapaPuertos({
                 </div>
             )}
 
-            <div className="grid lg:grid-cols-[1.55fr_1fr] gap-8 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-8 items-stretch movil:gap-4">
                 {/* Mapa */}
                 <div
                     ref={contenedor}
@@ -119,17 +119,17 @@ export function SeccionMapaPuertos({
                 </div>
 
                 {/* Panel lateral */}
-                <div className="flex flex-col gap-5">
-                    <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-5 movil:gap-3">
+                    <div className="grid grid-cols-3 gap-3 movil:gap-2">
                         {[
                             { icono: Anchor, valor: ACTIVOS, texto: 'Puerto activo' },
                             { icono: Compass, valor: FUTUROS, texto: 'En expansión' },
                             { icono: Waves, valor: 11122, texto: 'km de litoral' },
                         ].map(({ icono: Icono, valor, texto }) => (
-                            <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4">
-                                <Icono className="w-6 h-6 text-[#7FE0D6] mb-2" strokeWidth={2} />
-                                <NumeroAnimado valor={valor} duracion={1200} className="block text-[28px] font-extrabold text-white leading-none" />
-                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5">{texto}</p>
+                            <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4 min-w-0 movil:p-3 movil:rounded-[18px]">
+                                <Icono className="w-6 h-6 text-[#7FE0D6] mb-2 movil:w-5 movil:h-5 movil:mb-1.5" strokeWidth={2} />
+                                <NumeroAnimado valor={valor} duracion={1200} className="block text-[28px] font-extrabold text-white leading-none movil:text-[21px]" />
+                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5 movil:text-[13px] movil:mt-1">{texto}</p>
                             </div>
                         ))}
                     </div>
@@ -137,7 +137,7 @@ export function SeccionMapaPuertos({
                     {/* Ficha del puerto elegido: entra de nuevo cada vez que se cambia de puerto */}
                     <div
                         key={puerto.id}
-                        className="simar-aparece relative overflow-hidden rounded-[22px] border border-white/10 bg-[#12304A] p-6"
+                        className="simar-aparece relative overflow-hidden rounded-[22px] border border-white/10 bg-[#12304A] p-6 movil:p-4 movil:rounded-[18px]"
                     >
                         <div
                             aria-hidden="true"
@@ -146,7 +146,7 @@ export function SeccionMapaPuertos({
                         <div className="relative">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
-                                    <h3 className="text-[26px] font-extrabold leading-tight text-white">{puerto.nombre}</h3>
+                                    <h3 className="text-[26px] font-extrabold leading-tight text-white movil:text-[21px]">{puerto.nombre}</h3>
                                     <p className="text-base text-[#C7D3DD]">{puerto.estado}</p>
                                 </div>
                                 <span
@@ -160,12 +160,13 @@ export function SeccionMapaPuertos({
                                     {puerto.activo ? 'Activo' : 'Expansión'}
                                 </span>
                             </div>
-                            <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed">{puerto.descripcion}</p>
-                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4]">{coordenadas(puerto.lat, puerto.lng)}</p>
+                            <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed movil:mt-2.5 movil:text-[15px]">{puerto.descripcion}</p>
+                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4] movil:mt-2.5 movil:text-[13px]">{coordenadas(puerto.lat, puerto.lng)}</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {/* En celular los puertos van en una fila que se desliza de lado */}
+                    <div className="simar-desliza grid grid-cols-2 sm:grid-cols-3 gap-2 movil:flex movil:overflow-x-auto movil:-mx-5 movil:px-5 movil:gap-1.5">
                         {PUERTOS.map((p) => {
                             const sel = p.id === seleccionado;
                             return (
@@ -174,7 +175,7 @@ export function SeccionMapaPuertos({
                                     type="button"
                                     onClick={() => setSeleccionado(p.id)}
                                     aria-pressed={sel}
-                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border ${
+                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[42px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
                                         sel
                                             ? 'bg-[rgba(127,224,214,0.12)] border-[rgba(127,224,214,0.5)] text-white font-bold'
                                             : 'border-white/10 text-[#C7D3DD] hover:bg-white/5 hover:text-white'

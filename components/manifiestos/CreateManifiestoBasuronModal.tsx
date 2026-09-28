@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import DatePicker, { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -25,6 +25,10 @@ interface CreateManifiestoBasuronModalProps {
   onSuccess: () => void;
   buques: Buque[];
   inline?: boolean;
+  /** Pestañas de celular (Nuevo / Registros) que van justo bajo el encabezado */
+  pestanasMovil?: ReactNode;
+  /** En celular, con la pestaña "Registros" el formulario se oculta y sólo queda el encabezado */
+  ocultarFormularioMovil?: boolean;
 }
 
 export function CreateManifiestoBasuronModal({
@@ -33,6 +37,8 @@ export function CreateManifiestoBasuronModal({
   onSuccess,
   buques,
   inline = false,
+  pestanasMovil,
+  ocultarFormularioMovil = false,
 }: CreateManifiestoBasuronModalProps) {
   const [loading, setLoading] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
@@ -144,37 +150,41 @@ export function CreateManifiestoBasuronModal({
   if (!isOpen && !inline) return null;
 
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
+  const soloEnNuevo = ocultarFormularioMovil ? 'movil:hidden' : '';
 
   return (
     <div className={inline ? '' : 'simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
       <div className={inline ? 'w-full' : 'simar-ventana bg-simar-papel rounded-[28px] shadow-2xl max-w-7xl w-full h-full overflow-y-auto p-6'}>
         {/* Recibo del relleno sanitario — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 movil:space-y-4">
           {/* Encabezado del recibo */}
-          <header className="simar-aparece flex flex-wrap items-center gap-5">
-            <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center">
-              <Scale className="w-[30px] h-[30px]" strokeWidth={2} />
+          <header className="simar-aparece flex flex-wrap items-center gap-5 movil:gap-x-3 movil:gap-y-2">
+            <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center movil:w-[40px] movil:h-[40px] movil:self-start movil:mt-0.5">
+              <Scale className="w-[30px] h-[30px] movil:w-[22px] movil:h-[22px]" strokeWidth={2} />
             </span>
-            <div className="flex-1 min-w-[240px]">
-              <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto">Recibo del relleno sanitario</h1>
-              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+            <div className="flex-1 min-w-[240px] movil:min-w-0">
+              <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Recibo del relleno sanitario</h1>
+              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
             </div>
-            <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right">
+            {/* En celular el total ya se ve al final de Pesaje */}
+            <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:hidden">
               <p className="text-[15px] text-simar-texto-2">Total depositado</p>
               <p className="text-[21px] font-extrabold text-simar-texto">{calcularTotalDepositado().toFixed(0)} kg</p>
             </div>
           </header>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6">
+          {pestanasMovil}
+
+          <div className={`grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6 movil:gap-4 ${soloEnNuevo}`}>
             {/* COLUMNA IZQUIERDA - Datos del recibo */}
-            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.06s' }}>
+            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.06s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del recibo</h2>
 
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 movil:mt-3 movil:grid-cols-2 movil:gap-2.5">
                 {/* FECHA */}
                 <div>
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <DatePicker
                       selected={formData.fecha ? new Date(formData.fecha + 'T00:00:00') : null}
@@ -205,7 +215,7 @@ export function CreateManifiestoBasuronModal({
                 {/* HORA */}
                 <div>
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Hora</label>
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <Clock className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <TimePicker
                       value={formData.hora_entrada || ''}
@@ -220,7 +230,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* RECIBIMOS DE - Campo de texto libre */}
-              <div className="mt-5">
+              <div className="mt-5 movil:mt-3">
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibimos de</label>
                 <input
                   type="text"
@@ -239,7 +249,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* DIRECCIÓN */}
-              <div className="mt-5">
+              <div className="mt-5 movil:mt-3">
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Dirección <span className="font-medium text-simar-texto-2">(opcional)</span></label>
                 <input
                   type="text"
@@ -254,7 +264,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* RECIBÍ */}
-              <div className="mt-5">
+              <div className="mt-5 movil:mt-3">
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibí</label>
                 <input
                   type="text"
@@ -269,7 +279,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* Observaciones (crece para que la tarjeta termine a la par de Pesaje) */}
-              <div className="mt-5 flex-1 flex flex-col">
+              <div className="mt-5 flex-1 flex flex-col movil:mt-3">
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
                 <textarea
                   value={formData.observaciones}
@@ -278,17 +288,17 @@ export function CreateManifiestoBasuronModal({
                   onBlur={() => setActiveField(null)}
                   rows={3}
                   placeholder="Notas adicionales..."
-                  className={`w-full flex-1 min-h-[110px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                  className={`w-full flex-1 min-h-[110px] movil:min-h-[80px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
                 />
               </div>
             </section>
 
             {/* COLUMNA DERECHA - Pesaje */}
-            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.12s' }}>
+            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.12s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Pesaje</h2>
 
               {/* flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors DE ENTRADA */}
-              <div className="mt-5">
+              <div className="mt-5 movil:mt-3">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de entrada</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Vehículo con carga</p>
                 <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_entrada ? 'border-simar-coral' : activeField === 'pesoEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
@@ -308,15 +318,15 @@ export function CreateManifiestoBasuronModal({
                 </div>
                 {showValidation && !formData.peso_entrada && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
 
-                {/* Botones rápidos */}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <span className="text-[15px] font-bold text-simar-texto-2 mr-1">Rápido:</span>
+                {/* Botones rápidos (en celular, una fila que se desliza de lado) */}
+                <div className="simar-desliza mt-3 flex flex-wrap items-center gap-2 movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4 movil:gap-1.5">
+                  <span className="text-[15px] font-bold text-simar-texto-2 mr-1 flex-shrink-0">Rápido:</span>
                   {[500, 1000, 1500, 2000, 2500, 3000].map(peso => (
                     <button
                       key={peso}
                       type="button"
                       onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
-                      className="min-h-[44px] px-3.5 rounded-xl text-base font-bold text-simar-texto bg-simar-superficie border-2 border-simar-campo-borde hover:border-simar-marea-tinta transition-colors"
+                      className="min-h-[44px] px-3.5 rounded-xl text-base font-bold text-simar-texto bg-simar-superficie border-2 border-simar-campo-borde hover:border-simar-marea-tinta transition-colors flex-shrink-0 whitespace-nowrap"
                     >
                       {peso >= 1000 ? `${peso / 1000}T` : `${peso}kg`}
                     </button>
@@ -325,7 +335,7 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors DE SALIDA */}
-              <div className="mt-6 pt-5 border-t border-simar-borde-suave">
+              <div className="mt-6 pt-5 border-t border-simar-borde-suave movil:mt-4 movil:pt-4">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de salida</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Vehículo sin carga</p>
                 <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_salida ? 'border-simar-coral' : activeField === 'pesoSalida' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
@@ -347,8 +357,8 @@ export function CreateManifiestoBasuronModal({
               </div>
 
               {/* TOTAL DEPOSITADO */}
-              <div className="mt-6 flex-1 flex flex-col justify-end">
-                <div className="rounded-[22px] bg-simar-marea-suave px-5 py-4 flex items-center justify-between gap-4">
+              <div className="mt-6 flex-1 flex flex-col justify-end movil:mt-4">
+                <div className="rounded-[22px] bg-simar-marea-suave px-5 py-4 flex items-center justify-between gap-4 movil:px-4 movil:py-3">
                   <span className="text-lg font-bold text-simar-texto">Total depositado</span>
                   <span className="text-[34px] font-extrabold leading-none text-simar-marea-tinta">{calcularTotalDepositado().toFixed(0)} <span className="text-xl text-simar-texto-2">kg</span></span>
                 </div>
@@ -371,9 +381,9 @@ export function CreateManifiestoBasuronModal({
           </div>
 
           {/* Documento digitalizado (franja a lo ancho, como en Manifiesto) */}
-          <section className={`simar-aparece bg-simar-superficie border shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7 ${!file && showValidation ? 'border-simar-coral' : 'border-simar-borde'}`} style={{ animationDelay: '0.18s' }}>
+          <section className={`simar-aparece bg-simar-superficie border shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7 movil:p-4 movil:gap-3 ${!file && showValidation ? 'border-simar-coral' : 'border-simar-borde'} ${soloEnNuevo}`} style={{ animationDelay: '0.18s' }}>
             <div className="flex items-center gap-3 lg:w-[290px] flex-shrink-0">
-              <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
+              <span className="movil:w-10 movil:h-10 w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
                 <Upload className="w-6 h-6" />
               </span>
               <div>
@@ -415,15 +425,15 @@ export function CreateManifiestoBasuronModal({
           </section>
 
           {/* Barra de guardar (vidrio, flota sobre el formulario) */}
-          <div className={`simar-vidrio ${inline ? 'simar-pegada-abajo' : 'bottom-4'} sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3`}>
-            {/* En celular la leyenda se acorta y el botón ocupa todo el ancho */}
-            <p className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base text-simar-texto-2">
+          {/* En celular va en una sola fila: la leyenda corta a la izquierda y el botón a la derecha */}
+          <div className={`simar-vidrio ${inline ? 'simar-pegada-abajo' : 'bottom-4'} sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`}>
+            <p className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base text-simar-texto-2 movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[14px] movil:leading-snug">
               <span className="hidden sm:inline">Por una ciudad más limpia y digna para todos · </span><span className="font-bold text-simar-texto">No es comprobante fiscal</span>
             </p>
             <button
               type="submit"
               disabled={loading}
-              className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed movil:w-auto movil:flex-shrink-0 movil:px-5"
             >
               {loading ? (
                 <>

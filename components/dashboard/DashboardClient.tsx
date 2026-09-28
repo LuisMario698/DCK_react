@@ -318,13 +318,13 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
     };
 
     return (
-        <div className="space-y-8 font-sans text-simar-texto-2">
+        <div className="space-y-8 font-sans text-simar-texto-2 movil:space-y-4">
             {/* Tabs de Navegación Estilizados */}
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="grid grid-cols-2 sm:flex w-full sm:w-auto gap-2 bg-simar-superficie p-2 rounded-2xl shadow-simar border border-simar-borde">
+            <div className="flex items-center justify-between flex-wrap gap-4 movil:gap-3">
+                <div className="grid grid-cols-2 sm:flex w-full sm:w-auto gap-2 bg-simar-superficie p-2 rounded-2xl shadow-simar border border-simar-borde movil:p-1 movil:gap-1 movil:rounded-full">
                     <button
                         onClick={() => setActiveTab('general')}
-                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'general'
+                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors movil:rounded-full ${activeTab === 'general'
                             ? 'bg-simar-marea text-white shadow-simar'
                             : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'
                             }`}
@@ -333,7 +333,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </button>
                     <button
                         onClick={() => setActiveTab('reportes')}
-                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors ${activeTab === 'reportes'
+                        className={`min-h-[52px] px-4 sm:px-8 text-lg font-bold rounded-xl transition-colors movil:rounded-full ${activeTab === 'reportes'
                             ? 'bg-simar-marea text-white shadow-simar'
                             : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'
                             }`}
@@ -345,9 +345,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                 {/* Selector de Período */}
                 {activeTab === 'general' && (
                     // En celular: "Período:" arriba y los cinco botones repartidos a lo ancho
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full sm:w-auto">
-                        <span className="text-[17px] text-simar-texto font-bold">Período:</span>
-                        <div className="order-2 sm:order-none basis-full sm:basis-auto grid grid-cols-5 sm:flex gap-1 bg-simar-superficie p-1.5 rounded-xl shadow-simar border border-simar-borde">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 w-full sm:w-auto movil:gap-y-1.5">
+                        <span className="text-[17px] text-simar-texto font-bold movil:px-1">Período:</span>
+                        <div className="order-2 sm:order-none basis-full sm:basis-auto grid grid-cols-5 sm:flex gap-1 bg-simar-superficie p-1.5 rounded-xl shadow-simar border border-simar-borde movil:p-1 movil:rounded-full">
                             {[
                                 { key: 'semana', label: '7 días' },
                                 { key: 'mes', label: '1 mes' },
@@ -358,7 +358,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 <button
                                     key={p.key}
                                     onClick={() => setPeriodoSeleccionado(p.key as PeriodoFiltro)}
-                                    className={`min-h-[48px] sm:min-h-[44px] px-1 sm:px-4 text-[15px] sm:text-base leading-tight font-bold rounded-lg transition-colors ${periodoSeleccionado === p.key
+                                    className={`min-h-[48px] sm:min-h-[44px] px-1 sm:px-4 text-[15px] sm:text-base leading-tight font-bold rounded-lg transition-colors whitespace-nowrap movil:rounded-full movil:text-[13.5px] ${periodoSeleccionado === p.key
                                         ? 'bg-simar-marea text-white shadow-simar'
                                         : 'text-simar-texto-2 hover:bg-simar-papel'
                                         }`}
@@ -375,9 +375,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
             </div>
 
             {activeTab === 'general' ? (
-                <div className="space-y-8">
+                <div className="space-y-8 movil:space-y-4">
                     {/* KPIs Section - Diseño Simple y Claro */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 movil:gap-2.5">
                         {/* Total Reciclado - Azul */}
                         <SimpleKpiCard
                             title="Total procesado"
@@ -423,8 +423,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         />
                     </div>
 
-                    {/* Segunda fila - Filtros y Buques */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                    {/* Segunda fila - Filtros y Buques (en celular pegada a la primera) */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 movil:gap-2.5 movil:-mt-[5px]">
                         <SimpleKpiCard
                             title="Filtros de aceite"
                             value={<NumeroAnimado valor={stats.filtrosAceite} />}
@@ -460,10 +460,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Gráficas Section */}
-                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-3 gap-6" style={{ animationDelay: '0.3s' }}>
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-3 gap-6 movil:gap-4" style={{ animationDelay: '0.3s' }}>
                         {/* Gráfica Principal (Barras) - Ocupa 2 columnas */}
-                        <div className="lg:col-span-2 bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8">
+                        <div className="lg:col-span-2 bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar movil:p-4">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 md:mb-8 movil:gap-2 movil:mb-4">
                                 <div className="flex items-start justify-between sm:justify-start gap-3">
                                     <div>
                                         <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Estadísticas de residuos</h3>
@@ -500,7 +500,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 const maxVal = Math.max(...initialStats.residuosPorMes.map(m => m.aceite + m.basura), 1);
 
                                 return (
-                                    <div className="h-64 md:h-72 flex items-end justify-between gap-1.5 md:gap-3 md:px-2">
+                                    <div className="h-64 md:h-72 flex items-end justify-between gap-1.5 md:gap-3 md:px-2 movil:h-48">
                                         {initialStats.residuosPorMes.map((mes, idx) => {
                                             const total = mes.aceite + mes.basura;
                                             const heightPercent = Math.max((total / maxVal) * 100, 8);
@@ -575,7 +575,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             })()}
 
                             {/* Línea de referencia y totales */}
-                            <div className="mt-6 pt-4 border-t border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1">
+                            <div className="mt-6 pt-4 border-t border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 movil:mt-4 movil:pt-3">
                                 <div className="text-base text-simar-texto-2">
                                     <span className="font-medium">Total período:</span>{' '}
                                     <span className="font-bold text-simar-texto text-lg">
@@ -591,7 +591,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Gráfica Secundaria (Top Buques / Donut Style) */}
-                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar flex flex-col">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar flex flex-col movil:p-4">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Buques con más residuos</h3>
                                 <InfoTooltip
@@ -603,9 +603,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-base text-simar-texto-2 mb-8">Mayores generadores este mes</p>
+                            <p className="text-base text-simar-texto-2 mb-8 movil:mb-4">Mayores generadores este mes</p>
 
-                            <div className="flex-1 flex flex-col justify-center space-y-6">
+                            <div className="flex-1 flex flex-col justify-center space-y-6 movil:space-y-4">
                                 {initialStats.topBuques.slice(0, 4).map((buque, idx) => {
                                     const maxVal = Math.max(...initialStats.topBuques.map(b => b.totalKg));
                                     const width = maxVal > 0 ? (buque.totalKg / maxVal) * 100 : 0;
@@ -638,7 +638,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                             <button
                                 onClick={() => setActiveTab('reportes')}
-                                className="mt-8 w-full py-3.5 rounded-xl border border-simar-borde text-base font-bold text-simar-texto-2 hover:bg-simar-papel transition-colors min-h-[52px]"
+                                className="mt-8 w-full py-3.5 rounded-xl border border-simar-borde text-base font-bold text-simar-texto-2 hover:bg-simar-papel transition-colors min-h-[52px] movil:mt-5 movil:py-2"
                             >
                                 Ver reporte completo
                             </button>
@@ -646,9 +646,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Segunda fila de gráficas */}
-                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.36s' }}>
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6 movil:gap-4" style={{ animationDelay: '0.36s' }}>
                         {/* Gráfica de Distribución por Tipo (Dona) */}
-                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar movil:p-4">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Distribución por tipo</h3>
                                 <InfoTooltip
@@ -660,11 +660,12 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-base text-simar-texto-2 mb-6">Proporción de residuos recolectados</p>
+                            <p className="text-base text-simar-texto-2 mb-6 movil:mb-4">Proporción de residuos recolectados</p>
 
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8">
+                            {/* En celular la leyenda va a un lado de la dona */}
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 movil:flex-row movil:gap-5">
                                 {/* Gráfica de Dona */}
-                                <div className="relative w-52 h-52 flex-shrink-0">
+                                <div className="relative w-52 h-52 flex-shrink-0 movil:w-[148px] movil:h-[148px]">
                                     <DonutChart
                                         data={[
                                             { label: 'Aceite', value: stats.totalAceiteUsado, color: 'var(--simar-coral)' },
@@ -673,28 +674,28 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         ]}
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center flex-col">
-                                        <NumeroAnimado valor={stats.totalResiduosReciclados} className="text-2xl font-extrabold text-simar-texto" />
+                                        <NumeroAnimado valor={stats.totalResiduosReciclados} className="text-2xl font-extrabold text-simar-texto movil:text-[18px]" />
                                         <span className="text-base text-simar-texto-2">kg total</span>
                                     </div>
                                 </div>
 
                                 {/* Leyenda (en celular, en fila bajo la dona) */}
-                                <div className="grid grid-cols-3 sm:grid-cols-1 gap-3 sm:gap-0 sm:space-y-4 w-full sm:w-auto">
-                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+                                <div className="grid grid-cols-3 sm:grid-cols-1 gap-3 sm:gap-0 sm:space-y-4 w-full sm:w-auto movil:grid-cols-1 movil:gap-3 movil:w-auto movil:flex-1">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left movil:flex-row movil:items-start movil:gap-2.5 movil:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-coral"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Aceite Usado</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalAceiteUsado.toLocaleString()} L</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left movil:flex-row movil:items-start movil:gap-2.5 movil:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-marea"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Basura General</p>
                                             <p className="text-base text-simar-texto-2">{stats.totalBasuraGeneral.toLocaleString()} kg</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left">
+                                    <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-3 text-center sm:text-left movil:flex-row movil:items-start movil:gap-2.5 movil:text-left">
                                         <div className="w-5 h-5 rounded-full bg-simar-arrecife"></div>
                                         <div>
                                             <p className="text-base font-medium text-simar-texto">Basurón</p>
@@ -706,7 +707,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Gráfica de Filtros Recolectados */}
-                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar movil:p-4">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Filtros recolectados</h3>
                                 <InfoTooltip
@@ -718,9 +719,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-base text-simar-texto-2 mb-6">Desglose por tipo de filtro</p>
+                            <p className="text-base text-simar-texto-2 mb-6 movil:mb-4">Desglose por tipo de filtro</p>
 
-                            <div className="space-y-6">
+                            <div className="space-y-6 movil:space-y-4">
                                 {/* Filtros Aceite */}
                                 <div>
                                     <div className="flex justify-between mb-2">
@@ -775,9 +776,9 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
 
                     {/* Tercera fila - Comparación y Métricas Ambientales */}
-                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ animationDelay: '0.42s' }}>
+                    <div className="simar-aparece grid grid-cols-1 lg:grid-cols-2 gap-6 movil:gap-4" style={{ animationDelay: '0.42s' }}>
                         {/* Comparación vs Período Anterior */}
-                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar">
+                        <div className="bg-simar-superficie p-5 md:p-8 rounded-3xl border border-simar-borde shadow-simar movil:p-4">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto">Comparación con el período anterior</h3>
                                 <InfoTooltip
@@ -789,10 +790,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-base text-simar-texto-2 mb-6">Evolución de residuos recolectados</p>
+                            <p className="text-base text-simar-texto-2 mb-6 movil:mb-4">Evolución de residuos recolectados</p>
 
                             {comparaciones && (
-                                <div className="space-y-5">
+                                <div className="space-y-5 movil:space-y-4">
                                     {/* Total Reciclado */}
                                     <ComparisonBar
                                         label="Total Procesado"
@@ -839,7 +840,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Métricas de Impacto Ambiental */}
-                        <div className="bg-[#127A5D] p-5 md:p-8 rounded-3xl shadow-simar text-white relative">
+                        <div className="bg-[#127A5D] p-5 md:p-8 rounded-3xl shadow-simar text-white relative movil:p-4">
                             <div className="flex items-start gap-3 mb-2">
                                 <h3 className="text-[22px] md:text-2xl font-extrabold">Impacto ambiental</h3>
                                 <InfoTooltip
@@ -854,9 +855,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     ]}
                                 />
                             </div>
-                            <p className="text-white/85 text-base mb-6">Contribución al medio ambiente</p>
+                            <p className="text-white/85 text-base mb-6 movil:mb-4">Contribución al medio ambiente</p>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+                            {/* En celular, 2 × 2; la tarjeta abierta ocupa la fila completa para leer sus equivalencias */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch movil:grid-cols-2 movil:gap-2.5">
                                 {/* CO2 Evitado - Expandible */}
                                 <ExpandableImpactCard
                                     icono={Sprout}
@@ -970,8 +972,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                 />
                             </div>
 
-                            <div className="mt-6 p-4 bg-white/10 rounded-xl">
-                                <p className="text-base text-white/85">
+                            <div className="mt-6 p-4 bg-white/10 rounded-xl movil:mt-4 movil:p-3">
+                                <p className="text-base text-white/85 movil:text-[14px]">
                                     <span className="font-bold text-white">Consejo:</span> Toca o pasa el cursor sobre cada tarjeta para ver comparaciones con objetos del mundo real.
                                 </p>
                             </div>
@@ -979,10 +981,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                     </div>
                 </div>
             ) : (
-                <div className="simar-aparece space-y-6">
+                <div className="simar-aparece space-y-6 movil:space-y-4">
                     {/* Panel de Filtros Mejorado */}
-                    <div className="bg-simar-superficie p-5 md:p-6 rounded-3xl border border-simar-borde shadow-simar">
-                        <div className="flex items-center gap-3 mb-6">
+                    <div className="bg-simar-superficie p-5 md:p-6 rounded-3xl border border-simar-borde shadow-simar movil:p-4">
+                        <div className="flex items-center gap-3 mb-6 movil:mb-4">
                             <div className="p-3 bg-simar-marea-suave rounded-xl">
                                 <svg className="w-6 h-6 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -994,7 +996,8 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* En celular: las dos fechas lado a lado, y buque y el botón a lo ancho */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 movil:grid-cols-2 movil:gap-3">
                             {/* Fecha Desde */}
                             <div className="space-y-2">
                                 <label className="flex items-center gap-2 text-base font-bold text-simar-texto-2">
@@ -1021,7 +1024,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         locale="es"
                                         placeholderText="Seleccionar fecha"
                                         showPopperArrow={false}
-                                        className="w-full px-4 py-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
+                                        className="w-full px-4 py-3 movil:px-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
                                         wrapperClassName="w-full"
                                         popperClassName="datepicker-popper"
                                         showMonthDropdown
@@ -1059,7 +1062,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         locale="es"
                                         placeholderText="Seleccionar fecha"
                                         showPopperArrow={false}
-                                        className="w-full px-4 py-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
+                                        className="w-full px-4 py-3 movil:px-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
                                         wrapperClassName="w-full"
                                         popperClassName="datepicker-popper"
                                         showMonthDropdown
@@ -1073,7 +1076,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
 
                             {/* Selector de Buque */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 movil:col-span-2">
                                 <label className="flex items-center gap-2 text-base font-bold text-simar-texto-2">
                                     <svg className="w-4 h-4 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -1100,7 +1103,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                             </div>
 
                             {/* Botón Generar */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 movil:col-span-2">
                                 <label aria-hidden="true" className="hidden md:block text-base font-bold text-transparent">Acción</label>
                                 <button
                                     onClick={loadReport}
@@ -1125,9 +1128,10 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* Accesos rápidos de fechas */}
-                        <div className="mt-6 pt-4 border-t border-simar-borde">
-                            <p className="text-base text-simar-texto-2 mb-3">Accesos rápidos:</p>
-                            <div className="flex flex-wrap gap-2">
+                        <div className="mt-6 pt-4 border-t border-simar-borde movil:mt-4 movil:pt-3">
+                            <p className="text-base text-simar-texto-2 mb-3 movil:mb-2">Accesos rápidos:</p>
+                            {/* En celular, una fila que se desliza de lado */}
+                            <div className="simar-desliza flex flex-wrap gap-2 movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4">
                                 {[
                                     { label: 'Hoy', days: 0 },
                                     { label: 'Última semana', days: 7 },
@@ -1154,7 +1158,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                             });
                                             setAccesoRapidoSeleccionado(option.label);
                                         }}
-                                        className={`min-h-[48px] px-4 py-2 rounded-lg font-medium text-base transition-colors ${accesoRapidoSeleccionado === option.label
+                                        className={`min-h-[48px] px-4 py-2 rounded-lg font-medium text-base transition-colors whitespace-nowrap flex-shrink-0 movil:rounded-full ${accesoRapidoSeleccionado === option.label
                                             ? 'bg-simar-marea text-white shadow-simar'
                                             : 'bg-simar-papel text-simar-texto-2 hover:bg-simar-marea-suave hover:text-simar-marea-tinta'
                                             }`}
@@ -1167,7 +1171,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                         setFilters({ ...filters, fechaInicio: '', fechaFin: '', buqueId: '' });
                                         setAccesoRapidoSeleccionado(null);
                                     }}
-                                    className="px-4 py-2 bg-simar-coral-suave text-simar-coral rounded-lg hover:bg-simar-coral-suave font-bold text-base transition-colors min-h-[52px]"
+                                    className="px-4 py-2 bg-simar-coral-suave text-simar-coral rounded-lg hover:bg-simar-coral-suave font-bold text-base transition-colors min-h-[52px] whitespace-nowrap flex-shrink-0 movil:min-h-[38px] movil:rounded-full"
                                 >
                                     Limpiar filtros
                                 </button>
@@ -1177,18 +1181,18 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Resumen de resultados */}
                     {reportData.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                            <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 movil:gap-2.5">
+                            <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar movil:p-3.5">
                                 <p className="text-simar-texto-2 text-base mb-1">Total Registros</p>
                                 <p className="text-3xl font-extrabold text-simar-texto">{reportData.length}</p>
                             </div>
-                            <div className="order-first col-span-2 md:order-none md:col-span-1 bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
+                            <div className="order-first col-span-2 md:order-none md:col-span-1 bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar movil:p-3.5">
                                 <p className="text-simar-texto-2 text-base mb-1">Total Residuos</p>
                                 <p className="text-3xl font-extrabold text-simar-marea-tinta">
                                     {reportData.reduce((sum, item) => sum + item.cantidad, 0).toLocaleString()} kg
                                 </p>
                             </div>
-                            <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar">
+                            <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar movil:p-3.5">
                                 <p className="text-simar-texto-2 text-base mb-1">Buques Únicos</p>
                                 <p className="text-3xl font-extrabold text-simar-arrecife-tinta">
                                     {new Set(reportData.map(item => item.buque)).size}
@@ -1199,7 +1203,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
 
                     {/* Tabla de Resultados */}
                     <div className="bg-simar-superficie rounded-3xl border border-simar-borde shadow-simar overflow-hidden">
-                        <div className="p-5 md:p-6 border-b border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                        <div className="p-5 md:p-6 border-b border-simar-borde flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 movil:p-4 movil:gap-3">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-simar-papel rounded-lg">
                                     <Icons.Document className="w-5 h-5 text-simar-texto-2" />
@@ -1363,6 +1367,7 @@ interface ExpandableImpactCardProps {
 }
 
 function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }: ExpandableImpactCardProps) {
+    // (en celular la tarjeta abierta ocupa las dos columnas: movil:col-span-2 más abajo)
     const [isOpen, setIsOpen] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
@@ -1381,7 +1386,7 @@ function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }:
     return (
         <div
             ref={cardRef}
-            className="relative h-full"
+            className={`relative h-full ${isOpen ? 'movil:col-span-2' : ''}`}
             onPointerEnter={(e) => { if (e.pointerType === 'mouse') { calcularDireccion(); setIsOpen(true); } }}
             onPointerLeave={(e) => { if (e.pointerType === 'mouse') setIsOpen(false); }}
         >
@@ -1390,15 +1395,15 @@ function ExpandableImpactCard({ icono: Icono, value, unit, label, comparisons }:
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() => { calcularDireccion(); setIsOpen((v) => !v); }}
-                className={`w-full text-left bg-white/10 rounded-2xl p-5 md:p-6 cursor-pointer h-full min-h-[112px] md:min-h-[120px] transition-all duration-200 flex items-center ${isOpen ? 'bg-white/25 shadow-simar' : 'hover:bg-white/15'}
+                className={`w-full text-left bg-white/10 rounded-2xl p-5 md:p-6 cursor-pointer h-full min-h-[112px] md:min-h-[120px] transition-all duration-200 flex items-center movil:p-3.5 movil:min-h-0 movil:items-start ${isOpen ? 'bg-white/25 shadow-simar' : 'hover:bg-white/15'}
                 `}
             >
                 <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-5">
-                        <span className="w-16 h-16 flex-shrink-0 rounded-full bg-white/15 flex items-center justify-center"><Icono className="w-8 h-8" strokeWidth={2} /></span>
+                    <div className={`flex items-center gap-5 ${isOpen ? 'movil:flex-row movil:gap-3' : 'movil:flex-col movil:items-start movil:gap-2'}`}>
+                        <span className="w-16 h-16 flex-shrink-0 rounded-full bg-white/15 flex items-center justify-center movil:w-9 movil:h-9"><Icono className="w-8 h-8 movil:w-5 movil:h-5" strokeWidth={2} /></span>
                         <div>
-                            <p className="text-3xl font-extrabold text-white whitespace-nowrap">{value} {unit}</p>
-                            <p className="text-white/85 text-base mt-1">{label}</p>
+                            <p className="text-3xl font-extrabold text-white whitespace-nowrap movil:text-[20px]">{value} {unit}</p>
+                            <p className="text-white/85 text-base mt-1 movil:mt-0 movil:text-[13.5px] movil:leading-snug">{label}</p>
                         </div>
                     </div>
                 </div>
@@ -1604,16 +1609,16 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex justify-between items-center mb-2 movil:mb-1.5">
                 <span className="text-base font-medium text-simar-texto">{label}</span>
                 <div className="flex items-center gap-2">
                     <span className="text-base font-bold text-simar-texto">{actual.toLocaleString()} {unit}</span>
-                    <span className={`text-base font-bold px-2.5 py-1 rounded-lg ${positivo ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' : 'bg-simar-coral-suave text-simar-coral'}`}>
+                    <span className={`text-base font-bold px-2.5 py-1 rounded-lg movil:text-[13.5px] movil:px-2 movil:py-0.5 ${positivo ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' : 'bg-simar-coral-suave text-simar-coral'}`}>
                         {positivo ? '↑' : '↓'} {Math.abs(cambio).toFixed(1)}%
                     </span>
                 </div>
             </div>
-            <div className="relative h-5 flex gap-1">
+            <div className="relative h-5 flex gap-1 movil:h-3">
                 {/* Barra actual */}
                 <div className="flex-1 bg-simar-papel rounded-full overflow-hidden">
                     <div
@@ -1623,8 +1628,8 @@ function ComparisonBar({ label, actual, anterior, unit, color }: ComparisonBarPr
                 </div>
             </div>
             <div className="flex justify-between mt-1">
-                <span className="text-base text-simar-texto-2">Actual</span>
-                <span className="text-base text-simar-texto-2">Anterior: {anterior.toLocaleString()} {unit}</span>
+                <span className="text-base text-simar-texto-2 movil:text-[13.5px]">Actual</span>
+                <span className="text-base text-simar-texto-2 movil:text-[13.5px]">Anterior: {anterior.toLocaleString()} {unit}</span>
             </div>
         </div>
     );
@@ -1750,23 +1755,24 @@ function SimpleKpiCard({ title, value, subtitle, icon, color, orden = 0 }: Simpl
     const colors = colorConfig[color];
 
     return (
+        // En celular: ícono y título en la misma línea, y el número debajo a lo ancho (la tarjeta mide la mitad)
         <div
-            className={`simar-aparece bg-simar-superficie p-4 md:p-6 rounded-2xl border ${colors.border} shadow-simar`}
+            className={`simar-aparece bg-simar-superficie p-4 md:p-6 rounded-2xl border ${colors.border} shadow-simar movil:p-3 movil:grid movil:grid-cols-[auto_1fr] movil:items-center movil:gap-x-2.5`}
             style={{ animationDelay: `${orden * 0.04}s` }}
         >
             {/* Icono grande */}
-            <div className={`w-12 h-12 md:w-16 md:h-16 [&_svg]:w-6 [&_svg]:h-6 md:[&_svg]:w-8 md:[&_svg]:h-8 ${colors.bg} rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 ${colors.icon}`}>
+            <div className={`w-12 h-12 md:w-16 md:h-16 [&_svg]:w-6 [&_svg]:h-6 md:[&_svg]:w-8 md:[&_svg]:h-8 ${colors.bg} rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4 movil:w-8 movil:h-8 movil:mb-0 movil:rounded-lg movil:[&_svg]:w-[18px] movil:[&_svg]:h-[18px] ${colors.icon}`}>
                 {SimpleIcons[icon]}
             </div>
 
             {/* Título */}
-            <p className="text-simar-texto-2 text-[15px] md:text-base font-medium leading-snug mb-1">{title}</p>
+            <p className="text-simar-texto-2 text-[15px] md:text-base font-medium leading-snug mb-1 movil:mb-0 movil:text-[13.5px] movil:leading-tight">{title}</p>
 
             {/* Valor grande */}
-            <p className="text-[26px] md:text-4xl leading-tight font-bold text-simar-texto mb-1 md:mb-2">{value}</p>
+            <p className="text-[26px] md:text-4xl leading-tight font-bold text-simar-texto mb-1 md:mb-2 movil:col-span-2 movil:mt-2 movil:mb-0 movil:text-[21px]">{value}</p>
 
             {/* Subtítulo */}
-            <p className="text-[15px] md:text-base leading-snug text-simar-texto-2">{subtitle}</p>
+            <p className="text-[15px] md:text-base leading-snug text-simar-texto-2 movil:col-span-2 movil:text-[13px]">{subtitle}</p>
         </div>
     );
 }

@@ -11,6 +11,8 @@ import { getBuques } from '@/lib/services/buques';
 
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { parseFechaLocal } from '@/lib/utils/fechas';
+import { PestanasMovil } from '@/components/ui/simar';
+import { FilePlus2, List } from 'lucide-react';
 
 export default function ManifiestoBasuronPage() {
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
@@ -23,6 +25,8 @@ export default function ManifiestoBasuronPage() {
   const [searchCriteria, setSearchCriteria] = useState<'ticket' | 'fecha' | 'total'>('ticket');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  // Sólo en celular: el recibo y la lista van en pestañas (en pantallas grandes se ven los dos)
+  const [vistaMovil, setVistaMovil] = useState<'nuevo' | 'registros'>('nuevo');
 
   useEffect(() => {
     loadData();
@@ -119,10 +123,22 @@ export default function ManifiestoBasuronPage() {
         onClose={() => { }}
         onSuccess={loadData}
         buques={buques}
+        ocultarFormularioMovil={vistaMovil === 'registros'}
+        pestanasMovil={
+          <PestanasMovil
+            etiqueta="Vista del recibo"
+            valor={vistaMovil}
+            onCambiar={setVistaMovil}
+            opciones={[
+              { valor: 'nuevo', texto: 'Nuevo', icono: FilePlus2 },
+              { valor: 'registros', texto: 'Registros', icono: List, conteo: manifiestos.length },
+            ]}
+          />
+        }
       />
 
-      {/* Botón para ir a la lista de registros */}
-      <div className="flex justify-center">
+      {/* Botón para ir a la lista de registros (en celular lo reemplazan las pestañas) */}
+      <div className="flex justify-center movil:hidden">
         <button
           onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
           className="min-h-[56px] px-6 rounded-[18px] border-2 border-simar-texto bg-simar-superficie/60 text-simar-texto text-lg font-bold flex items-center gap-2.5 hover:bg-simar-superficie transition-colors"
@@ -134,23 +150,23 @@ export default function ManifiestoBasuronPage() {
         </button>
       </div>
 
-      <div id="lista-registros" className="bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6">
+      <div id="lista-registros" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6 movil:p-4 movil:space-y-3 ${vistaMovil === 'nuevo' ? 'movil:hidden' : ''}`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto">Recibos del relleno sanitario</h2>
-            <p className="text-simar-texto-2 mt-1 text-base sm:text-lg">Lista de todos los recibos de pesaje registrados</p>
+            <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">Lista de todos los recibos de pesaje registrados</p>
           </div>
         </div>
 
         {/* Controles de búsqueda */}
         <div>
           {/* Barra de búsqueda con selector */}
-          <div className="flex flex-col sm:flex-row w-full gap-3">
+          <div className="flex flex-col sm:flex-row w-full gap-3 movil:flex-row movil:gap-2">
             <select
               value={searchCriteria}
               onChange={(e) => setSearchCriteria(e.target.value as any)}
               aria-label="Buscar por"
-              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors"
+              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[14px]"
             >
               <option value="ticket">Ticket / Buque</option>
               <option value="fecha">Fecha</option>
@@ -171,7 +187,7 @@ export default function ManifiestoBasuronPage() {
                     searchCriteria === 'fecha' ? 'Buscar por fecha...' :
                       'Buscar por peso total...'
                 }
-                className="block w-full pl-12 pr-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
+                className="block w-full pl-12 pr-4 movil:pl-10 movil:pr-3 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
               />
             </div>
           </div>
@@ -212,9 +228,28 @@ export default function ManifiestoBasuronPage() {
                         </tr>
                       ) : (
                         paginatedManifiestos.map((m) => (
-                          <tr key={m.id} className="block sm:table-row border-b border-simar-borde-suave last:border-b-0 sm:last:border-b bg-simar-superficie hover:bg-simar-papel/60 transition-colors">
-                            <td className="block sm:table-cell px-4 pt-4 pb-0 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
-                              <div className="flex flex-col gap-1">
+                          <tr key={m.id} className="block sm:table-row border-b border-simar-borde-suave last:border-b-0 sm:last:border-b bg-simar-superficie hover:bg-simar-papel/60 transition-colors movil:relative">
+                            <td className="block sm:table-cell px-4 pt-4 pb-0 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto movil:px-3.5 movil:py-3">
+                              {/* Celular: ticket y total arriba, barco y estado, y la fecha con las acciones a la derecha */}
+                              <div className="hidden movil:block">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-mono text-[13px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2 py-0.5 rounded-lg whitespace-nowrap truncate">#{m.numero_ticket || m.id}</span>
+                                  <strong className="text-[15px] font-extrabold text-simar-texto whitespace-nowrap">{Number(m.total_depositado || 0).toFixed(2)} kg</strong>
+                                </div>
+                                <p className="mt-1.5 flex items-center gap-2 min-w-0">
+                                  <span className="text-[15px] font-bold text-simar-texto truncate">{m.buque?.nombre_buque || 'Sin buque'}</span>
+                                  {m.estado && (
+                                    <span className={`flex-shrink-0 px-2 py-px text-[13px] font-bold rounded-full ${m.estado === 'Completado' ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' : m.estado === 'En Proceso' || m.estado === 'Cancelado' ? 'bg-simar-coral-suave text-simar-coral' : 'bg-simar-papel text-simar-texto-2'}`}>
+                                      {m.estado}
+                                    </span>
+                                  )}
+                                </p>
+                                <p className="mt-1 min-h-[38px] flex items-center pr-[150px] text-[14px] text-simar-texto-2">
+                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {m.hora_entrada ? ` · ${m.hora_entrada.slice(0, 5)}` : ''}
+                                </p>
+                              </div>
+                              <div className="flex flex-col gap-1 movil:hidden">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">#{m.numero_ticket || m.id}</span>
                                   {m.estado && (
@@ -250,11 +285,11 @@ export default function ManifiestoBasuronPage() {
                                 {Number(m.total_depositado || 0).toFixed(2)} kg
                               </span>
                             </td>
-                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
-                              <div className="flex justify-start sm:justify-center gap-2">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto movil:absolute movil:right-3.5 movil:bottom-3 movil:p-0">
+                              <div className="flex justify-start sm:justify-center gap-2 movil:gap-1.5">
                                 <button
                                   onClick={() => setSelectedManifiesto(m)}
-                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
+                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap movil:px-3"
                                   title="Ver detalles"
                                 >
                                   <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

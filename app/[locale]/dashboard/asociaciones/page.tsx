@@ -64,7 +64,7 @@ export default function AsociacionesPage() {
     };
 
     return (
-        <div className="max-w-[1600px] space-y-6">
+        <div className="max-w-[1600px] space-y-6 movil:space-y-3">
             {/* Lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
             <EncabezadoPantalla
                 icono={Building2}
@@ -73,14 +73,14 @@ export default function AsociacionesPage() {
             />
 
             {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
-            <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4" style={{ animationDelay: '0.06s' }}>
+            <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:gap-2" style={{ animationDelay: '0.06s' }}>
                 <TarjetaDato apilada etiqueta="Asociaciones activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
                 <TarjetaDato apilada etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
                 <TarjetaDato apilada etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
             </div>
 
             {/* Tabs */}
-            <div className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar">
+            <div className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar movil:p-1">
                 {/* En celular, las cuatro secciones en una cuadrícula de 2 × 2: todas a la vista, sin deslizar */}
                 <nav aria-label="Secciones de asociaciones" className="grid grid-cols-2 sm:flex gap-1">
                     {tabs.map((t) => {

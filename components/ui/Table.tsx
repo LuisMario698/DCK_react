@@ -61,7 +61,7 @@ interface TableHeadProps {
 
 export function TableHead({ children, className }: TableHeadProps) {
   return (
-    <th className={`px-4 md:px-5 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 whitespace-nowrap ${className || ''}`}>
+    <th className={`px-4 md:px-5 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 whitespace-nowrap movil:px-3.5 movil:py-2.5 ${className || ''}`}>
       {children}
     </th>
   );
@@ -75,7 +75,7 @@ interface TableCellProps {
 
 export function TableCell({ children, colSpan, className }: TableCellProps) {
   return (
-    <td className={`px-4 md:px-5 py-4 text-base text-simar-texto ${className || ''}`} colSpan={colSpan}>
+    <td className={`px-4 md:px-5 py-4 text-base text-simar-texto movil:px-3.5 movil:py-3 ${className || ''}`} colSpan={colSpan}>
       {children}
     </td>
   );
