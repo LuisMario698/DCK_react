@@ -92,7 +92,7 @@ export default function AsociacionesPage() {
                                 key={t.value}
                                 onClick={() => setTab(t.value)}
                                 aria-current={active ? 'page' : undefined}
-                                className={`relative sm:flex-1 min-w-0 sm:min-w-fit whitespace-nowrap min-h-[52px] px-3 sm:px-5 text-[17px] sm:text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 movil:flex-col movil:gap-1 movil:min-h-[60px] movil:px-1 movil:text-[12.5px] movil:rounded-[16px] ${
+                                className={`relative sm:flex-1 min-w-0 sm:min-w-fit whitespace-nowrap min-h-[52px] px-3 sm:px-5 text-[17px] sm:text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 movil:flex-col movil:gap-1 movil:min-h-[60px] movil:px-1 movil:text-[clamp(10.5px,3.2vw,12.5px)] movil:rounded-[16px] ${
                                     active
                                         ? 'bg-simar-marea text-white shadow-simar'
                                         : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'

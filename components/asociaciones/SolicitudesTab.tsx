@@ -129,9 +129,10 @@ export function SolicitudesTab({
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
-                {/* Tabs */}
-                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:px-2">
-                    <nav className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
+                {/* Tabs. En celular: cuadrícula de 3 × 2 con las seis a la vista (el número arriba y la
+                    palabra abajo), sin deslizar de lado; de paso sirve de resumen */}
+                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:px-2 movil:pt-2 movil:pb-2 movil:bg-transparent">
+                    <nav aria-label="Estado de las solicitudes" className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px movil:grid movil:grid-cols-3 movil:gap-1.5 movil:overflow-visible movil:mb-0">
                         {TABS.map((t) => {
                             const count =
                                 t.value === 'todas'
@@ -142,14 +143,15 @@ export function SolicitudesTab({
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
-                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 movil:px-3 movil:py-3 ${
+                                    aria-pressed={active}
+                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 movil:flex movil:flex-col-reverse movil:items-center movil:justify-center movil:min-h-[52px] movil:px-1 movil:py-1.5 movil:rounded-[14px] movil:border-b-0 movil:text-[clamp(10.5px,3.2vw,12.5px)] movil:leading-tight movil:font-bold ${
                                         active
-                                            ? 'border-simar-marea-tinta text-simar-marea-tinta'
-                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta'
+                                            ? 'border-simar-marea-tinta text-simar-marea-tinta movil:bg-simar-marea movil:text-white'
+                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta movil:bg-simar-papel'
                                     }`}
                                 >
                                     {t.label}
-                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors ${active ? 'bg-simar-marea-suave text-simar-marea-tinta' : 'bg-simar-papel text-simar-texto-2'}`}>
+                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors movil:ml-0 movil:p-0 movil:bg-transparent movil:text-[17px] movil:font-extrabold movil:leading-none movil:mb-0.5 ${active ? 'bg-simar-marea-suave text-simar-marea-tinta movil:text-white' : 'bg-simar-papel text-simar-texto-2 movil:text-simar-texto'}`}>
                                         {count}
                                     </span>
                                 </button>
@@ -256,8 +258,8 @@ export function SolicitudesTab({
                                 );
                             })}
                             {filtradas.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="py-16 text-center">
+                                <tr className="movil:block">
+                                    <td colSpan={6} className="py-16 text-center movil:block movil:py-10 movil:px-4">
                                         <div className="flex flex-col items-center gap-2 text-simar-texto-2">
                                             <Inbox className="w-10 h-10" />
                                             <p className="text-base font-medium">No hay solicitudes en esta categoría.</p>
