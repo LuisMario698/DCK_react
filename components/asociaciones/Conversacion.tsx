@@ -92,7 +92,7 @@ export function Conversacion({
 
     return (
         <div className="flex flex-col min-h-0 flex-1">
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3 bg-simar-papel custom-scrollbar">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3 bg-simar-papel custom-scrollbar movil:p-3 movil:space-y-2">
                 {cargando && (
                     <div className="h-full flex items-center justify-center text-lg text-simar-texto-2 gap-2.5">
                         <Loader2 className="w-5 h-5 animate-spin" /> Cargando mensajes…
@@ -123,7 +123,7 @@ export function Conversacion({
                 })}
             </div>
 
-            <div className="p-4 border-t border-simar-borde bg-simar-superficie">
+            <div className="p-4 border-t border-simar-borde bg-simar-superficie movil:p-2.5">
                 <div className="flex items-end gap-2 bg-simar-superficie rounded-2xl p-2 border-2 border-simar-campo-borde focus-within:border-simar-marea-tinta transition-colors">
                     <textarea
                         value={borrador}
@@ -149,7 +149,8 @@ export function Conversacion({
                         {enviando ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
                     </button>
                 </div>
-                <p className="text-[15px] text-simar-texto-2 mt-2 ml-2">
+                {/* Ayuda de teclado: en celular no aplica */}
+                <p className="text-[15px] text-simar-texto-2 mt-2 ml-2 movil:hidden">
                     <kbd className="px-1.5 py-0.5 rounded-md bg-simar-papel font-sans font-bold text-[15px]">Enter</kbd> para enviar ·{' '}
                     <kbd className="px-1.5 py-0.5 rounded-md bg-simar-papel font-sans font-bold text-[15px]">Shift + Enter</kbd> para salto de línea
                 </p>

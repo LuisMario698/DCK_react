@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Buque } from '@/types/database';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table';
 import { Icons } from '@/components/ui/Icons';
+import { Ship } from 'lucide-react';
 import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface EmbarcacionesTableProps {
@@ -40,7 +41,8 @@ export function EmbarcacionesTable({
 
   return (
     <Table>
-      <TableHeader>
+      {/* En celular la lista no necesita cabecera: cada renglón se entiende solo */}
+      <TableHeader className="movil:hidden">
         <TableHead className="hidden sm:table-cell w-14">#</TableHead>
         <TableHead>{t('tabla.nombre')}</TableHead>
         <TableHead className="hidden sm:table-cell">Estado</TableHead>
@@ -66,8 +68,13 @@ export function EmbarcacionesTable({
                 <span className="text-[15px] font-mono text-simar-texto-2">#{buque.id}</span>
               </TableCell>
               <TableCell>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-lg font-bold text-simar-texto">{buque.nombre_buque}</span>
+                <div className="flex items-center gap-3">
+                {/* En celular: un barco en un círculo, para recorrer la lista de un vistazo */}
+                <span aria-hidden="true" className="hidden movil:flex w-10 h-10 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta items-center justify-center">
+                  <Ship className="w-5 h-5" strokeWidth={2} />
+                </span>
+                <div className="flex flex-wrap items-center gap-2 movil:min-w-0 movil:gap-x-2 movil:gap-y-1">
+                  <span className="text-lg font-bold text-simar-texto movil:text-[15px] movil:leading-snug">{buque.nombre_buque}</span>
                   {buque.registro_completo === false && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[15px] font-bold bg-simar-coral-suave text-simar-coral rounded-full" title="Registro incompleto">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,6 +89,7 @@ export function EmbarcacionesTable({
                       {buque.estado}
                     </span>
                   </span>
+                </div>
                 </div>
               </TableCell>
               <TableCell className="hidden sm:table-cell">

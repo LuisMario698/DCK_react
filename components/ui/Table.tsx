@@ -17,11 +17,12 @@ export function Table({ children, className }: TableProps) {
 
 interface TableHeaderProps {
   children: React.ReactNode;
+  className?: string;
 }
 
-export function TableHeader({ children }: TableHeaderProps) {
+export function TableHeader({ children, className }: TableHeaderProps) {
   return (
-    <thead>
+    <thead className={className}>
       <tr className="bg-simar-papel border-b border-simar-borde">
         {children}
       </tr>

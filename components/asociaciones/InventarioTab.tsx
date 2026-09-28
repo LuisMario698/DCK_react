@@ -21,6 +21,7 @@ import {
 import { getSolicitudes } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
 import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from './ui';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 
 interface Borrador {
     tipo: TipoResiduo | '';
@@ -152,6 +153,13 @@ export function InventarioTab() {
 
     if (cargando) return <Cargando texto="Cargando inventario…" />;
 
+    // Nueva fila de inventario (botón del encabezado y, en celular, la burbuja flotante)
+    const agregarResiduo = () => {
+        setCreando(true);
+        setEditando(null);
+        setDraft({ ...BORRADOR_VACIO, tipo: tiposLibres[0] ?? '' });
+    };
+
     return (
         <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
@@ -188,14 +196,10 @@ export function InventarioTab() {
                         </p>
                     </div>
                     <button
-                        onClick={() => {
-                            setCreando(true);
-                            setEditando(null);
-                            setDraft({ ...BORRADOR_VACIO, tipo: tiposLibres[0] ?? '' });
-                        }}
+                        onClick={agregarResiduo}
                         disabled={tiposLibres.length === 0 || creando}
                         title={tiposLibres.length === 0 ? 'Todos los tipos de residuo ya están en el inventario' : ''}
-                        className="group inline-flex items-center gap-2 px-5 py-2.5 bg-simar-marea hover:bg-simar-marea-hover text-white text-base font-bold rounded-xl shadow-simar transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px]"
+                        className="group inline-flex items-center gap-2 px-5 py-2.5 bg-simar-marea hover:bg-simar-marea-hover text-white text-base font-bold rounded-xl shadow-simar transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed min-h-[52px] movil:hidden"
                     >
                         <Plus className="w-4 h-4 transition-transform duration-300 group-hover:rotate-90" />
                         <span>Agregar residuo</span>
@@ -320,6 +324,15 @@ export function InventarioTab() {
                     </table>
                 </div>
             </div>
+
+            {/* Celular: "Agregar residuo" flota encima de la barra de navegación */}
+            <BotonFlotante
+                icono={Plus}
+                etiqueta="Agregar residuo"
+                onClick={agregarResiduo}
+                disabled={tiposLibres.length === 0 || creando}
+                title={tiposLibres.length === 0 ? 'Todos los tipos de residuo ya están en el inventario' : undefined}
+            />
         </div>
     );
 }

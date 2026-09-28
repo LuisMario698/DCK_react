@@ -38,6 +38,7 @@ import {
     inputCls,
     mensajeError,
 } from './ui';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 
 type Estado = AsociacionRecolectora['estado'];
 
@@ -118,16 +119,17 @@ export function EmpresasTab({
         <div className="space-y-6">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar p-5 sm:p-6 transition-shadow">
-                <div className="flex items-center justify-between gap-3 flex-wrap mb-5">
-                    <div>
+            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar p-5 sm:p-6 transition-shadow movil:p-3">
+                <div className="flex items-center justify-between gap-3 flex-wrap mb-5 movil:mb-3">
+                    {/* En celular el título ya está arriba de la pantalla: sólo buscador y filtro */}
+                    <div className="movil:hidden">
                         <h3 className="text-lg font-bold text-simar-texto">Asociaciones recolectoras</h3>
                         <p className="text-base text-simar-texto-2 mt-0.5">
                             Registra empresas, vincula a sus usuarios y controla su estado.
                         </p>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-                        <div className="relative flex-1 sm:w-72">
+                        <div className="relative flex-1 sm:w-72 movil:basis-full">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 type="text"
@@ -140,32 +142,33 @@ export function EmpresasTab({
                         <select
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value as Estado | 'todos')}
-                            className="px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
+                            aria-label="Filtrar por estado"
+                            className="movil:flex-1 px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                         >
                             <option value="todos">Todos los estados</option>
                             <option value="Activo">Activas</option>
                             <option value="Inactivo">Inactivas</option>
                             <option value="Suspendido">Suspendidas</option>
                         </select>
-                        <BotonPrimario onClick={() => setFormulario('nueva')}>
+                        <BotonPrimario onClick={() => setFormulario('nueva')} className="movil:hidden">
                             <Plus className="w-4 h-4" /> Nueva
                         </BotonPrimario>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 movil:gap-2.5">
                     {filtradas.map((emp, idx) => {
                         const m = metricas.get(emp.id);
                         return (
                             <div
                                 key={emp.id}
-                                className="group relative border border-simar-borde rounded-2xl p-5 hover:border-simar-marea-tinta/30 transition-all duration-300 bg-simar-superficie overflow-hidden"
+                                className="group relative border border-simar-borde rounded-2xl p-5 hover:border-simar-marea-tinta/30 transition-all duration-300 bg-simar-superficie overflow-hidden movil:p-3.5"
                                 style={{ animationDelay: `${Math.min(idx * 60, 400)}ms` }}
                             >
                                 <div className="absolute inset-x-0 top-0 h-1 bg-simar-marea opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                                <div className="flex items-start gap-3 mb-4">
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-simar-marea flex items-center justify-center text-white font-extrabold text-xl shadow-simar group-hover:rotate-3 transition-transform duration-300">
+                                <div className="flex items-start gap-3 mb-4 movil:mb-2.5">
+                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-simar-marea flex items-center justify-center text-white font-extrabold text-xl shadow-simar group-hover:rotate-3 transition-transform duration-300 movil:w-11 movil:h-11 movil:text-[17px] movil:rounded-[14px]">
                                         {emp.nombre_asociacion.charAt(0)}
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -180,7 +183,7 @@ export function EmpresasTab({
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-3 text-[15px] mb-4 pb-4 border-b border-simar-borde text-simar-texto-2">
+                                <div className="flex items-center gap-3 text-[15px] mb-4 pb-4 border-b border-simar-borde text-simar-texto-2 movil:mb-2.5 movil:pb-2.5">
                                     <span className="inline-flex items-center gap-1">
                                         <Truck className="w-3.5 h-3.5 text-simar-marea-tinta" />
                                         <span className="font-semibold text-simar-texto">{m?.recolecciones ?? 0}</span> recolecciones
@@ -193,7 +196,7 @@ export function EmpresasTab({
                                     ) : null}
                                 </div>
 
-                                <div className="flex flex-wrap gap-1.5 mb-5 min-h-[28px]">
+                                <div className="flex flex-wrap gap-1.5 mb-5 min-h-[28px] movil:mb-3 movil:min-h-0">
                                     {emp.tipos_residuo.slice(0, 3).map((t) => (
                                         <ResiduoBadge key={t} tipo={t} />
                                     ))}
@@ -263,6 +266,9 @@ export function EmpresasTab({
                     }}
                 />
             )}
+
+            {/* Celular: "Nueva asociación" flota encima de la barra de navegación */}
+            <BotonFlotante icono={Plus} etiqueta="Nueva asociación" onClick={() => setFormulario('nueva')} />
 
             {formulario && (
                 <FormularioModal

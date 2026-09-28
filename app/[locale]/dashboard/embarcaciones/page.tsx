@@ -7,6 +7,7 @@ import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
 import { Ban, CheckCircle2, Plus, Ship } from 'lucide-react';
 import { Aviso, CampoBusqueda, CargandoPantalla, claseChip, EncabezadoPantalla, Tarjeta, TarjetaDato } from '@/components/ui/simar';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 import { getBuques, deleteBuque } from '@/lib/services/buques';
 import { CreateEmbarcacionModal } from '@/components/embarcaciones/CreateEmbarcacionModal';
 import { Buque } from '@/types/database';
@@ -128,6 +129,8 @@ export default function EmbarcacionesPage() {
         icono={Ship}
         titulo={t('titulo')}
         subtitulo={t('subtitulo')}
+        // En celular la acción va en la burbuja flotante (al final)
+        accionesClassName="movil:hidden"
         acciones={
           <Button size="lg" onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
             <Plus className="w-[22px] h-[22px]" strokeWidth={2.4} />
@@ -192,6 +195,9 @@ export default function EmbarcacionesPage() {
           onItemsPerPageChange={setItemsPerPage}
         />
       </div>
+
+      {/* Celular: "Nueva embarcación" flota encima de la barra de navegación, a la mano */}
+      <BotonFlotante icono={Plus} etiqueta={t('nuevaEmbarcacion')} onClick={() => setIsModalOpen(true)} />
 
       {isModalOpen && (
         <CreateEmbarcacionModal

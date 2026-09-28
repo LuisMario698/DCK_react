@@ -25,12 +25,15 @@ export function EncabezadoPantalla({
     subtitulo,
     tono = 'marea',
     acciones,
+    accionesClassName = '',
 }: {
     icono: LucideIcon;
     titulo: ReactNode;
     subtitulo?: ReactNode;
     tono?: Tono;
     acciones?: ReactNode;
+    /** Clases extra del bloque de acciones (p. ej. "movil:hidden" si en celular va en BotonFlotante) */
+    accionesClassName?: string;
 }) {
     // En celular (zona compacta): ícono de 40 px arriba a la izquierda, título de 19 px y la acción
     // a lo ancho debajo, para que el contenido empiece antes.
@@ -43,7 +46,7 @@ export function EncabezadoPantalla({
                 <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">{titulo}</h1>
                 {subtitulo && <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px] movil:leading-snug">{subtitulo}</p>}
             </div>
-            {acciones && <div className="flex flex-wrap gap-3 w-full sm:w-auto movil:gap-2">{acciones}</div>}
+            {acciones && <div className={`flex flex-wrap gap-3 w-full sm:w-auto movil:gap-2 ${accionesClassName}`}>{acciones}</div>}
         </header>
     );
 }

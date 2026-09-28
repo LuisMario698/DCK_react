@@ -63,8 +63,10 @@ export function ChatTab({
 
     if (cargando) return <Cargando texto="Cargando conversaciones…" />;
 
+    // En celular el chat mide lo que queda entre las pestañas y la barra de navegación: así el campo
+    // para escribir siempre queda a la vista, arriba de la barra
     return (
-        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-300px)] min-h-[560px] grid grid-cols-1 md:grid-cols-[320px_1fr]">
+        <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden h-[calc(100vh-300px)] min-h-[560px] grid grid-cols-1 md:grid-cols-[320px_1fr] movil:h-[calc(100dvh-292px-env(safe-area-inset-bottom))] movil:min-h-[340px]">
             {/* Lista de conversaciones */}
             <aside className={`border-r border-simar-borde flex-col bg-simar-papel min-h-0 ${actual ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-simar-borde">

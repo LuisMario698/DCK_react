@@ -47,7 +47,8 @@ export function PersonasTable({
 
   return (
     <Table>
-      <TableHeader>
+      {/* En celular la lista no necesita cabecera: cada renglón se entiende solo */}
+      <TableHeader className="movil:hidden">
         <TableHead className="hidden sm:table-cell w-14">ID</TableHead>
         <TableHead>{t('tabla.nombre')}</TableHead>
         <TableHead className="hidden md:table-cell">{t('tabla.tipo')}</TableHead>
@@ -74,8 +75,13 @@ export function PersonasTable({
                 <span className="text-[15px] font-mono text-simar-texto-2">#{persona.id}</span>
               </TableCell>
               <TableCell>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-lg font-bold text-simar-texto">{persona.nombre}</span>
+                <div className="flex items-center gap-3">
+                {/* En celular: iniciales en un círculo, para recorrer la lista de un vistazo */}
+                <span aria-hidden="true" className="hidden movil:flex w-10 h-10 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta items-center justify-center text-[14px] font-extrabold">
+                  {persona.nombre.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]).join('').toUpperCase()}
+                </span>
+                <div className="flex flex-wrap items-center gap-2 movil:min-w-0 movil:gap-x-2 movil:gap-y-0.5">
+                  <span className="text-lg font-bold text-simar-texto movil:text-[15px] movil:leading-snug">{persona.nombre}</span>
                   {persona.registro_completo === false && (
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[15px] font-bold bg-simar-coral-suave text-simar-coral rounded-full" title="Registro incompleto">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,6 +95,7 @@ export function PersonasTable({
                     {persona.tipo_persona?.nombre_tipo || 'Sin tipo'}
                     <span className="sm:hidden"> · #{persona.id}</span>
                   </span>
+                </div>
                 </div>
               </TableCell>
               <TableCell className="hidden md:table-cell">

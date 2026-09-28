@@ -1563,6 +1563,41 @@ body.simar [data-sonner-toast] [data-close-button] {
   max-height: 0;
   opacity: 0;
 }
+/* Burbuja flotante (BotonFlotante): encima de la barra inferior, a la derecha. Extendida (ícono +
+   palabra) arriba de la página; al bajar se encoge a un círculo de 56 px. */
+.simar-flotante {
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  height: 56px;
+  min-width: 56px;
+  padding: 0 20px 0 16px;
+  gap: 8px;
+  box-shadow: 0 10px 24px -10px rgba(27, 95, 201, 0.7), 0 2px 6px -2px rgba(11, 34, 54, 0.3);
+  transition: bottom 0.4s var(--simar-frena), padding 0.32s var(--simar-frena), gap 0.32s var(--simar-frena),
+    background-color 0.15s ease, transform 0.15s ease;
+}
+.simar-flotante-etiqueta {
+  max-width: 220px;
+  overflow: hidden;
+  transition: max-width 0.32s var(--simar-frena), opacity 0.2s ease;
+}
+.simar-flotante[data-encogida] {
+  padding: 0 16px;
+  gap: 0;
+}
+.simar-flotante[data-encogida] .simar-flotante-etiqueta {
+  max-width: 0;
+  opacity: 0;
+}
+html[data-barra-mini] .simar-flotante {
+  bottom: calc(76px + env(safe-area-inset-bottom));
+}
+@media (prefers-reduced-motion: reduce) {
+  .simar-flotante,
+  .simar-flotante-etiqueta {
+    transition: none;
+  }
+}
+
 /* Lo que va pegado abajo (guardar manifiesto) baja junto con la barra minimizada */
 .simar-pegada-abajo {
   transition: bottom 0.4s var(--simar-frena);

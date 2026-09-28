@@ -737,6 +737,9 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
 | Conteos en fila | Personas, Embarcaciones, Asociaciones, Inventario | `TarjetaDato apilada`: ícono y número en la primera línea, etiqueta debajo; tres por fila |
 | KPI compacto | Estadísticas | Ícono y título en una línea, número debajo; dos por fila |
 | Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
+| Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación) e Inventario (Agregar residuo) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
+| Pestañas con su número | Asociaciones | En celular las tarjetas de conteo se ocultan y cada número va en la esquina de su pestaña (pendientes y sin leer en coral; asociaciones activas en neutro); las cuatro pestañas en una fila, ícono arriba y palabra abajo |
+| Chat al alto de la pantalla | Asociaciones → Mensajes | La caja del chat mide `100dvh` menos lo de arriba y la barra: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado |
 | "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
 | Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
 
