@@ -5,12 +5,18 @@ import dynamic from 'next/dynamic';
 import { Anchor, Compass, Waves } from 'lucide-react';
 import MapaSilueta from './MapaSilueta';
 import { PUERTOS, VARIANTES_MAPA, type VarianteMapa } from './puertos';
+import { NumeroAnimado } from '@/components/ui/movimiento';
 
 // MapLibre (WebGL) se descarga sólo si se usa una variante que lo necesita
 const MapaMapLibrePuertos = dynamic(() => import('./MapaMapLibrePuertos'), {
     ssr: false,
-    loading: () => <div className="absolute inset-0 animate-pulse bg-slate-900" />,
+    loading: () => <div className="absolute inset-0 animate-pulse bg-[#0B2236]" />,
 });
+
+// Colores sobre la franja oscura (la landing fuerza los tokens claros, así que aquí van fijos):
+// espuma = puerto activo, azul claro = expansión. Ver DISEÑO_SIMAR.md → Color.
+const ACTIVO_PUNTO = 'bg-[#7FE0D6] shadow-[0_0_8px_2px_rgba(127,224,214,0.6)]';
+const EXPANSION_PUNTO = 'bg-[#8AB4F8]';
 
 const ACTIVOS = PUERTOS.filter((p) => p.activo).length;
 const FUTUROS = PUERTOS.length - ACTIVOS;
@@ -57,15 +63,15 @@ export function SeccionMapaPuertos({
         <div className="w-full">
             {mostrarSelector && (
                 <div className="mb-6 flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-slate-400 mr-1">Comparar mapas:</span>
+                    <span className="text-[15px] font-bold text-[#C7D3DD] mr-1">Comparar mapas:</span>
                     {VARIANTES_MAPA.map((v) => (
                         <a
                             key={v.id}
                             href={`?mapa=${v.id}#mapa`}
-                            className={`px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
+                            className={`min-h-[44px] inline-flex items-center px-4 rounded-full text-base font-bold border transition-colors ${
                                 v.id === variante
-                                    ? 'bg-cyan-400 text-slate-950 border-cyan-300'
-                                    : 'border-white/15 text-slate-300 hover:bg-white/10'
+                                    ? 'bg-[#7FE0D6] text-[#0B2236] border-[#7FE0D6]'
+                                    : 'border-white/20 text-[#C7D3DD] hover:bg-white/10'
                             }`}
                         >
                             {v.nombre}
@@ -78,7 +84,7 @@ export function SeccionMapaPuertos({
                 {/* Mapa */}
                 <div
                     ref={contenedor}
-                    className={`relative isolate rounded-3xl overflow-hidden border border-white/10 bg-[#030712] shadow-2xl shadow-cyan-950/40 ${
+                    className={`relative isolate rounded-[28px] overflow-hidden border border-white/10 bg-[#030712] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] ${
                         // La silueta conserva la proporción del mapa; los mapas MapLibre usan alto fijo
                         variante === 'silueta' ? 'aspect-[1000/651] lg:aspect-auto lg:h-[560px]' : 'h-[360px] sm:h-[460px] lg:h-[560px]'
                     }`}
@@ -101,12 +107,12 @@ export function SeccionMapaPuertos({
                             variante === 'silueta' ? 'bottom-3' : 'top-3'
                         }`}
                     >
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/10 text-xs text-slate-200 backdrop-blur">
-                            <span className="w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_8px_2px_rgba(34,211,238,0.7)]" />
+                        <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#06121E]/85 border border-white/10 text-[15px] text-white backdrop-blur">
+                            <span className={`w-3 h-3 rounded-full ${ACTIVO_PUNTO}`} />
                             Activo ({ACTIVOS})
                         </span>
-                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-950/80 border border-white/10 text-xs text-slate-200 backdrop-blur">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                        <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#06121E]/85 border border-white/10 text-[15px] text-white backdrop-blur">
+                            <span className={`w-3 h-3 rounded-full ${EXPANSION_PUNTO}`} />
                             Expansión ({FUTUROS})
                         </span>
                     </div>
@@ -116,44 +122,46 @@ export function SeccionMapaPuertos({
                 <div className="flex flex-col gap-5">
                     <div className="grid grid-cols-3 gap-3">
                         {[
-                            { icono: Anchor, valor: String(ACTIVOS), texto: 'Puerto activo' },
-                            { icono: Compass, valor: String(FUTUROS), texto: 'En expansión' },
-                            { icono: Waves, valor: '11,122', texto: 'km de litoral' },
+                            { icono: Anchor, valor: ACTIVOS, texto: 'Puerto activo' },
+                            { icono: Compass, valor: FUTUROS, texto: 'En expansión' },
+                            { icono: Waves, valor: 11122, texto: 'km de litoral' },
                         ].map(({ icono: Icono, valor, texto }) => (
-                            <div key={texto} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                                <Icono className="w-4 h-4 text-cyan-300 mb-2" />
-                                <p className="text-2xl font-bold text-white leading-none">{valor}</p>
-                                <p className="text-[11px] uppercase tracking-wider text-slate-400 mt-1.5">{texto}</p>
+                            <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4">
+                                <Icono className="w-6 h-6 text-[#7FE0D6] mb-2" strokeWidth={2} />
+                                <NumeroAnimado valor={valor} duracion={1200} className="block text-[28px] font-extrabold text-white leading-none" />
+                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5">{texto}</p>
                             </div>
                         ))}
                     </div>
 
+                    {/* Ficha del puerto elegido: entra de nuevo cada vez que se cambia de puerto */}
                     <div
                         key={puerto.id}
-                        className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-slate-900 to-slate-950 p-6 animate-fade-in"
+                        className="simar-aparece relative overflow-hidden rounded-[22px] border border-white/10 bg-[#12304A] p-6"
                     >
                         <div
                             aria-hidden="true"
-                            className={`absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl ${puerto.activo ? 'bg-cyan-500/20' : 'bg-blue-500/15'}`}
+                            className={`absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl ${puerto.activo ? 'bg-[rgba(127,224,214,0.16)]' : 'bg-[rgba(138,180,248,0.14)]'}`}
                         />
                         <div className="relative">
                             <div className="flex items-start justify-between gap-3">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-white">{puerto.nombre}</h3>
-                                    <p className="text-sm text-slate-400">{puerto.estado}</p>
+                                    <h3 className="text-[26px] font-extrabold leading-tight text-white">{puerto.nombre}</h3>
+                                    <p className="text-base text-[#C7D3DD]">{puerto.estado}</p>
                                 </div>
                                 <span
-                                    className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
+                                    className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[15px] font-bold border ${
                                         puerto.activo
-                                            ? 'bg-cyan-400/15 text-cyan-300 border-cyan-400/40'
-                                            : 'bg-blue-500/10 text-blue-300 border-blue-400/30'
+                                            ? 'bg-[rgba(127,224,214,0.14)] text-[#7FE0D6] border-[rgba(127,224,214,0.4)]'
+                                            : 'bg-[rgba(138,180,248,0.12)] text-[#9DBEF7] border-[rgba(138,180,248,0.35)]'
                                     }`}
                                 >
+                                    <span className={`w-2.5 h-2.5 rounded-full ${puerto.activo ? ACTIVO_PUNTO : EXPANSION_PUNTO}`} />
                                     {puerto.activo ? 'Activo' : 'Expansión'}
                                 </span>
                             </div>
-                            <p className="mt-4 text-slate-300 leading-relaxed">{puerto.descripcion}</p>
-                            <p className="mt-4 text-xs font-mono text-slate-500">{coordenadas(puerto.lat, puerto.lng)}</p>
+                            <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed">{puerto.descripcion}</p>
+                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4]">{coordenadas(puerto.lat, puerto.lng)}</p>
                         </div>
                     </div>
 
@@ -165,17 +173,14 @@ export function SeccionMapaPuertos({
                                     key={p.id}
                                     type="button"
                                     onClick={() => setSeleccionado(p.id)}
-                                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-left text-sm border transition-all ${
+                                    aria-pressed={sel}
+                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border ${
                                         sel
-                                            ? 'bg-cyan-400/10 border-cyan-400/50 text-white'
-                                            : 'border-white/10 text-slate-300 hover:bg-white/5 hover:text-white'
+                                            ? 'bg-[rgba(127,224,214,0.12)] border-[rgba(127,224,214,0.5)] text-white font-bold'
+                                            : 'border-white/10 text-[#C7D3DD] hover:bg-white/5 hover:text-white'
                                     }`}
                                 >
-                                    <span
-                                        className={`w-2 h-2 rounded-full shrink-0 ${
-                                            p.activo ? 'bg-cyan-300 shadow-[0_0_8px_2px_rgba(34,211,238,0.6)]' : 'bg-blue-500'
-                                        }`}
-                                    />
+                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${p.activo ? ACTIVO_PUNTO : EXPANSION_PUNTO}`} />
                                     <span className="truncate">{p.nombre}</span>
                                 </button>
                             );

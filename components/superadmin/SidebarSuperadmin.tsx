@@ -10,12 +10,14 @@ import {
     LogOut,
     ScrollText,
     Settings2,
-    ShieldCheck,
     Users,
     X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { EnlacesPaneles } from './EnlacesPaneles';
+import { LogoSimar } from '@/components/layout/LogoSimar';
+import { BotonTema } from '@/components/layout/ThemeToggle';
+import { LineaMarea } from '@/components/layout/LineaMarea';
 
 interface SidebarSuperadminProps {
     isOpen: boolean;
@@ -42,48 +44,37 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
     const isActive = (href: string) =>
         href === base ? pathname === base || pathname === `${base}/` : pathname.startsWith(href);
 
-    const itemCls = (active: boolean) => `
-        group flex items-center ${isCollapsed ? 'justify-center px-0' : 'px-3'} py-2.5 rounded-lg transition-all duration-200
-        ${active
-            ? 'bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 font-semibold'
-            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
-        }
-    `;
-
     return (
         <>
-            {isOpen && <div className="fixed inset-0 z-40 lg:hidden bg-black/50 backdrop-blur-sm" onClick={onClose} />}
+            {isOpen && <div className="simar-velo fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]" onClick={onClose} />}
 
+            {/* Menú de vidrio flotante, igual que en el recinto y el portal (ver DISEÑO_SIMAR.md); violeta = superadmin */}
             <aside
                 className={`
-                    fixed inset-y-0 left-0 h-full
-                    ${isCollapsed ? 'w-20' : 'w-64'}
-                    bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800
-                    z-50 transition-all duration-300 ease-in-out
-                    ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-                    shadow-lg dark:shadow-gray-950/50
-                    flex flex-col overflow-x-hidden
+                    simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
+                    w-[276px] ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-[276px]'}
+                    px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden
+                    transition-all duration-300 ease-in-out
+                    ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
                 `}
             >
-                <div className={`h-20 flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-5'} border-b border-gray-100 dark:border-gray-800`}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-white shadow-md flex-shrink-0">
-                            <ShieldCheck className="w-5 h-5" />
-                        </div>
-                        {!isCollapsed && (
-                            <div className="flex flex-col">
-                                <span className="text-base font-extrabold text-gray-900 dark:text-white leading-tight">SiMAR</span>
-                                <span className="text-[10px] uppercase tracking-wider text-violet-600 dark:text-violet-400 font-semibold">Superadmin</span>
-                            </div>
-                        )}
+                <div className={`relative flex items-center gap-3 ${isCollapsed ? 'lg:justify-center' : ''} px-2.5`}>
+                    <LogoSimar variante="simbolo" tamano={46} />
+                    <div className={`flex flex-col ${isCollapsed ? 'lg:hidden' : ''}`}>
+                        <LogoSimar variante="nombre" tamano={46} />
+                        <span className="mt-1 text-[15px] font-bold text-simar-violeta">Superadmin</span>
                     </div>
-                    <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-gray-900 dark:hover:text-white" aria-label="Cerrar menú">
-                        <X className="w-5 h-5" />
+                    <button
+                        onClick={onClose}
+                        className="lg:hidden absolute right-0 w-12 h-12 rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
+                        aria-label="Cerrar menú"
+                    >
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto py-6">
-                    <nav className="px-3 space-y-1">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
+                    <nav aria-label="Menú de superadmin" className="flex flex-col gap-1">
                         {items.map((item) => {
                             const Icon = item.icon;
                             const active = isActive(item.href);
@@ -94,50 +85,57 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                                     onClick={onClose}
                                     title={isCollapsed ? item.label : ''}
                                     aria-current={active ? 'page' : undefined}
-                                    className={itemCls(active)}
+                                    className={`flex items-center gap-3.5 min-h-[54px] rounded-2xl transition-colors ${isCollapsed ? 'lg:justify-center lg:px-0 px-4' : 'px-4'} ${active
+                                        ? 'bg-simar-superficie text-simar-texto font-bold shadow-[0_4px_14px_-8px_rgba(11,34,54,0.3)]'
+                                        : 'text-simar-texto-2 font-medium hover:bg-white/60 dark:hover:bg-white/5 hover:text-simar-texto'
+                                        }`}
                                 >
-                                    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? 'scale-110' : ''} transition-transform`} />
-                                    {!isCollapsed && <span className="ml-3 text-sm flex-1">{item.label}</span>}
+                                    <Icon className={`w-6 h-6 flex-shrink-0 ${active ? 'text-simar-violeta' : ''}`} strokeWidth={2} />
+                                    <span className={`relative text-lg leading-tight ${isCollapsed ? 'lg:hidden' : ''}`}>
+                                        {item.label}
+                                        {active && <LineaMarea />}
+                                    </span>
                                 </Link>
                             );
                         })}
                     </nav>
 
-                    <div className="px-3 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div className="mt-4 empty:hidden">
                         <EnlacesPaneles actual="superadmin" colapsado={isCollapsed} onNavegar={onClose} />
                     </div>
                 </div>
 
-                <div className="p-3 border-t border-gray-100 dark:border-gray-800 space-y-1">
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2`}>
-                        <div className="w-9 h-9 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 flex items-center justify-center font-bold text-sm border border-violet-200 dark:border-violet-800 flex-shrink-0">
+                <div className="flex flex-col gap-2.5">
+                    <div className={`flex items-center gap-3 rounded-[18px] bg-simar-superficie p-2.5 ${isCollapsed ? 'lg:justify-center' : ''}`}>
+                        <span className="w-[46px] h-[46px] flex-shrink-0 rounded-full bg-simar-violeta-suave text-simar-violeta flex items-center justify-center text-lg font-bold">
                             {(user?.user_metadata?.full_name || user?.email || 'S').charAt(0).toUpperCase()}
-                        </div>
-                        {!isCollapsed && (
-                            <div className="flex flex-col overflow-hidden">
-                                <span className="text-sm font-medium truncate text-gray-900 dark:text-white">
-                                    {user?.user_metadata?.full_name || 'Superadministrador'}
-                                </span>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</span>
-                            </div>
-                        )}
+                        </span>
+                        <span className={`min-w-0 ${isCollapsed ? 'lg:hidden' : ''}`}>
+                            <span className="block text-[17px] font-bold text-simar-texto truncate">
+                                {user?.user_metadata?.full_name || 'Superadministrador'}
+                            </span>
+                            <span className="block text-[15px] text-simar-texto-2 truncate">{user?.email}</span>
+                        </span>
                     </div>
 
+                    <div className={`flex gap-2 ${isCollapsed ? 'lg:flex-col' : ''}`}>
+                        <BotonTema colapsado={isCollapsed} />
+                        <button
+                            onClick={onToggleCollapse}
+                            aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+                            title={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
+                            className="hidden lg:flex w-[52px] min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 transition-colors flex-shrink-0 self-center"
+                        >
+                            <ChevronsLeft className={`w-[22px] h-[22px] transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`} />
+                        </button>
+                    </div>
                     <button
                         onClick={signOut}
-                        className={`flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors`}
+                        className="w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
                         title={isCollapsed ? 'Cerrar sesión' : ''}
                     >
-                        <LogOut className="w-5 h-5 flex-shrink-0" />
-                        {!isCollapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
-                    </button>
-
-                    <button
-                        onClick={onToggleCollapse}
-                        className={`hidden lg:flex items-center ${isCollapsed ? 'justify-center' : 'w-full gap-3 px-3'} py-2 rounded-lg text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors`}
-                    >
-                        <ChevronsLeft className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
-                        {!isCollapsed && <span className="text-xs font-semibold uppercase">Colapsar</span>}
+                        <LogOut className="w-[22px] h-[22px] flex-shrink-0" />
+                        <span className={isCollapsed ? 'lg:hidden' : ''}>Cerrar sesión</span>
                     </button>
                 </div>
             </aside>

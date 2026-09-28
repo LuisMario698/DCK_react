@@ -33,45 +33,45 @@ function AccesoPendiente() {
     };
 
     return (
-        <main className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-950">
-            <div className="w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl p-8 text-center">
+        <main className="min-h-screen flex items-center justify-center p-4 bg-simar-papel">
+            <div className="simar-aparece w-full max-w-md bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar p-8 text-center">
                 {suspendida ? (
                     <>
-                        <div className="mx-auto w-16 h-16 rounded-2xl bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center mb-5">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-simar-coral-suave text-simar-coral flex items-center justify-center mb-5">
                             <Ban className="w-8 h-8" />
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está suspendida</h1>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
+                        <h1 className="text-[22px] font-extrabold leading-tight text-simar-texto">Tu cuenta está suspendida</h1>
+                        <p className="text-base text-simar-texto-2 mt-3 leading-relaxed">
                             {user?.email ? (
                                 <>
-                                    La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> no tiene
+                                    La cuenta <strong className="text-simar-texto">{user.email}</strong> no tiene
                                     acceso a SiMAR por el momento.
                                 </>
                             ) : (
                                 'Esta cuenta no tiene acceso a SiMAR por el momento.'
                             )}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                        <p className="text-base text-simar-texto-2 mt-2 leading-relaxed">
                             Si crees que es un error, comunícate con el centro de acopio de Puerto Peñasco.
                         </p>
                     </>
                 ) : (
                     <>
-                        <div className="mx-auto w-16 h-16 rounded-2xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-5">
+                        <div className="mx-auto w-16 h-16 rounded-2xl bg-simar-coral-suave text-simar-coral flex items-center justify-center mb-5">
                             <Clock className="w-8 h-8" />
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Tu cuenta está pendiente de aprobación</h1>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-relaxed">
+                        <h1 className="text-[22px] font-extrabold leading-tight text-simar-texto">Tu cuenta está pendiente de aprobación</h1>
+                        <p className="text-base text-simar-texto-2 mt-3 leading-relaxed">
                             {user?.email ? (
                                 <>
-                                    La cuenta <strong className="text-gray-900 dark:text-white">{user.email}</strong> todavía no
+                                    La cuenta <strong className="text-simar-texto">{user.email}</strong> todavía no
                                     está vinculada a una asociación recolectora ni tiene permisos de administrador.
                                 </>
                             ) : (
                                 'Tu cuenta todavía no tiene permisos asignados.'
                             )}
                         </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 leading-relaxed">
+                        <p className="text-base text-simar-texto-2 mt-2 leading-relaxed">
                             Pide al centro de acopio de Puerto Peñasco que vincule tu correo desde el módulo de
                             Asociaciones. En cuanto lo haga podrás entrar.
                         </p>
@@ -82,14 +82,14 @@ function AccesoPendiente() {
                     <button
                         onClick={reintentar}
                         disabled={reintentando}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-60 transition-colors min-h-[52px]"
                     >
                         <RefreshCw className={`w-4 h-4 ${reintentando ? 'animate-spin' : ''}`} />
                         Volver a intentar
                     </button>
                     <button
                         onClick={signOut}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-bold text-simar-texto border border-simar-borde hover:bg-simar-papel transition-colors min-h-[52px]"
                     >
                         <LogOut className="w-4 h-4" />
                         Cerrar sesión

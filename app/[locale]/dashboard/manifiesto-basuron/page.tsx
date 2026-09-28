@@ -111,7 +111,7 @@ export default function ManifiestoBasuronPage() {
 
   return (
     // <DashboardLayout>
-    <div className="space-y-6">
+    <div className="max-w-[1600px] space-y-6">
       {/* Wizard inline siempre visible */}
       <CreateManifiestoBasuronModal
         inline
@@ -125,39 +125,40 @@ export default function ManifiestoBasuronPage() {
       <div className="flex justify-center">
         <button
           onClick={() => document.getElementById('lista-registros')?.scrollIntoView({ behavior: 'smooth' })}
-          className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
+          className="min-h-[56px] px-6 rounded-[18px] border-2 border-simar-texto bg-simar-superficie/60 text-simar-texto text-lg font-bold flex items-center gap-2.5 hover:bg-simar-superficie transition-colors"
         >
           <span>Ver registros</span>
-          <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
+          <svg className="w-[22px] h-[22px]" stroke="currentColor" fill="none" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
       </div>
 
-      <div id="lista-registros" className="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 space-y-6">
+      <div id="lista-registros" className="bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Recibos del Relleno Sanitario</h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los recibos de pesaje registrados</p>
+            <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto">Recibos del relleno sanitario</h2>
+            <p className="text-simar-texto-2 mt-1 text-base sm:text-lg">Lista de todos los recibos de pesaje registrados</p>
           </div>
         </div>
 
         {/* Controles de búsqueda */}
-        <div className="flex bg-gray-50 dark:bg-gray-700/30 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+        <div>
           {/* Barra de búsqueda con selector */}
-          <div className="flex w-full gap-2">
+          <div className="flex flex-col sm:flex-row w-full gap-3">
             <select
               value={searchCriteria}
               onChange={(e) => setSearchCriteria(e.target.value as any)}
-              className="px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              aria-label="Buscar por"
+              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors"
             >
               <option value="ticket">Ticket / Buque</option>
               <option value="fecha">Fecha</option>
               <option value="total">Total</option>
             </select>
             <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg className="h-[22px] w-[22px] text-simar-texto-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -170,7 +171,7 @@ export default function ManifiestoBasuronPage() {
                     searchCriteria === 'fecha' ? 'Buscar por fecha...' :
                       'Buscar por peso total...'
                 }
-                className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                className="block w-full pl-12 pr-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
               />
             </div>
           </div>
@@ -178,101 +179,111 @@ export default function ManifiestoBasuronPage() {
 
         {loading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-simar-marea-tinta border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-              <div className="inline-block min-w-full align-middle">
-                <div className="overflow-hidden border border-gray-200 dark:border-gray-700 sm:rounded-xl">
-                  <table className="w-full">
-                    <thead className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-600">
+            {/* En celular cada recibo es una tarjeta (la tabla se vuelve bloques); desde 640 px, tabla */}
+            <div className="sm:overflow-x-auto sm:-mx-4 md:mx-0">
+              <div className="sm:inline-block min-w-full align-middle">
+                <div className="overflow-hidden border border-simar-borde rounded-2xl">
+                  <table className="w-full block sm:table">
+                    <thead className="hidden sm:table-header-group bg-simar-papel border-b border-simar-borde">
                       <tr>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[25%]"># Ticket</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Fecha</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[15%]">Hora</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Total</th>
-                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-[20%]">Acciones</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left text-[15px] font-bold text-simar-texto-2 w-[25%]"># Ticket</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[20%]">Fecha</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[15%]">Hora</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[20%]">Total</th>
+                        <th className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center text-[15px] font-bold text-simar-texto-2 w-[20%]">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="block sm:table-row-group">
                       {paginatedManifiestos.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700 text-center py-8 text-gray-500">
+                          <td colSpan={5} className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center py-8 text-simar-texto-2">
                             <div className="flex flex-col items-center gap-3">
-                              <svg className="w-16 h-16 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-16 h-16 text-simar-texto-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                               </svg>
-                              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">No se encontraron recibos</p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Intenta ajustar los filtros de búsqueda</p>
+                              <p className="text-lg font-semibold text-simar-texto">No se encontraron recibos</p>
+                              <p className="text-base text-simar-texto-2">Intenta ajustar los filtros de búsqueda</p>
                             </div>
                           </td>
                         </tr>
                       ) : (
                         paginatedManifiestos.map((m) => (
-                          <tr key={m.id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
+                          <tr key={m.id} className="block sm:table-row border-b border-simar-borde-suave last:border-b-0 sm:last:border-b bg-simar-superficie hover:bg-simar-papel/60 transition-colors">
+                            <td className="block sm:table-cell px-4 pt-4 pb-0 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
                               <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-blue-600 whitespace-nowrap">#{m.numero_ticket || m.id}</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">#{m.numero_ticket || m.id}</span>
                                   {m.estado && (
-                                    <span className={`inline-flex px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-sm ${m.estado === 'Completado' ? 'bg-green-100 text-green-700' :
-                                      m.estado === 'En Proceso' ? 'bg-yellow-100 text-yellow-700' :
-                                        m.estado === 'Cancelado' ? 'bg-red-100 text-red-700' :
-                                          'bg-gray-100 text-gray-600'
+                                    <span className={`inline-flex whitespace-nowrap px-2.5 py-0.5 text-[15px] font-bold rounded-full ${m.estado === 'Completado' ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' :
+                                      m.estado === 'En Proceso' ? 'bg-simar-coral-suave text-simar-coral' :
+                                        m.estado === 'Cancelado' ? 'bg-simar-coral-suave text-simar-coral' :
+                                          'bg-simar-papel text-simar-texto-2'
                                       }`}>
                                       {m.estado}
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate max-w-[180px]">
+                                <span className="text-base font-bold text-simar-texto truncate max-w-[200px]">
                                   {m.buque?.nombre_buque || 'Sin buque'}
+                                </span>
+                                {/* En celular: fecha, hora y total debajo del ticket */}
+                                <span className="sm:hidden text-base text-simar-texto-2">
+                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {m.hora_entrada ? ` · ${m.hora_entrada}` : ''}
+                                  {' · '}
+                                  <strong className="text-simar-texto">{Number(m.total_depositado || 0).toFixed(2)} kg</strong>
                                 </span>
                               </div>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-white text-center whitespace-nowrap font-medium">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center whitespace-nowrap font-medium">
                               {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-300 text-center font-mono">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto-2 text-center font-mono">
                               {m.hora_entrada}
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-center">
-                              <span className="font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full whitespace-nowrap">
+                            <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-center">
+                              <span className="font-bold text-simar-texto bg-simar-papel px-3 py-1 rounded-full whitespace-nowrap">
                                 {Number(m.total_depositado || 0).toFixed(2)} kg
                               </span>
                             </td>
-                            <td className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-sm text-gray-700">
-                              <div className="flex justify-center gap-2">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto">
+                              <div className="flex justify-start sm:justify-center gap-2">
                                 <button
                                   onClick={() => setSelectedManifiesto(m)}
-                                  className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1 sm:gap-1.5 font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap bg-white dark:bg-gray-800"
-                                  title="Ver Detalles"
+                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
+                                  title="Ver detalles"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                   </svg>
-                                  <span className="hidden sm:inline">Ver</span>
+                                  <span>Ver</span>
                                 </button>
                                 <button
                                   onClick={() => m.pdf_manifiesto_url && handleDownload(m.pdf_manifiesto_url, `recibo_basuron_${m.numero_ticket || m.id}`)}
                                   disabled={!m.pdf_manifiesto_url}
-                                  className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-lg transition-colors flex-shrink-0 shadow-sm ${m.pdf_manifiesto_url
-                                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                  aria-label="Descargar imagen"
+                                  className={`w-11 h-11 flex items-center justify-center rounded-xl transition-colors flex-shrink-0 ${m.pdf_manifiesto_url
+                                    ? 'bg-simar-marea text-white hover:bg-simar-marea-hover'
+                                    : 'bg-simar-papel text-simar-texto-2 cursor-not-allowed'
                                     }`}
-                                  title="Descargar Imagen"
+                                  title="Descargar imagen"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                   </svg>
                                 </button>
                                 <button
                                   onClick={() => handleDelete(m.id)}
-                                  className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex-shrink-0 shadow-sm"
+                                  className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-[#A63F0E] hover:text-white transition-colors flex-shrink-0"
                                   title="Eliminar"
+                                  aria-label="Eliminar"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
                                 </button>

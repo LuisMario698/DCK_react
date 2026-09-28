@@ -37,7 +37,9 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
 - **Rutas:** todo cuelga de `app/[locale]/` y lleva prefijo `/es` o `/en` (`localePrefix:
   'always'`). El layout real (providers, `<html>`) es `app/[locale]/layout.tsx`, no
   `app/layout.tsx`.
-- **Tema oscuro por defecto**; Tailwind v4 con modo oscuro por clase `.dark` (config en
+- **Diseño: sigue [`DISEÑO_SIMAR.md`](./DISEÑO_SIMAR.md)** (usuarios mayores: letra ≥ 17 px,
+  botones ≥ 52 px, colores sólo con tokens `simar-*`, vidrio sólo en lo que flota, sin emojis).
+  **Tema claro por defecto**; Tailwind v4 con modo oscuro por clase `.dark` (config y tokens en
   `app/globals.css`, no hay `tailwind.config`).
 - **i18n parcial:** sólo `Sidebar`, `personas`, `embarcaciones` y `manifiesto` usan
   `useTranslations`. El resto está en español hardcodeado. Si tocas esas 4, mantén

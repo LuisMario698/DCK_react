@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import DatePicker, { registerLocale } from 'react-datepicker';
+import { CalendarDays, Check, Download, FileText, List, PenLine, Search, Upload } from 'lucide-react';
 import { es } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
@@ -12,6 +13,7 @@ import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from 
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 
 // Registrar locale español
 registerLocale('es', es);
@@ -894,172 +896,150 @@ export default function ManifiestosPage() {
   const selectedBuque = buques.find(b => b.id === parseInt(formData.buque_id));
   const selectedResponsablePrincipal = personas.find(p => p.id === parseInt(formData.responsable_principal_id));
   const selectedResponsableSecundario = personas.find(p => p.id === parseInt(formData.responsable_secundario_id));
+  // Sólo para el texto de la barra de guardar
+  const firmasListas = [oficialSignature, motoristaSignature, cocineroSignature, liquidosSignature].filter(Boolean).length;
 
   return (
-    <div className="space-y-4">
-      {/* Formulario estilo documento físico - Dos columnas */}
-      <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden max-w-6xl mx-auto shadow-lg">
+    <div className="max-w-[1600px] space-y-6">
+      {/* Formulario de manifiesto — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
+      <div className="space-y-6">
         {/* Encabezado del documento */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-slate-700 dark:to-slate-800 px-6 py-4 border-b border-gray-200 dark:border-slate-700">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white tracking-wide">MANIFIESTO DE ENTREGA-RECEPCIÓN</h2>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              {formData.numero_manifiesto && (
-                <>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Folio No.</p>
-                  <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formData.numero_manifiesto}</p>
-                </>
-              )}
-            </div>
+        <header className="simar-aparece flex flex-wrap items-center gap-5">
+          <span className="w-16 h-16 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
+            <FileText className="w-[30px] h-[30px]" strokeWidth={2} />
+          </span>
+          <div className="flex-1 min-w-[240px]">
+            <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto">Manifiesto de entrega-recepción</h1>
+            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
           </div>
-        </div>
+          {formData.numero_manifiesto && (
+            <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right">
+              <p className="text-[15px] text-simar-texto-2">Folio No.</p>
+              <p className="text-[21px] font-extrabold tracking-wide text-simar-texto">{formData.numero_manifiesto}</p>
+            </div>
+          )}
+        </header>
 
-        {/* Contenido del formulario - Layout de dos columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200 dark:divide-slate-700">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6">
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
-          <div className="p-6 space-y-4 relative">
-            {/* Marca de agua - Águila Mexicana */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 0 }}>
-              <img
-                src="https://e7.pngegg.com/pngimages/173/34/png-clipart-coat-of-arms-of-mexico-flag-of-mexico-authentic-mexican-tacos-tattoo-emblem-white.png"
-                alt=""
-                className="w-64 h-64 object-contain opacity-5 select-none"
-                draggable={false}
-              />
-            </div>
-            <div className="relative" style={{ zIndex: 1 }}>
-            <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Datos del Manifiesto</h3>
+          <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7" style={{ animationDelay: '0.06s' }}>
+            <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del manifiesto</h2>
 
-            {/* FECHA */}
-            <div
-              className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'fecha' ? 'bg-blue-100/60 dark:bg-blue-900/40 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-            >
-              <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">FECHA:</label>
-              <div className="flex-1 flex items-center gap-2">
-                <DatePicker
-                  selected={formData.fecha_emision ? new Date(formData.fecha_emision + 'T00:00:00') : null}
-                  onChange={(date: Date | null) => {
-                    if (date) {
-                      const year = date.getFullYear();
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const day = String(date.getDate()).padStart(2, '0');
-                      setFormData({ ...formData, fecha_emision: `${year}-${month}-${day}` });
-                    }
-                  }}
-                  onFocus={() => setActiveField('fecha')}
-                  onBlur={() => setActiveField(null)}
-                  dateFormat="dd/MM/yyyy"
-                  locale="es"
-                  showPopperArrow={false}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:!text-white text-base font-medium transition-all duration-200 cursor-pointer ${activeField === 'fecha' ? 'border-blue-600' : 'border-gray-400 dark:border-gray-600'
-                    }`}
-                  calendarClassName="custom-datepicker"
-                  wrapperClassName="flex-1"
-                  popperClassName="datepicker-popper"
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
-                  todayButton="Hoy"
-                />
-                <svg className="w-5 h-5 text-gray-500 flex-shrink-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-[210px_1fr] gap-4">
+              {/* FECHA */}
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
+                  <DatePicker
+                    selected={formData.fecha_emision ? new Date(formData.fecha_emision + 'T00:00:00') : null}
+                    onChange={(date: Date | null) => {
+                      if (date) {
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const day = String(date.getDate()).padStart(2, '0');
+                        setFormData({ ...formData, fecha_emision: `${year}-${month}-${day}` });
+                      }
+                    }}
+                    onFocus={() => setActiveField('fecha')}
+                    onBlur={() => setActiveField(null)}
+                    dateFormat="dd/MM/yyyy"
+                    locale="es"
+                    showPopperArrow={false}
+                    className="w-full bg-transparent focus:outline-none !text-simar-texto !font-bold text-xl cursor-pointer"
+                    calendarClassName="custom-datepicker"
+                    wrapperClassName="flex-1"
+                    popperClassName="datepicker-popper"
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                    todayButton="Hoy"
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* NOMBRE DEL BARCO */}
-            <div className={`flex items-center gap-4 py-2 px-3 -mx-3 rounded-xl transition-all duration-200 ${activeField === 'buque' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-              <label className="text-base font-bold text-black dark:text-white w-36 flex-shrink-0">BARCO:</label>
-              <div className="flex-1 relative">
-                <input
-                  ref={buqueInputRef}
-                  type="text"
-                  value={buqueNombre}
-                  placeholder="Escribe el nombre del barco..."
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setBuqueNombre(value);
-                    setShowBuqueSuggestions(value.length > 0);
-                    setSelectedBuqueIndex(-1);
-                    const buqueExacto = buques.find(b => b.nombre_buque.toLowerCase() === value.toLowerCase());
-                    if (buqueExacto) {
-                      setFormData({ ...formData, buque_id: buqueExacto.id.toString() });
-                    } else {
-                      setFormData({ ...formData, buque_id: '' });
-                    }
-                    setShowValidation(false);
-                  }}
-                  onFocus={() => { setActiveField('buque'); if (buqueNombre.length > 0) setShowBuqueSuggestions(true); }}
-                  onBlur={() => { setActiveField(null); setTimeout(() => setShowBuqueSuggestions(false), 200); }}
-                  onKeyDown={(e) => {
-                    const filteredBuques = buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase()));
-                    if (e.key === 'ArrowDown' && showBuqueSuggestions && filteredBuques.length > 0) {
-                      e.preventDefault();
-                      setSelectedBuqueIndex(prev => prev < filteredBuques.length - 1 ? prev + 1 : prev);
-                    } else if (e.key === 'ArrowUp' && showBuqueSuggestions && selectedBuqueIndex > 0) {
-                      e.preventDefault();
-                      setSelectedBuqueIndex(prev => prev - 1);
-                    } else if (e.key === 'Enter' && showBuqueSuggestions && selectedBuqueIndex >= 0) {
-                      e.preventDefault();
-                      const buque = filteredBuques[selectedBuqueIndex];
-                      setBuqueNombre(buque.nombre_buque);
-                      setFormData({ ...formData, buque_id: buque.id.toString() });
-                      setShowBuqueSuggestions(false);
-                      setSelectedBuqueIndex(-1);
-                    } else if (e.key === 'Escape') {
-                      setShowBuqueSuggestions(false);
-                    } else if (e.key === 'Enter' && !showBuqueSuggestions) {
-                      handleKeyDown(e, 1);
-                    }
-                  }}
-                  className={`w-full px-3 py-2 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium transition-all duration-200 ${showValidation && !formData.buque_id ? 'border-red-500' : activeField === 'buque' ? 'border-blue-600' : 'border-gray-400'
-                    }`}
-                />
-                {showBuqueSuggestions && (
-                  <div className="absolute z-50 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto mt-1">
-                    {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).map((buque, index) => (
-                      <div
-                        key={buque.id}
-                        onClick={() => {
+              {/* NOMBRE DEL BARCO */}
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Barco</label>
+                <div className="relative">
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                    <Search className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
+                    <input
+                      ref={buqueInputRef}
+                      type="text"
+                      value={buqueNombre}
+                      placeholder="Escribe el nombre del barco..."
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setBuqueNombre(value);
+                        setShowBuqueSuggestions(value.length > 0);
+                        setSelectedBuqueIndex(-1);
+                        const buqueExacto = buques.find(b => b.nombre_buque.toLowerCase() === value.toLowerCase());
+                        if (buqueExacto) {
+                          setFormData({ ...formData, buque_id: buqueExacto.id.toString() });
+                        } else {
+                          setFormData({ ...formData, buque_id: '' });
+                        }
+                        setShowValidation(false);
+                      }}
+                      onFocus={() => { setActiveField('buque'); if (buqueNombre.length > 0) setShowBuqueSuggestions(true); }}
+                      onBlur={() => { setActiveField(null); setTimeout(() => setShowBuqueSuggestions(false), 200); }}
+                      onKeyDown={(e) => {
+                        const filteredBuques = buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase()));
+                        if (e.key === 'ArrowDown' && showBuqueSuggestions && filteredBuques.length > 0) {
+                          e.preventDefault();
+                          setSelectedBuqueIndex(prev => prev < filteredBuques.length - 1 ? prev + 1 : prev);
+                        } else if (e.key === 'ArrowUp' && showBuqueSuggestions && selectedBuqueIndex > 0) {
+                          e.preventDefault();
+                          setSelectedBuqueIndex(prev => prev - 1);
+                        } else if (e.key === 'Enter' && showBuqueSuggestions && selectedBuqueIndex >= 0) {
+                          e.preventDefault();
+                          const buque = filteredBuques[selectedBuqueIndex];
                           setBuqueNombre(buque.nombre_buque);
                           setFormData({ ...formData, buque_id: buque.id.toString() });
                           setShowBuqueSuggestions(false);
-                        }}
-                        className={`px-3 py-2 cursor-pointer text-base ${index === selectedBuqueIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'
-                          }`}
-                      >
-                        {buque.nombre_buque}
-                        {buque.matricula && <span className="text-sm text-gray-500 ml-2">({buque.matricula})</span>}
-                      </div>
-                    ))}
-                    {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).length === 0 && (
-                      <div className="px-3 py-2 text-gray-500 text-sm">No se encontraron embarcaciones</div>
-                    )}
+                          setSelectedBuqueIndex(-1);
+                        } else if (e.key === 'Escape') {
+                          setShowBuqueSuggestions(false);
+                        } else if (e.key === 'Enter' && !showBuqueSuggestions) {
+                          handleKeyDown(e, 1);
+                        }
+                      }}
+                      className="flex-1 min-w-0 bg-transparent focus:outline-none text-xl font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium placeholder:text-lg"
+                    />
                   </div>
-                )}
-                {showValidation && !formData.buque_id && <p className="text-xs text-red-600 mt-1">* Seleccione una embarcación válida</p>}
+                  {showBuqueSuggestions && (
+                    <div className="absolute z-50 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-56 overflow-y-auto py-1">
+                      {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).map((buque, index) => (
+                        <div
+                          key={buque.id}
+                          onClick={() => {
+                            setBuqueNombre(buque.nombre_buque);
+                            setFormData({ ...formData, buque_id: buque.id.toString() });
+                            setShowBuqueSuggestions(false);
+                          }}
+                          className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedBuqueIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}
+                        >
+                          {buque.nombre_buque}
+                          {buque.matricula && <span className="text-base text-simar-texto-2 ml-2">({buque.matricula})</span>}
+                        </div>
+                      ))}
+                      {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).length === 0 && (
+                        <div className="px-4 py-3 text-base text-simar-texto-2">No se encontraron embarcaciones</div>
+                      )}
+                    </div>
+                  )}
+                  {showValidation && !formData.buque_id && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Seleccione una embarcación válida</p>}
+                </div>
               </div>
             </div>
 
-            {/* Línea divisoria */}
-            <div className="border-t border-gray-200 dark:border-slate-700 my-2"></div>
-
-            {/* RESIDUOS - Grid compacto */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* RESIDUOS */}
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* ACEITE USADO */}
-              <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'aceite' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black dark:text-white block mb-1">ACEITE USADO</label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={aceiteRef}
                     type="number"
@@ -1071,17 +1051,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 2)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'aceite' ? 'border-blue-600' : 'border-gray-300'
-                      }`}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium text-black dark:text-gray-300">Lt</span>
+                  <span className="text-[17px] font-bold text-simar-texto-2">litros</span>
                 </div>
               </div>
 
               {/* FILTROS DE ACEITE */}
-              <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosAceite' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS ACEITE</label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aceite</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosAceiteRef}
                     type="number"
@@ -1092,17 +1071,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 3)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAceite' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
+                  <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
               </div>
 
               {/* FILTROS DE DIESEL */}
-              <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosDiesel' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS DIESEL</label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de diésel</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosDieselRef}
                     type="number"
@@ -1113,17 +1091,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 4)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosDiesel' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
+                  <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
               </div>
 
               {/* FILTROS DE AIRE */}
-              <div className={`py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'filtrosAire' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black dark:text-white block mb-1">FILTROS AIRE</label>
-                <div className="flex items-center gap-1">
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aire</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={filtrosAireRef}
                     type="number"
@@ -1134,17 +1111,16 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 5)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'filtrosAire' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium text-black dark:text-gray-300">Pza</span>
+                  <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
               </div>
 
-              {/* BASURA - Ocupa 2 columnas */}
-              <div className={`col-span-2 py-2 px-3 rounded-lg transition-all duration-200 ${activeField === 'basura' ? 'bg-blue-100/60 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'}`}>
-                <label className="text-sm font-bold text-black dark:text-white block mb-1">BASURA</label>
-                <div className="flex items-center gap-1">
+              {/* BASURA */}
+              <div>
+                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Basura</label>
+                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     ref={basuraRef}
                     type="number"
@@ -1156,392 +1132,388 @@ export default function ManifiestosPage() {
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 6)}
                     placeholder="0"
-                    className={`w-full px-2 py-1.5 border-b-2 bg-transparent focus:outline-none text-black dark:text-white text-base font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${activeField === 'basura' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                      }`}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span className="text-sm font-medium text-black dark:text-gray-300">Kg</span>
+                  <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
                 </div>
               </div>
             </div>
 
-            {/* Observaciones */}
-            <div className={`mt-4 transition-all duration-200 ${activeField === 'observaciones' ? 'bg-blue-100/60 border-l-4 border-l-blue-600 rounded-lg p-3 -mx-3' : 'border-l-4 border-l-transparent'}`}>
-              <label className="block text-sm font-bold text-black dark:text-white mb-1">OBSERVACIONES (opcional)</label>
+            {/* Observaciones (crece para que la tarjeta termine a la par de Firmas) */}
+            <div className="mt-5 flex-1 flex flex-col">
+              <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
               <textarea
                 value={formData.observaciones}
                 onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                 onFocus={() => setActiveField('observaciones')}
                 onBlur={() => setActiveField(null)}
-                rows={2}
+                rows={3}
                 placeholder="Notas adicionales..."
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 outline-none resize-none text-black dark:text-white text-base dark:placeholder:text-gray-500"
+                className={`w-full flex-1 min-h-[120px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
               />
             </div>
-            </div>{/* cierre div relative zIndex:1 */}
-          </div>
+          </section>
 
           {/* COLUMNA DERECHA - Firmas */}
-          <div className="p-6 bg-gray-50 dark:bg-slate-700/30 space-y-4">
-            <h3 className="text-base font-bold text-black dark:text-white uppercase tracking-wide mb-4">Firmas</h3>
+          <div className="flex flex-col">
+            <section className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] px-6 md:px-7 pt-6 pb-2" style={{ animationDelay: '0.12s' }}>
+              <h2 className="text-[23px] font-extrabold text-simar-texto">Firmas</h2>
 
-            {/* FIRMA OFICIAL COMISIONADO */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <p className="text-base font-bold text-black dark:text-white">RECIBE: Oficial Comisionado</p>
-              <p className="text-sm text-black dark:text-gray-300 mb-3">Recolección de Basura y Residuos Aceitosos (MARPOL ANEXO V)</p>
-
-              {!oficialSignature ? (
-                <button
-                  type="button"
-                  onClick={() => openSignatureModal('oficial')}
-                  className="w-full py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 flex items-center justify-center gap-2 shadow-md"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                  Firmar
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
-                    <img src={oficialSignature} alt="Firma Oficial" className="w-full h-16 object-contain" />
-                  </div>
-                  <div className="flex items-center justify-center gap-3">
-                    <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                    <span className="text-sm text-green-600 font-medium">Firmado</span>
-                    <button type="button" onClick={() => openSignatureModal('oficial')} className="text-sm text-blue-600 hover:underline">Editar</button>
-                    <button type="button" onClick={() => setOficialSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
-                  </div>
+              {/* FIRMA OFICIAL COMISIONADO */}
+              <div className="py-4 border-b border-simar-borde-suave">
+                <p className="text-lg font-extrabold text-simar-texto">Recibe: Oficial comisionado</p>
+                <p className="text-[15px] text-simar-texto-2">Recolección de basura y residuos aceitosos (MARPOL Anexo V)</p>
+                <div className="mt-3">
+                  {!oficialSignature ? (
+                    <button
+                      type="button"
+                      onClick={() => openSignatureModal('oficial')}
+                      className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors"
+                    >
+                      <PenLine className="w-5 h-5" />
+                      Firmar
+                    </button>
+                  ) : (
+                    <div>
+                      <div className="rounded-[14px] border-2 border-simar-arrecife/40 bg-white p-2">
+                        <img src={oficialSignature} alt="Firma Oficial" className="w-full h-16 object-contain" />
+                      </div>
+                      <div className="mt-1 flex items-center justify-between gap-3">
+                        <span className="simar-confirma flex items-center gap-1.5 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={20} circulo={false} />Firmado</span>
+                        <span className="flex gap-4">
+                          <button type="button" onClick={() => openSignatureModal('oficial')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
+                          <button type="button" onClick={() => setOficialSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            {/* FIRMA MOTORISTA */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <p className="text-base font-bold text-black dark:text-white mb-1">MOTORISTA</p>
-              <p className="text-sm text-black dark:text-gray-300 mb-2">Responsable de entrega de líquidos</p>
-              <input
-                ref={motoristaRef}
-                type="text"
-                value={motoristaNombre}
-                placeholder="Nombre"
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setMotoristaNombre(value);
-                  setShowMotoristaSuggestions(value.length > 0);
-                  setSelectedSuggestionIndex(-1);
-                  const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                  if (personaExacta) {
-                    setFormData({ ...formData, responsable_principal_id: personaExacta.id.toString() });
-                  } else {
-                    setFormData({ ...formData, responsable_principal_id: '' });
-                  }
-                  setShowValidation(false);
-                }}
-                onFocus={() => { setActiveField('motorista'); if (motoristaNombre.length > 0) setShowMotoristaSuggestions(true); }}
-                onBlur={() => { setActiveField(null); setTimeout(() => setShowMotoristaSuggestions(false), 200); }}
-                onKeyDown={(e) => {
-                  const filteredPersonas = personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase()));
-                  if (e.key === 'ArrowDown' && showMotoristaSuggestions && filteredPersonas.length > 0) {
-                    e.preventDefault();
-                    setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
-                  } else if (e.key === 'ArrowUp' && showMotoristaSuggestions && selectedSuggestionIndex > 0) {
-                    e.preventDefault();
-                    setSelectedSuggestionIndex(prev => prev - 1);
-                  } else if (e.key === 'Enter' && showMotoristaSuggestions && selectedSuggestionIndex >= 0) {
-                    e.preventDefault();
-                    const persona = filteredPersonas[selectedSuggestionIndex];
-                    setMotoristaNombre(persona.nombre);
-                    setFormData({ ...formData, responsable_principal_id: persona.id.toString() });
-                    setShowMotoristaSuggestions(false);
-                    setSelectedSuggestionIndex(-1);
-                  } else if (e.key === 'Escape') {
-                    setShowMotoristaSuggestions(false);
-                  }
-                }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 ${showValidation && !formData.responsable_principal_id ? 'border-red-500' : activeField === 'motorista' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-              />
-              {showMotoristaSuggestions && (
-                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
-                  {personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase())).map((persona, index) => (
-                    <div key={persona.id} onClick={() => { setMotoristaNombre(persona.nombre); setFormData({ ...formData, responsable_principal_id: persona.id.toString() }); setShowMotoristaSuggestions(false); }}
-                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'}`}>
-                      {persona.nombre}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {showValidation && !formData.responsable_principal_id && <p className="text-xs text-red-600 mt-1">* Requerido</p>}
-
-              <div className="mt-3">
-                {!motoristaSignature ? (
-                  <button type="button" onClick={() => openSignatureModal('motorista')}
-                    className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    Firmar
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
-                      <img src={motoristaSignature} alt="Firma Motorista" className="w-full h-12 object-contain" />
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-sm text-green-600 font-medium">Firmado</span>
-                      <button type="button" onClick={() => openSignatureModal('motorista')} className="text-sm text-blue-600 hover:underline">Editar</button>
-                      <button type="button" onClick={() => setMotoristaSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
 
-            {/* FIRMA COCINERO */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <p className="text-base font-bold text-black dark:text-white mb-1">COCINERO <span className="font-normal text-gray-600 dark:text-gray-400">(Opcional)</span></p>
-              <input
-                ref={cocineroRef}
-                type="text"
-                value={cocineroNombre}
-                placeholder="Nombre"
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setCocineroNombre(value);
-                  setShowCocineroSuggestions(value.length > 0);
-                  setSelectedSuggestionIndex(-1);
-                  const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                  if (personaExacta) {
-                    setFormData({ ...formData, responsable_secundario_id: personaExacta.id.toString() });
-                  } else {
-                    setFormData({ ...formData, responsable_secundario_id: '' });
-                  }
-                }}
-                onFocus={() => { setActiveField('cocinero'); if (cocineroNombre.length > 0) setShowCocineroSuggestions(true); }}
-                onBlur={() => { setActiveField(null); setTimeout(() => setShowCocineroSuggestions(false), 200); }}
-                onKeyDown={(e) => {
-                  const filteredPersonas = personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase()));
-                  if (e.key === 'ArrowDown' && showCocineroSuggestions && filteredPersonas.length > 0) {
-                    e.preventDefault();
-                    setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
-                  } else if (e.key === 'ArrowUp' && showCocineroSuggestions && selectedSuggestionIndex > 0) {
-                    e.preventDefault();
-                    setSelectedSuggestionIndex(prev => prev - 1);
-                  } else if (e.key === 'Enter' && showCocineroSuggestions && selectedSuggestionIndex >= 0) {
-                    e.preventDefault();
-                    const persona = filteredPersonas[selectedSuggestionIndex];
-                    setCocineroNombre(persona.nombre);
-                    setFormData({ ...formData, responsable_secundario_id: persona.id.toString() });
-                    setShowCocineroSuggestions(false);
-                    setSelectedSuggestionIndex(-1);
-                  } else if (e.key === 'Escape') {
-                    setShowCocineroSuggestions(false);
-                  }
-                }}
-                className={`w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 ${activeField === 'cocinero' ? 'border-blue-600' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-              />
-              {showCocineroSuggestions && (
-                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
-                  {personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase())).map((persona, index) => (
-                    <div key={persona.id} onClick={() => { setCocineroNombre(persona.nombre); setFormData({ ...formData, responsable_secundario_id: persona.id.toString() }); setShowCocineroSuggestions(false); }}
-                      className={`px-3 py-2 cursor-pointer text-base ${index === selectedSuggestionIndex ? 'bg-blue-100 text-blue-800' : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white'}`}>
-                      {persona.nombre}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-3">
-                {!cocineroSignature ? (
-                  <button type="button" onClick={() => openSignatureModal('cocinero')}
-                    className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    Firmar
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
-                      <img src={cocineroSignature} alt="Firma Cocinero" className="w-full h-12 object-contain" />
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-sm text-green-600 font-medium">Firmado</span>
-                      <button type="button" onClick={() => openSignatureModal('cocinero')} className="text-sm text-blue-600 hover:underline">Editar</button>
-                      <button type="button" onClick={() => setCocineroSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
-                    </div>
+              {/* FIRMA MOTORISTA */}
+              <div className="py-4 border-b border-simar-borde-suave">
+                <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Motorista</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
+                <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos</p>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                  <div className="relative">
+                    <input
+                      ref={motoristaRef}
+                      type="text"
+                      value={motoristaNombre}
+                      placeholder="Nombre"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setMotoristaNombre(value);
+                        setShowMotoristaSuggestions(value.length > 0);
+                        setSelectedSuggestionIndex(-1);
+                        const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                        if (personaExacta) {
+                          setFormData({ ...formData, responsable_principal_id: personaExacta.id.toString() });
+                        } else {
+                          setFormData({ ...formData, responsable_principal_id: '' });
+                        }
+                        setShowValidation(false);
+                      }}
+                      onFocus={() => { setActiveField('motorista'); if (motoristaNombre.length > 0) setShowMotoristaSuggestions(true); }}
+                      onBlur={() => { setActiveField(null); setTimeout(() => setShowMotoristaSuggestions(false), 200); }}
+                      onKeyDown={(e) => {
+                        const filteredPersonas = personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase()));
+                        if (e.key === 'ArrowDown' && showMotoristaSuggestions && filteredPersonas.length > 0) {
+                          e.preventDefault();
+                          setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
+                        } else if (e.key === 'ArrowUp' && showMotoristaSuggestions && selectedSuggestionIndex > 0) {
+                          e.preventDefault();
+                          setSelectedSuggestionIndex(prev => prev - 1);
+                        } else if (e.key === 'Enter' && showMotoristaSuggestions && selectedSuggestionIndex >= 0) {
+                          e.preventDefault();
+                          const persona = filteredPersonas[selectedSuggestionIndex];
+                          setMotoristaNombre(persona.nombre);
+                          setFormData({ ...formData, responsable_principal_id: persona.id.toString() });
+                          setShowMotoristaSuggestions(false);
+                          setSelectedSuggestionIndex(-1);
+                        } else if (e.key === 'Escape') {
+                          setShowMotoristaSuggestions(false);
+                        }
+                      }}
+                      className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${showValidation && !formData.responsable_principal_id ? 'border-simar-coral' : activeField === 'motorista' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                    />
+                    {showMotoristaSuggestions && (
+                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
+                        {personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase())).map((persona, index) => (
+                          <div key={persona.id} onClick={() => { setMotoristaNombre(persona.nombre); setFormData({ ...formData, responsable_principal_id: persona.id.toString() }); setShowMotoristaSuggestions(false); }}
+                            className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedSuggestionIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}>
+                            {persona.nombre}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {showValidation && !formData.responsable_principal_id && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
                   </div>
-                )}
-              </div>
-            </div>
 
-            {/* FIRMA RESPONSABLE DE LÍQUIDOS */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
-              <p className="text-base font-bold text-black dark:text-white mb-1">RESP. DE LÍQUIDOS <span className="font-normal text-gray-600 dark:text-gray-400">(Opcional)</span></p>
-              <p className="text-sm text-black dark:text-gray-300 mb-2">Responsable de entrega de líquidos (Aceite Usado)</p>
-              <input
-                type="text"
-                value={liquidosNombre}
-                placeholder="Nombre"
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setLiquidosNombre(value);
-                  setShowLiquidosSuggestions(value.length > 0);
-                  const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                  if (personaExacta) {
-                    setFormData({ ...formData, responsable_liquidos_id: personaExacta.id.toString() });
-                  } else {
-                    setFormData({ ...formData, responsable_liquidos_id: '' });
-                  }
-                }}
-                onFocus={() => { if (liquidosNombre.length > 0) setShowLiquidosSuggestions(true); }}
-                onBlur={() => { setTimeout(() => setShowLiquidosSuggestions(false), 200); }}
-                className="w-full px-3 py-2.5 border-b-2 bg-gray-50 dark:bg-gray-700 rounded-t-lg focus:outline-none text-base font-semibold text-black dark:text-white placeholder:text-black dark:placeholder:text-gray-400 border-gray-300 dark:border-gray-600 focus:border-blue-600"
-              />
-              {showLiquidosSuggestions && (
-                <div className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-b-lg shadow-lg max-h-32 overflow-y-auto">
-                  {personas.filter(p => p.nombre.toLowerCase().includes(liquidosNombre.toLowerCase())).map((persona) => (
-                    <div key={persona.id} onClick={() => { setLiquidosNombre(persona.nombre); setFormData({ ...formData, responsable_liquidos_id: persona.id.toString() }); setShowLiquidosSuggestions(false); }}
-                      className="px-3 py-2 cursor-pointer text-base hover:bg-gray-100 dark:hover:bg-gray-600 text-black dark:text-white">
-                      {persona.nombre}
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="mt-3">
-                {!liquidosSignature ? (
-                  <button type="button" onClick={() => openSignatureModal('liquidos')}
-                    className="w-full py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center justify-center gap-2 shadow-md">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                    Firmar
-                  </button>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="border-2 border-green-200 rounded-lg p-2 bg-green-50">
-                      <img src={liquidosSignature} alt="Firma Líquidos" className="w-full h-12 object-contain" />
-                    </div>
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-sm text-green-600 font-medium">Firmado</span>
-                      <button type="button" onClick={() => openSignatureModal('liquidos')} className="text-sm text-blue-600 hover:underline">Editar</button>
-                      <button type="button" onClick={() => setLiquidosSignature(null)} className="text-sm text-red-600 hover:underline">Eliminar</button>
-                    </div>
+                  <div>
+                    {!motoristaSignature ? (
+                      <button type="button" onClick={() => openSignatureModal('motorista')}
+                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        <PenLine className="w-5 h-5" />
+                        Firmar
+                      </button>
+                    ) : (
+                      <div>
+                        <div className="rounded-[14px] border-2 border-simar-arrecife/40 bg-white p-1.5">
+                          <img src={motoristaSignature} alt="Firma Motorista" className="w-full h-12 object-contain" />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
+                          <span className="flex gap-3">
+                            <button type="button" onClick={() => openSignatureModal('motorista')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
+                            <button type="button" onClick={() => setMotoristaSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
 
+              {/* FIRMA COCINERO */}
+              <div className="py-4 border-b border-simar-borde-suave">
+                <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Cocinero</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                  <div className="relative">
+                    <input
+                      ref={cocineroRef}
+                      type="text"
+                      value={cocineroNombre}
+                      placeholder="Nombre"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setCocineroNombre(value);
+                        setShowCocineroSuggestions(value.length > 0);
+                        setSelectedSuggestionIndex(-1);
+                        const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                        if (personaExacta) {
+                          setFormData({ ...formData, responsable_secundario_id: personaExacta.id.toString() });
+                        } else {
+                          setFormData({ ...formData, responsable_secundario_id: '' });
+                        }
+                      }}
+                      onFocus={() => { setActiveField('cocinero'); if (cocineroNombre.length > 0) setShowCocineroSuggestions(true); }}
+                      onBlur={() => { setActiveField(null); setTimeout(() => setShowCocineroSuggestions(false), 200); }}
+                      onKeyDown={(e) => {
+                        const filteredPersonas = personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase()));
+                        if (e.key === 'ArrowDown' && showCocineroSuggestions && filteredPersonas.length > 0) {
+                          e.preventDefault();
+                          setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
+                        } else if (e.key === 'ArrowUp' && showCocineroSuggestions && selectedSuggestionIndex > 0) {
+                          e.preventDefault();
+                          setSelectedSuggestionIndex(prev => prev - 1);
+                        } else if (e.key === 'Enter' && showCocineroSuggestions && selectedSuggestionIndex >= 0) {
+                          e.preventDefault();
+                          const persona = filteredPersonas[selectedSuggestionIndex];
+                          setCocineroNombre(persona.nombre);
+                          setFormData({ ...formData, responsable_secundario_id: persona.id.toString() });
+                          setShowCocineroSuggestions(false);
+                          setSelectedSuggestionIndex(-1);
+                        } else if (e.key === 'Escape') {
+                          setShowCocineroSuggestions(false);
+                        }
+                      }}
+                      className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'cocinero' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                    />
+                    {showCocineroSuggestions && (
+                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
+                        {personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase())).map((persona, index) => (
+                          <div key={persona.id} onClick={() => { setCocineroNombre(persona.nombre); setFormData({ ...formData, responsable_secundario_id: persona.id.toString() }); setShowCocineroSuggestions(false); }}
+                            className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedSuggestionIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}>
+                            {persona.nombre}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {!cocineroSignature ? (
+                      <button type="button" onClick={() => openSignatureModal('cocinero')}
+                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        <PenLine className="w-5 h-5" />
+                        Firmar
+                      </button>
+                    ) : (
+                      <div>
+                        <div className="rounded-[14px] border-2 border-simar-arrecife/40 bg-white p-1.5">
+                          <img src={cocineroSignature} alt="Firma Cocinero" className="w-full h-12 object-contain" />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
+                          <span className="flex gap-3">
+                            <button type="button" onClick={() => openSignatureModal('cocinero')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
+                            <button type="button" onClick={() => setCocineroSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* FIRMA RESPONSABLE DE LÍQUIDOS */}
+              <div className="py-4">
+                <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Resp. de líquidos</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
+                <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos (aceite usado)</p>
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={liquidosNombre}
+                      placeholder="Nombre"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setLiquidosNombre(value);
+                        setShowLiquidosSuggestions(value.length > 0);
+                        const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                        if (personaExacta) {
+                          setFormData({ ...formData, responsable_liquidos_id: personaExacta.id.toString() });
+                        } else {
+                          setFormData({ ...formData, responsable_liquidos_id: '' });
+                        }
+                      }}
+                      onFocus={() => { if (liquidosNombre.length > 0) setShowLiquidosSuggestions(true); }}
+                      onBlur={() => { setTimeout(() => setShowLiquidosSuggestions(false), 200); }}
+                      className="w-full min-h-[60px] px-4 rounded-[14px] border-2 border-simar-campo-borde focus:border-simar-marea-tinta bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors"
+                    />
+                    {showLiquidosSuggestions && (
+                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
+                        {personas.filter(p => p.nombre.toLowerCase().includes(liquidosNombre.toLowerCase())).map((persona) => (
+                          <div key={persona.id} onClick={() => { setLiquidosNombre(persona.nombre); setFormData({ ...formData, responsable_liquidos_id: persona.id.toString() }); setShowLiquidosSuggestions(false); }}
+                            className="px-4 py-3 cursor-pointer text-lg text-simar-texto hover:bg-simar-papel">
+                            {persona.nombre}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    {!liquidosSignature ? (
+                      <button type="button" onClick={() => openSignatureModal('liquidos')}
+                        className="w-full min-h-[60px] rounded-[14px] border-2 border-dashed border-simar-campo-borde bg-simar-marea-suave/50 text-simar-marea-tinta text-lg font-bold flex items-center justify-center gap-2 hover:border-simar-marea-tinta transition-colors">
+                        <PenLine className="w-5 h-5" />
+                        Firmar
+                      </button>
+                    ) : (
+                      <div>
+                        <div className="rounded-[14px] border-2 border-simar-arrecife/40 bg-white p-1.5">
+                          <img src={liquidosSignature} alt="Firma Líquidos" className="w-full h-12 object-contain" />
+                        </div>
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                          <span className="simar-confirma flex items-center gap-1 text-[15px] font-bold text-simar-arrecife-tinta"><PalomitaAnimada tamano={17} circulo={false} />Firmado</span>
+                          <span className="flex gap-3">
+                            <button type="button" onClick={() => openSignatureModal('liquidos')} className="min-h-[44px] text-[15px] font-bold text-simar-marea-tinta hover:underline">Editar</button>
+                            <button type="button" onClick={() => setLiquidosSignature(null)} className="min-h-[44px] text-[15px] font-bold text-simar-coral hover:underline">Eliminar</button>
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
 
-        {/* Sección de Digitalización y Botón Guardar */}
-        <div className="border-t border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-slate-700/30">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
-            {/* Adjuntar documento */}
+        {/* Adjuntar documento y descargar borrador */}
+        <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-7" style={{ animationDelay: '0.18s' }}>
+          <div className="flex items-center gap-3 lg:w-[290px] flex-shrink-0">
+            <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center">
+              <Upload className="w-6 h-6" />
+            </span>
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Adjuntar documento</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Opcional - documento escaneado</p>
-                </div>
-              </div>
+              <h2 className="text-lg font-extrabold text-simar-texto">Adjuntar documento</h2>
+              <p className="text-[15px] text-simar-texto-2">Opcional · documento escaneado</p>
+            </div>
+          </div>
 
-              {/* Botón Descargar Borrador */}
-              <button
-                type="button"
-                onClick={handleDescargarBorrador}
-                className="w-full mb-4 py-2 px-3 bg-white dark:bg-gray-700 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-all flex items-center justify-center gap-2 group"
-                title="Descargar datos actuales para firmar"
-              >
-                <div className="bg-gray-100 dark:bg-gray-600 p-1.5 rounded-md group-hover:bg-blue-100 dark:group-hover:bg-blue-800 transition-colors">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <span className="block text-sm font-bold">Descargar Borrador</span>
-                  <span className="block text-xs font-normal opacity-75">Imprimir y firmar a mano</span>
-                </div>
-              </button>
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`relative min-h-[64px] rounded-[14px] p-2 flex items-center justify-center transition-colors ${dragActive ? 'bg-simar-marea-suave border-2 border-dashed border-simar-marea-tinta' : archivo ? 'bg-simar-arrecife-suave border-2 border-simar-arrecife/50' : 'border-2 border-dashed border-simar-campo-borde'}`}
+            >
+              <input type="file" id="file-upload" onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
 
-              <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
-                className={`relative rounded-lg p-3 text-center transition-all ${dragActive ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 border-dashed' : archivo ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-500' : 'bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 border-dashed'
-                  }`}
-              >
-                <input type="file" id="file-upload" onChange={handleFileChange} className="hidden" accept="image/*,.pdf" />
-
-                {!archivo ? (
-                  <label htmlFor="file-upload" className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-semibold rounded-lg cursor-pointer hover:bg-blue-700">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                    Seleccionar
-                  </label>
-                ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white truncate">{archivo.name}</span>
-                    </div>
-                    <button type="button" onClick={() => setArchivo(null)} className="px-2 py-1 bg-red-100 text-red-600 text-xs rounded hover:bg-red-200">Quitar</button>
+              {!archivo ? (
+                <label htmlFor="file-upload" className="w-full min-h-[48px] inline-flex items-center justify-center gap-2 text-[17px] font-bold text-simar-texto cursor-pointer">
+                  <Upload className="w-5 h-5" />
+                  Elegir archivo
+                </label>
+              ) : (
+                <div className="w-full flex items-center justify-between gap-2 px-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <PalomitaAnimada tamano={20} circulo={false} className="text-simar-arrecife-tinta" />
+                    <span className="text-[15px] font-bold text-simar-texto truncate">{archivo.name}</span>
                   </div>
-                )}
-              </div>
+                  <button type="button" onClick={() => setArchivo(null)} className="min-h-[44px] px-3 text-[15px] font-bold text-simar-coral hover:underline">Quitar</button>
+                </div>
+              )}
             </div>
 
-            {/* Botón Guardar */}
             <button
-              onClick={handleSubmit}
-              disabled={saving}
-              className="w-full py-3 bg-green-600 text-white text-lg font-bold rounded-lg hover:bg-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
+              type="button"
+              onClick={handleDescargarBorrador}
+              className="min-h-[64px] px-4 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto flex items-center gap-2.5 text-left hover:border-simar-marea-tinta transition-colors"
+              title="Descargar datos actuales para firmar"
             >
-              {saving ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Guardando...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>GUARDAR MANIFIESTO</span>
-                </>
-              )}
+              <Download className="w-5 h-5 flex-shrink-0" />
+              <span>
+                <span className="block text-[17px] font-bold">Descargar borrador</span>
+                <span className="block text-[15px] text-simar-texto-2">Imprimir y firmar a mano</span>
+              </span>
             </button>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Botón para ir a la lista */}
-      <div className="flex justify-center">
-        <button
-          onClick={() => document.getElementById('registros-list')?.scrollIntoView({ behavior: 'smooth' })}
-          className="group flex items-center gap-2 px-6 py-3 border-2 border-blue-500 bg-transparent hover:bg-blue-500 text-blue-500 hover:text-white font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
-        >
-          <span>Ver registros</span>
-          <svg className="w-5 h-5 animate-bounce stroke-blue-500 group-hover:stroke-white transition-colors duration-300" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </button>
+        {/* Barra de guardar (vidrio, flota sobre el formulario) */}
+        <div className="simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
+          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto">
+            {firmasListas === 0
+              ? 'Aún no hay firmas. También puedes adjuntar el documento firmado.'
+              : firmasListas === 1 ? '1 firma lista.' : `${firmasListas} firmas listas.`}
+          </span>
+          <button
+            onClick={() => document.getElementById('registros-list')?.scrollIntoView({ behavior: 'smooth' })}
+            className="hidden sm:flex min-h-[60px] px-6 rounded-[18px] border-2 border-simar-texto bg-white/60 dark:bg-white/5 text-simar-texto text-lg font-bold items-center gap-2.5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors"
+          >
+            <List className="w-[22px] h-[22px]" />
+            Ver registros
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="simar-presiona w-full sm:w-auto min-h-[60px] px-7 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[19px] font-extrabold flex items-center justify-center gap-2.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Guardando...</span>
+              </>
+            ) : (
+              <>
+                <Check className="w-[22px] h-[22px]" strokeWidth={2.6} />
+                <span>Guardar manifiesto</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Tabla de Manifiestos */}
-      <div id="registros-list" className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-gray-200 dark:border-slate-700 p-4 sm:p-6">
+      <div id="registros-list" className="bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7">
         <div className="mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 sm:gap-3">
-            <span className="text-2xl sm:text-3xl"></span>
-            <span className="break-words">Manifiestos Registrados</span>
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">Lista de todos los manifiestos creados en el sistema</p>
+          <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto break-words">Manifiestos registrados</h2>
+          <p className="text-simar-texto-2 mt-1 text-base sm:text-lg">Lista de todos los manifiestos creados en el sistema</p>
         </div>
 
         {/* Barra de búsqueda y filtros */}
@@ -1549,7 +1521,7 @@ export default function ManifiestosPage() {
           {/* Barra de búsqueda */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5 text-simar-texto-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -1558,12 +1530,13 @@ export default function ManifiestosPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar por número, buque, motorista, cocinero..."
-              className="block w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-all text-gray-900 dark:text-white dark:bg-gray-700 placeholder-gray-400 dark:placeholder-gray-500"
+              className="block w-full min-h-[56px] pl-11 pr-12 border-2 border-simar-campo-borde rounded-2xl bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                aria-label="Borrar búsqueda"
+                className="absolute inset-y-0 right-0 w-12 flex items-center justify-center text-simar-texto-3 hover:text-simar-texto"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1576,57 +1549,57 @@ export default function ManifiestosPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => { setFiltroActivo('todos'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'todos'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'todos'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              📋 Todos
+              Todos
             </button>
             <button
               onClick={() => { setFiltroActivo('buque'); setShowFiltroFecha(false); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'buque'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'buque'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              🚢 Por Buque
+              Por buque
             </button>
             <button
               onClick={() => { setFiltroActivo('motorista'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'motorista'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'motorista'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              👨‍🔧 Por Motorista
+              Por motorista
             </button>
             <button
               onClick={() => { setFiltroActivo('cocinero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'cocinero'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'cocinero'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              👨‍🍳 Por Cocinero
+              Por cocinero
             </button>
             <button
               onClick={() => { setFiltroActivo('numero'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'numero'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'numero'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              🔢 Por Número
+              Por número
             </button>
             <button
               onClick={() => { setFiltroActivo('fecha'); setShowFiltroFecha(!showFiltroFecha); setFiltroSeleccionBuque(null); setFiltroSeleccionMotorista(null); setFiltroSeleccionCocinero(null); }}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filtroActivo === 'fecha'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`min-h-[48px] px-5 rounded-full text-base font-bold transition-colors ${filtroActivo === 'fecha'
+                ? 'bg-simar-marea text-white'
+                : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              📅 Por Fecha
+              Por fecha
             </button>
 
             {/* Limpiar filtros */}
@@ -1642,21 +1615,21 @@ export default function ManifiestosPage() {
                   setFiltroSeleccionMotorista(null);
                   setFiltroSeleccionCocinero(null);
                 }}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                className="min-h-[48px] px-5 rounded-full text-base font-bold bg-simar-coral-suave text-simar-coral hover:underline"
               >
-                ✕ Limpiar
+                Limpiar filtros
               </button>
             )}
           </div>
 
           {/* Selector de Buque */}
           {filtroActivo === 'buque' && (
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 animate-in slide-in-from-top-2 duration-200">
-              <label className="block text-sm font-medium text-blue-800 mb-2">🚢 Selecciona un buque:</label>
+            <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
+              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un buque</label>
               <select
                 value={filtroSeleccionBuque || ''}
                 onChange={(e) => setFiltroSeleccionBuque(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-2.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
               >
                 <option value="">-- Todos los buques --</option>
                 {buques.map((buque) => (
@@ -1670,12 +1643,12 @@ export default function ManifiestosPage() {
 
           {/* Selector de Motorista */}
           {filtroActivo === 'motorista' && (
-            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200 animate-in slide-in-from-top-2 duration-200">
-              <label className="block text-sm font-medium text-orange-800 mb-2">👨‍🔧 Selecciona un motorista:</label>
+            <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
+              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un motorista</label>
               <select
                 value={filtroSeleccionMotorista || ''}
                 onChange={(e) => setFiltroSeleccionMotorista(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-2.5 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white text-gray-900"
+                className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
               >
                 <option value="">-- Todos los motoristas --</option>
                 {/* Obtener IDs únicos de responsables principales usados en manifiestos */}
@@ -1693,12 +1666,12 @@ export default function ManifiestosPage() {
 
           {/* Selector de Cocinero */}
           {filtroActivo === 'cocinero' && (
-            <div className="p-4 bg-green-50 rounded-xl border border-green-200 animate-in slide-in-from-top-2 duration-200">
-              <label className="block text-sm font-medium text-green-800 mb-2">👨‍🍳 Selecciona un cocinero:</label>
+            <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
+              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un cocinero</label>
               <select
                 value={filtroSeleccionCocinero || ''}
                 onChange={(e) => setFiltroSeleccionCocinero(e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-2.5 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-gray-900"
+                className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
               >
                 <option value="">-- Todos los cocineros --</option>
                 {/* Obtener IDs únicos de responsables secundarios usados en manifiestos */}
@@ -1716,13 +1689,13 @@ export default function ManifiestosPage() {
 
           {/* Selector de rango de fechas */}
           {showFiltroFecha && filtroActivo === 'fecha' && (
-            <div className="flex flex-wrap items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 shadow-sm animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-wrap items-center gap-4 p-4 bg-simar-papel rounded-2xl border border-simar-borde">
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-blue-200">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm font-semibold text-blue-700">Desde:</span>
+                  <span className="text-[17px] font-bold text-simar-texto">Desde</span>
                 </div>
                 <DatePicker
                   selected={fechaFiltroInicio}
@@ -1730,7 +1703,7 @@ export default function ManifiestosPage() {
                   dateFormat="dd/MM/yyyy"
                   locale="es"
                   placeholderText="Seleccionar fecha"
-                  className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
+                  className="min-h-[52px] px-4 border-2 border-simar-campo-borde rounded-xl focus:outline-none focus:border-simar-marea-tinta text-base w-48 font-bold text-simar-texto bg-simar-superficie placeholder:text-simar-texto-3 placeholder:font-normal"
                   isClearable
                   showMonthDropdown
                   showYearDropdown
@@ -1738,11 +1711,11 @@ export default function ManifiestosPage() {
                 />
               </div>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-blue-200">
-                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  <span className="text-sm font-semibold text-blue-700">Hasta:</span>
+                  <span className="text-[17px] font-bold text-simar-texto">Hasta</span>
                 </div>
                 <DatePicker
                   selected={fechaFiltroFin}
@@ -1750,7 +1723,7 @@ export default function ManifiestosPage() {
                   dateFormat="dd/MM/yyyy"
                   locale="es"
                   placeholderText="Seleccionar fecha"
-                  className="px-4 py-2.5 border-2 border-blue-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-44 font-semibold text-gray-900 bg-white shadow-sm placeholder:text-gray-400"
+                  className="min-h-[52px] px-4 border-2 border-simar-campo-borde rounded-xl focus:outline-none focus:border-simar-marea-tinta text-base w-48 font-bold text-simar-texto bg-simar-superficie placeholder:text-simar-texto-3 placeholder:font-normal"
                   isClearable
                   minDate={fechaFiltroInicio || undefined}
                   showMonthDropdown
@@ -1762,59 +1735,59 @@ export default function ManifiestosPage() {
           )}
 
           {/* Indicador de resultados */}
-          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center justify-between text-base text-simar-texto-2">
             <span>
               {manifiestosFiltrados.length < manifiestos.length
-                ? <><strong className="text-gray-700 dark:text-gray-200">{manifiestosFiltrados.length}</strong> resultado{manifiestosFiltrados.length !== 1 ? 's' : ''} de {manifiestos.length}</>
-                : <><strong className="text-gray-700 dark:text-gray-200">{manifiestos.length}</strong> manifiestos en total</>
+                ? <><strong className="text-simar-texto">{manifiestosFiltrados.length}</strong> resultado{manifiestosFiltrados.length !== 1 ? 's' : ''} de {manifiestos.length}</>
+                : <><strong className="text-simar-texto">{manifiestos.length}</strong> manifiestos en total</>
               }
             </span>
-            <span className="text-xs">
-              Página <strong className="text-gray-700 dark:text-gray-200">{currentPage}</strong> de {totalPages}
+            <span className="text-[15px]">
+              Página <strong className="text-simar-texto">{currentPage}</strong> de {totalPages}
             </span>
           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center py-8 sm:py-12">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 border-4 border-simar-marea border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : (<>
-          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:mx-0">
-            <div className="inline-block min-w-full align-middle">
-              <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="bg-gray-50 dark:bg-slate-700/60 border-b border-gray-200 dark:border-slate-600">
-                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Número</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Buque</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden md:table-cell">Motorista</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden lg:table-cell">Cocinero</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest hidden sm:table-cell">Fecha</th>
-                      <th className="px-4 md:px-5 py-3 text-right text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-widest">Acciones</th>
+          <div className="sm:overflow-x-auto sm:-mx-4 md:mx-0">
+            <div className="sm:inline-block min-w-full align-middle">
+              <div className="overflow-hidden rounded-xl border border-simar-borde shadow-sm">
+                <table className="w-full border-collapse block sm:table">
+                  <thead className="hidden sm:table-header-group">
+                    <tr className="bg-simar-papel border-b border-simar-borde">
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Número</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Buque</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden md:table-cell">Motorista</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden lg:table-cell">Cocinero</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden sm:table-cell">Fecha</th>
+                      <th className="px-4 md:px-5 py-3 text-right text-[15px] font-bold text-simar-texto-2">Acciones</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60">
+                  <tbody className="block sm:table-row-group divide-y divide-simar-borde-suave">
                     {manifiestos.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-16 text-center">
-                          <div className="flex flex-col items-center gap-3 text-gray-400">
+                          <div className="flex flex-col items-center gap-3 text-simar-texto-3">
                             <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            <p className="text-base font-semibold text-gray-500 dark:text-gray-400">No hay manifiestos registrados</p>
-                            <p className="text-sm text-gray-400">Complete el formulario arriba para crear uno nuevo</p>
+                            <p className="text-lg font-bold text-simar-texto">No hay manifiestos registrados</p>
+                            <p className="text-base text-simar-texto-2">Complete el formulario arriba para crear uno nuevo</p>
                           </div>
                         </td>
                       </tr>
                     ) : manifiestosPagina.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="py-16 text-center">
-                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                          <div className="flex flex-col items-center gap-2 text-simar-texto-3">
                             <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sin resultados para esta búsqueda</p>
+                            <p className="text-lg font-bold text-simar-texto">Sin resultados para esta búsqueda</p>
                           </div>
                         </td>
                       </tr>
@@ -1832,71 +1805,82 @@ export default function ManifiestosPage() {
                         return (
                           <tr
                             key={manifiesto.id}
-                            className="group bg-white dark:bg-slate-800 hover:bg-blue-50/40 dark:hover:bg-slate-700/40 transition-colors duration-150"
+                            className="group block sm:table-row bg-simar-superficie hover:bg-simar-papel transition-colors duration-150"
                             style={{ animationDelay: `${idx * 20}ms` }}
                           >
-                            <td className="px-4 md:px-5 py-3.5">
-                              <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2.5 py-1 rounded-md whitespace-nowrap">
+                            <td className="block sm:table-cell px-4 pt-4 sm:pt-3.5 pb-0 sm:pb-3.5 md:px-5">
+                              <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap">
                                 {manifiesto.numero_manifiesto}
                               </span>
+                              {/* En celular: barco y fecha debajo del folio (sin columnas que se corten) */}
+                              <p className="sm:hidden mt-2 text-[17px] font-bold text-simar-texto">
+                                {buqueNombre}
+                                <span className="font-normal text-simar-texto-2">
+                                  {' · '}
+                                  {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                </span>
+                              </p>
+                              <p className="sm:hidden text-[15px] text-simar-texto-2">Motorista: {respPrincipal}</p>
                             </td>
-                            <td className="px-4 md:px-5 py-3.5">
+                            <td className="hidden sm:table-cell px-4 md:px-5 py-3.5">
                               <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-600 dark:to-slate-700 flex items-center justify-center flex-shrink-0">
-                                  <svg className="w-3.5 h-3.5 text-slate-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="w-8 h-8 rounded-lg bg-simar-papel flex items-center justify-center flex-shrink-0">
+                                  <svg className="w-4 h-4 text-simar-texto-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" />
                                   </svg>
                                 </div>
-                                <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-[130px]">{buqueNombre}</span>
+                                <span className="text-base font-bold text-simar-texto truncate max-w-[160px]">{buqueNombre}</span>
                               </div>
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden md:table-cell">
-                              <span className="text-sm text-gray-700 dark:text-gray-300">{respPrincipal}</span>
+                              <span className="text-base text-simar-texto">{respPrincipal}</span>
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden lg:table-cell">
-                              <span className="text-sm text-gray-500 dark:text-gray-400">{respSecundario || <span className="text-gray-300 dark:text-gray-600">—</span>}</span>
+                              <span className="text-base text-simar-texto-2">{respSecundario || <span className="text-simar-texto-3">—</span>}</span>
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
-                              <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                              <span className="text-base text-simar-texto-2 whitespace-nowrap">
                                 {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
                             </td>
-                            <td className="px-4 md:px-5 py-3.5">
-                              <div className="flex items-center justify-end gap-1.5">
+                            <td className="block sm:table-cell px-4 pt-3 pb-4 sm:py-3.5 md:px-5">
+                              <div className="flex items-center justify-start sm:justify-end gap-2">
                                 <button
                                   onClick={() => setViewingManifiesto(manifiesto)}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 transition-all whitespace-nowrap"
+                                  className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
                                   title="Ver detalles"
                                 >
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                   </svg>
-                                  <span className="hidden sm:inline">Ver</span>
+                                  <span>Ver</span>
                                 </button>
                                 <button
                                   onClick={() => handleDescargarPDF(manifiesto)}
                                   disabled={generandoPDF === manifiesto.id.toString()}
-                                  className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-60 disabled:cursor-wait shadow-sm"
+                                  aria-label={t('acciones.descargarPDF')}
+                                  className="w-11 h-11 flex items-center justify-center bg-simar-marea text-white rounded-xl hover:bg-simar-marea-hover transition-colors disabled:opacity-60 disabled:cursor-wait"
                                   title={t('acciones.descargarPDF')}
                                 >
                                   {generandoPDF === manifiesto.id.toString() ? (
-                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
                                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                     </svg>
                                   ) : (
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
                                   )}
                                 </button>
                                 <button
                                   onClick={() => handleDelete(manifiesto.id)}
-                                  className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                                  className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-simar-coral hover:text-white transition-colors"
                                   title="Eliminar"
+                                  aria-label="Eliminar"
                                 >
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
                                 </button>
@@ -1914,8 +1898,8 @@ export default function ManifiestosPage() {
 
           {/* Controles de paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-slate-700">
-              <span className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center justify-between pt-4 border-t border-simar-borde-suave">
+              <span className="text-base text-simar-texto-2">
                 {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, manifiestosFiltrados.length)} de {manifiestosFiltrados.length}
               </span>
 
@@ -1924,7 +1908,7 @@ export default function ManifiestosPage() {
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl border-2 border-simar-campo-borde text-simar-texto hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -1941,15 +1925,15 @@ export default function ManifiestosPage() {
                   }, [])
                   .map((p, i) =>
                     p === '...' ? (
-                      <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-sm text-gray-400">…</span>
+                      <span key={`ellipsis-${i}`} className="w-11 h-11 flex items-center justify-center text-base text-simar-texto-3">…</span>
                     ) : (
                       <button
                         key={p}
                         onClick={() => setCurrentPage(p as number)}
-                        className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
+                        className={`w-11 h-11 flex items-center justify-center rounded-xl text-base font-bold transition-colors ${
                           currentPage === p
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'border border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
+                            ? 'bg-simar-marea text-white'
+                            : 'border-2 border-simar-campo-borde text-simar-texto hover:border-simar-marea-tinta'
                         }`}
                       >
                         {p}
@@ -1961,7 +1945,7 @@ export default function ManifiestosPage() {
                 <button
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-11 h-11 flex items-center justify-center rounded-xl border-2 border-simar-campo-borde text-simar-texto hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1975,42 +1959,43 @@ export default function ManifiestosPage() {
 
       {/* Modal de visualización de detalles */}
       {viewingManifiesto && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/90 backdrop-blur-md">
+        <div className="simar-velo fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
           <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="relative w-full max-w-5xl flex flex-col gap-6 my-8">
+            <div className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8">
 
               {/* Botón de cierre flotante */}
               <div className="flex justify-end sticky top-0 z-10 pt-2 pr-2">
                 <button
                   onClick={() => setViewingManifiesto(null)}
-                  className="bg-black/50 hover:bg-black/70 text-white rounded-full p-2 transition-colors backdrop-blur-sm border border-white/20 shadow-lg"
+                  aria-label="Cerrar detalles"
+                  className="simar-vidrio-fuerte w-14 h-14 rounded-full text-simar-texto flex items-center justify-center"
                 >
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               </div>
 
               {/* Card 1: Información General */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8">
+              <div className="bg-simar-superficie rounded-[28px] shadow-2xl p-6 sm:p-8">
                 <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
+                  <h3 className="text-2xl sm:text-[28px] font-extrabold text-simar-texto flex items-center gap-3">
+                    <div className="p-2.5 bg-simar-marea-suave rounded-full text-simar-marea-tinta">
                       <svg className="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <div>
-                      Detalles del Manifiesto
-                      <span className="block text-sm font-normal text-gray-500 dark:text-gray-400 mt-1">#{viewingManifiesto.numero_manifiesto}</span>
+                      Detalles del manifiesto
+                      <span className="block text-base font-normal text-simar-texto-2 mt-1">#{viewingManifiesto.numero_manifiesto}</span>
                     </div>
                   </h3>
                   {/* Status Badge */}
-                  <span className={`px-4 py-1.5 rounded-full text-sm font-bold tracking-wide uppercase ${viewingManifiesto.estado_digitalizacion === 'completado'
-                    ? 'bg-green-100 text-green-700'
+                  <span className={`px-4 py-1.5 rounded-full text-[15px] font-bold capitalize ${viewingManifiesto.estado_digitalizacion === 'completado'
+                    ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta'
                     : viewingManifiesto.estado_digitalizacion === 'en_proceso'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-gray-100 text-gray-700'
+                      ? 'bg-simar-coral-suave text-simar-coral'
+                      : 'bg-simar-papel text-simar-texto-2'
                     }`}>
                     {viewingManifiesto.estado_digitalizacion?.replace('_', ' ') || 'Pendiente'}
                   </span>
@@ -2019,8 +2004,8 @@ export default function ManifiestosPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {/* Fecha */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Fecha de Emisión</p>
-                    <p className="text-gray-900 dark:text-white font-medium text-lg">
+                    <p className="text-[15px] font-bold text-simar-texto-2">Fecha de emisión</p>
+                    <p className="text-simar-texto font-medium text-lg">
                       {new Date(viewingManifiesto.fecha_emision + 'T12:00:00').toLocaleDateString('es-ES', {
                         day: 'numeric',
                         month: 'long',
@@ -2031,24 +2016,24 @@ export default function ManifiestosPage() {
 
                   {/* Buque */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Buque</p>
-                    <p className="text-gray-900 dark:text-white font-medium text-lg">
+                    <p className="text-[15px] font-bold text-simar-texto-2">Buque</p>
+                    <p className="text-simar-texto font-medium text-lg">
                       {viewingManifiesto.buque?.nombre_buque || buques.find(b => b.id === viewingManifiesto.buque_id)?.nombre_buque || 'N/A'}
                     </p>
                   </div>
 
                   {/* Motorista */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Motorista</p>
-                    <p className="text-gray-900 dark:text-white font-medium text-lg truncate" title={viewingManifiesto.responsable_principal?.nombre}>
+                    <p className="text-[15px] font-bold text-simar-texto-2">Motorista</p>
+                    <p className="text-simar-texto font-medium text-lg truncate" title={viewingManifiesto.responsable_principal?.nombre}>
                       {viewingManifiesto.responsable_principal?.nombre || personas.find(p => p.id === viewingManifiesto.responsable_principal_id)?.nombre || 'N/A'}
                     </p>
                   </div>
 
                   {/* Cocinero (Optional) */}
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Cocinero</p>
-                    <p className="text-gray-900 dark:text-white font-medium text-lg truncate">
+                    <p className="text-[15px] font-bold text-simar-texto-2">Cocinero</p>
+                    <p className="text-simar-texto font-medium text-lg truncate">
                       {viewingManifiesto.responsable_secundario?.nombre || (viewingManifiesto.responsable_secundario_id ? personas.find(p => p.id === viewingManifiesto.responsable_secundario_id)?.nombre : 'N/A')}
                     </p>
                   </div>
@@ -2056,8 +2041,8 @@ export default function ManifiestosPage() {
                   {/* Observaciones */}
                   {(viewingManifiesto.observaciones) && (
                     <div className="space-y-1 md:col-span-2">
-                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Observaciones</p>
-                      <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 p-3 rounded-lg border border-gray-100 dark:border-slate-600 text-sm leading-relaxed">
+                      <p className="text-[15px] font-bold text-simar-texto-2">Observaciones</p>
+                      <p className="text-simar-texto bg-simar-papel p-3 rounded-lg border border-simar-borde-suave text-sm leading-relaxed">
                         {viewingManifiesto.observaciones}
                       </p>
                     </div>
@@ -2065,24 +2050,24 @@ export default function ManifiestosPage() {
                 </div>
 
                 {/* Residuos Section - Styled as Highlighted Stats */}
-                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-slate-700">
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">Residuos Recolectados</h4>
+                <div className="mt-8 pt-8 border-t border-simar-borde-suave">
+                  <h4 className="text-lg font-extrabold text-simar-texto mb-5">Residuos recolectados</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl border border-blue-100 dark:border-blue-700 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-1">{viewingManifiesto.residuos?.aceite_usado || 0}</p>
-                      <p className="text-xs font-bold text-blue-400 dark:text-blue-500 uppercase">Aceite (L)</p>
+                    <div className="bg-simar-marea-suave p-4 rounded-2xl text-center">
+                      <p className="text-3xl font-extrabold text-simar-marea-tinta mb-1">{viewingManifiesto.residuos?.aceite_usado || 0}</p>
+                      <p className="text-[15px] font-bold text-simar-texto-2">Aceite (L)</p>
                     </div>
-                    <div className="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-xl border border-indigo-100 dark:border-indigo-700 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-indigo-700 dark:text-indigo-400 mb-1">{viewingManifiesto.residuos?.filtros_aceite || 0}</p>
-                      <p className="text-xs font-bold text-indigo-400 dark:text-indigo-500 uppercase">F. Aceite (U)</p>
+                    <div className="bg-simar-papel p-4 rounded-2xl border border-simar-borde text-center">
+                      <p className="text-3xl font-extrabold text-simar-texto mb-1">{viewingManifiesto.residuos?.filtros_aceite || 0}</p>
+                      <p className="text-[15px] font-bold text-simar-texto-2">Filtros de aceite</p>
                     </div>
-                    <div className="bg-violet-50 dark:bg-violet-900/30 p-4 rounded-xl border border-violet-100 dark:border-violet-700 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-violet-700 dark:text-violet-400 mb-1">{viewingManifiesto.residuos?.filtros_diesel || 0}</p>
-                      <p className="text-xs font-bold text-violet-400 dark:text-violet-500 uppercase">F. Diesel (U)</p>
+                    <div className="bg-simar-papel p-4 rounded-2xl border border-simar-borde text-center">
+                      <p className="text-3xl font-extrabold text-simar-texto mb-1">{viewingManifiesto.residuos?.filtros_diesel || 0}</p>
+                      <p className="text-[15px] font-bold text-simar-texto-2">Filtros de diésel</p>
                     </div>
-                    <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-xl border border-gray-200 dark:border-slate-600 text-center transition-transform hover:scale-105">
-                      <p className="text-3xl font-bold text-gray-700 dark:text-gray-300 mb-1">{viewingManifiesto.residuos?.basura || 0}</p>
-                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">Basura (Kg)</p>
+                    <div className="bg-simar-papel p-4 rounded-2xl border border-simar-borde text-center">
+                      <p className="text-3xl font-extrabold text-simar-texto mb-1">{viewingManifiesto.residuos?.basura || 0}</p>
+                      <p className="text-[15px] font-bold text-simar-texto-2">Basura (kg)</p>
                     </div>
                     {/* Extras if needed */}
                   </div>
@@ -2090,20 +2075,20 @@ export default function ManifiestosPage() {
               </div>
 
               {/* Card 2: Documento Digitalizado */}
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden flex-col">
-                <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700/50">
-                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden flex-col">
+                <div className="p-4 sm:p-6 border-b border-simar-borde-suave flex justify-between items-center bg-simar-papel">
+                  <h3 className="text-lg font-extrabold text-simar-texto flex items-center gap-2">
+                    <svg className="w-5 h-5 text-simar-texto-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    Documento Digitalizado
+                    Documento digitalizado
                   </h3>
                   {(viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url) && (
                     <a
                       href={viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-bold flex items-center gap-1 transition-colors"
+                      className="min-h-[44px] text-base text-simar-marea-tinta font-bold flex items-center gap-1.5 hover:underline"
                     >
                       Abrir original
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2113,7 +2098,7 @@ export default function ManifiestosPage() {
                   )}
                 </div>
 
-                <div className="bg-gray-100 dark:bg-slate-900 min-h-[500px] p-4 flex justify-center items-center">
+                <div className="bg-simar-papel min-h-[500px] p-4 flex justify-center items-center">
                   {(viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url) ? (
                     (() => {
                       const url = viewingManifiesto.pdf_manifiesto_url || viewingManifiesto.imagen_manifiesto_url;
@@ -2123,7 +2108,7 @@ export default function ManifiestosPage() {
                         return (
                           <iframe
                             src={url}
-                            className="w-full min-h-[1200px] rounded-lg border border-gray-300 dark:border-slate-600 shadow-md"
+                            className="w-full min-h-[1200px] rounded-lg border border-simar-campo-borde shadow-md"
                             title="Documento PDF"
                             style={{ height: '1200px' }}
                           />
@@ -2140,7 +2125,7 @@ export default function ManifiestosPage() {
                       }
                     })()
                   ) : (
-                    <div className="text-center text-gray-400 dark:text-gray-500">
+                    <div className="text-center text-simar-texto-3">
                       <svg className="w-16 h-16 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                       </svg>
@@ -2160,30 +2145,31 @@ export default function ManifiestosPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Fondo oscuro sin blur para mejor rendimiento */}
           <div
-            className="absolute inset-0 bg-black/50 dark:bg-black/70"
+            className="simar-velo absolute inset-0 bg-[rgba(11,34,54,0.55)]"
             onClick={closeSignatureModal}
           />
 
           {/* Panel de firma */}
-          <div className="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+          <div className="simar-ventana relative w-full max-w-2xl bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-slate-700 dark:to-slate-800 px-6 py-4 flex items-center justify-between">
+            <div className="px-6 pt-6 pb-2 flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-12 h-12 flex-shrink-0 bg-simar-marea-suave rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{getSignatureModalTitle()}</h3>
-                  <p className="text-blue-100 dark:text-gray-300 text-sm">Dibuje su firma en el área de abajo</p>
+                  <h3 className="text-[22px] font-extrabold text-simar-texto leading-tight">{getSignatureModalTitle()}</h3>
+                  <p className="text-simar-texto-2 text-[17px]">Dibuje su firma en el área de abajo</p>
                 </div>
               </div>
               <button
                 onClick={closeSignatureModal}
-                className="w-10 h-10 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors"
+                aria-label="Cerrar"
+                className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-papel hover:bg-simar-borde-suave flex items-center justify-center transition-colors"
               >
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-simar-texto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -2191,7 +2177,7 @@ export default function ManifiestosPage() {
 
             {/* Área de firma */}
             <div className="p-6">
-              <div className="relative border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl bg-gray-50 dark:bg-slate-700 overflow-hidden">
+              <div className="relative border-2 border-dashed border-simar-campo-borde rounded-xl bg-simar-papel overflow-hidden">
                 <canvas
                   ref={signatureModalCanvasRef}
                   width={600}
@@ -2206,21 +2192,21 @@ export default function ManifiestosPage() {
                   onTouchEnd={stopModalDrawing}
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <p className="text-gray-300 dark:text-gray-500 text-lg">Firme aquí</p>
+                  <p className="text-[#9AA5B1] text-xl">Firme aquí</p>
                 </div>
                 {/* Línea de firma */}
-                <div className="absolute bottom-8 left-8 right-8 border-b-2 border-gray-300 dark:border-gray-600 pointer-events-none" />
-                <div className="absolute bottom-2 left-8 text-xs text-gray-400 dark:text-gray-500 pointer-events-none">Firma</div>
+                <div className="absolute bottom-8 left-8 right-8 border-b-2 border-[#D9D2C2] pointer-events-none" />
+                <div className="absolute bottom-2 left-8 text-sm text-[#6B7785] pointer-events-none">Firma</div>
               </div>
 
               {/* Botones */}
-              <div className="flex justify-between items-center mt-6 gap-4">
+              <div className="flex flex-wrap justify-between items-center mt-6 gap-3">
                 <button
                   type="button"
                   onClick={clearModalSignature}
-                  className="px-5 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg flex items-center gap-2 transition-colors"
+                  className="min-h-[56px] px-5 text-[17px] font-bold text-simar-coral bg-simar-coral-suave rounded-2xl flex items-center gap-2 hover:underline"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                   Borrar
@@ -2230,19 +2216,19 @@ export default function ManifiestosPage() {
                   <button
                     type="button"
                     onClick={closeSignatureModal}
-                    className="px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-lg transition-colors"
+                    className="min-h-[56px] px-5 text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta rounded-2xl transition-colors"
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
                     onClick={saveModalSignature}
-                    className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+                    className="min-h-[56px] px-6 text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover rounded-2xl flex items-center gap-2 transition-colors"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M5 13l4 4L19 7" />
                     </svg>
-                    Guardar Firma
+                    Guardar firma
                   </button>
                 </div>
               </div>

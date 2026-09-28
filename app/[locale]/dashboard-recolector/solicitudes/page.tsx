@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
-import { Eye, Ban, Plus, Inbox } from 'lucide-react';
+import { Eye, Ban, Plus, Inbox, FileText } from 'lucide-react';
 import { PUERTO_PENASCO, formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
 import { SolicitudConAsociacion } from '@/types/database';
@@ -20,6 +20,7 @@ import {
     ResiduoBadge,
     mensajeError,
 } from '@/components/asociaciones/ui';
+import { Aviso, EstadoVacio, claseChip } from '@/components/ui/simar';
 
 type Filtro = EstadoSolicitud | 'todas';
 
@@ -80,20 +81,10 @@ export default function SolicitudesPage() {
         <div className="space-y-6">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="flex justify-end">
-                <Link
-                    href={`/${locale}/dashboard-recolector/mapa`}
-                    className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm transition-colors"
-                >
-                    <Plus className="w-4 h-4" />
-                    Nueva solicitud
-                </Link>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
-                {/* Tabs */}
-                <div className="border-b border-gray-200 dark:border-gray-800 px-4 sm:px-6">
-                    <nav className="flex gap-1 sm:gap-4 overflow-x-auto -mb-px">
+            <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
+                {/* Filtros (fichas de 48 px con su conteo) y la acción principal en la misma franja */}
+                <div className="px-4 sm:px-6 py-5 border-b border-simar-borde flex flex-col xl:flex-row xl:items-center gap-4">
+                    <nav aria-label="Filtrar solicitudes por estado" className="flex flex-wrap gap-2.5 flex-1">
                         {TABS.map((t) => {
                             const count =
                                 t.value === 'todas'
@@ -104,92 +95,122 @@ export default function SolicitudesPage() {
                                 <button
                                     key={t.value}
                                     onClick={() => setTab(t.value)}
-                                    className={`whitespace-nowrap py-3 px-3 text-sm font-semibold border-b-2 transition-colors ${
-                                        active
-                                            ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400'
-                                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                                    }`}
+                                    aria-pressed={active}
+                                    className={`${claseChip(active)} inline-flex items-center gap-2 whitespace-nowrap`}
                                 >
                                     {t.label}
-                                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${active ? 'bg-emerald-100 dark:bg-emerald-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                                    <span
+                                        className={`min-w-[26px] h-[26px] px-1.5 rounded-full inline-flex items-center justify-center text-[15px] font-bold ${
+                                            active ? 'bg-white/25 text-white' : 'bg-simar-papel text-simar-texto-2'
+                                        }`}
+                                    >
                                         {count}
                                     </span>
                                 </button>
                             );
                         })}
                     </nav>
+                    <Link
+                        href={`/${locale}/dashboard-recolector/mapa`}
+                        className="simar-presiona flex-shrink-0 min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2"
+                    >
+                        <Plus className="w-[22px] h-[22px]" strokeWidth={2.4} />
+                        Nueva solicitud
+                    </Link>
                 </div>
 
-                {/* Tabla */}
+                {/* Tabla. En celular, cantidad, fecha y estado van debajo del residuo (no se corta a la derecha) */}
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
-                        <thead className="bg-gray-50 dark:bg-gray-800/50">
+                    <table className="min-w-full divide-y divide-simar-borde-suave">
+                        <thead className="bg-simar-papel">
                             <tr>
                                 <Th>Residuo</Th>
-                                <Th>Cantidad</Th>
-                                <Th className="hidden sm:table-cell">Recolección</Th>
-                                <Th className="hidden md:table-cell">Enviada</Th>
-                                <Th>Estado</Th>
+                                <Th className="hidden sm:table-cell">Cantidad</Th>
+                                <Th className="hidden md:table-cell">Recolección</Th>
+                                <Th className="hidden lg:table-cell">Enviada</Th>
+                                <Th className="hidden sm:table-cell">Estado</Th>
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-gray-900">
+                        <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie">
                             {filtradas.map((s) => (
-                                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                                <tr key={s.id} className="hover:bg-simar-papel transition-colors">
                                     <td className="px-4 sm:px-6 py-4">
                                         <ResiduoBadge tipo={s.tipo} />
+                                        <div className="sm:hidden mt-2 space-y-1.5">
+                                            <p className="text-[17px] font-bold text-simar-texto">
+                                                {formatCantidad(cantidadVigente(s))} {s.unidad}
+                                                <span className="font-normal text-simar-texto-2"> · {formatearFecha(s.fecha_propuesta)}</span>
+                                            </p>
+                                            {s.recoleccion ? (
+                                                <p className="text-[15px] text-simar-texto-2">recolectados</p>
+                                            ) : (
+                                                s.cantidad_aprobada !== null &&
+                                                s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                    <p className="text-[15px] text-simar-texto-2">
+                                                        de {formatCantidad(s.cantidad_solicitada)} solicitados
+                                                    </p>
+                                                )
+                                            )}
+                                            <EstadoSolicitudBadge estado={s.estado} />
+                                        </div>
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-bold text-simar-texto whitespace-nowrap">
                                         {formatCantidad(cantidadVigente(s))} {s.unidad}
                                         {s.recoleccion ? (
-                                            <span className="block text-[11px] font-normal text-gray-400">recolectados</span>
+                                            <span className="block text-[15px] font-normal text-simar-texto-2">recolectados</span>
                                         ) : (
                                             s.cantidad_aprobada !== null &&
                                             s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                <span className="block text-[11px] font-normal text-gray-400">
+                                                <span className="block text-[15px] font-normal text-simar-texto-2">
                                                     de {formatCantidad(s.cantidad_solicitada)} solicitados
                                                 </span>
                                             )
                                         )}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-700 dark:text-gray-300 hidden sm:table-cell whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto hidden md:table-cell whitespace-nowrap">
                                         {formatearFecha(s.fecha_propuesta)}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-base text-simar-texto-2 hidden lg:table-cell whitespace-nowrap">
                                         {formatearFecha(s.created_at)}
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4">
+                                    <td className="hidden sm:table-cell px-4 sm:px-6 py-4">
                                         <EstadoSolicitudBadge estado={s.estado} />
                                     </td>
-                                    <td className="px-4 sm:px-6 py-4 text-right whitespace-nowrap">
+                                    <td className="px-4 sm:px-6 py-4 text-right">
+                                        <div className="inline-flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                         <button
                                             onClick={() => setDetalle(s)}
-                                            className="p-1.5 rounded-md text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors"
+                                            className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta inline-flex items-center justify-center gap-1.5"
                                             title="Ver detalle"
                                             aria-label="Ver detalle"
                                         >
-                                            <Eye className="w-4 h-4" />
+                                            <Eye className="w-[18px] h-[18px]" />
+                                            Ver
                                         </button>
                                         {s.estado === 'pendiente' && (
                                             <button
                                                 onClick={() => cancelar(s)}
-                                                className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold bg-simar-coral-suave text-simar-coral hover:bg-[#A63F0E] hover:text-white inline-flex items-center justify-center gap-1.5"
                                                 title="Cancelar solicitud"
                                                 aria-label="Cancelar solicitud"
                                             >
-                                                <Ban className="w-4 h-4" />
+                                                <Ban className="w-[18px] h-[18px]" />
+                                                Cancelar
                                             </button>
                                         )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                             {filtradas.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400">
-                                        <Inbox className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                                        {solicitudes.length === 0
-                                            ? 'Aún no has enviado solicitudes. Revisa los residuos disponibles para crear la primera.'
-                                            : 'No hay solicitudes en esta categoría.'}
+                                    <td colSpan={6}>
+                                        <EstadoVacio icono={Inbox} titulo={solicitudes.length === 0 ? 'Aún no hay solicitudes' : 'Nada en esta categoría'}>
+                                            {solicitudes.length === 0
+                                                ? 'Aún no has enviado solicitudes. Revisa los residuos disponibles para crear la primera.'
+                                                : 'No hay solicitudes en esta categoría.'}
+                                        </EstadoVacio>
                                     </td>
                                 </tr>
                             )}
@@ -205,7 +226,7 @@ export default function SolicitudesPage() {
                             <EstadoSolicitudBadge estado={detalle.estado} />
                             <ResiduoBadge tipo={detalle.tipo} />
                         </div>
-                        <dl className="grid grid-cols-2 gap-3 text-sm">
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Dato label="Solicitado" valor={`${formatCantidad(detalle.cantidad_solicitada)} ${detalle.unidad}`} />
                             <Dato
                                 label="Aprobado"
@@ -223,22 +244,23 @@ export default function SolicitudesPage() {
                         {detalle.mensaje && <Nota titulo="Tu mensaje">{detalle.mensaje}</Nota>}
                         {detalle.motivo_rechazo && <Nota titulo="Motivo del rechazo">{detalle.motivo_rechazo}</Nota>}
                         {detalle.estado === 'aprobada' && (
-                            <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                            <Aviso titulo="Tu recolección está aprobada">
                                 Preséntate en el centro de acopio en la fecha acordada. Al recoger, el personal registrará
                                 la cantidad real y tu comprobante aparecerá en el historial.
-                            </p>
+                            </Aviso>
                         )}
                         {detalle.estado === 'completada' && (
                             <Link
                                 href={`/${locale}/dashboard-recolector/historial`}
-                                className="inline-block text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+                                className="simar-presiona w-full min-h-[52px] px-5 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-[17px] font-bold hover:border-simar-marea-tinta inline-flex items-center justify-center gap-2"
                             >
-                                Ver comprobante en el historial →
+                                <FileText className="w-[22px] h-[22px] text-simar-marea-tinta" />
+                                Ver comprobante en el historial
                             </Link>
                         )}
                         {detalle.estado === 'pendiente' && (
-                            <BotonSecundario onClick={() => cancelar(detalle)} className="w-full !text-red-600 dark:!text-red-400">
-                                <Ban className="w-4 h-4" /> Cancelar solicitud
+                            <BotonSecundario onClick={() => cancelar(detalle)} className="w-full !border-transparent !bg-simar-coral-suave !text-simar-coral">
+                                <Ban className="w-5 h-5" /> Cancelar solicitud
                             </BotonSecundario>
                         )}
                     </div>
@@ -250,25 +272,25 @@ export default function SolicitudesPage() {
 
 function Dato({ label, valor }: { label: string; valor: string }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 p-3">
-            <dt className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">{label}</dt>
-            <dd className="mt-1 font-semibold text-gray-900 dark:text-white">{valor}</dd>
+        <div className="rounded-2xl bg-simar-papel px-4 py-3.5">
+            <dt className="text-[15px] font-bold text-simar-texto-2">{label}</dt>
+            <dd className="mt-0.5 text-[20px] font-extrabold leading-tight text-simar-texto">{valor}</dd>
         </div>
     );
 }
 
 function Nota({ titulo, children }: { titulo: string; children: React.ReactNode }) {
     return (
-        <div className="rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 p-3.5">
-            <p className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1.5">{titulo}</p>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{children}</p>
+        <div className="rounded-2xl bg-simar-papel border border-simar-borde p-4">
+            <p className="text-[15px] font-bold text-simar-texto-2 mb-1.5">{titulo}</p>
+            <p className="text-[17px] text-simar-texto leading-relaxed whitespace-pre-wrap">{children}</p>
         </div>
     );
 }
 
 function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) {
     return (
-        <th className={`px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ${className}`}>
+        <th className={`px-4 sm:px-6 py-3.5 text-left text-[15px] font-bold text-simar-texto-2 ${className}`}>
             {children}
         </th>
     );

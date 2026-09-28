@@ -1,61 +1,57 @@
 import Link from 'next/link';
-import Image from 'next/image';
-import { getTranslations } from 'next-intl/server';
-import { createServerClient } from '@/lib/supabase/server';
-import logoIcon from '@/Contexto-DCK/logo_dck_no_letras.png';
-import { DashboardBackground } from '@/components/dashboard/DashboardBackground';
+import { BarChart3, Building2, ChevronRight, FileText, Scale, Ship, Users, type LucideIcon } from 'lucide-react';
+import { LogoSimar } from '@/components/layout/LogoSimar';
 
 export const dynamic = 'force-dynamic';
 
-// Componente de Tarjeta Grande para el menú principal
+// Tarjeta grande de acción del Panel (ver DISEÑO_SIMAR.md → "Tarjeta de acción")
 const ActionCard = ({
   title,
-  icon,
+  Icon,
   description,
-  href
+  href,
+  principal = false,
+  tono,
+  delay,
 }: {
   title: string;
-  icon: React.ReactNode;
+  Icon: LucideIcon;
   description: string;
   href: string;
+  principal?: boolean;
+  tono: string;
+  delay: string;
 }) => (
+  // En celular la tarjeta es horizontal (ícono, texto y flecha) para que las tres quepan en una
+  // pantalla; desde 768 px vuelve a ser la tarjeta alta del diseño.
   <Link
     href={href}
-    className="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl shadow-lg dark:shadow-gray-950/50 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-2xl bg-white dark:bg-gray-800 hover:bg-blue-500 dark:hover:bg-blue-600 border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 w-full h-48 md:h-56 group"
+    style={{ animationDelay: delay }}
+    className={`simar-aparece simar-tarjeta-accion flex flex-row items-center gap-5 min-h-[112px] p-5 md:flex-col md:items-stretch md:gap-0 md:min-h-[250px] md:p-7 rounded-[28px] ${principal
+      ? 'bg-simar-marea text-white shadow-simar'
+      : 'bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto'
+      }`}
   >
-    <div className="p-4 rounded-xl mb-3 transition-all bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-400 dark:group-hover:bg-blue-500">
-      <div className="transition-colors group-hover:[&_svg]:text-white">
-        {icon}
-      </div>
-    </div>
-    <h3 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white text-center transition-colors">{title}</h3>
-    <p className="text-gray-500 dark:text-gray-400 group-hover:text-blue-100 text-center text-sm md:text-base mt-2 transition-colors">{description}</p>
+    <span className={`w-16 h-16 md:w-[72px] md:h-[72px] flex-shrink-0 rounded-full flex items-center justify-center ${principal ? 'bg-white text-[#1B5FC9]' : tono}`}>
+      <Icon className="w-[30px] h-[30px] md:w-[34px] md:h-[34px]" strokeWidth={2} />
+    </span>
+    <span className="flex-1 min-w-0 flex flex-col md:mt-auto md:pt-6">
+      <span className="text-[26px] md:text-[32px] font-extrabold leading-tight">{title}</span>
+      <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2'}`}>{description}</span>
+    </span>
+    <ChevronRight aria-hidden="true" className={`md:hidden w-7 h-7 flex-shrink-0 ${principal ? 'text-white/80' : 'text-simar-texto-2'}`} strokeWidth={2} />
   </Link>
 );
 
-// Iconos SVG grandes y claros
-const ManifiestoIcon = () => (
-  <svg className="w-12 h-12 md:w-14 md:h-14 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-  </svg>
-);
-
-const BasuronIcon = () => (
-  <svg className="w-12 h-12 md:w-14 md:h-14 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-  </svg>
-);
-
-const EstadisticasIcon = () => (
-  <svg className="w-12 h-12 md:w-14 md:h-14 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-  </svg>
-);
-
-const ShipIcon = () => (
-  <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15l5.12-5.12A3 3 0 0110.24 9H13a2 2 0 012 2v5.5M3 15v3a3 3 0 003 3h12a3 3 0 003-3v-3M3 15h18" />
-  </svg>
+const OtraSeccion = ({ href, Icon, label }: { href: string; Icon: LucideIcon; label: string }) => (
+  <Link
+    href={href}
+    className="simar-presiona min-h-[60px] px-6 rounded-[18px] bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto text-[19px] font-bold flex items-center gap-3 hover:bg-simar-superficie hover:border-simar-marea"
+  >
+    <Icon className="w-6 h-6 text-simar-marea-tinta" strokeWidth={2} />
+    {label}
+    <ChevronRight aria-hidden="true" className="sm:hidden ml-auto w-6 h-6 text-simar-texto-2" strokeWidth={2} />
+  </Link>
 );
 
 export default async function DashboardPage({
@@ -66,101 +62,68 @@ export default async function DashboardPage({
   const { locale } = await params;
 
   return (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center relative">
-      <DashboardBackground />
-      <div className="relative z-10 w-full">
-        {/* Hero Banner */}
-        <div className="w-full max-w-5xl mx-auto mb-12 px-4">
-          <div className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/50 to-white dark:from-gray-800 dark:via-gray-800/50 dark:to-gray-800 border border-blue-100/60 dark:border-gray-700 rounded-[2.5rem] p-8 md:p-12 shadow-xl shadow-blue-900/5 dark:shadow-gray-950/50">
-            {/* Decoración de fondo */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/5 dark:bg-blue-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-400/5 dark:bg-teal-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
-
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-6 md:gap-10">
-              {/* Logo */}
-              <div className="relative w-48 h-48 md:w-64 md:h-64 transition-transform hover:scale-105 duration-500">
-                <Image
-                  src={logoIcon}
-                  alt="SiMAR"
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-
-              {/* Texto */}
-              <div className="text-center md:text-left flex flex-col items-center md:items-start">
-                <h1 className="text-7xl md:text-8xl font-black text-gray-900 dark:text-white leading-none tracking-tighter mb-2">
-                  SiMAR
-                </h1>
-                <div className="h-1.5 w-24 bg-gradient-to-r from-blue-500 to-teal-400 rounded-full mb-4"></div>
-                <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400 font-medium tracking-[0.25em] uppercase">
-                  Sistema Integral de Manejo Ambiental de Residuos
-                </p>
-              </div>
-            </div>
-
-            {/* Separador sutil */}
-            <div className="w-full h-px bg-gradient-to-r from-transparent via-blue-100 dark:via-gray-600 to-transparent my-8"></div>
-
-            {/* Saludo Integrado */}
-            <div className="text-center relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-white mb-2">
-                ¡Hola! 👋 ¿Qué vamos a hacer hoy?
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 text-lg">Selecciona una opción del panel de control</p>
-            </div>
+    <div className="relative max-w-[1600px]">
+      {/* Encabezado: marca SiMAR + saludo */}
+      <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9">
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {/* En celular la marca es más chica: el saludo es lo importante */}
+          <LogoSimar variante="simbolo" tamano={64} className="md:hidden" />
+          <LogoSimar variante="simbolo" tamano={92} className="hidden md:inline-flex" />
+          <div>
+            <LogoSimar variante="nombre" tamano={60} className="md:hidden" />
+            <LogoSimar variante="nombre" tamano={80} className="hidden md:inline-flex" />
+            <p className="mt-2 md:mt-2.5 text-[15px] md:text-[17px] leading-snug text-simar-texto-2 max-w-[240px]">
+              Sistema Integral de Manejo Ambiental de Residuos
+            </p>
           </div>
         </div>
-
-        {/* Tarjetas de Acciones - Layout horizontal */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full px-4">
-          <ActionCard
-            title="Manifiesto"
-            icon={<ManifiestoIcon />}
-            description="Recolección de barco"
-            href={`/${locale}/dashboard/manifiesto`}
-          />
-          <ActionCard
-            title="Basurón"
-            icon={<BasuronIcon />}
-            description="Pesar en relleno"
-            href={`/${locale}/dashboard/manifiesto-basuron`}
-          />
-          <ActionCard
-            title="Estadísticas"
-            icon={<EstadisticasIcon />}
-            description="Ver reportes y KPI"
-            href={`/${locale}/dashboard/estadisticas`}
-          />
+        <div aria-hidden="true" className="hidden md:block w-px self-stretch bg-simar-borde" />
+        <div>
+          <h1 className="text-3xl md:text-[38px] font-extrabold leading-tight tracking-tight text-simar-texto">
+            ¡Hola! ¿Qué vamos a hacer hoy?
+          </h1>
+          <p className="mt-2 text-lg md:text-xl text-simar-texto-2">Selecciona una opción del panel de control.</p>
         </div>
+      </section>
 
-        {/* Accesos rápidos a otras secciones */}
-        <div className="mt-10 text-center">
-          <p className="text-gray-400 dark:text-gray-500 text-sm mb-3">Otras secciones</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              href={`/${locale}/dashboard/embarcaciones`}
-              className="px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors"
-            >
-              🚢 Embarcaciones
-            </Link>
-            <Link
-              href={`/${locale}/dashboard/personas`}
-              className="px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors"
-            >
-              👥 Personas
-            </Link>
-            <Link
-              href={`/${locale}/dashboard/asociaciones`}
-              className="px-4 py-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-sm transition-colors"
-            >
-              🏢 Asociaciones
-            </Link>
-          </div>
-        </div>
+      {/* Acciones principales */}
+      <div className="mt-5 md:mt-7 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <ActionCard
+          title="Manifiesto"
+          Icon={FileText}
+          description="Recolección de barco"
+          href={`/${locale}/dashboard/manifiesto`}
+          principal
+          tono=""
+          delay="0.08s"
+        />
+        <ActionCard
+          title="Basurón"
+          Icon={Scale}
+          description="Pesar en relleno"
+          href={`/${locale}/dashboard/manifiesto-basuron`}
+          tono="bg-simar-arrecife-suave text-simar-arrecife-tinta"
+          delay="0.14s"
+        />
+        <ActionCard
+          title="Estadísticas"
+          Icon={BarChart3}
+          description="Ver reportes y KPI"
+          href={`/${locale}/dashboard/estadisticas`}
+          tono="bg-simar-violeta-suave text-simar-violeta"
+          delay="0.2s"
+        />
       </div>
+
+      {/* Accesos rápidos a otras secciones */}
+      <section className="simar-aparece mt-9" style={{ animationDelay: '0.26s' }}>
+        <h2 className="text-xl font-bold text-simar-texto-2">Otras secciones</h2>
+        <div className="mt-3.5 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-3.5">
+          <OtraSeccion href={`/${locale}/dashboard/embarcaciones`} Icon={Ship} label="Embarcaciones" />
+          <OtraSeccion href={`/${locale}/dashboard/personas`} Icon={Users} label="Personas" />
+          <OtraSeccion href={`/${locale}/dashboard/asociaciones`} Icon={Building2} label="Asociaciones" />
+        </div>
+      </section>
     </div>
   );
 }
-

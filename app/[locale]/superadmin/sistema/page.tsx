@@ -110,10 +110,10 @@ function TarjetaMantenimiento({
             <div className="space-y-4">
                 <div
                     className={`flex items-center justify-between gap-3 rounded-xl px-4 py-3 ${
-                        valor.activo ? 'bg-violet-50 dark:bg-violet-900/20' : 'bg-gray-50 dark:bg-gray-800/50'
+                        valor.activo ? 'bg-simar-violeta-suave' : 'bg-simar-papel'
                     }`}
                 >
-                    <span className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                    <span className="flex items-center gap-2 text-base font-semibold text-simar-texto">
                         <Wrench className="w-4 h-4" />
                         {valor.activo ? 'Activo' : 'Desactivado'}
                     </span>
@@ -187,8 +187,8 @@ function TarjetaAviso({
     return (
         <Tarjeta titulo="Aviso global" subtitulo="Banner en los paneles de administrador y recolector">
             <div className="space-y-4">
-                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800/50">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-simar-papel">
+                    <span className="flex items-center gap-2 text-base font-semibold text-simar-texto">
                         <Megaphone className="w-4 h-4" />
                         {activo ? 'Visible' : 'Oculto'}
                     </span>
@@ -264,20 +264,20 @@ function TarjetaSuscripciones({
     return (
         <Tarjeta titulo="Reglas de suscripción" subtitulo="Qué pasa cuando una asociación no está al corriente">
             <div className="space-y-4">
-                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-gray-50 dark:bg-gray-800/50">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+                <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-simar-papel">
+                    <span className="flex items-center gap-2 text-base font-semibold text-simar-texto">
                         <ShieldAlert className="w-4 h-4" />
                         Suscripción obligatoria
                     </span>
                     <Interruptor activo={obligatorias} onChange={setObligatorias} etiqueta="Suscripción obligatoria" />
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+                <p className="text-[15px] text-simar-texto-2">
                     {obligatorias
                         ? 'Una asociación sin suscripción en prueba o activa (sin vencer) no puede crear solicitudes de recolección.'
                         : 'Las suscripciones son informativas: ninguna asociación se bloquea por no pagar.'}
                 </p>
                 {obligatorias && bloqueadas.length > 0 && (
-                    <p className="rounded-lg bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/40 px-3 py-2 text-xs text-amber-800 dark:text-amber-300">
+                    <p className="rounded-lg bg-simar-coral-suave border border-simar-coral/30 px-3 py-2 text-[15px] text-simar-coral">
                         {bloqueadas.length} asociación(es) activa(s) quedarían bloqueadas:{' '}
                         {bloqueadas
                             .slice(0, 4)
@@ -323,7 +323,7 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                                 href={`https://supabase.com/dashboard/project/${ref}`}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-violet-700 dark:text-violet-300 hover:underline"
+                                className="inline-flex items-center gap-1 text-[15px] font-semibold text-simar-violeta hover:underline"
                             >
                                 Abrir Supabase <ExternalLink className="w-3.5 h-3.5" />
                             </a>
@@ -331,7 +331,7 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                     }
                 >
                     <table className="w-full">
-                        <thead className="border-y border-gray-200 dark:border-gray-800">
+                        <thead className="border-y border-simar-borde">
                             <tr>
                                 <th className={thCls}>Bucket</th>
                                 <th className={thCls}>Acceso</th>
@@ -339,12 +339,12 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                                 <th className={`${thCls} text-right`}>Tamaño</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        <tbody className="divide-y divide-simar-borde-suave">
                             {metricas.storage.map((b) => (
                                 <tr key={b.bucket}>
-                                    <td className={`${tdCls} font-mono text-xs`}>{b.bucket}</td>
+                                    <td className={`${tdCls} font-mono text-[15px]`}>{b.bucket}</td>
                                     <td className={tdCls}>
-                                        <span className={`text-xs font-semibold ${b.publico ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                        <span className={`text-[15px] font-semibold ${b.publico ? 'text-simar-coral' : 'text-simar-arrecife-tinta'}`}>
                                             {b.publico ? 'Público' : 'Privado'}
                                         </span>
                                     </td>
@@ -359,17 +359,17 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                 <Tarjeta titulo="Tablas" subtitulo="Filas exactas y tamaño en disco (con índices)" sinPadding>
                     <div className="max-h-[420px] overflow-y-auto">
                         <table className="w-full">
-                            <thead className="sticky top-0 bg-white dark:bg-gray-900 border-y border-gray-200 dark:border-gray-800">
+                            <thead className="sticky top-0 bg-simar-superficie border-y border-simar-borde">
                                 <tr>
                                     <th className={thCls}>Tabla</th>
                                     <th className={`${thCls} text-right`}>Filas</th>
                                     <th className={`${thCls} text-right`}>Tamaño</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            <tbody className="divide-y divide-simar-borde-suave">
                                 {tablas.map((t) => (
                                     <tr key={t.tabla}>
-                                        <td className={`${tdCls} font-mono text-xs`}>{t.tabla}</td>
+                                        <td className={`${tdCls} font-mono text-[15px]`}>{t.tabla}</td>
                                         <td className={`${tdCls} text-right tabular-nums`}>{formatoNumero(t.filas)}</td>
                                         <td className={`${tdCls} text-right tabular-nums`}>{formatoBytes(t.bytes)}</td>
                                     </tr>

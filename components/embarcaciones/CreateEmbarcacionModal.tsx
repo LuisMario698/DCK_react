@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { hoyLocal } from '@/lib/utils/fechas';
 import { useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createBuque, updateBuque } from '@/lib/services/buques';
 import { Buque } from '@/types/database';
@@ -83,34 +84,34 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 dark:bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold dark:text-white">
+    <div className="simar-velo fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]">
+      <div role="dialog" aria-modal="true" className="simar-ventana w-full max-w-lg bg-simar-superficie rounded-[28px] shadow-2xl p-7">
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <h3 className="text-[22px] font-extrabold leading-tight text-simar-texto">
             {buqueToEdit ? t('tituloEditar') : t('tituloCrear')}
           </h3>
-          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">✖</button>
+          <button onClick={onClose} aria-label="Cerrar" className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-papel text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors"><X className="w-6 h-6" /></button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 block">{t('nombreBuque')} *</label>
+            <label className="text-[17px] font-bold text-simar-texto mb-2 block">{t('nombreBuque')} *</label>
             <input
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Ej: La Perla Negra"
-              className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+              className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
             />
 
 
             {buqueToEdit && (
               <div className="mt-4">
-                <label className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1 block">Estado</label>
+                <label className="text-[17px] font-bold text-simar-texto mb-2 block">Estado</label>
                 <select
                   value={estado}
                   onChange={(e) => setEstado(e.target.value as 'Activo' | 'Inactivo')}
-                  className="w-full border border-gray-300 dark:border-slate-600 rounded-lg px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
                 >
                   <option value="Activo">Activo</option>
                   <option value="Inactivo">Inactivo</option>
@@ -119,18 +120,18 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
             <Button variant="secondary" type="button" onClick={onClose} disabled={loading} className="px-6">
               Cancelar
             </Button>
             <Button type="submit" disabled={loading} className="px-6">
               {loading ? (
                 <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   {buqueToEdit ? 'Guardando...' : 'Creando...'}
                 </span>
               ) : (
-                buqueToEdit ? 'Guardar Cambios' : 'Crear Embarcación'
+                buqueToEdit ? 'Guardar cambios' : 'Crear embarcación'
               )}
             </Button>
           </div>

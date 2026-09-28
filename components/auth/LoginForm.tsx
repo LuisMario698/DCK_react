@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
+import { AlertCircle, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
+import { PalomitaAnimada } from '@/components/ui/movimiento';
 
-import logoSimar from '@/assets/logo_simar.png';
+import { LogoSimar } from '@/components/layout/LogoSimar';
 
 interface LoginFormProps {
     onSuccess?: () => void;
@@ -166,13 +166,13 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
         }
     };
 
+    // Lenguaje de diseño SiMAR (DISEÑO_SIMAR.md): campos de 60 px, letra 18 px, sólo tokens (sin dark:)
     const inputBase =
-        'w-full rounded-xl border bg-white/60 dark:bg-slate-900/60 border-slate-300 dark:border-slate-700 ' +
-        'px-10 py-2.5 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 ' +
-        'outline-none transition-all duration-200 backdrop-blur-sm ' +
-        'focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 dark:focus:border-cyan-400';
+        'w-full min-h-[60px] rounded-[14px] border-2 bg-simar-superficie border-simar-campo-borde ' +
+        'pl-12 pr-4 text-lg text-simar-texto placeholder:text-simar-texto-3 ' +
+        'outline-none transition-colors duration-200 focus:border-simar-marea-tinta';
 
-    const iconoCampo = 'pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500';
+    const iconoCampo = 'pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 w-[22px] h-[22px] text-simar-texto-2';
 
     const { titulo, subtitulo } = TITULOS[view];
     const esFlujoCodigo = view === 'verify' || view === 'reset_password';
@@ -180,22 +180,18 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
     return (
         <div className="w-full">
             {showLogo && (
-                <div className="mb-7 flex flex-col items-center">
-                    <Image
-                        src={logoSimar}
-                        alt="SiMAR"
-                        priority
-                        className="h-20 w-auto object-contain"
-                    />
+                <div className="mb-4 flex flex-col items-center">
+                    <LogoSimar variante="simbolo" tamano={64} />
                 </div>
             )}
 
-            <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{titulo}</h2>
-                <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
+            {/* El título entra de nuevo al cambiar de paso (entrar, crear cuenta, código…) */}
+            <div key={view} className="simar-aparece mb-6 text-center">
+                <h2 className="text-[28px] font-extrabold text-simar-texto">{titulo}</h2>
+                <p className="mt-1.5 text-lg text-simar-texto-2">
                     {view === 'verify' ? (
                         <>
-                            Enviado a <span className="font-medium text-slate-700 dark:text-slate-300">{email}</span>
+                            Enviado a <span className="font-bold text-simar-texto">{email}</span>
                         </>
                     ) : (
                         subtitulo
@@ -206,21 +202,21 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
             <form className="space-y-5" onSubmit={handleSubmit} noValidate>
                 <div aria-live="polite" className="space-y-3 empty:hidden">
                     {error && (
-                        <div className="flex items-start gap-2.5 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-3.5 py-3 text-sm text-red-700 dark:text-red-300">
-                            <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <div key={error} className="simar-aparece flex items-start gap-2.5 rounded-[14px] bg-simar-coral-suave px-4 py-3 text-base font-semibold text-simar-coral">
+                            <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
                             <span>{error}</span>
                         </div>
                     )}
                     {message && (
-                        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50 dark:bg-emerald-950/40 px-3.5 py-3 text-sm text-emerald-700 dark:text-emerald-300">
-                            <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        <div key={message} className="simar-aparece flex items-start gap-2.5 rounded-[14px] bg-simar-arrecife-suave px-4 py-3 text-base font-semibold text-simar-arrecife-tinta">
+                            <PalomitaAnimada tamano={20} className="mt-0.5" />
                             <span>{message}</span>
                         </div>
                     )}
                 </div>
 
                 {view === 'register' && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    <p className="text-base text-simar-texto-2 leading-relaxed">
                         El acceso se habilita cuando el administrador del centro de acopio vincula tu correo a tu
                         asociación. Si te registras con otro correo, tu cuenta quedará pendiente de aprobación.
                     </p>
@@ -228,7 +224,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
 
                 {view === 'register' && (
                     <div>
-                        <label htmlFor="fullname" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                        <label htmlFor="fullname" className="block mb-2 text-[17px] font-bold text-simar-texto">
                             Nombre completo
                         </label>
                         <div className="relative">
@@ -250,7 +246,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
 
                 {!esFlujoCodigo && (
                     <div>
-                        <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                        <label htmlFor="email" className="block mb-2 text-[17px] font-bold text-simar-texto">
                             Correo electrónico
                         </label>
                         <div className="relative">
@@ -272,7 +268,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
 
                 {esFlujoCodigo && (
                     <div>
-                        <label htmlFor="token" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                        <label htmlFor="token" className="block mb-2 text-[17px] font-bold text-simar-texto">
                             Código de verificación
                         </label>
                         <input
@@ -286,16 +282,16 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                             required
                             value={token}
                             onChange={(e) => setToken(e.target.value.replace(/\D/g, ''))}
-                            className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white/60 dark:bg-slate-900/60 px-4 py-3 text-center font-mono text-2xl tracking-[0.5em] text-slate-900 dark:text-slate-100 placeholder-slate-300 dark:placeholder-slate-700 outline-none backdrop-blur-sm transition-all duration-200 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/15 dark:focus:border-cyan-400"
+                            className="w-full min-h-[64px] rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie px-4 text-center font-mono text-2xl tracking-[0.5em] text-simar-texto placeholder:text-simar-texto-3 outline-none transition-colors focus:border-simar-marea-tinta"
                         />
                         {view === 'verify' && (
-                            <div className="mt-2 flex items-center justify-between text-xs">
-                                <span className="text-slate-400 dark:text-slate-500">¿No llegó? Revisa spam.</span>
+                            <div className="mt-2 flex items-center justify-between text-base">
+                                <span className="text-simar-texto-2">¿No llegó? Revisa spam.</span>
                                 <button
                                     type="button"
                                     onClick={handleResend}
                                     disabled={loading}
-                                    className="font-medium text-cyan-600 dark:text-cyan-400 hover:underline disabled:opacity-50"
+                                    className="min-h-[44px] font-bold text-simar-marea-tinta hover:underline disabled:opacity-50"
                                 >
                                     Reenviar código
                                 </button>
@@ -306,7 +302,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
 
                 {(view === 'login' || view === 'register' || view === 'reset_password') && (
                     <div>
-                        <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                        <label htmlFor="password" className="block mb-2 text-[17px] font-bold text-simar-texto">
                             {view === 'reset_password' ? 'Nueva contraseña' : 'Contraseña'}
                         </label>
                         <div className="relative">
@@ -320,26 +316,26 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className={`${inputBase} pr-10`}
+                                className={`${inputBase} pr-14`}
                             />
                             <button
                                 type="button"
                                 onClick={() => setShowPassword(!showPassword)}
                                 aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-xl text-simar-texto-2 hover:text-simar-texto transition-colors"
                             >
-                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                {showPassword ? <EyeOff className="w-[22px] h-[22px]" /> : <Eye className="w-[22px] h-[22px]" />}
                             </button>
                         </div>
                         {view === 'register' && (
-                            <p className="mt-1.5 text-xs text-slate-400 dark:text-slate-500">Mínimo 6 caracteres.</p>
+                            <p className="mt-1.5 text-base text-simar-texto-2">Mínimo 6 caracteres.</p>
                         )}
                     </div>
                 )}
 
                 {view === 'reset_password' && (
                     <div>
-                        <label htmlFor="confirmPassword" className="block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 mb-1.5">
+                        <label htmlFor="confirmPassword" className="block mb-2 text-[17px] font-bold text-simar-texto">
                             Confirmar contraseña
                         </label>
                         <div className="relative">
@@ -364,7 +360,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                         <button
                             type="button"
                             onClick={() => cambiarVista('forgot_password')}
-                            className="text-sm font-medium text-cyan-600 dark:text-cyan-400 hover:underline"
+                            className="min-h-[44px] text-base font-bold text-simar-marea-tinta hover:underline"
                         >
                             ¿Olvidaste tu contraseña?
                         </button>
@@ -374,11 +370,11 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-600 to-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-600/20 transition-all duration-200 hover:from-cyan-500 hover:to-emerald-500 hover:shadow-cyan-500/30 focus:outline-none focus:ring-4 focus:ring-cyan-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full min-h-[62px] flex items-center justify-center gap-2 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover px-4 text-xl font-extrabold text-white transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                             {view === 'verify' ? 'Verificando…' : 'Procesando…'}
                         </>
                     ) : (
@@ -397,29 +393,29 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                         <button
                             type="button"
                             onClick={() => cambiarVista('register')}
-                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            className="min-h-[44px] text-base text-simar-texto-2 hover:text-simar-texto transition-colors"
                         >
                             ¿No tienes cuenta?{' '}
-                            <span className="font-semibold text-cyan-600 dark:text-cyan-400">Regístrate</span>
+                            <span className="font-bold text-simar-marea-tinta">Regístrate</span>
                         </button>
                     )}
                     {view === 'register' && (
                         <button
                             type="button"
                             onClick={() => cambiarVista('login')}
-                            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            className="min-h-[44px] text-base text-simar-texto-2 hover:text-simar-texto transition-colors"
                         >
                             ¿Ya tienes cuenta?{' '}
-                            <span className="font-semibold text-cyan-600 dark:text-cyan-400">Inicia sesión</span>
+                            <span className="font-bold text-simar-marea-tinta">Inicia sesión</span>
                         </button>
                     )}
                     {(view === 'verify' || view === 'reset_password' || view === 'forgot_password') && (
                         <button
                             type="button"
                             onClick={() => cambiarVista('login')}
-                            className="inline-flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
+                            className="min-h-[44px] inline-flex items-center gap-1.5 text-base text-simar-texto-2 hover:text-simar-texto transition-colors"
                         >
-                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <ArrowLeft className="w-4 h-4" />
                             Volver a iniciar sesión
                         </button>
                     )}

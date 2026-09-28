@@ -21,6 +21,8 @@ import { Recoleccion } from '@/types/database';
 import { getRecolecciones } from '@/lib/services/recolecciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
+import { TarjetaDato } from '@/components/ui/simar';
+import { NumeroAnimado } from '@/components/ui/movimiento';
 
 type Periodo = '1m' | '3m' | '6m' | '1y';
 
@@ -85,17 +87,36 @@ function delta(actual: number, anterior: number): number | 'nuevo' | 'sin_datos'
     return Math.round(((actual - anterior) / anterior) * 100);
 }
 
+// Colores de la gráfica con los tokens SiMAR (cambian solos en modo oscuro):
+// periodo actual = arrecife (verde, línea continua); anterior = marea (azul, punteada).
+const COLOR_ACTUAL = 'var(--simar-arrecife)';
+const COLOR_ANTERIOR = 'var(--simar-marea-tinta)';
+
+/** Globo oscuro (DISEÑO_SIMAR.md → globos): texto blanco; el color va en la muestra de línea. */
 function CustomTooltip({ active, payload, label }: { active?: boolean; payload?: { dataKey: string; name: string; value: number; color: string }[]; label?: string }) {
     if (!active || !payload?.length) return null;
     return (
-        <div className="bg-gray-900 dark:bg-gray-800 text-white text-xs rounded-xl shadow-xl px-4 py-3 border border-white/10 min-w-[160px]">
+        <div className="bg-simar-abismo text-white text-base rounded-2xl shadow-simar px-4 py-3 border border-white/10 min-w-[190px]">
             <p className="font-bold text-white mb-2">{label}</p>
             {payload.map((p) => (
-                <p key={p.dataKey} style={{ color: p.color }} className="font-semibold">
-                    {p.name}: <span className="text-white">{formatCantidad(p.value)} kg</span>
+                <p key={p.dataKey} className="flex items-center justify-between gap-4">
+                    <span className="flex items-center gap-2 text-white/80">
+                        <MuestraLinea punteada={p.dataKey === 'anterior'} color={p.dataKey === 'anterior' ? '#8AB4F8' : '#5FD6A8'} />
+                        {p.name}
+                    </span>
+                    <span className="font-bold">{formatCantidad(p.value)} kg</span>
                 </p>
             ))}
         </div>
+    );
+}
+
+/** Muestra de la leyenda dibujada igual que la línea de la gráfica (continua o punteada). */
+function MuestraLinea({ color, punteada = false }: { color: string; punteada?: boolean }) {
+    return (
+        <svg aria-hidden="true" width="28" height="10" viewBox="0 0 28 10" className="flex-shrink-0">
+            <line x1="1" y1="5" x2="27" y2="5" stroke={color} strokeWidth={3} strokeLinecap="round" strokeDasharray={punteada ? '5 4' : undefined} />
+        </svg>
     );
 }
 
@@ -155,109 +176,105 @@ export default function ImpactoPage() {
 
     const { actual, anterior, serie, composicion, donut } = calculo;
     const cards = [
-        { label: 'CO₂e evitado (estimado)', value: `${formatCantidad(Math.round(actual.co2))} kg`, d: delta(actual.co2, anterior.co2), Icon: Leaf, bg: 'bg-emerald-500/10 dark:bg-emerald-500/20', ic: 'text-emerald-500' },
-        { label: 'Material sólido recolectado', value: `${formatCantidad(actual.kg)} kg`, d: delta(actual.kg, anterior.kg), Icon: Package, bg: 'bg-purple-500/10 dark:bg-purple-500/20', ic: 'text-purple-400' },
-        { label: 'Aceite usado recolectado', value: `${formatCantidad(actual.litros)} L`, d: delta(actual.litros, anterior.litros), Icon: Droplets, bg: 'bg-amber-500/10 dark:bg-amber-500/20', ic: 'text-amber-400' },
-        { label: 'Recolecciones', value: String(actual.recolecciones), d: delta(actual.recolecciones, anterior.recolecciones), Icon: Truck, bg: 'bg-blue-500/10 dark:bg-blue-500/20', ic: 'text-blue-400' },
+        { label: 'CO₂e evitado (estimado)', value: <><NumeroAnimado valor={Math.round(actual.co2)} /> kg</>, d: delta(actual.co2, anterior.co2), Icon: Leaf, tono: 'arrecife' as const },
+        { label: 'Material sólido recolectado', value: <><NumeroAnimado valor={actual.kg} /> kg</>, d: delta(actual.kg, anterior.kg), Icon: Package, tono: 'violeta' as const },
+        { label: 'Aceite usado recolectado', value: <><NumeroAnimado valor={actual.litros} /> L</>, d: delta(actual.litros, anterior.litros), Icon: Droplets, tono: 'coral' as const },
+        { label: 'Recolecciones', value: <NumeroAnimado valor={actual.recolecciones} />, d: delta(actual.recolecciones, anterior.recolecciones), Icon: Truck, tono: 'marea' as const },
     ];
 
     return (
         <div className="space-y-5">
             {error && <ErrorCarga mensaje={error} />}
 
-            {/* Header + filtro */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Impacto ambiental</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                        Calculado a partir de tus recolecciones completadas.
-                    </p>
-                </div>
-                <div className="inline-flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1">
+            {/* Filtro de periodo (el título ya está en la barra de arriba) */}
+            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p className="text-lg text-simar-texto-2">Calculado a partir de tus recolecciones completadas.</p>
+                <div role="group" aria-label="Periodo" className="inline-flex flex-wrap items-center gap-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-2xl p-1.5">
                     {(['1m', '3m', '6m', '1y'] as Periodo[]).map((p) => (
                         <button
                             key={p}
                             onClick={() => setPeriodo(p)}
-                            className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all ${
+                            aria-pressed={periodo === p}
+                            className={`min-h-[44px] px-4 rounded-xl text-base font-bold transition-colors ${
                                 periodo === p
-                                    ? 'bg-emerald-500 text-white shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                                    ? 'bg-simar-marea text-white'
+                                    : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
                             }`}
                         >
-                            {p}
+                            {{ '1m': '1 mes', '3m': '3 meses', '6m': '6 meses', '1y': '1 año' }[p]}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* KPI cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {cards.map((c) => {
-                    const Icon = c.Icon;
-                    return (
-                        <div key={c.label} className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 shadow-sm">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${c.bg}`}>
-                                <Icon className={`w-5 h-5 ${c.ic}`} />
-                            </div>
-                            <p className="text-2xl font-extrabold text-gray-900 dark:text-white leading-tight">{c.value}</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{c.label}</p>
-                            {c.d === 'sin_datos' ? (
-                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Sin datos en este periodo</p>
+            {/* Datos del periodo: formato común (TarjetaDato) con la comparación debajo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+                {cards.map((c, i) => (
+                    <TarjetaDato
+                        key={c.label}
+                        etiqueta={c.label}
+                        valor={c.value}
+                        icono={c.Icon}
+                        tono={c.tono}
+                        className="simar-aparece"
+                        style={{ animationDelay: `${0.04 + i * 0.04}s` }}
+                        detalle={
+                            c.d === 'sin_datos' ? (
+                                'Sin datos en este periodo'
                             ) : (
-                                <p className={`text-xs font-semibold mt-2 flex items-center gap-1 ${typeof c.d === 'number' && c.d < 0 ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                                    <span>{c.d === 'nuevo' ? 'Nuevo' : `${c.d >= 0 ? '↑ +' : '↓ '}${c.d}%`}</span>
-                                    <span className="text-gray-400 dark:text-gray-500 font-normal">vs. periodo anterior</span>
-                                </p>
-                            )}
-                        </div>
-                    );
-                })}
+                                <span className="flex flex-wrap items-center gap-x-1">
+                                    <span className={`font-bold ${typeof c.d === 'number' && c.d < 0 ? 'text-simar-coral' : 'text-simar-arrecife-tinta'}`}>
+                                        {c.d === 'nuevo' ? 'Nuevo' : `${c.d >= 0 ? '↑ +' : '↓ '}${c.d}%`}
+                                    </span>
+                                    vs. periodo anterior
+                                </span>
+                            )
+                        }
+                    />
+                ))}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Área */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
+                <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar" style={{ animationDelay: '0.2s' }}>
+                    <h3 className="text-[21px] font-extrabold leading-tight text-simar-texto mb-5">
                         Material sólido recolectado (kg): periodo actual vs. anterior
                     </h3>
-                    <div className="h-72">
+                    <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={serie} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+                            <AreaChart data={serie} margin={{ top: 8, right: 12, left: -4, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="gradActual" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                                    </linearGradient>
-                                    <linearGradient id="gradAnterior" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                                        <stop offset="5%" stopColor={COLOR_ACTUAL} stopOpacity={0.28} />
+                                        <stop offset="95%" stopColor={COLOR_ACTUAL} stopOpacity={0.0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.15)" />
-                                <XAxis dataKey="mes" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Area type="monotone" dataKey="anterior" name="Periodo anterior" stroke="#3b82f6" strokeWidth={2} fill="url(#gradAnterior)" dot={false} />
-                                <Area type="monotone" dataKey="actual" name="Periodo actual" stroke="#10b981" strokeWidth={2.5} fill="url(#gradActual)" dot={false} />
+                                <CartesianGrid strokeDasharray="4 4" stroke="var(--simar-borde)" vertical />
+                                <XAxis dataKey="mes" tick={{ fontSize: 15, fill: 'var(--simar-texto-2)' }} axisLine={{ stroke: 'var(--simar-borde)' }} tickLine={false} tickMargin={8} />
+                                <YAxis tick={{ fontSize: 15, fill: 'var(--simar-texto-2)' }} axisLine={false} tickLine={false} allowDecimals={false} width={48} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--simar-campo-borde)', strokeWidth: 1 }} />
+                                <Area type="monotone" dataKey="anterior" name="Periodo anterior" stroke={COLOR_ANTERIOR} strokeWidth={2.5} strokeDasharray="6 5" fill="none" dot={false} />
+                                <Area type="monotone" dataKey="actual" name="Periodo actual" stroke={COLOR_ACTUAL} strokeWidth={3} fill="url(#gradActual)" dot={false} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex items-center gap-5 mt-3 justify-center">
-                        <span className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-sm bg-emerald-500" /> Periodo actual
+                    {/* Leyenda dibujada igual que las líneas */}
+                    <div className="flex flex-wrap items-center gap-x-7 gap-y-2 mt-4 justify-center">
+                        <span className="flex items-center gap-2.5 text-base text-simar-texto-2">
+                            <MuestraLinea color={COLOR_ACTUAL} /> Periodo actual
                         </span>
-                        <span className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-sm bg-blue-400" /> Periodo anterior
+                        <span className="flex items-center gap-2.5 text-base text-simar-texto-2">
+                            <MuestraLinea color={COLOR_ANTERIOR} punteada /> Periodo anterior
                         </span>
                     </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                     {/* Composición */}
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Composición de materiales</h3>
+                    <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar" style={{ animationDelay: '0.26s' }}>
+                        <h3 className="text-[21px] font-extrabold text-simar-texto mb-4">Composición de materiales</h3>
                         {composicion.length === 0 ? (
-                            <p className="text-sm text-gray-400 py-6 text-center">Sin recolecciones en este periodo.</p>
+                            <p className="text-base text-simar-texto-2 py-6 text-center">Sin recolecciones en este periodo.</p>
                         ) : (
                             <>
                                 {donut.length > 0 && (
@@ -275,14 +292,14 @@ export default function ImpactoPage() {
                                         </div>
                                     </div>
                                 )}
-                                <ul className="space-y-2">
+                                <ul className="divide-y divide-simar-borde-suave">
                                     {composicion.map((e) => (
-                                        <li key={e.tipo} className="flex items-center justify-between text-sm">
-                                            <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                                                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: TIPO_RESIDUO_HEX[e.tipo] }} />
+                                        <li key={e.tipo} className="flex items-center justify-between py-2.5 text-[17px]">
+                                            <span className="flex items-center gap-2.5 text-simar-texto">
+                                                <span className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ background: TIPO_RESIDUO_HEX[e.tipo] }} />
                                                 {TIPO_RESIDUO_LABEL[e.tipo]}
                                             </span>
-                                            <span className="font-bold text-gray-900 dark:text-white">
+                                            <span className="font-extrabold text-simar-texto">
                                                 {formatCantidad(e.cantidad)} {e.unidad}
                                             </span>
                                         </li>
@@ -293,25 +310,26 @@ export default function ImpactoPage() {
                     </div>
 
                     {/* Equivalencia */}
-                    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-                        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4">Equivalencia ecológica</h3>
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-emerald-500/10">
-                                <TreeDeciduous className="w-5 h-5 text-emerald-500" />
-                            </div>
+                    <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar" style={{ animationDelay: '0.32s' }}>
+                        <h3 className="text-[21px] font-extrabold text-simar-texto mb-4">Equivalencia ecológica</h3>
+                        <div className="flex items-center gap-4">
+                            <span className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 bg-simar-arrecife-suave text-simar-arrecife-tinta">
+                                <TreeDeciduous className="w-7 h-7" strokeWidth={2} />
+                            </span>
                             <div>
-                                <p className="text-xl font-extrabold text-gray-900 dark:text-white leading-tight">
-                                    {formatCantidad(Math.round(actual.co2 / KG_CO2_POR_ARBOL_ANIO))}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">árboles absorbiendo CO₂ durante un año</p>
+                                <NumeroAnimado
+                                    valor={Math.round(actual.co2 / KG_CO2_POR_ARBOL_ANIO)}
+                                    className="block text-[30px] font-extrabold text-simar-texto leading-tight"
+                                />
+                                <p className="text-[17px] text-simar-texto-2">árboles absorbiendo CO₂ durante un año</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <p className="flex items-start gap-2 text-xs text-gray-400 dark:text-gray-500">
-                <Info className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <p className="flex items-start gap-2 text-[15px] text-simar-texto-2">
+                <Info className="w-[18px] h-[18px] flex-shrink-0 mt-0.5" />
                 El CO₂e evitado es una estimación con factores de referencia por tipo de material; no sustituye un
                 inventario de emisiones certificado.
             </p>

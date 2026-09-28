@@ -1,7 +1,7 @@
 'use client';
 
-import { Menu } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 
 const TITLES: Record<string, { title: string; subtitle: string }> = {
     superadmin: { title: 'Resumen', subtitle: 'Estado general de cuentas, suscripciones e ingresos' },
@@ -12,32 +12,26 @@ const TITLES: Record<string, { title: string; subtitle: string }> = {
     sistema: { title: 'Sistema', subtitle: 'Mantenimiento, avisos, reglas y uso de recursos' },
 };
 
-export function HeaderSuperadmin({ onOpenSidebar }: { onOpenSidebar: () => void }) {
+/** Encabezado del superadmin. En celular el menú se abre desde la barra inferior. */
+export function HeaderSuperadmin() {
     const pathname = usePathname();
     const segments = pathname.split('/').filter(Boolean);
     const last = segments[segments.length - 1] || 'superadmin';
     const meta = TITLES[last] ?? TITLES.superadmin;
 
     return (
-        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-            {/* pr extra: el botón flotante de tema (ThemeToggle) ocupa la esquina superior derecha */}
-            <div className="flex items-center justify-between h-16 pl-4 sm:pl-6 lg:pl-8 pr-20 sm:pr-24">
-                <div className="flex items-center gap-3 min-w-0">
-                    <button
-                        onClick={onOpenSidebar}
-                        className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-400"
-                        aria-label="Abrir menú"
-                    >
-                        <Menu className="w-5 h-5" />
-                    </button>
-                    <div className="min-w-0">
-                        <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">{meta.title}</h1>
-                        <p className="hidden sm:block text-xs text-gray-500 dark:text-gray-400 truncate">{meta.subtitle}</p>
-                    </div>
+        <header className="sticky top-3 z-30 mx-4 mt-3 md:mx-6 lg:mx-0 lg:mt-6">
+            <div className="simar-vidrio relative rounded-3xl min-h-[74px] flex items-center justify-between gap-3 pl-4 pr-2 sm:pr-4">
+                <div className="min-w-0">
+                    <h1 className="text-xl font-extrabold text-simar-texto leading-tight truncate">{meta.title}</h1>
+                    <p className="text-[15px] text-simar-texto-2 truncate">{meta.subtitle}</p>
                 </div>
-                <span className="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
-                    Sólo desarrollador
-                </span>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-[15px] font-bold bg-simar-violeta-suave text-simar-violeta">
+                        Sólo desarrollador
+                    </span>
+                    <BotonTemaIcono compacto className="lg:hidden" />
+                </div>
             </div>
         </header>
     );

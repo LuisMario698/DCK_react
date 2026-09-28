@@ -3,7 +3,7 @@
 // Piezas de UI compartidas por el módulo de asociaciones (panel admin y
 // portal recolector).
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Ban, CheckCircle2, Clock, Loader2, Package, Truck, X, XCircle } from 'lucide-react';
 import {
     ESTADO_SOLICITUD_LABEL,
@@ -12,24 +12,22 @@ import {
     type EstadoSolicitud,
     type TipoResiduo,
 } from '@/lib/constants/residuos';
+import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 
 export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
+    // Colores con significado (DISEÑO_SIMAR.md): coral = falta hacer algo, azul = en curso,
+    // verde = completado. Siempre con ícono y texto; sin animaciones en bucle.
     const map = {
-        pendiente: { Icon: Clock, cls: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300', dot: 'bg-orange-500' },
-        aprobada: { Icon: CheckCircle2, cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300', dot: 'bg-emerald-500' },
-        rechazada: { Icon: XCircle, cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', dot: 'bg-red-500' },
-        completada: { Icon: Truck, cls: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', dot: 'bg-blue-500' },
-        cancelada: { Icon: Ban, cls: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400', dot: 'bg-gray-400' },
+        pendiente: { Icon: Clock, cls: 'bg-simar-coral-suave text-simar-coral' },
+        aprobada: { Icon: CheckCircle2, cls: 'bg-simar-marea-suave text-simar-marea-tinta' },
+        rechazada: { Icon: XCircle, cls: 'bg-[#A63F0E] text-white' },
+        completada: { Icon: Truck, cls: 'bg-simar-arrecife-suave text-simar-arrecife-tinta' },
+        cancelada: { Icon: Ban, cls: 'bg-simar-papel text-simar-texto-2' },
     } as const;
-    const { Icon, cls, dot } = map[estado];
-    const pulse = estado === 'pendiente';
+    const { Icon, cls } = map[estado];
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>
-            <span className="relative flex h-2 w-2">
-                {pulse && <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${dot}`} />}
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${dot}`} />
-            </span>
-            <Icon className="w-3.5 h-3.5" />
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[15px] font-bold whitespace-nowrap ${cls}`}>
+            <Icon className="w-4 h-4" strokeWidth={2.2} />
             {ESTADO_SOLICITUD_LABEL[estado]}
         </span>
     );
@@ -38,11 +36,11 @@ export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
 export function ResiduoBadge({ tipo, size = 'sm' }: { tipo: TipoResiduo; size?: 'sm' | 'md' }) {
     return (
         <span
-            className={`inline-flex items-center gap-1.5 rounded-full font-semibold whitespace-nowrap ${TIPO_RESIDUO_COLOR[tipo]} ${
-                size === 'sm' ? 'px-2.5 py-1 text-[11px]' : 'px-3 py-1.5 text-xs'
+            className={`inline-flex items-center gap-1.5 rounded-full font-bold whitespace-nowrap ${TIPO_RESIDUO_COLOR[tipo]} ${
+                size === 'sm' ? 'px-3 py-1 text-[15px]' : 'px-3.5 py-1.5 text-base'
             }`}
         >
-            <Package className="w-3 h-3" />
+            <Package className="w-4 h-4" />
             {TIPO_RESIDUO_LABEL[tipo]}
         </span>
     );
@@ -61,45 +59,61 @@ export function Modal({
     children: React.ReactNode;
     ancho?: string;
 }) {
+    // Al cerrar desde la ventana (X, clic fuera, Escape) primero se ve la salida y luego se
+    // avisa a la pantalla. Si la pantalla la cierra sola (al guardar), desaparece sin más.
+    const reducir = usePrefiereMenosMovimiento();
+    const [cerrando, setCerrando] = useState(false);
+    const espera = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    useEffect(() => () => clearTimeout(espera.current), []);
+    const cerrar = () => {
+        if (cerrando) return;
+        setCerrando(true);
+        espera.current = setTimeout(onClose, reducir ? 0 : 180);
+    };
+    const cerrarRef = useRef(cerrar);
     useEffect(() => {
-        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+        cerrarRef.current = cerrar;
+    });
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && cerrarRef.current();
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [onClose]);
+    }, []);
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
-            onClick={onClose}
+            className={`${cerrando ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]`}
+            onClick={cerrar}
             role="dialog"
             aria-modal="true"
             aria-label={titulo}
         >
             <div
-                className={`bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-gray-200 dark:border-gray-800 animate-scale-in`}
+                className={`${cerrando ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-simar-borde`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4">
+                <div className="flex items-start justify-between gap-4 px-7 pt-7 pb-5">
                     <div className="min-w-0">
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white">{titulo}</h3>
-                        {subtitulo && <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{subtitulo}</p>}
+                        <h3 className="text-[22px] font-extrabold leading-tight text-simar-texto">{titulo}</h3>
+                        {subtitulo && <p className="text-base text-simar-texto-2 mt-1">{subtitulo}</p>}
                     </div>
                     <button
-                        onClick={onClose}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+                        onClick={cerrar}
+                        className="w-[52px] h-[52px] flex-shrink-0 rounded-2xl bg-simar-papel text-simar-texto flex items-center justify-center hover:bg-simar-borde-suave transition-colors"
                         aria-label="Cerrar"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-6 h-6" />
                     </button>
                 </div>
-                <div className="px-6 pb-6 overflow-y-auto">{children}</div>
+                <div className="px-7 pb-7 overflow-y-auto">{children}</div>
             </div>
         </div>
     );
 }
 
 export const inputCls =
-    'w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:opacity-60';
+    'w-full min-h-[56px] px-4 py-3 text-lg rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60';
 
 export function Campo({
     label,
@@ -114,9 +128,9 @@ export function Campo({
 }) {
     return (
         <label className={`block ${className}`}>
-            <span className="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">{label}</span>
+            <span className="block text-[17px] font-bold text-simar-texto mb-2">{label}</span>
             {children}
-            {ayuda && <span className="block text-[11px] text-gray-400 dark:text-gray-500 mt-1">{ayuda}</span>}
+            {ayuda && <span className="block text-[15px] text-simar-texto-2 mt-1.5">{ayuda}</span>}
         </label>
     );
 }
@@ -131,9 +145,9 @@ export function BotonPrimario({
         <button
             {...props}
             disabled={props.disabled || cargando}
-            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 disabled:opacity-60 disabled:cursor-not-allowed transition-all active:scale-95 ${className}`}
+            className={`inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-60 disabled:cursor-not-allowed transition-colors ${className}`}
         >
-            {cargando && <Loader2 className="w-4 h-4 animate-spin" />}
+            {cargando && <Loader2 className="w-5 h-5 animate-spin" />}
             {children}
         </button>
     );
@@ -143,7 +157,7 @@ export function BotonSecundario({ children, className = '', ...props }: React.Bu
     return (
         <button
             {...props}
-            className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60 transition-all active:scale-95 ${className}`}
+            className={`inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto bg-simar-superficie border-2 border-simar-campo-borde hover:border-simar-marea-tinta disabled:opacity-60 transition-colors ${className}`}
         >
             {children}
         </button>
@@ -152,8 +166,8 @@ export function BotonSecundario({ children, className = '', ...props }: React.Bu
 
 export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
     return (
-        <div className="flex items-center justify-center gap-2 py-16 text-sm text-gray-500 dark:text-gray-400">
-            <Loader2 className="w-5 h-5 animate-spin" />
+        <div className="flex items-center justify-center gap-2.5 py-16 text-lg text-simar-texto-2">
+            <Loader2 className="w-6 h-6 animate-spin" />
             {texto}
         </div>
     );
@@ -161,10 +175,10 @@ export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
 
 export function ErrorCarga({ mensaje, onReintentar }: { mensaje: string; onReintentar?: () => void }) {
     return (
-        <div className="rounded-xl border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-900/10 p-4 text-sm text-red-700 dark:text-red-300 flex items-center justify-between gap-3">
+        <div className="rounded-2xl bg-simar-coral-suave p-5 text-base text-simar-texto flex flex-wrap items-center justify-between gap-3">
             <span>{mensaje}</span>
             {onReintentar && (
-                <button onClick={onReintentar} className="font-semibold underline underline-offset-2">
+                <button onClick={onReintentar} className="min-h-[44px] font-bold text-simar-coral underline underline-offset-4">
                     Reintentar
                 </button>
             )}

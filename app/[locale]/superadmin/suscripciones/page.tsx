@@ -196,7 +196,7 @@ export default function SuscripcionesPage() {
                 <>
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="relative flex-1 min-w-[220px] max-w-md">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
                                 placeholder="Buscar asociación, RFC o plan"
@@ -233,7 +233,7 @@ export default function SuscripcionesPage() {
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="border-b border-gray-200 dark:border-gray-800">
+                                    <thead className="border-b border-simar-borde">
                                         <tr>
                                             <th className={thCls}>Asociación</th>
                                             <th className={thCls}>Plan</th>
@@ -244,18 +244,18 @@ export default function SuscripcionesPage() {
                                             <th className={`${thCls} text-right`}>Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tbody className="divide-y divide-simar-borde-suave">
                                         {filtradas.map((a) => {
                                             const s = a.suscripcion;
                                             const limite = s?.plan?.limite_usuarios ?? null;
                                             const dias = s?.vence_el ? diasHasta(s.vence_el) : null;
                                             return (
-                                                <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/40">
+                                                <tr key={a.id} className="hover:bg-simar-papel">
                                                     <td className={tdCls}>
-                                                        <p className="font-medium text-gray-900 dark:text-white">{a.nombre_asociacion}</p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        <p className="font-medium text-simar-texto">{a.nombre_asociacion}</p>
+                                                        <p className="text-[15px] text-simar-texto-2">
                                                             {a.estado === 'Activo' ? a.rfc || 'Sin RFC' : (
-                                                                <span className="font-semibold text-red-600 dark:text-red-400">
+                                                                <span className="font-semibold text-simar-coral">
                                                                     Asociación {a.estado.toLowerCase()}
                                                                 </span>
                                                             )}
@@ -264,11 +264,11 @@ export default function SuscripcionesPage() {
                                                     <td className={tdCls}>
                                                         {s ? (
                                                             <>
-                                                                <p className="text-gray-900 dark:text-white">{s.plan?.nombre ?? '—'}</p>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">{CICLO_LABEL[s.ciclo]}</p>
+                                                                <p className="text-simar-texto">{s.plan?.nombre ?? '—'}</p>
+                                                                <p className="text-[15px] text-simar-texto-2">{CICLO_LABEL[s.ciclo]}</p>
                                                             </>
                                                         ) : (
-                                                            <span className="text-gray-400">—</span>
+                                                            <span className="text-simar-texto-2">—</span>
                                                         )}
                                                     </td>
                                                     <td className={`${tdCls} text-right tabular-nums whitespace-nowrap`}>
@@ -284,26 +284,26 @@ export default function SuscripcionesPage() {
                                                             <>
                                                                 <p>{formatoFecha(s.vence_el)}</p>
                                                                 <p
-                                                                    className={`text-xs ${
+                                                                    className={`text-[15px] ${
                                                                         dias! < 0
-                                                                            ? 'text-red-600 dark:text-red-400'
+                                                                            ? 'text-simar-coral'
                                                                             : dias! <= DIAS_AVISO
-                                                                              ? 'text-amber-600 dark:text-amber-400'
-                                                                              : 'text-gray-500 dark:text-gray-400'
+                                                                              ? 'text-simar-coral'
+                                                                              : 'text-simar-texto-2'
                                                                     }`}
                                                                 >
                                                                     {dias! < 0 ? `Venció hace ${-dias!} día(s)` : dias === 0 ? 'Vence hoy' : `En ${dias} día(s)`}
                                                                 </p>
                                                             </>
                                                         ) : (
-                                                            <span className="text-gray-500 dark:text-gray-400">Sin vencimiento</span>
+                                                            <span className="text-simar-texto-2">Sin vencimiento</span>
                                                         )}
                                                     </td>
                                                     <td className={`${tdCls} tabular-nums`}>
                                                         <span
                                                             className={
                                                                 limite !== null && a.usuarios > limite
-                                                                    ? 'font-semibold text-red-600 dark:text-red-400'
+                                                                    ? 'font-semibold text-simar-coral'
                                                                     : ''
                                                             }
                                                         >
@@ -403,13 +403,13 @@ export default function SuscripcionesPage() {
                 >
                     {cambioEstado.estado === 'Activo' ? (
                         <p>
-                            <strong className="text-gray-900 dark:text-white">{cambioEstado.nombre_asociacion}</strong> podrá
+                            <strong className="text-simar-texto">{cambioEstado.nombre_asociacion}</strong> podrá
                             consultar su historial y escribir al centro de acopio, pero no crear solicitudes de recolección. Sus
                             usuarios conservan su cuenta.
                         </p>
                     ) : (
                         <p>
-                            <strong className="text-gray-900 dark:text-white">{cambioEstado.nombre_asociacion}</strong> volverá a
+                            <strong className="text-simar-texto">{cambioEstado.nombre_asociacion}</strong> volverá a
                             poder crear solicitudes (si su suscripción está vigente cuando sea obligatoria).
                         </p>
                     )}
@@ -435,7 +435,7 @@ export default function SuscripcionesPage() {
                     }}
                 >
                     <p>
-                        Se eliminará el pago de <strong className="text-gray-900 dark:text-white">{formatoMXN(Number(borrandoPago.monto))}</strong>{' '}
+                        Se eliminará el pago de <strong className="text-simar-texto">{formatoMXN(Number(borrandoPago.monto))}</strong>{' '}
                         del {formatoFecha(borrandoPago.fecha_pago)}. La vigencia de la suscripción no cambia; ajústala a mano si
                         hace falta. Queda registro en la bitácora.
                     </p>
@@ -475,8 +475,8 @@ function TablaPagos({
                         </option>
                     ))}
                 </select>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {pagos.length} pago(s) · <strong className="text-gray-900 dark:text-white">{formatoMXN(total)}</strong>
+                <p className="text-base text-simar-texto-2">
+                    {pagos.length} pago(s) · <strong className="text-simar-texto">{formatoMXN(total)}</strong>
                 </p>
             </div>
 
@@ -490,7 +490,7 @@ function TablaPagos({
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full">
-                            <thead className="border-b border-gray-200 dark:border-gray-800">
+                            <thead className="border-b border-simar-borde">
                                 <tr>
                                     <th className={thCls}>Fecha</th>
                                     <th className={thCls}>Asociación</th>
@@ -502,20 +502,20 @@ function TablaPagos({
                                     <th className={`${thCls} text-right`} />
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                            <tbody className="divide-y divide-simar-borde-suave">
                                 {pagos.map((p) => (
                                     <tr key={p.id}>
                                         <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(p.fecha_pago)}</td>
                                         <td className={tdCls}>{p.suscripcion?.asociacion?.nombre_asociacion ?? '—'}</td>
-                                        <td className={`${tdCls} text-right tabular-nums font-semibold text-gray-900 dark:text-white whitespace-nowrap`}>
+                                        <td className={`${tdCls} text-right tabular-nums font-semibold text-simar-texto whitespace-nowrap`}>
                                             {formatoMXN(Number(p.monto))}
                                         </td>
                                         <td className={tdCls}>{METODO_PAGO_LABEL[p.metodo]}</td>
                                         <td className={tdCls} title={p.notas ?? undefined}>
-                                            {p.referencia ?? <span className="text-gray-400">—</span>}
+                                            {p.referencia ?? <span className="text-simar-texto-2">—</span>}
                                         </td>
                                         <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(p.cubre_hasta)}</td>
-                                        <td className={`${tdCls} whitespace-nowrap text-xs text-gray-500 dark:text-gray-400`}>{hace(p.created_at)}</td>
+                                        <td className={`${tdCls} whitespace-nowrap text-[15px] text-simar-texto-2`}>{hace(p.created_at)}</td>
                                         <td className={`${tdCls} text-right`}>
                                             <BotonIcono icono={Trash2} etiqueta="Eliminar pago" peligro onClick={() => onBorrar(p)} />
                                         </td>
@@ -596,7 +596,7 @@ function ModalSuscripcion({
                     accion={
                         <Link
                             href={urlPlanes}
-                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-600/20 transition-all"
+                            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-base font-semibold text-white bg-simar-marea hover:bg-simar-marea-hover shadow-simar transition-all"
                         >
                             Ir a Planes
                         </Link>
@@ -736,21 +736,21 @@ function ModalSuscripcion({
                     <button
                         type="button"
                         onClick={() => set('vence_el', sumarDias(hoy, diasPrueba))}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="px-3 py-1.5 rounded-lg text-[15px] font-bold bg-simar-papel text-simar-texto hover:bg-simar-borde-suave min-h-[44px]"
                     >
                         Prueba de {diasPrueba} días
                     </button>
                     <button
                         type="button"
                         onClick={() => set('vence_el', siguientePeriodo(baseVencimiento, form.ciclo))}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="px-3 py-1.5 rounded-lg text-[15px] font-bold bg-simar-papel text-simar-texto hover:bg-simar-borde-suave min-h-[44px]"
                     >
                         + 1 periodo {form.ciclo === 'anual' ? '(1 año)' : '(1 mes)'}
                     </button>
                     <button
                         type="button"
                         onClick={() => set('vence_el', null)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                        className="px-3 py-1.5 rounded-lg text-[15px] font-bold bg-simar-papel text-simar-texto hover:bg-simar-borde-suave min-h-[44px]"
                     >
                         Sin vencimiento
                     </button>
@@ -770,7 +770,7 @@ function ModalSuscripcion({
                         <button
                             type="button"
                             onClick={() => setBorrando(true)}
-                            className="text-sm font-semibold text-red-600 dark:text-red-400 hover:underline"
+                            className="text-base font-semibold text-simar-coral hover:underline"
                         >
                             Eliminar suscripción
                         </button>
@@ -872,8 +872,8 @@ function ModalPago({
                     </Campo>
                 </div>
 
-                <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-4 space-y-3">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-900 dark:text-white">
+                <div className="rounded-xl border border-simar-borde p-4 space-y-3">
+                    <label className="flex items-center gap-2 text-base font-medium text-simar-texto">
                         <input type="checkbox" checked={extender} onChange={(e) => setExtender(e.target.checked)} className="rounded" />
                         Extender la vigencia con este pago
                     </label>

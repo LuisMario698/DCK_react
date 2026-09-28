@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Atkinson_Hyperlegible_Next } from "next/font/google";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -8,10 +9,29 @@ import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Avisos } from "@/components/layout/Avisos";
 
+// Tipografía única de SiMAR (Braille Institute, pensada para baja visión). Ver DISEÑO_SIMAR.md.
+const atkinson = Atkinson_Hyperlegible_Next({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-atkinson",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+  adjustFontFallback: false,
+});
+
 export const metadata: Metadata = {
   title: "SiMAR — Sistema Integral de Manejo Ambiental de Residuos",
   description:
     "Gestión digital de manifiestos de residuos de embarcaciones pesqueras en Puerto Peñasco, Sonora. Formato MARPOL Anexo V.",
+};
+
+// Color de la barra del navegador en celular: papel en claro, abismo en oscuro
+export const viewport: Viewport = {
+  // cover: la página llega hasta los bordes y la barra inferior respeta la zona segura (env(safe-area-inset-*))
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#E9E4D9" },
+    { media: "(prefers-color-scheme: dark)", color: "#081624" },
+  ],
 };
 
 export function generateStaticParams() {
@@ -33,8 +53,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className="antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100" suppressHydrationWarning>
+    <html lang={locale} className={atkinson.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body className="simar antialiased bg-simar-papel text-simar-texto" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
             <NextIntlClientProvider messages={messages}>

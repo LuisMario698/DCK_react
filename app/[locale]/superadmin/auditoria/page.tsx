@@ -29,9 +29,9 @@ const TABLAS: { id: string; label: string }[] = [
 ];
 
 const OPERACION: Record<EntradaAuditoria['operacion'], { label: string; cls: string }> = {
-    INSERT: { label: 'Alta', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' },
-    UPDATE: { label: 'Cambio', cls: 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300' },
-    DELETE: { label: 'Baja', cls: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' },
+    INSERT: { label: 'Alta', cls: 'bg-simar-arrecife-suave text-simar-arrecife-tinta' },
+    UPDATE: { label: 'Cambio', cls: 'bg-simar-marea-suave text-simar-marea-tinta' },
+    DELETE: { label: 'Baja', cls: 'bg-simar-coral-suave text-simar-coral' },
 };
 
 /** Columnas que cambian solas y no aportan al leer un cambio. */
@@ -113,7 +113,7 @@ export default function AuditoriaPage() {
                     onChange={(e) => setUsuario(e.target.value)}
                     aria-label="Correo del usuario"
                 />
-                <label className="text-xs text-gray-500 dark:text-gray-400">
+                <label className="text-[15px] text-simar-texto-2">
                     Desde
                     <input
                         type="date"
@@ -122,7 +122,7 @@ export default function AuditoriaPage() {
                         onChange={(e) => filtrar({ desde: e.target.value || undefined })}
                     />
                 </label>
-                <label className="text-xs text-gray-500 dark:text-gray-400">
+                <label className="text-[15px] text-simar-texto-2">
                     Hasta
                     <input
                         type="date"
@@ -138,7 +138,7 @@ export default function AuditoriaPage() {
                             setUsuario('');
                             setPagina(0);
                         }}
-                        className="inline-flex items-center gap-1 px-3 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                        className="inline-flex items-center gap-1 px-3 py-2 text-base font-bold text-simar-texto-2 hover:text-simar-texto min-h-[52px]"
                     >
                         <X className="w-4 h-4" />
                         Limpiar
@@ -162,7 +162,7 @@ export default function AuditoriaPage() {
                         <>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
-                                    <thead className="border-b border-gray-200 dark:border-gray-800">
+                                    <thead className="border-b border-simar-borde">
                                         <tr>
                                             <th className={thCls}>Fecha</th>
                                             <th className={thCls}>Tabla</th>
@@ -172,39 +172,39 @@ export default function AuditoriaPage() {
                                             <th className={thCls} />
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <tbody className="divide-y divide-simar-borde-suave">
                                         {datos.entradas.map((e) => {
                                             const op = OPERACION[e.operacion] ?? OPERACION.UPDATE;
                                             const expandida = abierta === e.id;
                                             return (
                                                 <Fragment key={e.id}>
                                                     <tr
-                                                        className="hover:bg-gray-50 dark:hover:bg-gray-800/40 cursor-pointer"
+                                                        className="hover:bg-simar-papel cursor-pointer"
                                                         onClick={() => setAbierta(expandida ? null : e.id)}
                                                     >
                                                         <td className={`${tdCls} whitespace-nowrap`}>{formatoFechaHora(e.created_at)}</td>
                                                         <td className={tdCls}>
                                                             {TABLAS.find((t) => t.id === e.tabla)?.label ?? (
-                                                                <span className="font-mono text-xs">{e.tabla}</span>
+                                                                <span className="font-mono text-[15px]">{e.tabla}</span>
                                                             )}
                                                         </td>
                                                         <td className={tdCls}>
-                                                            <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${op.cls}`}>{op.label}</span>
+                                                            <span className={`px-2 py-0.5 rounded-full text-[15px] font-semibold ${op.cls}`}>{op.label}</span>
                                                         </td>
-                                                        <td className={`${tdCls} font-mono text-xs`}>{resumenRegistro(e)}</td>
-                                                        <td className={tdCls}>{e.usuario_email ?? <span className="text-gray-400">Sistema</span>}</td>
+                                                        <td className={`${tdCls} font-mono text-[15px]`}>{resumenRegistro(e)}</td>
+                                                        <td className={tdCls}>{e.usuario_email ?? <span className="text-simar-texto-2">Sistema</span>}</td>
                                                         <td className={`${tdCls} text-right`}>
                                                             <button
                                                                 aria-expanded={expandida}
                                                                 aria-label={expandida ? 'Ocultar detalle' : 'Ver detalle'}
-                                                                className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                                                                className="p-1 rounded text-simar-texto-2 hover:text-simar-texto min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                                                             >
                                                                 <ChevronDown className={`w-4 h-4 transition-transform ${expandida ? 'rotate-180' : ''}`} />
                                                             </button>
                                                         </td>
                                                     </tr>
                                                     {expandida && (
-                                                        <tr className="bg-gray-50 dark:bg-gray-800/30">
+                                                        <tr className="bg-simar-papel">
                                                             <td colSpan={6} className="px-4 py-3">
                                                                 <DetalleCambio entrada={e} />
                                                             </td>
@@ -217,13 +217,13 @@ export default function AuditoriaPage() {
                                 </table>
                             </div>
 
-                            <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-100 dark:border-gray-800 text-sm text-gray-600 dark:text-gray-400">
+                            <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-simar-borde text-base text-simar-texto-2">
                                 <span>{datos.total.toLocaleString('es-MX')} registro(s)</span>
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={() => setPagina((p) => p - 1)}
                                         disabled={pagina === 0}
-                                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                                        className="p-1.5 rounded-lg hover:bg-simar-papel disabled:opacity-40 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                                         aria-label="Página anterior"
                                     >
                                         <ChevronLeft className="w-4 h-4" />
@@ -234,7 +234,7 @@ export default function AuditoriaPage() {
                                     <button
                                         onClick={() => setPagina((p) => p + 1)}
                                         disabled={pagina + 1 >= totalPaginas}
-                                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40"
+                                        className="p-1.5 rounded-lg hover:bg-simar-papel disabled:opacity-40"
                                         aria-label="Página siguiente"
                                     >
                                         <ChevronRight className="w-4 h-4" />
@@ -272,16 +272,16 @@ function DetalleCambio({ entrada }: { entrada: EntradaAuditoria }) {
         const cambios = Object.keys({ ...antes, ...despues }).filter(
             (k) => !IGNORAR.has(k) && JSON.stringify(antes[k]) !== JSON.stringify(despues[k])
         );
-        if (cambios.length === 0) return <p className="text-xs text-gray-500">Sin cambios de contenido.</p>;
+        if (cambios.length === 0) return <p className="text-[15px] text-simar-texto-2">Sin cambios de contenido.</p>;
         return (
-            <dl className="grid gap-1.5 text-xs">
+            <dl className="grid gap-1.5 text-[15px]">
                 {cambios.map((k) => (
                     <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3">
-                        <dt className="font-mono font-semibold text-gray-600 dark:text-gray-300">{k}</dt>
+                        <dt className="font-mono font-semibold text-simar-texto-2">{k}</dt>
                         <dd className="font-mono break-all">
-                            <span className="text-red-600 dark:text-red-400 line-through">{valor(antes[k])}</span>
-                            <span className="text-gray-400 mx-1.5">→</span>
-                            <span className="text-emerald-700 dark:text-emerald-400">{valor(despues[k])}</span>
+                            <span className="text-simar-coral line-through">{valor(antes[k])}</span>
+                            <span className="text-simar-texto-2 mx-1.5">→</span>
+                            <span className="text-simar-arrecife-tinta">{valor(despues[k])}</span>
                         </dd>
                     </div>
                 ))}
@@ -291,11 +291,11 @@ function DetalleCambio({ entrada }: { entrada: EntradaAuditoria }) {
 
     const datos = entrada.operacion === 'DELETE' ? antes : despues;
     return (
-        <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-xs">
+        <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[15px]">
             {Object.entries(datos).map(([k, v]) => (
                 <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3">
-                    <dt className="font-mono font-semibold text-gray-600 dark:text-gray-300">{k}</dt>
-                    <dd className="font-mono break-all text-gray-700 dark:text-gray-300">{valor(v)}</dd>
+                    <dt className="font-mono font-semibold text-simar-texto-2">{k}</dt>
+                    <dd className="font-mono break-all text-simar-texto">{valor(v)}</dd>
                 </div>
             ))}
         </dl>

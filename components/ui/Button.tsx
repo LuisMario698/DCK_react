@@ -13,18 +13,20 @@ export function Button({
   className = '',
   ...props
 }: ButtonProps) {
-  const baseStyles = 'font-medium transition-all duration-200 rounded-lg inline-flex items-center justify-center';
+  // Lenguaje de diseño SiMAR (DISEÑO_SIMAR.md → Botones): alto mínimo 44/52/60 px, letra ≥ 15 px
+  const baseStyles = 'simar-presiona font-bold rounded-2xl inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-5 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: 'min-h-[44px] px-4 text-[15px]',
+    md: 'min-h-[52px] px-5 text-[17px]',
+    lg: 'min-h-[60px] px-7 text-[19px]',
   };
 
   const variantStyles = {
-    primary: 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm hover:shadow-md dark:bg-blue-600 dark:hover:bg-blue-700',
-    secondary: 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700',
-    danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm hover:shadow-md dark:bg-red-600 dark:hover:bg-red-700',
+    primary: 'bg-simar-marea text-white hover:bg-simar-marea-hover',
+    secondary: 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta',
+    // Coral fijo (#A63F0E, 6.3:1 con blanco) también en oscuro, donde el token coral es claro
+    danger: 'bg-[#A63F0E] text-white hover:bg-[#8C340B]',
   };
 
   return (
