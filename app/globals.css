@@ -1532,7 +1532,8 @@ body.simar [data-sonner-toast] [data-close-button] {
 
 /* Barra inferior: minimizada al bajar (data-mini) quedan sólo los íconos, más baja y angosta */
 .simar-barra-cristal {
-  padding: 4px;
+  /* A los lados 4 px de aire + 3 px que sobresale la gota (GOTA_EXTRA en BarraInferior) */
+  padding: 4px 7px;
   transition: max-width 0.44s var(--simar-frena), padding 0.32s var(--simar-frena);
 }
 .simar-barra-boton {
@@ -1542,6 +1543,8 @@ body.simar [data-sonner-toast] [data-close-button] {
 }
 .simar-barra-etiqueta {
   display: block;
+  /* Lo calcula BarraInferior según el ancho del teléfono (10–12 px) */
+  font-size: var(--barra-letra, 11px);
   /* Nunca más ancha que su botón (todos miden lo mismo); si no cupiera, termina en "…" */
   max-width: min(96px, 100%);
   max-height: 16px;

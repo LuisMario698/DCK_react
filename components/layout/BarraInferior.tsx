@@ -8,6 +8,24 @@ import { useOcultarAlBajar } from './useOcultarAlBajar';
 import { useRefraccion } from '@/components/ui/vidrioLiquido';
 import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 
+/**
+ * Cuánto sobresale la gota de su botón por cada lado con la barra completa (px). La barra reserva
+ * ese margen a los lados (padding 4 + 3 = 7 px, en globals.css): así la gota de la primera y la
+ * última sección queda centrada en su botón y concéntrica con la curva de la barra, y nunca llega a
+ * la palabra del botón vecino.
+ */
+const GOTA_EXTRA = 3;
+/** Relleno lateral de la barra completa (4 px de aire + GOTA_EXTRA) y su borde (1 px) */
+const BARRA_LADO = 4 + GOTA_EXTRA + 1;
+/**
+ * Espacio que la palabra más larga deja libre en su botón: la curva de la cápsula entra ~6.5 px a la
+ * altura de las letras, más 2 px de aire por lado, menos lo que la gota sobresale (2 × 3).
+ */
+const HOLGURA_PALABRA = 11;
+/** Tamaños de las palabras (px). Si ni con el mínimo caben, la barra queda sólo con íconos. */
+const LETRA_MAX = 12;
+const LETRA_MIN = 9.5;
+
 export interface ItemBarraInferior {
     label: string;
     href: string;
@@ -53,7 +71,9 @@ export function BarraInferior({
     const reducir = usePrefiereMenosMovimiento();
     const [bajando] = useOcultarAlBajar();
     const [arrastrando, setArrastrando] = useState(false);
-    const minimizada = bajando && !menuAbierto && !arrastrando;
+    // En teléfonos muy angostos (≈ 330 px o menos) las palabras no caben: sólo íconos, siempre
+    const [soloIconos, setSoloIconos] = useState(false);
+    const minimizada = soloIconos || (bajando && !menuAbierto && !arrastrando);
 
     // Refracción sutil: el fondo sólo se dobla un poco en la orilla de la cápsula
     const [refCristal, cristal] = useRefraccion<HTMLDivElement>({ radio: 999, bisel: 12, fuerza: 18, desenfoque: 4 });
@@ -90,6 +110,34 @@ export function BarraInferior({
 
     // Ancho real de la barra: así el cambio a minimizada se anima de px a px (sin retraso)
     const navRef = useRef<HTMLElement>(null);
+
+    // Tamaño de las palabras según el teléfono (9.5 a 12 px): con el ancho que tendrá cada botón y lo
+    // que mide de verdad la palabra más larga, se elige el mayor tamaño con el que todas caben dentro
+    // de la curva de la gota. Se recalcula al cambiar el ancho y cuando termina de cargar la fuente.
+    const etiquetas = [...items.map((i) => i.label), etiquetaMenu].join('|');
+    useEffect(() => {
+        const nav = navRef.current;
+        const barra = refCristal.current;
+        const lienzo = document.createElement('canvas').getContext('2d');
+        if (!nav || !barra || !lienzo) return;
+        const palabras = etiquetas.split('|');
+        const ajustar = () => {
+            const muestra = barra.querySelector('.simar-barra-etiqueta');
+            if (!muestra) return;
+            const estilo = getComputedStyle(muestra);
+            lienzo.font = `${estilo.fontWeight} 12px ${estilo.fontFamily}`;
+            const mayor = Math.max(...palabras.map((p) => lienzo.measureText(p).width));
+            const anchoBoton = (Math.min(576, nav.clientWidth) - BARRA_LADO * 2) / palabras.length;
+            const cabe = (LETRA_MAX * (anchoBoton - HOLGURA_PALABRA)) / mayor;
+            barra.style.setProperty('--barra-letra', `${Math.min(LETRA_MAX, Math.max(LETRA_MIN, cabe)).toFixed(2)}px`);
+            setSoloIconos(cabe < LETRA_MIN);
+        };
+        ajustar();
+        document.fonts?.ready.then(ajustar);
+        const observador = new ResizeObserver(ajustar);
+        observador.observe(nav);
+        return () => observador.disconnect();
+    }, [etiquetas, refCristal]);
     const [anchoNav, setAnchoNav] = useState(0);
     useEffect(() => {
         const nav = navRef.current;
@@ -244,7 +292,7 @@ function Contenido({ Icono, label, activo, contador }: { Icono: LucideIcon; labe
                 10 a 12 px según la pantalla para que "Estadísticas" quepa con aire dentro de la gota en
                 un botón de igual ancho que los demás (360 px); el mismo peso activa o no, para que no salte al moverse la gota. */}
             <span
-                className={`simar-barra-etiqueta text-[clamp(10px,2.9vw,12px)] leading-[15px] font-bold whitespace-nowrap text-ellipsis transition-colors duration-200 ${
+                className={`simar-barra-etiqueta leading-[15px] font-bold whitespace-nowrap text-ellipsis transition-colors duration-200 ${
                     activo ? 'text-simar-marea-tinta' : 'text-simar-texto'
                 }`}
             >
@@ -322,19 +370,14 @@ function useGotaLiquida({
             const b = i >= 0 ? lista[i] : null;
             if (!b) return null;
             const h = b.offsetHeight;
-            // Con la barra completa la gota (cápsula) es 6 px más ancha por lado que su botón: así su
-            // curva queda fuera de las letras y "Estadísticas" cabe entera. Minimizada (46 px de alto,
-            // sólo íconos) mide lo mismo que el botón; en medio, pasa de una a otra sin saltos.
-            const extra = Math.min(1, Math.max(0, (h - 46) / 12)) * 6;
+            // Con la barra completa la gota (cápsula) sobresale GOTA_EXTRA por lado de su botón, para
+            // que su curva no corte las letras. Minimizada (46 px de alto, sólo íconos) mide lo mismo
+            // que el botón; en medio, pasa de una a otra sin saltos.
+            const extra = Math.min(1, Math.max(0, (h - 46) / 12)) * GOTA_EXTRA;
             const w = b.offsetWidth + extra * 2;
-            // En las orillas se recorre hacia adentro: nunca pasa del primer ni del último botón, así
-            // queda concéntrica con la cápsula de la barra
-            const primero = lista.find(Boolean);
-            const ultimo = [...lista].reverse().find(Boolean);
-            const minX = primero ? primero.offsetLeft : 0;
-            const maxX = ultimo ? ultimo.offsetLeft + ultimo.offsetWidth : barra.clientWidth;
-            // Arrastrando, la gota va bajo el dedo
-            const centro = Math.min(Math.max(x ?? b.offsetLeft + b.offsetWidth / 2, minX + w / 2), maxX - w / 2);
+            // Centrada en su botón (arrastrando, bajo el dedo), sin pasar de 4 px del borde de la barra.
+            // Como la barra reserva ese margen, en reposo nunca hace falta recorrerla.
+            const centro = Math.min(Math.max(x ?? b.offsetLeft + b.offsetWidth / 2, 4 + w / 2), barra.clientWidth - 4 - w / 2);
             return { centro, w, top: b.offsetTop, h };
         };
 

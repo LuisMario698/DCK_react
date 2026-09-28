@@ -695,7 +695,10 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
   y el perfil. Se esconde al bajar y vuelve al subir o al recibir el foco.
 - **Barra inferior** (`BarraInferior`): cápsula de **cristal líquido** plano (16.4) flotante a 10 px del
   borde (respeta la zona segura del teléfono). Cuatro secciones + un botón al final. Palabras de
-  10–12 px (`clamp(10px, 2.9vw, 12px)`). **Todos los botones miden lo mismo** (`flex-1`, sin huecos
+  9.5–12 px: `BarraInferior` mide la palabra más larga con la fuente real y el ancho que tendrá
+  cada botón en ese teléfono, y elige el mayor tamaño con el que todas caben dentro de la gota
+  (variable `--barra-letra`; se recalcula al cambiar el ancho o al cargar la fuente). Si ni a
+  9.5 px cabe (teléfonos de ~330 px o menos), la barra queda sólo con íconos, como minimizada. **Todos los botones miden lo mismo** (`flex-1`, sin huecos
   entre ellos) y la gota también; así "Estadísticas" cabe en 360 px. La palabra activa no cambia de
   peso (sólo de color) para que no salte cuando llega la gota.
   - **Se minimiza al bajar** (`data-mini`): las palabras se cierran, baja de 70 a 56 px y se
@@ -703,9 +706,10 @@ y la landing; el portal de empresas y el superadmin sólo comparten la barra inf
     abajo (`simar-pegada-abajo`) baja con ella (`html[data-barra-mini]`).
   - **La gota** (`simar-gota`) marca la sección activa: un tinte plano y translúcido (gris suave en
     claro, blanco suave en oscuro, sin brillos ni sombras) en forma de **cápsula**. Con la barra
-    completa es 6 px más ancha por lado que su botón, para que su curva no corte las letras (en las
-    orillas se recorre hacia adentro y queda concéntrica con la barra); minimizada mide lo mismo que
-    el botón. Se desliza con física de resorte (la orilla de adelante tira, la de atrás la sigue: se estira, se aplana y se
+    completa sobresale 3 px por lado de su botón (`GOTA_EXTRA`) para que su curva no corte las
+    letras; la barra reserva ese margen a los lados (`padding: 4px 7px`), así la gota de la
+    primera y la última sección queda **centrada** en su botón y concéntrica con la curva de la
+    barra, y nunca toca la palabra del vecino. Minimizada mide lo mismo que el botón. Se desliza con física de resorte (la orilla de adelante tira, la de atrás la sigue: se estira, se aplana y se
     asienta con un vaivén corto). Se va a la sección en cuanto se toca, sin esperar a que cargue.
   - **Arrastrar**: deslizar el dedo de lado sobre la barra levanta la gota, que sigue al dedo; al
     soltar abre la sección que quedó debajo. Un toque normal sigue funcionando igual.
