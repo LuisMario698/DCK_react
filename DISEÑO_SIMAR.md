@@ -219,6 +219,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-tarjeta-accion` | Sube 3 px con sombra al pasar el cursor y baja al presionarla | Sólo tarjetas que llevan a otra pantalla (Panel, KPIs del portal) |
 | `simar-esqueleto` | Bloque con un brillo lento | Sólo esqueletos de carga (es un indicador de carga, por eso puede repetirse) |
 | `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
+| `simar-desplegable` | Baja 6 px desde el campo y aparece (0.2 s); si se abrió arriba del campo, sube | Panel flotante del selector de fecha y hora en computadora (`Desplegable`) |
 | `simar-encabezado-movil` | Con `data-oculto="true"` sube y se desvanece | Encabezado móvil del recinto: se esconde al bajar y vuelve al subir (`useOcultarAlBajar`) |
 | `simar-trazo` | Trazo con `stroke-dasharray: 420` | Heredada; para trazos nuevos usa `simar-dibuja` |
 
@@ -555,8 +556,9 @@ basura marea, basurón arrecife.
   "Superadmin").
 - **Textos cortos y claros** en controles: "1 mes, 3 meses" en vez de "1m, 3m"; "Ver" junto al
   ícono del ojo.
-- El calendario (`react-datepicker`) y el reloj (`TimePicker`) ya se re-pintan con los tokens al
-  final de `app/globals.css` (bloque `body.simar …`); no agregues estilos sueltos para ellos.
+- **Fechas y horas** siempre con `SelectorFecha` y `SelectorHora` (`components/ui/`), nunca con
+  `<input type="date">` / `type="time"` (se ven distinto en cada teléfono) ni con librerías. Ver
+  "Selector de fecha y hora" en la sección 16.
 - **Editar / Guardar / Cancelar** en una ficha de datos son botones de 52 px, no enlaces
   subrayados: "Editar" secundario (borde 2 px); al editar, "Cancelar" secundario y "Guardar"
   principal (marea). Los campos en edición usan `inputCls` (borde de 2 px). Ver
@@ -673,9 +675,9 @@ el modo simple (`/dashboard/simple`).
 En celular (menos de 640 px) SiMAR es **compacto**: se ve más en cada pantalla y se baja menos.
 Es una decisión del proyecto (sep-2026): en teléfono el espacio manda, pero nada baja de los
 mínimos de tacto y lectura (botones ≥ 38–46 px, texto ≥ 13–14 px). **Tableta y escritorio
-conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen el recinto (`DashboardLayout`),
-el portal de empresas (`dashboard-recolector/layout.tsx`, con las mismas reglas que el recinto) y la
-landing; el superadmin sólo comparte la barra inferior.
+conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen los tres paneles con las mismas
+reglas —el recinto (`DashboardLayout`), el portal de empresas (`dashboard-recolector/layout.tsx`) y
+el superadmin (`superadmin/layout.tsx`)— y la landing.
 
 ### 16.1 Dos herramientas (en `app/globals.css`)
 
@@ -700,7 +702,9 @@ landing; el superadmin sólo comparte la barra inferior.
   (`HeaderRecolector`, menos de 1024 px) es la misma píldora con la campana de notificaciones en
   lugar del perfil; como sus pantallas no traen título propio, `TituloPantallaRecolector` pone uno
   con `EncabezadoPantalla` (salvo en Inicio, que tiene su saludo, y en Mensajes, donde manda el chat).
-  En escritorio el portal conserva su encabezado con el título.
+  En el superadmin (`HeaderSuperadmin`) la píldora lleva la marca violeta "Superadmin" y el tema, y
+  `TituloPantallaSuperadmin` pone el título (tono violeta). En escritorio el portal y el superadmin
+  conservan su encabezado con el título.
 - **Barra inferior** (`BarraInferior`): cápsula de **cristal líquido** plano (16.4) flotante a 10 px del
   borde (respeta la zona segura del teléfono). Cuatro secciones + un botón al final. Palabras de
   9.5–12 px: `BarraInferior` mide la palabra más larga con la fuente real y el ancho que tendrá
@@ -730,7 +734,12 @@ landing; el superadmin sólo comparte la barra inferior.
   tiene la suya (`HojaMasRecolector`): la empresa arriba (lleva a su perfil), Historial, Impacto y
   Notificaciones (con su aviso) en mosaico, accesos de superadmin, tema y cerrar sesión; su barra es
   Inicio · Residuos · Solicitudes · Mensajes (con los sin leer) + "Más", y su menú lateral sólo existe
-  en escritorio. En el superadmin el botón sigue siendo "Menú" y abre el menú lateral.
+  en escritorio. El superadmin igual (`HojaMasSuperadmin`): quién eres, Planes y Auditoría en
+  mosaico, los accesos a los otros paneles, tema y cerrar sesión; su barra es Resumen · Cuentas ·
+  **Cobros** · Sistema + "Más" ("Suscripciones" no cabe en cinco botones ni a 9.5 px: una palabra
+  que no cabe deja la barra entera sin palabras, así que la barra usa un nombre corto y la pantalla
+  conserva su título). "Elegir / cambiar asociación" desde la hoja abre su ventana en el layout
+  (`EnlacesPaneles` → `onElegirAsociacion`): dentro de la hoja quedaría debajo de ella.
 - Contenido: `pb-[calc(100px+env(safe-area-inset-bottom))]` en `main` para que la barra no tape
   lo último. Las barras pegadas abajo usan `simar-pegada-abajo` (quedan encima de la barra).
 
@@ -744,18 +753,21 @@ landing; el superadmin sólo comparte la barra inferior.
 | Barra de guardar en una fila | Manifiesto, Basurón | Estado corto a la izquierda ("Aún no hay firmas.") y el botón a la derecha |
 | Fila de chips que se desliza | Filtros, accesos rápidos, pesos rápidos, puertos | `simar-desliza` + `movil:flex-nowrap movil:overflow-x-auto movil:-mx-4 movil:px-4`, chips con `flex-shrink-0 whitespace-nowrap` |
 | Renglón de lista con acciones arriba | Registros de manifiestos y recibos | La celda de acciones va `movil:absolute` a la derecha de la primera línea; ahorra una línea por registro |
-| Tabla que se vuelve bloques | Inventario y Solicitudes (Asociaciones); Mis solicitudes e Historial (portal) | `movil:block` en tabla y tbody, `movil:hidden` en thead y `movil:grid` en cada fila con celdas colocadas |
+| Tabla que se vuelve bloques | Inventario y Solicitudes (Asociaciones); Mis solicitudes e Historial (portal); Cuentas, Invitaciones, Suscripciones, Pagos, Auditoría y Buckets (superadmin) | `movil:block` en tabla y tbody, `movil:hidden` en thead y `movil:grid` en cada fila con celdas colocadas |
 | Conteos en fila | Personas, Embarcaciones, Inventario; Inicio e Impacto (portal) | `TarjetaDato apilada`: ícono y número en la primera línea, etiqueta debajo; tres por fila (dos si llevan flecha o comparación, como en el portal) |
-| KPI compacto | Estadísticas | Ícono y título en una línea, número debajo; dos por fila |
+| KPI compacto | Estadísticas; indicadores del superadmin (`Kpi`: Resumen, Suscripciones, Sistema) | Ícono y título en una línea, número debajo; dos por fila. Si el detalle es largo, en celular una versión corta ("1 por vencer · 0 pendiente(s)") |
 | Lo que se usa, primero | Portal: Inicio | En celular el mapa (sólo muestra dónde está el centro de acopio) baja con `movil:order-2`: primero la actividad reciente |
 | Pantalla para pedir | Portal: Residuos disponibles | Vista propia en celular (`ResiduosCelular`). Arriba, el centro de acopio en una tarjeta corta: foto de 68 px, nombre y cuántos residuos hay, con **Ver mapa** (el mapa sube en una hoja con "Cómo llegar", que abre Google Maps) y **Escribir** (Mensajes). Debajo, los residuos en renglones de una sola tarjeta: círculo con el color y el ícono del material, nombre, cantidad en texto oscuro, notas y **Solicitar** a la derecha ("Agotado" si no hay). Si la empresa eligió sus materiales, `ControlSegmentado` "Todos · Los que recolecto". Las cuatro tarjetas de datos de escritorio no están: el número de residuos va en la tarjeta del centro y "Actualizado hace…" en la de la lista. La hoja de solicitar no abre el teclado sola y su botón principal lleva el ancho sobrante |
 | Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y del portal, y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
-| Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación), Inventario (Agregar residuo) y Mis solicitudes del portal (Nueva solicitud, lleva a Residuos) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
+| Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación), Inventario (Agregar residuo), Mis solicitudes del portal (Nueva solicitud, lleva a Residuos) y el superadmin (Invitar cuenta, Nuevo plan) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
 | Pestañas con su aviso | Asociaciones | En celular las tarjetas de conteo se ocultan. Las cuatro secciones en una fila (ícono arriba, palabra abajo) y **sólo los avisos** van en la esquina del ícono, en coral con un aro del color de fondo (pendientes, sin leer), como en las apps del teléfono. Un número que no pide nada (asociaciones activas) no va en la pestaña: va dentro de su sección ("3 activas de 4 registradas") |
 | Jerarquía de navegación | Asociaciones | Tres niveles que no se parecen: la **barra inferior** (cristal), las **secciones** de la pantalla (pastilla azul rellena, el único azul) y los **filtros** de cada sección (`ControlSegmentado`: canal gris y la opción elegida en blanco). Dos niveles con el mismo azul relleno se leen como uno solo |
 | Filtro segmentado de pocas opciones | Asociaciones → Solicitudes y Asociaciones; portal: Mis solicitudes e Impacto (periodo) | `ControlSegmentado` (`components/asociaciones/ui.tsx`): una fila sin deslizar, palabra de `clamp(12px, 3.6vw, 14px)`. Va dentro de una tarjeta blanca (su canal gris no se ve sobre el fondo de la página). Si hay muchas opciones, se agrupan y se afinan con un selector nativo ("Mostrar: Completadas (3)"): en el recinto **Pendientes · Por recolectar · Historial** (lo que hay que atender primero, con su número; coral si hay pendientes); en el portal **Todas · Activas · Terminadas** ("Activas" como en su Inicio). En tableta y escritorio siguen las pestañas de siempre |
 | Renglón de solicitud | Asociaciones → Solicitudes | Nombre en hasta dos líneas (`movil:line-clamp-2`) con la fecha de recolección debajo; estado a la derecha (etiqueta angosta en celular); residuo y cantidad; la acción principal **con su palabra** (Aprobar, Rechazar, Completar, Comprobante) a la izquierda y las de ícono a la derecha |
 | Formulario en hoja, no en la fila | Asociaciones → Inventario (agregar y editar residuo) | En celular no se edita dentro del renglón: se abre un `Modal` (que ya sube como hoja inferior) como el de "Nueva asociación". El tipo se elige tocando cuadros de dos columnas (color del material y su unidad), la unidad va dentro del campo de cantidad y "Publicado" es un interruptor que ocupa toda la fila. La pantalla decide al abrir con `matchMedia('(max-width: 639px)')`; en tableta y escritorio sigue la edición en la fila |
+| Filtros que se abren | Superadmin → Auditoría | Con cinco filtros o más, en celular van detrás de un botón **Filtros** (con cuántos hay activos y "Limpiar" al lado) que los despliega en dos columnas; a la vista ocuparían media pantalla antes del primer registro |
+| Mucha información por renglón | Superadmin: Cuentas, Suscripciones, Pagos, Auditoría | La primera celda junta en líneas de 13 px lo de las columnas ocultas (rol y asociación; plan, precio y vigencia; método y referencia; registro, fecha y usuario). En Auditoría la fecha va antes del correo: si no cabe, que se corte el correo y no la hora |
+| Gráfica de 12 meses | Superadmin → Resumen (ingresos) | En celular el eje X lleva sólo la inicial del mes (E F M A…): "ene", "feb" no caben en columnas de ~22 px; el mes completo sale al tocar la columna |
 | Chat al alto de la pantalla | Asociaciones → Mensajes; Mensajes del portal | La caja del chat mide `100dvh` menos lo de arriba y la barra (deja 8 px de respiro). En el portal lo de arriba cambia (aviso de superadmin o de suscripción), así que la pantalla mide dónde empieza la caja y lo pasa como `--arriba`: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado. En una columna (< 768 px) primero se ve la lista de conversaciones, salvo que se llegue con "Abrir chat"; para volver, botón de flecha junto al nombre |
 | "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
 | Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
@@ -782,7 +794,34 @@ gota y el encabezado móvil (sólo lo que flota, sección 7).
   los paneles. Es corto (< 0.5 s), sólo ocurre cuando la persona cambia de sección y con "reducir
   movimiento" la gota salta directo.
 
-### 16.5 Cuidado
+### 16.5 Selector de fecha y hora
+
+`SelectorFecha` y `SelectorHora` (`components/ui/`) sobre `Desplegable`. Reemplazan a
+`react-datepicker`, al `TimePicker` de dos listas y a los `<input type="date">` del navegador.
+Trabajan con cadenas: `'YYYY-MM-DD'` (como las columnas `date`) y `'HH:MM'` (24 horas).
+
+- **Dónde se abren.** En computadora y tableta, un panel que flota pegado al campo (debajo, o arriba
+  si no cabe; si no cabe en ningún lado, se recorre para verse completo) y por encima de las
+  ventanas. En celular, una hoja inferior con su título. Van por portal al `<body>`: dentro de una
+  ventana no se recortan, y la ventana de atrás no se cierra al tocar fuera ni con Escape.
+- **El campo.** `variante="campo"`: el campo SiMAR (borde de 2 px, 56 px, ícono y, si es
+  `borrable`, una X). Se ajusta a su propio ancho (`@container`): angosto pierde el ícono y luego
+  la X, para que "28 sep 2026" siempre quepa; en celular nunca lleva X (borrar está en el
+  calendario). `variante="incrustado"`: sólo el texto, dentro de un recuadro de la pantalla
+  (Manifiesto, Basurón), que con `onAbrir`/`onCerrar` resalta su borde.
+- **Calendario.** La semana empieza en domingo (México). Días de 42 px (46 en la hoja); hoy con aro
+  azul, el elegido relleno de azul, los de otro mes en gris y fuera de `min`/`max` apagados. Con
+  `rango` (filtros "desde / hasta") se sombrean los días entre ambas fechas. Tocar el mes abre
+  meses en cuadrícula de 3 × 4 con el año a los lados (nada de listas desplegables). Pie: "Hoy" y,
+  si es borrable, "Borrar fecha". Teclado: flechas día a día, Inicio/Fin de la semana,
+  RePág/AvPág mes (con Mayús, año), Enter elige, Escape cierra y el foco vuelve al campo.
+- **Reloj.** Cuadrículas, no carátula: son más fáciles de atinar y de leer para personas mayores.
+  Arriba la hora grande (hora y minutos se tocan por separado o se cambian con ↑ ↓) y cómo se lee
+  ("2:30 de la tarde"); abajo las 24 horas (la actual con aro) y, al elegir una, los minutos de 5 en
+  5 con ajuste fino ±1. Pie: "Ahora" (pone la hora actual y cierra) y "Listo".
+- La fecha necesita más ancho que la hora: si van juntas, `grid-cols-[1.4fr_1fr]` (Basurón).
+
+### 16.6 Cuidado
 
 - No uses `overflow-x-hidden` en un contenedor que tenga barras `sticky` adentro: lo vuelve
   contenedor de desplazamiento y la barra deja de flotar. Usa `overflow-x-clip`.

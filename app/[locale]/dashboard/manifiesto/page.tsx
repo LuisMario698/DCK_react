@@ -2,10 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import DatePicker, { registerLocale } from 'react-datepicker';
 import { CalendarDays, Check, Download, FilePlus2, FileText, List, PenLine, Search, Upload } from 'lucide-react';
-import { es } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
 import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
 import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
@@ -15,9 +12,8 @@ import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
 import { PestanasMovil } from '@/components/ui/simar';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 
-// Registrar locale español
-registerLocale('es', es);
 
 export default function ManifiestosPage() {
   const t = useTranslations('Manifiestos');
@@ -84,8 +80,8 @@ export default function ManifiestosPage() {
   // Estados para filtros y búsqueda de manifiestos
   const [searchQuery, setSearchQuery] = useState('');
   const [filtroActivo, setFiltroActivo] = useState<'todos' | 'buque' | 'motorista' | 'cocinero' | 'fecha' | 'numero'>('todos');
-  const [fechaFiltroInicio, setFechaFiltroInicio] = useState<Date | null>(null);
-  const [fechaFiltroFin, setFechaFiltroFin] = useState<Date | null>(null);
+  const [fechaFiltroInicio, setFechaFiltroInicio] = useState('');
+  const [fechaFiltroFin, setFechaFiltroFin] = useState('');
   const [showFiltroFecha, setShowFiltroFecha] = useState(false);
   const [filtroSeleccionBuque, setFiltroSeleccionBuque] = useState<number | null>(null);
   const [filtroSeleccionMotorista, setFiltroSeleccionMotorista] = useState<number | null>(null);
@@ -945,30 +941,15 @@ export default function ManifiestosPage() {
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
-                  <DatePicker
-                    selected={formData.fecha_emision ? new Date(formData.fecha_emision + 'T00:00:00') : null}
-                    onChange={(date: Date | null) => {
-                      if (date) {
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        setFormData({ ...formData, fecha_emision: `${year}-${month}-${day}` });
-                      }
-                    }}
-                    onFocus={() => setActiveField('fecha')}
-                    onBlur={() => setActiveField(null)}
-                    dateFormat="dd/MM/yyyy"
-                    locale="es"
-                    showPopperArrow={false}
-                    className="w-full bg-transparent focus:outline-none !text-simar-texto !font-bold text-xl cursor-pointer"
-                    calendarClassName="custom-datepicker"
-                    wrapperClassName="flex-1"
-                    popperClassName="datepicker-popper"
-                    showMonthDropdown
-                    showYearDropdown
-                    dropdownMode="select"
-                    todayButton="Hoy"
+                  <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
+                  <SelectorFecha
+                    variante="incrustado"
+                    etiqueta="Fecha del manifiesto"
+                    valor={formData.fecha_emision}
+                    onCambiar={(fecha) => fecha && setFormData({ ...formData, fecha_emision: fecha })}
+                    onAbrir={() => setActiveField('fecha')}
+                    onCerrar={() => setActiveField(null)}
+                    className="text-xl"
                   />
                 </div>
               </div>
@@ -1624,8 +1605,8 @@ export default function ManifiestosPage() {
                 onClick={() => {
                   setSearchQuery('');
                   setFiltroActivo('todos');
-                  setFechaFiltroInicio(null);
-                  setFechaFiltroFin(null);
+                  setFechaFiltroInicio('');
+                  setFechaFiltroFin('');
                   setShowFiltroFecha(false);
                   setFiltroSeleccionBuque(null);
                   setFiltroSeleccionMotorista(null);
@@ -1705,48 +1686,32 @@ export default function ManifiestosPage() {
 
           {/* Selector de rango de fechas */}
           {showFiltroFecha && filtroActivo === 'fecha' && (
-            <div className="flex flex-wrap items-center gap-4 p-4 bg-simar-papel rounded-2xl border border-simar-borde">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[17px] font-bold text-simar-texto">Desde</span>
-                </div>
-                <DatePicker
-                  selected={fechaFiltroInicio}
-                  onChange={(date) => setFechaFiltroInicio(date)}
-                  dateFormat="dd/MM/yyyy"
-                  locale="es"
-                  placeholderText="Seleccionar fecha"
-                  className="min-h-[52px] px-4 border-2 border-simar-campo-borde rounded-xl focus:outline-none focus:border-simar-marea-tinta text-base w-48 font-bold text-simar-texto bg-simar-superficie placeholder:text-simar-texto-3 placeholder:font-normal"
-                  isClearable
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
+            // En celular las dos fechas lado a lado, con su palabra encima
+            <div className="flex flex-wrap items-center gap-4 p-4 bg-simar-papel rounded-2xl border border-simar-borde movil:grid movil:grid-cols-2 movil:gap-2 movil:p-3">
+              <label className="flex items-center gap-3 movil:flex-col movil:items-stretch movil:gap-1.5">
+                <span className="text-[17px] font-bold text-simar-texto">Desde</span>
+                <SelectorFecha
+                  etiqueta="Desde"
+                  valor={fechaFiltroInicio}
+                  onCambiar={setFechaFiltroInicio}
+                  max={fechaFiltroFin || undefined}
+                  rango={{ desde: fechaFiltroInicio, hasta: fechaFiltroFin }}
+                  borrable
+                  className="w-56 movil:w-full"
                 />
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-[17px] font-bold text-simar-texto">Hasta</span>
-                </div>
-                <DatePicker
-                  selected={fechaFiltroFin}
-                  onChange={(date) => setFechaFiltroFin(date)}
-                  dateFormat="dd/MM/yyyy"
-                  locale="es"
-                  placeholderText="Seleccionar fecha"
-                  className="min-h-[52px] px-4 border-2 border-simar-campo-borde rounded-xl focus:outline-none focus:border-simar-marea-tinta text-base w-48 font-bold text-simar-texto bg-simar-superficie placeholder:text-simar-texto-3 placeholder:font-normal"
-                  isClearable
-                  minDate={fechaFiltroInicio || undefined}
-                  showMonthDropdown
-                  showYearDropdown
-                  dropdownMode="select"
+              </label>
+              <label className="flex items-center gap-3 movil:flex-col movil:items-stretch movil:gap-1.5">
+                <span className="text-[17px] font-bold text-simar-texto">Hasta</span>
+                <SelectorFecha
+                  etiqueta="Hasta"
+                  valor={fechaFiltroFin}
+                  onCambiar={setFechaFiltroFin}
+                  min={fechaFiltroInicio || undefined}
+                  rango={{ desde: fechaFiltroInicio, hasta: fechaFiltroFin }}
+                  borrable
+                  className="w-56 movil:w-full"
                 />
-              </div>
+              </label>
             </div>
           )}
 

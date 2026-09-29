@@ -48,6 +48,7 @@ import {
 } from '@/components/asociaciones/ui';
 import { TarjetaDato, claseChip } from '@/components/ui/simar';
 import { useEsCelular } from '@/components/layout/useEsCelular';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 
 export default function MapaPage() {
     const pathname = usePathname();
@@ -536,7 +537,7 @@ function SolicitarModal({
                         />
                     </Campo>
                     <Campo label="Fecha propuesta de recolección">
-                        <input type="date" min={hoy} value={fecha} onChange={(e) => setFecha(e.target.value)} className={inputCls} />
+                        <SelectorFecha etiqueta="Fecha propuesta de recolección" valor={fecha} onCambiar={setFecha} min={hoy} />
                     </Campo>
                 </div>
                 <Campo label="Mensaje (opcional)" ayuda="Horario, tipo de unidad que enviarás, persona que recoge…">

@@ -1,17 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import { es } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
-import { TimePicker } from '@/components/ui/TimePicker';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
+import { SelectorHora } from '@/components/ui/SelectorHora';
 import { CalendarDays, Check, Clock, Scale, Upload } from 'lucide-react';
 import { horaLocal, hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
-
-// Registrar locale español
-registerLocale('es', es);
 
 interface Buque {
   id: number;
@@ -180,34 +175,21 @@ export function CreateManifiestoBasuronModal({
             <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.06s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del recibo</h2>
 
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 movil:mt-3 movil:grid-cols-2 movil:gap-2.5">
+              {/* La fecha ("28 sep 2026") necesita más ancho que la hora ("22:40") */}
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-[1.4fr_1fr] gap-4 movil:mt-3 movil:grid-cols-[1.4fr_1fr] movil:gap-2.5">
                 {/* FECHA */}
                 <div>
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
                   <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
-                    <DatePicker
-                      selected={formData.fecha ? new Date(formData.fecha + 'T00:00:00') : null}
-                      onChange={(date: Date | null) => {
-                        if (date) {
-                          const year = date.getFullYear();
-                          const month = String(date.getMonth() + 1).padStart(2, '0');
-                          const day = String(date.getDate()).padStart(2, '0');
-                          setFormData({ ...formData, fecha: `${year}-${month}-${day}` });
-                        }
-                      }}
-                      onFocus={() => setActiveField('fecha')}
-                      onBlur={() => setActiveField(null)}
-                      dateFormat="dd/MM/yyyy"
-                      locale="es"
-                      showPopperArrow={false}
-                      className="w-full bg-transparent focus:outline-none !text-simar-texto !font-bold text-xl cursor-pointer"
-                      wrapperClassName="flex-1"
-                      popperClassName="datepicker-popper"
-                      showMonthDropdown
-                      showYearDropdown
-                      dropdownMode="select"
-                      todayButton="Hoy"
+                    <SelectorFecha
+                      variante="incrustado"
+                      etiqueta="Fecha del recibo"
+                      valor={formData.fecha}
+                      onCambiar={(fecha) => fecha && setFormData({ ...formData, fecha })}
+                      onAbrir={() => setActiveField('fecha')}
+                      onCerrar={() => setActiveField(null)}
+                      className="text-xl"
                     />
                   </div>
                 </div>
@@ -217,13 +199,15 @@ export function CreateManifiestoBasuronModal({
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Hora</label>
                   <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <Clock className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
-                    <TimePicker
-                      value={formData.hora_entrada || ''}
-                      onChange={(time) => setFormData({ ...formData, hora_entrada: time })}
-                      onFocus={() => setActiveField('horaEntrada')}
-                      onBlur={() => setActiveField(null)}
-                      className="!px-0 bg-transparent focus:outline-none text-simar-texto text-xl font-bold cursor-pointer"
-                      placeholder="HH:MM"
+                    <SelectorHora
+                      variante="incrustado"
+                      etiqueta="Hora de entrada"
+                      valor={formData.hora_entrada}
+                      onCambiar={(hora) => setFormData({ ...formData, hora_entrada: hora })}
+                      onAbrir={() => setActiveField('horaEntrada')}
+                      onCerrar={() => setActiveField(null)}
+                      marcador="HH:MM"
+                      className="text-xl"
                     />
                   </div>
                 </div>

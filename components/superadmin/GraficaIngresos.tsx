@@ -57,7 +57,7 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
     return (
         <div className="flex gap-2">
             {/* Eje Y: 0, mitad y máximo */}
-            <div className="relative w-10 h-48 flex-shrink-0 text-[15px] tabular-nums text-simar-texto-2">
+            <div className="relative w-10 h-48 flex-shrink-0 text-[15px] tabular-nums text-simar-texto-2 movil:w-8 movil:text-[13px]">
                 {[max, max / 2, 0].map((v, i) => (
                     <span key={v} className="absolute right-0 -translate-y-1/2" style={{ top: `${i * 50}%` }}>
                         {compacto.format(v)}
@@ -113,17 +113,24 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
                     </div>
                 </div>
 
+                {/* En celular sólo la inicial del mes: 12 columnas de ~22 px no caben "ene", "feb"… (el mes
+                    completo sale al tocar la columna) */}
                 <div className="flex mt-1.5 border-t border-simar-borde pt-1.5">
-                    {datos.map((d, i) => (
-                        <span
-                            key={d.mes}
-                            className={`flex-1 text-center text-[15px] capitalize ${
-                                i === datos.length - 1 ? 'font-bold text-simar-texto' : 'text-simar-texto-2'
-                            }`}
-                        >
-                            {MES_CORTO.format(fechaMes(d.mes)).replace('.', '')}
-                        </span>
-                    ))}
+                    {datos.map((d, i) => {
+                        const corto = MES_CORTO.format(fechaMes(d.mes)).replace('.', '');
+                        return (
+                            <span
+                                key={d.mes}
+                                aria-hidden="true"
+                                className={`flex-1 text-center text-[15px] capitalize movil:text-[13px] ${
+                                    i === datos.length - 1 ? 'font-bold text-simar-texto' : 'text-simar-texto-2'
+                                }`}
+                            >
+                                <span className="movil:hidden">{corto}</span>
+                                <span className="hidden movil:inline">{corto.charAt(0)}</span>
+                            </span>
+                        );
+                    })}
                 </div>
             </div>
         </div>

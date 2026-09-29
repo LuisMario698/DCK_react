@@ -44,15 +44,15 @@ export function Tarjeta({
             className={`bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar ${className}`}
         >
             {(titulo || acciones) && (
-                <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-6 pb-3">
+                <header className="flex flex-wrap items-start justify-between gap-3 px-6 pt-6 pb-3 movil:gap-2 movil:px-4 movil:pt-4 movil:pb-2.5">
                     <div className="min-w-0">
-                        {titulo && <h2 className="text-[20px] font-extrabold text-simar-texto">{titulo}</h2>}
-                        {subtitulo && <p className="text-[15px] text-simar-texto-2 mt-0.5">{subtitulo}</p>}
+                        {titulo && <h2 className="text-[20px] font-extrabold text-simar-texto movil:text-[17px]">{titulo}</h2>}
+                        {subtitulo && <p className="text-[15px] text-simar-texto-2 mt-0.5 movil:leading-snug">{subtitulo}</p>}
                     </div>
                     {acciones && <div className="flex flex-wrap items-center gap-2">{acciones}</div>}
                 </header>
             )}
-            <div className={sinPadding ? '' : 'px-6 pb-6'}>{children}</div>
+            <div className={sinPadding ? '' : 'px-6 pb-6 movil:px-4 movil:pb-4'}>{children}</div>
         </section>
     );
 }
@@ -72,25 +72,26 @@ export function Kpi({
     /** Resalta el indicador cuando requiere atención. */
     alerta?: boolean;
 }) {
+    // En celular, dos por fila (como TarjetaDato apilada del recinto): ícono y etiqueta más chicos
     return (
-        <div className="bg-simar-superficie border border-simar-borde rounded-[22px] p-5 shadow-simar">
-            <div className="flex items-center justify-between gap-3">
-                <span className="text-[17px] text-simar-texto-2">{label}</span>
+        <div className="bg-simar-superficie border border-simar-borde rounded-[22px] p-5 shadow-simar movil:p-3">
+            <div className="flex items-center justify-between gap-3 movil:items-start movil:gap-2">
+                <span className="text-[17px] text-simar-texto-2 movil:text-[13px] movil:leading-tight">{label}</span>
                 <span
-                    className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 movil:w-8 movil:h-8 ${
                         alerta
                             ? 'bg-simar-coral-suave text-simar-coral'
                             : 'bg-simar-violeta-suave text-simar-violeta'
                     }`}
                 >
-                    <Icono className="w-6 h-6" />
+                    <Icono className="w-6 h-6 movil:w-[17px] movil:h-[17px]" />
                 </span>
             </div>
-            <p className="mt-3 text-[30px] font-extrabold leading-tight text-simar-texto">
+            <p className="mt-3 text-[30px] font-extrabold leading-tight text-simar-texto movil:mt-1 movil:text-[20px] movil:whitespace-nowrap">
                 {/* Los conteos cuentan al aparecer; los textos (MXN, bytes) se muestran tal cual */}
                 {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
             </p>
-            {detalle && <p className="mt-1 text-[15px] text-simar-texto-2">{detalle}</p>}
+            {detalle && <p className="mt-1 text-[15px] text-simar-texto-2 movil:mt-0.5 movil:text-[13px] movil:leading-snug">{detalle}</p>}
         </div>
     );
 }
@@ -170,43 +171,56 @@ export function Interruptor({
             aria-label={etiqueta}
             disabled={disabled}
             onClick={() => onChange(!activo)}
-            className={`relative inline-flex h-8 w-14 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-simar-marea-tinta focus-visible:ring-offset-2 ${
+            // Medidas en px (32 × 56, bolita de 28): la escala compacta del celular encoge h-8/w-14 pero no
+            // el recorrido de 26 px, y la bolita se salía
+            className={`relative inline-flex h-[32px] w-[56px] flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-simar-marea-tinta focus-visible:ring-offset-2 ${
                 activo ? 'bg-[#5B3FA8]' : 'bg-simar-campo-borde'
             }`}
         >
             <span
-                className={`inline-block h-7 w-7 rounded-full bg-white shadow-simar transition-transform ${
-                    activo ? 'translate-x-[26px]' : 'translate-x-0.5'
+                className={`inline-block h-[28px] w-[28px] rounded-full bg-white shadow-simar transition-transform ${
+                    activo ? 'translate-x-[26px]' : 'translate-x-[2px]'
                 }`}
             />
         </button>
     );
 }
 
+/**
+ * Pestañas de una pantalla (secciones: la pastilla azul). En celular ocupan todo el ancho en partes
+ * iguales y usan `corto` si la palabra no cabe ("Invitaciones pendientes" → "Invitaciones").
+ */
 export function Pestanas<T extends string>({
     pestanas,
     activa,
     onChange,
 }: {
-    pestanas: { id: T; label: string; contador?: number }[];
+    pestanas: { id: T; label: string; corto?: string; contador?: number }[];
     activa: T;
     onChange: (id: T) => void;
 }) {
     return (
-        <div role="tablist" className="inline-flex flex-wrap p-1.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar gap-1">
+        <div role="tablist" className="inline-flex flex-wrap p-1.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar gap-1 movil:flex movil:flex-nowrap movil:w-full movil:p-1">
             {pestanas.map((p) => (
                 <button
                     key={p.id}
                     role="tab"
                     aria-selected={activa === p.id}
                     onClick={() => onChange(p.id)}
-                    className={`min-h-[48px] px-5 rounded-xl text-base font-bold transition-colors ${
+                    className={`simar-presiona min-h-[48px] px-5 rounded-xl text-base font-bold transition-colors movil:flex-1 movil:min-w-0 movil:min-h-[42px] movil:px-2 movil:text-[15px] ${
                         activa === p.id
                             ? 'bg-simar-marea text-white'
                             : 'text-simar-texto-2 hover:text-simar-texto hover:bg-simar-papel'
                     }`}
                 >
-                    {p.label}
+                    {p.corto ? (
+                        <>
+                            <span className="movil:hidden">{p.label}</span>
+                            <span className="hidden movil:inline">{p.corto}</span>
+                        </>
+                    ) : (
+                        p.label
+                    )}
                     {!!p.contador && (
                         <span className={`ml-1.5 text-[15px] font-bold ${activa === p.id ? 'text-white' : 'text-simar-violeta'}`}>{p.contador}</span>
                     )}
@@ -228,8 +242,8 @@ export function EstadoVacio({
     accion?: React.ReactNode;
 }) {
     return (
-        <div className="flex flex-col items-center text-center py-12 px-4">
-            <div className="w-16 h-16 rounded-full bg-simar-papel text-simar-texto-2 flex items-center justify-center mb-3">
+        <div className="flex flex-col items-center text-center py-12 px-4 movil:py-8">
+            <div className="w-16 h-16 rounded-full bg-simar-papel text-simar-texto-2 flex items-center justify-center mb-3 movil:w-12 movil:h-12">
                 <Icono className="w-8 h-8" />
             </div>
             <p className="text-lg font-bold text-simar-texto">{titulo}</p>

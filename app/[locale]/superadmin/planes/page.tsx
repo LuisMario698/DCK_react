@@ -23,6 +23,7 @@ import {
     type PlanInput,
 } from '@/lib/services/suscripciones';
 import { formatoMXN } from '@/lib/constants/suscripciones';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 import type { Plan } from '@/types/database';
 
 export default function PlanesPage() {
@@ -66,13 +67,14 @@ export default function PlanesPage() {
     if (!planes) return <Cargando texto="Cargando planes…" />;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 movil:space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-base text-simar-texto-2 max-w-2xl">
+                <p className="text-base text-simar-texto-2 max-w-2xl movil:text-[14px] movil:leading-snug">
                     Un plan desactivado ya no se ofrece en suscripciones nuevas, pero las existentes lo conservan. Los precios
                     son una referencia: cada suscripción guarda el precio acordado.
                 </p>
-                <BotonPrimario onClick={() => setEditando('nuevo')}>
+                {/* En celular va en la burbuja flotante */}
+                <BotonPrimario onClick={() => setEditando('nuevo')} className="movil:hidden">
                     <Plus className="w-4 h-4" />
                     Nuevo plan
                 </BotonPrimario>
@@ -93,7 +95,7 @@ export default function PlanesPage() {
                     />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 movil:gap-3">
                     {planes.map((plan) => (
                         <TarjetaPlan
                             key={plan.id}
@@ -106,6 +108,9 @@ export default function PlanesPage() {
                     ))}
                 </div>
             )}
+
+            {/* Celular: "Nuevo plan" flota encima de la barra de navegación */}
+            {planes.length > 0 && <BotonFlotante icono={Plus} etiqueta="Nuevo plan" onClick={() => setEditando('nuevo')} />}
 
             {editando && (
                 <ModalPlan

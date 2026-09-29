@@ -15,7 +15,17 @@ export type PanelSuperadmin = 'superadmin' | 'recinto' | 'asociacion';
  * portuario y portal de asociación). Se monta en los tres sidebars y no
  * muestra nada a quien no sea superadmin.
  */
-export function EnlacesPaneles(props: { actual: PanelSuperadmin; colapsado: boolean; onNavegar?: () => void }) {
+export function EnlacesPaneles(props: {
+    actual: PanelSuperadmin;
+    colapsado: boolean;
+    onNavegar?: () => void;
+    /**
+     * En el superadmin, elegir asociación abre una ventana aquí mismo. Si estos enlaces van dentro de
+     * algo que se cierra (la hoja "Más"), la ventana quedaría debajo o se iría con él: con esto la
+     * abre quien lo contiene (recibe la asociación actual) y los enlaces sólo avisan.
+     */
+    onElegirAsociacion?: (actual: number | null) => void;
+}) {
     // useSearchParams (?elegir_asociacion=1) necesita un límite de Suspense para el prerender
     return (
         <Suspense fallback={null}>
@@ -24,7 +34,17 @@ export function EnlacesPaneles(props: { actual: PanelSuperadmin; colapsado: bool
     );
 }
 
-function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; colapsado: boolean; onNavegar?: () => void }) {
+function Enlaces({
+    actual,
+    colapsado,
+    onNavegar,
+    onElegirAsociacion,
+}: {
+    actual: PanelSuperadmin;
+    colapsado: boolean;
+    onNavegar?: () => void;
+    onElegirAsociacion?: (actual: number | null) => void;
+}) {
     const pathname = usePathname();
     const router = useRouter();
     const locale = pathname.split('/')[1] || 'es';
@@ -59,13 +79,20 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
         if (pideElegir) router.replace(pathname);
     };
 
+    // Superadmin: abre la ventana aquí o se la pide a quien contiene los enlaces (ver onElegirAsociacion)
+    const elegirAqui = () => {
+        if (!onElegirAsociacion) return setAbierto(true);
+        onNavegar?.();
+        onElegirAsociacion(perfil.asociacion_id);
+    };
+
     const items: { clave: PanelSuperadmin; label: string; detalle?: string; href?: string; icon: LucideIcon; onClick?: () => void }[] = [
         { clave: 'superadmin', label: 'Panel de superadmin', href: `/${locale}/superadmin`, icon: ShieldCheck },
         { clave: 'recinto', label: 'Recinto portuario', href: `/${locale}/dashboard`, icon: Anchor },
         asociacion
             ? { clave: 'asociacion', label: 'Portal de asociación', detalle: asociacion.nombre_asociacion, href: `/${locale}/dashboard-recolector`, icon: Recycle }
             : actual === 'superadmin'
-              ? { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', icon: Recycle, onClick: () => setAbierto(true) }
+              ? { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', icon: Recycle, onClick: elegirAqui }
               : { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', href: elegirUrl, icon: Recycle },
     ];
 
@@ -108,7 +135,7 @@ function Enlaces({ actual, colapsado, onNavegar }: { actual: PanelSuperadmin; co
             {actual !== 'recinto' && asociacion && (
                 <button
                     type="button"
-                    onClick={() => (actual === 'superadmin' ? setAbierto(true) : router.push(elegirUrl))}
+                    onClick={() => (actual === 'superadmin' ? elegirAqui() : router.push(elegirUrl))}
                     title={colapsado ? 'Cambiar asociación' : undefined}
                     className={itemCls}
                 >

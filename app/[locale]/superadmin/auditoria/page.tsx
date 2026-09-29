@@ -1,10 +1,11 @@
 'use client';
 
 import { Fragment, useCallback, useEffect, useState } from 'react';
-import { ChevronDown, ChevronLeft, ChevronRight, ScrollText, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ScrollText, SlidersHorizontal, X } from 'lucide-react';
 import { Cargando, ErrorCarga, mensajeError } from '@/components/asociaciones/ui';
 import { EstadoVacio, Tarjeta, filtroCls, formatoFechaHora, tdCls, thCls } from '@/components/superadmin/ui';
 import { getAuditoria, type FiltrosAuditoria } from '@/lib/services/superadmin';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import type { EntradaAuditoria } from '@/types/database';
 
 const POR_PAGINA = 25;
@@ -45,6 +46,7 @@ export default function AuditoriaPage() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [abierta, setAbierta] = useState<number | null>(null);
+    const [verFiltros, setVerFiltros] = useState(false);
 
     const cargar = useCallback(async () => {
         setCargando(true);
@@ -77,13 +79,46 @@ export default function AuditoriaPage() {
     };
 
     const hayFiltros = Object.values(filtros).some(Boolean);
+    const cuantosFiltros = Object.values(filtros).filter(Boolean).length;
     const totalPaginas = datos ? Math.max(1, Math.ceil(datos.total / POR_PAGINA)) : 1;
+    const limpiar = () => {
+        setFiltros({});
+        setUsuario('');
+        setPagina(0);
+    };
 
     return (
-        <div className="space-y-5">
-            <div className="flex flex-wrap items-end gap-3">
+        <div className="space-y-5 movil:space-y-3">
+            {/* Celular: los cinco filtros se abren con un botón (a la vista ocuparían media pantalla) */}
+            <div className="hidden movil:flex items-center gap-2">
+                <button
+                    type="button"
+                    onClick={() => setVerFiltros((v) => !v)}
+                    aria-expanded={verFiltros}
+                    className="simar-presiona flex-1 min-h-[42px] px-3.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-[15px] font-bold text-simar-texto inline-flex items-center justify-between gap-2"
+                >
+                    <span className="inline-flex items-center gap-2">
+                        <SlidersHorizontal className="w-[18px] h-[18px] text-simar-violeta" />
+                        Filtros
+                        {cuantosFiltros > 0 && (
+                            <span className="min-w-[20px] h-5 px-1 rounded-full bg-simar-violeta-suave text-simar-violeta text-[12px] font-bold inline-flex items-center justify-center">
+                                {cuantosFiltros}
+                            </span>
+                        )}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${verFiltros ? 'rotate-180' : ''}`} />
+                </button>
+                {hayFiltros && (
+                    <button type="button" onClick={limpiar} className="min-h-[42px] px-2 text-[14px] font-bold text-simar-texto-2 inline-flex items-center gap-1">
+                        <X className="w-4 h-4" />
+                        Limpiar
+                    </button>
+                )}
+            </div>
+
+            <div className={`flex flex-wrap items-end gap-3 movil:grid movil:grid-cols-2 movil:gap-2 ${verFiltros ? '' : 'movil:hidden'}`}>
                 <select
-                    className={`${filtroCls} w-auto`}
+                    className={`${filtroCls} w-auto movil:col-span-2 movil:w-full`}
                     value={filtros.tabla ?? ''}
                     onChange={(e) => filtrar({ tabla: e.target.value || undefined })}
                     aria-label="Tabla"
@@ -96,7 +131,7 @@ export default function AuditoriaPage() {
                     ))}
                 </select>
                 <select
-                    className={`${filtroCls} w-auto`}
+                    className={`${filtroCls} w-auto movil:col-span-2 movil:w-full`}
                     value={filtros.operacion ?? ''}
                     onChange={(e) => filtrar({ operacion: (e.target.value || undefined) as FiltrosAuditoria['operacion'] })}
                     aria-label="Operación"
@@ -107,38 +142,40 @@ export default function AuditoriaPage() {
                     <option value="DELETE">Bajas</option>
                 </select>
                 <input
-                    className={`${filtroCls} w-56`}
+                    className={`${filtroCls} w-56 movil:col-span-2 movil:w-full`}
                     placeholder="Correo de quien hizo el cambio"
                     value={usuario}
                     onChange={(e) => setUsuario(e.target.value)}
                     aria-label="Correo del usuario"
                 />
-                <label className="text-[15px] text-simar-texto-2">
+                <label className="text-[15px] text-simar-texto-2 movil:min-w-0">
                     Desde
-                    <input
-                        type="date"
-                        className={`${filtroCls} w-auto block mt-1`}
-                        value={filtros.desde ?? ''}
-                        onChange={(e) => filtrar({ desde: e.target.value || undefined })}
+                    <SelectorFecha
+                        etiqueta="Desde"
+                        valor={filtros.desde}
+                        onCambiar={(v) => filtrar({ desde: v || undefined })}
+                        max={filtros.hasta}
+                        rango={{ desde: filtros.desde, hasta: filtros.hasta }}
+                        borrable
+                        className="mt-1 w-56 movil:w-full"
                     />
                 </label>
-                <label className="text-[15px] text-simar-texto-2">
+                <label className="text-[15px] text-simar-texto-2 movil:min-w-0">
                     Hasta
-                    <input
-                        type="date"
-                        className={`${filtroCls} w-auto block mt-1`}
-                        value={filtros.hasta ?? ''}
-                        onChange={(e) => filtrar({ hasta: e.target.value || undefined })}
+                    <SelectorFecha
+                        etiqueta="Hasta"
+                        valor={filtros.hasta}
+                        onCambiar={(v) => filtrar({ hasta: v || undefined })}
+                        min={filtros.desde}
+                        rango={{ desde: filtros.desde, hasta: filtros.hasta }}
+                        borrable
+                        className="mt-1 w-56 movil:w-full"
                     />
                 </label>
                 {hayFiltros && (
                     <button
-                        onClick={() => {
-                            setFiltros({});
-                            setUsuario('');
-                            setPagina(0);
-                        }}
-                        className="inline-flex items-center gap-1 px-3 py-2 text-base font-bold text-simar-texto-2 hover:text-simar-texto min-h-[52px]"
+                        onClick={limpiar}
+                        className="inline-flex items-center gap-1 px-3 py-2 text-base font-bold text-simar-texto-2 hover:text-simar-texto min-h-[52px] movil:hidden"
                     >
                         <X className="w-4 h-4" />
                         Limpiar
@@ -160,9 +197,11 @@ export default function AuditoriaPage() {
                         />
                     ) : (
                         <>
+                            {/* En celular cada cambio es un bloque: operación y tabla, el registro y quién/cuándo;
+                                se toca para ver el detalle */}
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="border-b border-simar-borde">
+                                <table className="w-full movil:block">
+                                    <thead className="border-b border-simar-borde movil:hidden">
                                         <tr>
                                             <th className={thCls}>Fecha</th>
                                             <th className={thCls}>Tabla</th>
@@ -172,28 +211,37 @@ export default function AuditoriaPage() {
                                             <th className={thCls} />
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-simar-borde-suave">
+                                    <tbody className="divide-y divide-simar-borde-suave movil:block">
                                         {datos.entradas.map((e) => {
                                             const op = OPERACION[e.operacion] ?? OPERACION.UPDATE;
                                             const expandida = abierta === e.id;
                                             return (
                                                 <Fragment key={e.id}>
                                                     <tr
-                                                        className="hover:bg-simar-papel cursor-pointer"
+                                                        className="hover:bg-simar-papel cursor-pointer movil:grid movil:grid-cols-[1fr_auto] movil:items-center movil:gap-x-2 movil:pl-3.5 movil:pr-1.5 movil:py-2.5"
                                                         onClick={() => setAbierta(expandida ? null : e.id)}
                                                     >
-                                                        <td className={`${tdCls} whitespace-nowrap`}>{formatoFechaHora(e.created_at)}</td>
-                                                        <td className={tdCls}>
+                                                        <td className={`${tdCls} whitespace-nowrap movil:hidden`}>{formatoFechaHora(e.created_at)}</td>
+                                                        <td className={`${tdCls} movil:p-0 movil:min-w-0`}>
+                                                            <span className={`hidden movil:inline-flex mr-1.5 px-2 py-0.5 rounded-full text-[13px] font-semibold ${op.cls}`}>
+                                                                {op.label}
+                                                            </span>
                                                             {TABLAS.find((t) => t.id === e.tabla)?.label ?? (
                                                                 <span className="font-mono text-[15px]">{e.tabla}</span>
                                                             )}
+                                                            {/* Celular: lo de las columnas Registro, Usuario y Fecha */}
+                                                            <p className="hidden movil:block mt-0.5 font-mono text-[13px] text-simar-texto-2 truncate">{resumenRegistro(e)}</p>
+                                                            {/* La fecha primero: si no cabe, que se corte el correo y no la hora */}
+                                                            <p className="hidden movil:block text-[13px] text-simar-texto-2 truncate">
+                                                                {formatoFechaHora(e.created_at)} · {e.usuario_email ?? 'Sistema'}
+                                                            </p>
                                                         </td>
-                                                        <td className={tdCls}>
+                                                        <td className={`${tdCls} movil:hidden`}>
                                                             <span className={`px-2 py-0.5 rounded-full text-[15px] font-semibold ${op.cls}`}>{op.label}</span>
                                                         </td>
-                                                        <td className={`${tdCls} font-mono text-[15px]`}>{resumenRegistro(e)}</td>
-                                                        <td className={tdCls}>{e.usuario_email ?? <span className="text-simar-texto-2">Sistema</span>}</td>
-                                                        <td className={`${tdCls} text-right`}>
+                                                        <td className={`${tdCls} font-mono text-[15px] movil:hidden`}>{resumenRegistro(e)}</td>
+                                                        <td className={`${tdCls} movil:hidden`}>{e.usuario_email ?? <span className="text-simar-texto-2">Sistema</span>}</td>
+                                                        <td className={`${tdCls} text-right movil:p-0`}>
                                                             <button
                                                                 aria-expanded={expandida}
                                                                 aria-label={expandida ? 'Ocultar detalle' : 'Ver detalle'}
@@ -204,8 +252,8 @@ export default function AuditoriaPage() {
                                                         </td>
                                                     </tr>
                                                     {expandida && (
-                                                        <tr className="bg-simar-papel">
-                                                            <td colSpan={6} className="px-4 py-3">
+                                                        <tr className="bg-simar-papel movil:block">
+                                                            <td colSpan={6} className="px-4 py-3 movil:block movil:px-3.5">
                                                                 <DetalleCambio entrada={e} />
                                                             </td>
                                                         </tr>
@@ -234,7 +282,7 @@ export default function AuditoriaPage() {
                                     <button
                                         onClick={() => setPagina((p) => p + 1)}
                                         disabled={pagina + 1 >= totalPaginas}
-                                        className="p-1.5 rounded-lg hover:bg-simar-papel disabled:opacity-40"
+                                        className="p-1.5 rounded-lg hover:bg-simar-papel disabled:opacity-40 min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
                                         aria-label="Página siguiente"
                                     >
                                         <ChevronRight className="w-4 h-4" />
@@ -276,7 +324,7 @@ function DetalleCambio({ entrada }: { entrada: EntradaAuditoria }) {
         return (
             <dl className="grid gap-1.5 text-[15px]">
                 {cambios.map((k) => (
-                    <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3">
+                    <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3 movil:grid-cols-1 movil:gap-0">
                         <dt className="font-mono font-semibold text-simar-texto-2">{k}</dt>
                         <dd className="font-mono break-all">
                             <span className="text-simar-coral line-through">{valor(antes[k])}</span>
@@ -293,7 +341,7 @@ function DetalleCambio({ entrada }: { entrada: EntradaAuditoria }) {
     return (
         <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-1 text-[15px]">
             {Object.entries(datos).map(([k, v]) => (
-                <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3">
+                <div key={k} className="grid grid-cols-[minmax(120px,auto)_1fr] gap-3 movil:grid-cols-1 movil:gap-0">
                     <dt className="font-mono font-semibold text-simar-texto-2">{k}</dt>
                     <dd className="font-mono break-all text-simar-texto">{valor(v)}</dd>
                 </div>

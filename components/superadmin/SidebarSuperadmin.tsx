@@ -11,7 +11,6 @@ import {
     ScrollText,
     Settings2,
     Users,
-    X,
 } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { EnlacesPaneles } from './EnlacesPaneles';
@@ -20,13 +19,16 @@ import { BotonTema } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 
 interface SidebarSuperadminProps {
-    isOpen: boolean;
     isCollapsed: boolean;
-    onClose: () => void;
     onToggleCollapse: () => void;
 }
 
-export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarSuperadminProps) {
+/**
+ * Menú lateral del superadmin, sólo en escritorio (desde 1024 px). En celular y tableta las secciones
+ * están en la barra inferior y la hoja "Más" (HojaMasSuperadmin), como en el recinto y el portal.
+ * Se queda montado aunque no se vea: sus EnlacesPaneles atienden ?elegir_asociacion=1.
+ */
+export function SidebarSuperadmin({ isCollapsed, onToggleCollapse }: SidebarSuperadminProps) {
     const pathname = usePathname();
     const { signOut, user } = useAuth();
     const locale = pathname.split('/')[1] || 'es';
@@ -45,17 +47,13 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
         href === base ? pathname === base || pathname === `${base}/` : pathname.startsWith(href);
 
     return (
-        <>
-            {isOpen && <div className="simar-velo fixed inset-0 z-40 lg:hidden bg-[rgba(11,34,54,0.28)]" onClick={onClose} />}
-
-            {/* Menú de vidrio flotante, igual que en el recinto y el portal (ver DISEÑO_SIMAR.md); violeta = superadmin */}
+            // Menú de vidrio flotante, igual que en el recinto y el portal (ver DISEÑO_SIMAR.md); violeta = superadmin
             <aside
                 className={`
                     simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
-                    w-[276px] ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-[276px]'}
-                    px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden
+                    ${isCollapsed ? 'w-[88px]' : 'w-[276px]'}
+                    px-4 pt-6 pb-4 hidden lg:flex flex-col gap-5 overflow-x-hidden
                     transition-all duration-300 ease-in-out
-                    ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
                 `}
             >
                 <div className={`relative flex items-center gap-3 ${isCollapsed ? 'lg:justify-center' : ''} px-2.5`}>
@@ -64,13 +62,6 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                         <LogoSimar variante="nombre" tamano={46} />
                         <span className="mt-1 text-[15px] font-bold text-simar-violeta">Superadmin</span>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="lg:hidden absolute right-0 w-12 h-12 rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
-                        aria-label="Cerrar menú"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
@@ -82,7 +73,6 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    onClick={onClose}
                                     title={isCollapsed ? item.label : ''}
                                     aria-current={active ? 'page' : undefined}
                                     className={`flex items-center gap-3.5 min-h-[54px] rounded-2xl transition-colors ${isCollapsed ? 'lg:justify-center lg:px-0 px-4' : 'px-4'} ${active
@@ -101,7 +91,7 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                     </nav>
 
                     <div className="mt-4 empty:hidden">
-                        <EnlacesPaneles actual="superadmin" colapsado={isCollapsed} onNavegar={onClose} />
+                        <EnlacesPaneles actual="superadmin" colapsado={isCollapsed} />
                     </div>
                 </div>
 
@@ -139,6 +129,5 @@ export function SidebarSuperadmin({ isOpen, isCollapsed, onClose, onToggleCollap
                     </button>
                 </div>
             </aside>
-        </>
     );
 }

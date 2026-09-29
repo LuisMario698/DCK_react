@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
 import { Check, Droplet, Filter, Fuel, Ship, Trash2, Wind, X } from 'lucide-react';
 import { hoyLocal } from '@/lib/utils/fechas';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
 import { getBuques } from '@/lib/services/buques';
 import { getPersonas } from '@/lib/services/personas';
@@ -230,11 +231,10 @@ export default function SimpleManifiestoForm({ onBack, onSuccess }: SimpleManifi
             <div className="space-y-2">
               <div>
                 <label className="block text-[17px] font-bold text-simar-texto mb-2">Fecha</label>
-                <input
-                  type="date"
-                  value={formData.fecha}
-                  onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
-                  className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
+                <SelectorFecha
+                  etiqueta="Fecha del manifiesto"
+                  valor={formData.fecha}
+                  onCambiar={(fecha) => fecha && setFormData(prev => ({ ...prev, fecha }))}
                 />
               </div>
               <div>

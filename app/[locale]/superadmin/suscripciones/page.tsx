@@ -56,6 +56,7 @@ import {
     type SuscripcionInput,
 } from '@/lib/services/suscripciones';
 import { updateAsociacion } from '@/lib/services/asociaciones';
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import { getConfiguracion } from '@/lib/services/configuracion';
 import {
     CICLO_LABEL,
@@ -169,8 +170,9 @@ export default function SuscripcionesPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="space-y-6 movil:space-y-3">
+            {/* En celular, dos por fila */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 movil:grid-cols-2 movil:gap-2.5">
                 <Kpi label="Ingreso mensual recurrente" valor={formatoMXN(kpis.mrr)} icono={TrendingUp} detalle="Suscripciones activas" />
                 <Kpi label="Activas" valor={kpis.activas} icono={CheckCircle2} detalle={`de ${asociaciones.length} asociación(es)`} />
                 <Kpi label="En prueba" valor={kpis.prueba} icono={Hourglass} />
@@ -194,8 +196,9 @@ export default function SuscripcionesPage() {
 
             {pestana === 'asociaciones' ? (
                 <>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative flex-1 min-w-[220px] max-w-md">
+                    {/* En celular: buscador y filtro lado a lado, el buscador más ancho */}
+                    <div className="flex flex-wrap items-center gap-3 movil:grid movil:grid-cols-[1fr_auto] movil:gap-2">
+                        <div className="relative flex-1 min-w-[220px] max-w-md movil:min-w-0 movil:max-w-none">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
@@ -206,7 +209,7 @@ export default function SuscripcionesPage() {
                             />
                         </div>
                         <select
-                            className={`${filtroCls} w-auto`}
+                            className={`${filtroCls} w-auto movil:max-w-[150px] movil:px-3`}
                             value={filtro}
                             onChange={(e) => setFiltro(e.target.value as FiltroEstado)}
                             aria-label="Filtrar por estado de la suscripción"
@@ -231,9 +234,11 @@ export default function SuscripcionesPage() {
                         ) : filtradas.length === 0 ? (
                             <EstadoVacio icono={Search} titulo="Ninguna asociación coincide con los filtros" />
                         ) : (
+                            // En celular cada asociación es un bloque: nombre y plan a la izquierda, estado a la
+                            // derecha, vigencia y usuarios debajo y las acciones al final
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="border-b border-simar-borde">
+                                <table className="w-full movil:block">
+                                    <thead className="border-b border-simar-borde movil:hidden">
                                         <tr>
                                             <th className={thCls}>Asociación</th>
                                             <th className={thCls}>Plan</th>
@@ -244,14 +249,18 @@ export default function SuscripcionesPage() {
                                             <th className={`${thCls} text-right`}>Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-simar-borde-suave">
+                                    <tbody className="divide-y divide-simar-borde-suave movil:block">
                                         {filtradas.map((a) => {
                                             const s = a.suscripcion;
                                             const limite = s?.plan?.limite_usuarios ?? null;
                                             const dias = s?.vence_el ? diasHasta(s.vence_el) : null;
+                                            const textoDias = dias === null ? null : dias < 0 ? `Venció hace ${-dias} día(s)` : dias === 0 ? 'Vence hoy' : `En ${dias} día(s)`;
                                             return (
-                                                <tr key={a.id} className="hover:bg-simar-papel">
-                                                    <td className={tdCls}>
+                                                <tr
+                                                    key={a.id}
+                                                    className="hover:bg-simar-papel movil:grid movil:grid-cols-[1fr_auto] movil:gap-x-3 movil:gap-y-1.5 movil:px-3.5 movil:py-3"
+                                                >
+                                                    <td className={`${tdCls} movil:p-0 movil:min-w-0`}>
                                                         <p className="font-medium text-simar-texto">{a.nombre_asociacion}</p>
                                                         <p className="text-[15px] text-simar-texto-2">
                                                             {a.estado === 'Activo' ? a.rfc || 'Sin RFC' : (
@@ -260,8 +269,33 @@ export default function SuscripcionesPage() {
                                                                 </span>
                                                             )}
                                                         </p>
+                                                        {/* Celular: lo de las columnas Plan, Precio, Vigencia y Usuarios */}
+                                                        {s && (
+                                                            <div className="hidden movil:block mt-1.5 space-y-0.5 text-[13px] text-simar-texto-2">
+                                                                <p>
+                                                                    <span className="font-semibold text-simar-texto">{s.plan?.nombre ?? 'Sin plan'}</span> ·{' '}
+                                                                    {CICLO_LABEL[s.ciclo]} ·{' '}
+                                                                    <span className="font-semibold text-simar-texto tabular-nums">{formatoMXN(Number(s.precio))}</span>
+                                                                </p>
+                                                                <p>
+                                                                    {s.vence_el ? (
+                                                                        <>
+                                                                            Vence {formatoFecha(s.vence_el)}{' '}
+                                                                            <span className={dias! <= DIAS_AVISO ? 'font-semibold text-simar-coral' : ''}>({textoDias?.toLowerCase()})</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        'Sin vencimiento'
+                                                                    )}{' '}
+                                                                    ·{' '}
+                                                                    <span className={limite !== null && a.usuarios > limite ? 'font-semibold text-simar-coral' : ''}>
+                                                                        {a.usuarios}
+                                                                        {limite !== null && ` / ${limite}`} usuario(s)
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} movil:hidden`}>
                                                         {s ? (
                                                             <>
                                                                 <p className="text-simar-texto">{s.plan?.nombre ?? '—'}</p>
@@ -271,13 +305,13 @@ export default function SuscripcionesPage() {
                                                             <span className="text-simar-texto-2">—</span>
                                                         )}
                                                     </td>
-                                                    <td className={`${tdCls} text-right tabular-nums whitespace-nowrap`}>
+                                                    <td className={`${tdCls} text-right tabular-nums whitespace-nowrap movil:hidden`}>
                                                         {s ? formatoMXN(Number(s.precio)) : '—'}
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} movil:p-0 movil:col-start-2 movil:row-start-1 movil:self-start`}>
                                                         <EstadoSuscripcionBadge estado={a.efectivo} />
                                                     </td>
-                                                    <td className={`${tdCls} whitespace-nowrap`}>
+                                                    <td className={`${tdCls} whitespace-nowrap movil:hidden`}>
                                                         {!s ? (
                                                             '—'
                                                         ) : s.vence_el ? (
@@ -299,7 +333,7 @@ export default function SuscripcionesPage() {
                                                             <span className="text-simar-texto-2">Sin vencimiento</span>
                                                         )}
                                                     </td>
-                                                    <td className={`${tdCls} tabular-nums`}>
+                                                    <td className={`${tdCls} tabular-nums movil:hidden`}>
                                                         <span
                                                             className={
                                                                 limite !== null && a.usuarios > limite
@@ -311,7 +345,7 @@ export default function SuscripcionesPage() {
                                                             {limite !== null && ` / ${limite}`}
                                                         </span>
                                                     </td>
-                                                    <td className={`${tdCls} text-right whitespace-nowrap`}>
+                                                    <td className={`${tdCls} text-right whitespace-nowrap movil:p-0 movil:col-span-2 movil:-mr-1.5`}>
                                                         <BotonIcono
                                                             icono={s ? Pencil : Plus}
                                                             etiqueta={s ? 'Editar suscripción' : 'Crear suscripción'}
@@ -461,9 +495,9 @@ function TablaPagos({
     const total = pagos.reduce((s, p) => s + Number(p.monto), 0);
     return (
         <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 movil:gap-2">
                 <select
-                    className={`${filtroCls} w-auto`}
+                    className={`${filtroCls} w-auto movil:w-full`}
                     value={filtro}
                     onChange={(e) => onFiltro(e.target.value === 'todas' ? 'todas' : Number(e.target.value))}
                     aria-label="Filtrar pagos por asociación"
@@ -488,9 +522,11 @@ function TablaPagos({
                         texto="Registra un pago desde la pestaña Asociaciones con el botón de cartera."
                     />
                 ) : (
+                    // En celular cada pago es un bloque: asociación y monto arriba; fecha, método, referencia
+                    // y vigencia debajo; eliminar a la derecha
                     <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="border-b border-simar-borde">
+                        <table className="w-full movil:block">
+                            <thead className="border-b border-simar-borde movil:hidden">
                                 <tr>
                                     <th className={thCls}>Fecha</th>
                                     <th className={thCls}>Asociación</th>
@@ -502,21 +538,34 @@ function TablaPagos({
                                     <th className={`${thCls} text-right`} />
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-simar-borde-suave">
+                            <tbody className="divide-y divide-simar-borde-suave movil:block">
                                 {pagos.map((p) => (
-                                    <tr key={p.id}>
-                                        <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(p.fecha_pago)}</td>
-                                        <td className={tdCls}>{p.suscripcion?.asociacion?.nombre_asociacion ?? '—'}</td>
-                                        <td className={`${tdCls} text-right tabular-nums font-semibold text-simar-texto whitespace-nowrap`}>
+                                    <tr
+                                        key={p.id}
+                                        className="movil:grid movil:grid-cols-[1fr_auto_auto] movil:items-start movil:gap-x-2 movil:pl-3.5 movil:pr-2 movil:py-3"
+                                    >
+                                        <td className={`${tdCls} whitespace-nowrap movil:hidden`}>{formatoFecha(p.fecha_pago)}</td>
+                                        <td className={`${tdCls} movil:p-0 movil:min-w-0`}>
+                                            {p.suscripcion?.asociacion?.nombre_asociacion ?? '—'}
+                                            {/* Celular: lo de las columnas Fecha, Método, Referencia, Cubre hasta y Registrado */}
+                                            <p className="hidden movil:block mt-0.5 text-[13px] text-simar-texto-2">
+                                                {formatoFecha(p.fecha_pago)} · {METODO_PAGO_LABEL[p.metodo]}
+                                                {p.referencia && ` · ${p.referencia}`}
+                                            </p>
+                                            <p className="hidden movil:block text-[13px] text-simar-texto-2">
+                                                Cubre hasta {formatoFecha(p.cubre_hasta)} · registrado {hace(p.created_at)}
+                                            </p>
+                                        </td>
+                                        <td className={`${tdCls} text-right tabular-nums font-semibold text-simar-texto whitespace-nowrap movil:p-0 movil:pt-0.5`}>
                                             {formatoMXN(Number(p.monto))}
                                         </td>
-                                        <td className={tdCls}>{METODO_PAGO_LABEL[p.metodo]}</td>
-                                        <td className={tdCls} title={p.notas ?? undefined}>
+                                        <td className={`${tdCls} movil:hidden`}>{METODO_PAGO_LABEL[p.metodo]}</td>
+                                        <td className={`${tdCls} movil:hidden`} title={p.notas ?? undefined}>
                                             {p.referencia ?? <span className="text-simar-texto-2">—</span>}
                                         </td>
-                                        <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(p.cubre_hasta)}</td>
-                                        <td className={`${tdCls} whitespace-nowrap text-[15px] text-simar-texto-2`}>{hace(p.created_at)}</td>
-                                        <td className={`${tdCls} text-right`}>
+                                        <td className={`${tdCls} whitespace-nowrap movil:hidden`}>{formatoFecha(p.cubre_hasta)}</td>
+                                        <td className={`${tdCls} whitespace-nowrap text-[15px] text-simar-texto-2 movil:hidden`}>{hace(p.created_at)}</td>
+                                        <td className={`${tdCls} text-right movil:p-0 movil:-mt-2`}>
                                             <BotonIcono icono={Trash2} etiqueta="Eliminar pago" peligro onClick={() => onBorrar(p)} />
                                         </td>
                                     </tr>
@@ -713,21 +762,21 @@ function ModalSuscripcion({
                         </select>
                     </Campo>
                     <Campo label="Inicio">
-                        <input
-                            type="date"
-                            className={inputCls}
-                            value={form.fecha_inicio}
-                            onChange={(e) => set('fecha_inicio', e.target.value)}
-                            required
+                        <SelectorFecha
+                            etiqueta="Inicio de la suscripción"
+                            valor={form.fecha_inicio}
+                            onCambiar={(v) => v && set('fecha_inicio', v)}
+                            max={form.vence_el ?? undefined}
                         />
                     </Campo>
                     <Campo label="Vence el" ayuda="Vacío = sin vencimiento.">
-                        <input
-                            type="date"
-                            className={inputCls}
-                            value={form.vence_el ?? ''}
+                        <SelectorFecha
+                            etiqueta="Vencimiento"
+                            valor={form.vence_el}
+                            onCambiar={(v) => set('vence_el', v || null)}
                             min={form.fecha_inicio}
-                            onChange={(e) => set('vence_el', e.target.value || null)}
+                            marcador="Sin vencimiento"
+                            borrable
                         />
                     </Campo>
                 </div>
@@ -856,7 +905,7 @@ function ModalPago({
                         />
                     </Campo>
                     <Campo label="Fecha del pago">
-                        <input type="date" className={inputCls} value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+                        <SelectorFecha etiqueta="Fecha del pago" valor={fecha} onCambiar={(v) => v && setFecha(v)} />
                     </Campo>
                     <Campo label="Método">
                         <select className={inputCls} value={metodo} onChange={(e) => setMetodo(e.target.value as MetodoPago)}>
@@ -882,12 +931,11 @@ function ModalPago({
                             label="Vigente hasta"
                             ayuda={`Vence actualmente: ${suscripcion.vence_el ? formatoFecha(suscripcion.vence_el) : 'sin vencimiento'}. Una suscripción en prueba pasa a activa.`}
                         >
-                            <input
-                                type="date"
-                                className={inputCls}
-                                value={cubreHasta}
-                                onChange={(e) => setCubreHasta(e.target.value)}
-                                required
+                            <SelectorFecha
+                                etiqueta="Vigente hasta"
+                                valor={cubreHasta}
+                                onCambiar={(v) => v && setCubreHasta(v)}
+                                min={suscripcion.fecha_inicio}
                             />
                         </Campo>
                     )}

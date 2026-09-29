@@ -74,7 +74,8 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
   SVG puro.
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar).
 - Dependencias instaladas pero **sin usar**: `html2canvas`, `react-time-picker`,
-  `react-time-picker-input`, `browser-image-compression`.
+  `react-time-picker-input`, `browser-image-compression`, `react-datepicker` y `date-fns` (las fechas
+  y horas usan `components/ui/SelectorFecha` y `SelectorHora`, propios; ver DISEÑO_SIMAR.md).
 - `estructura_completa.sql` (pg_dump) está **desactualizado**: aún trae tablas de un POS ajeno
   (`tenants`, `users`, `products`, ...) y RLS apagado, que ya no existen en el proyecto Supabase
   real (`SiMAR`). Encima de ese esquema se aplican las migraciones de `supabase/migrations/`.

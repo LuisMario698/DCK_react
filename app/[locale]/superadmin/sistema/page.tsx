@@ -61,8 +61,8 @@ export default function SistemaPage() {
     if (!config || !metricas) return <Cargando texto="Cargando sistema…" />;
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="space-y-6 movil:space-y-3">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 movil:gap-3">
                 <TarjetaMantenimiento
                     valor={config.mantenimiento}
                     onGuardar={(v) => guardar('mantenimiento', v, v.activo ? 'Modo mantenimiento activado' : 'Modo mantenimiento guardado')}
@@ -305,15 +305,16 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
     const ref = url.match(/^https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1];
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="space-y-6 movil:space-y-3">
+            {/* En celular, dos por fila */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 movil:grid-cols-2 movil:gap-2.5">
                 <Kpi label="Base de datos" valor={formatoBytes(metricas.bd_bytes)} icono={Database} detalle={`${tablas.length} tablas en public`} />
                 <Kpi label="Storage" valor={formatoBytes(storageTotal)} icono={HardDrive} detalle={`${formatoNumero(archivos)} archivo(s) en ${metricas.storage.length} bucket(s)`} />
                 <Kpi label="Cuentas sin confirmar" valor={metricas.usuarios.sin_confirmar} icono={ShieldAlert} detalle="Correo aún no verificado" />
                 <Kpi label="Invitaciones pendientes" valor={metricas.invitaciones_pendientes} icono={Megaphone} detalle="Correos que aún no se registran" />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 movil:gap-3">
                 <Tarjeta
                     titulo="Buckets de Storage"
                     sinPadding
@@ -330,8 +331,10 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                         )
                     }
                 >
-                    <table className="w-full">
-                        <thead className="border-y border-simar-borde">
+                    {/* En celular cada bucket es un bloque (cuatro columnas no caben): nombre y tamaño arriba,
+                        acceso y archivos debajo */}
+                    <table className="w-full movil:block">
+                        <thead className="border-y border-simar-borde movil:hidden">
                             <tr>
                                 <th className={thCls}>Bucket</th>
                                 <th className={thCls}>Acceso</th>
@@ -339,17 +342,25 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                                 <th className={`${thCls} text-right`}>Tamaño</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-simar-borde-suave">
+                        <tbody className="divide-y divide-simar-borde-suave movil:block movil:border-t movil:border-simar-borde">
                             {metricas.storage.map((b) => (
-                                <tr key={b.bucket}>
-                                    <td className={`${tdCls} font-mono text-[15px]`}>{b.bucket}</td>
-                                    <td className={tdCls}>
+                                <tr key={b.bucket} className="movil:grid movil:grid-cols-[1fr_auto] movil:items-start movil:gap-x-3 movil:px-4 movil:py-2.5">
+                                    <td className={`${tdCls} font-mono text-[15px] movil:p-0 movil:min-w-0 movil:break-all`}>
+                                        {b.bucket}
+                                        <p className="hidden movil:block font-sans text-[13px] text-simar-texto-2">
+                                            <span className={`font-semibold ${b.publico ? 'text-simar-coral' : 'text-simar-arrecife-tinta'}`}>
+                                                {b.publico ? 'Público' : 'Privado'}
+                                            </span>{' '}
+                                            · {formatoNumero(b.archivos)} archivo(s)
+                                        </p>
+                                    </td>
+                                    <td className={`${tdCls} movil:hidden`}>
                                         <span className={`text-[15px] font-semibold ${b.publico ? 'text-simar-coral' : 'text-simar-arrecife-tinta'}`}>
                                             {b.publico ? 'Público' : 'Privado'}
                                         </span>
                                     </td>
-                                    <td className={`${tdCls} text-right tabular-nums`}>{formatoNumero(b.archivos)}</td>
-                                    <td className={`${tdCls} text-right tabular-nums`}>{formatoBytes(b.bytes)}</td>
+                                    <td className={`${tdCls} text-right tabular-nums movil:hidden`}>{formatoNumero(b.archivos)}</td>
+                                    <td className={`${tdCls} text-right tabular-nums movil:p-0 movil:whitespace-nowrap`}>{formatoBytes(b.bytes)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -359,19 +370,20 @@ function Recursos({ metricas }: { metricas: MetricasSistema }) {
                 <Tarjeta titulo="Tablas" subtitulo="Filas exactas y tamaño en disco (con índices)" sinPadding>
                     <div className="max-h-[420px] overflow-y-auto">
                         <table className="w-full">
+                            {/* En celular, márgenes más cortos para que las tres columnas quepan */}
                             <thead className="sticky top-0 bg-simar-superficie border-y border-simar-borde">
                                 <tr>
-                                    <th className={thCls}>Tabla</th>
-                                    <th className={`${thCls} text-right`}>Filas</th>
-                                    <th className={`${thCls} text-right`}>Tamaño</th>
+                                    <th className={`${thCls} movil:px-3`}>Tabla</th>
+                                    <th className={`${thCls} text-right movil:px-3`}>Filas</th>
+                                    <th className={`${thCls} text-right movil:px-3`}>Tamaño</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-simar-borde-suave">
                                 {tablas.map((t) => (
                                     <tr key={t.tabla}>
-                                        <td className={`${tdCls} font-mono text-[15px]`}>{t.tabla}</td>
-                                        <td className={`${tdCls} text-right tabular-nums`}>{formatoNumero(t.filas)}</td>
-                                        <td className={`${tdCls} text-right tabular-nums`}>{formatoBytes(t.bytes)}</td>
+                                        <td className={`${tdCls} font-mono text-[15px] movil:px-3 movil:break-all`}>{t.tabla}</td>
+                                        <td className={`${tdCls} text-right tabular-nums movil:px-3`}>{formatoNumero(t.filas)}</td>
+                                        <td className={`${tdCls} text-right tabular-nums movil:px-3 movil:whitespace-nowrap`}>{formatoBytes(t.bytes)}</td>
                                     </tr>
                                 ))}
                             </tbody>

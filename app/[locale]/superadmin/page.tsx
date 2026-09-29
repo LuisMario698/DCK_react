@@ -119,8 +119,9 @@ export default function ResumenSuperadminPage() {
         resumen.cobradoAnterior > 0 ? ((resumen.cobradoMes - resumen.cobradoAnterior) / resumen.cobradoAnterior) * 100 : null;
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="space-y-6 movil:space-y-3">
+            {/* En celular, dos por fila */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 movil:grid-cols-2 movil:gap-2.5">
                 <Kpi
                     label="Cuentas"
                     valor={formatoNumero(u.total)}
@@ -148,11 +149,21 @@ export default function ResumenSuperadminPage() {
                     valor={pendientesAtencion}
                     icono={AlertTriangle}
                     alerta={pendientesAtencion > 0}
-                    detalle={`${resumen.atencion.length} suscripción(es) por vencer o vencidas · ${u.pendiente} cuenta(s) pendiente(s)`}
+                    detalle={
+                        <>
+                            <span className="movil:hidden">
+                                {resumen.atencion.length} suscripción(es) por vencer o vencidas · {u.pendiente} cuenta(s) pendiente(s)
+                            </span>
+                            {/* En celular la tarjeta mide media pantalla: la versión corta */}
+                            <span className="hidden movil:inline">
+                                {resumen.atencion.length} por vencer · {u.pendiente} pendiente(s)
+                            </span>
+                        </>
+                    }
                 />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 movil:gap-3">
                 <Tarjeta
                     className="xl:col-span-2"
                     titulo="Ingresos cobrados por mes"
@@ -213,7 +224,7 @@ export default function ResumenSuperadminPage() {
                 </Tarjeta>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 movil:gap-3">
                 <Tarjeta titulo="Vencimientos" subtitulo={`Vencidas o que vencen en ${DIAS_AVISO} días o menos`}>
                     {resumen.atencion.length === 0 ? (
                         <EstadoVacio icono={CalendarClock} titulo="Nada por vencer" />

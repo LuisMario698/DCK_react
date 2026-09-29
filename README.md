@@ -97,14 +97,14 @@ distintos** que ambos se llaman "manifiesto"; no confundirlos.
 | PDF | **jsPDF** | `^3` | Generación 100% en el cliente |
 | Gráficas | **Recharts** | `^3.5` | Usado en **un solo archivo** (`dashboard-recolector/impacto`) |
 | Mapas | **MapLibre GL JS** + **react-map-gl** | `^5` / `^8` | Teselas vectoriales de OpenFreeMap (gratis, sin API key); un solo componente (`recolector/MapaCentroAcopio`) |
-| Fechas | **date-fns** | `^4` | + `react-datepicker ^8` |
+| Fechas | Propios | — | `components/ui/SelectorFecha` y `SelectorHora` (sin librería; `date-fns` y `react-datepicker` quedaron instalados sin uso) |
 | Iconos | **lucide-react** | — | + set SVG propio en `components/ui/Icons.tsx` |
 | Toasts | **sonner** | `^2` | |
 | Excel | **xlsx** (SheetJS) | `^0.18` | Export de reportes |
 
 **Dependencias instaladas pero NO utilizadas** (candidatas a eliminar): `html2canvas`,
-`react-time-picker`, `react-time-picker-input`, `browser-image-compression`,
-`@types/react-datepicker` es necesario pero `react-datepicker` se usa parcialmente.
+`react-time-picker`, `react-time-picker-input`, `browser-image-compression`, `react-datepicker`,
+`@types/react-datepicker` y `date-fns`.
 
 - **Node.js**: 20+ (`@types/node ^20`).
 - El campo `name` de `package.json` sigue siendo `my_app_react_ejemplo` (resto del andamiaje
@@ -193,7 +193,7 @@ DCK_react/
 │           ├── impacto/  · notificaciones/ · perfil/ · configuracion/
 │
 ├── components/
-│   ├── ui/            # Button, Table, ConfirmationModal, Icons, SignaturePad, TimePicker
+│   ├── ui/            # Button, Table, ConfirmationModal, Icons, SignaturePad, SelectorFecha, SelectorHora
 │   ├── layout/        # DashboardLayout, Sidebar, Header, *Context, ThemeToggle,
 │   │   └── sidebars/  #   LanguageSwitcher (no montado), UserProfileModal, SidebarVariantD
 │   ├── auth/          # LoginForm (5 vistas)
@@ -494,8 +494,8 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
   `dark`), lo persiste en `localStorage.theme` y alterna la clase `.dark` en
   `document.documentElement`. Si no hay nada guardado, usa claro.
 - `app/globals.css` (Tailwind v4) define el modo oscuro **por selector**:
-  `@variant dark (&:is(.dark *))`, más variables de tema, estilos personalizados para
-  `react-datepicker` y varios keyframes (incluida una sección "LANDING PAGE": `ken-burns`,
+  `@variant dark (&:is(.dark *))`, más variables de tema, las clases del lenguaje SiMAR
+  (`simar-*`) y varios keyframes (incluida una sección "LANDING PAGE": `ken-burns`,
   `fade-in-up`, `map-ping`, etc.). Respeta `prefers-reduced-motion`.
 - `components/layout/ThemeToggle.tsx` es un botón flotante global (arriba a la derecha), **oculto
   en la landing**.

@@ -1,13 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import { es } from 'date-fns/locale';
-import 'react-datepicker/dist/react-datepicker.css';
 import { DashboardStats, ReporteDetalladoItem, Comparaciones } from '@/types/dashboard';
-
-// Registrar locale español para el DatePicker
-registerLocale('es', es);
+import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import {
     getReporteComplejo,
     getDashboardKPIsFiltered,
@@ -997,7 +992,7 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                         </div>
 
                         {/* En celular: las dos fechas lado a lado, y buque y el botón a lo ancho */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 movil:grid-cols-2 movil:gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-6 movil:grid-cols-2 movil:gap-3">
                             {/* Fecha Desde */}
                             <div className="space-y-2">
                                 <label className="flex items-center gap-2 text-base font-bold text-simar-texto-2">
@@ -1006,34 +1001,18 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </svg>
                                     Fecha Desde
                                 </label>
-                                <div className="relative">
-                                    <DatePicker
-                                        selected={filters.fechaInicio ? new Date(filters.fechaInicio + 'T00:00:00') : null}
-                                        onChange={(date: Date | null) => {
-                                            setAccesoRapidoSeleccionado(null);
-                                            if (date) {
-                                                const year = date.getFullYear();
-                                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                                const day = String(date.getDate()).padStart(2, '0');
-                                                setFilters({ ...filters, fechaInicio: `${year}-${month}-${day}` });
-                                            } else {
-                                                setFilters({ ...filters, fechaInicio: '' });
-                                            }
-                                        }}
-                                        dateFormat="dd/MM/yyyy"
-                                        locale="es"
-                                        placeholderText="Seleccionar fecha"
-                                        showPopperArrow={false}
-                                        className="w-full px-4 py-3 movil:px-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
-                                        wrapperClassName="w-full"
-                                        popperClassName="datepicker-popper"
-                                        showMonthDropdown
-                                        showYearDropdown
-                                        dropdownMode="select"
-                                        todayButton="Hoy"
-                                        isClearable
-                                    />
-                                </div>
+                                <SelectorFecha
+                                    etiqueta="Fecha desde"
+                                    valor={filters.fechaInicio}
+                                    onCambiar={(fecha) => {
+                                        setAccesoRapidoSeleccionado(null);
+                                        setFilters({ ...filters, fechaInicio: fecha });
+                                    }}
+                                    max={filters.fechaFin || undefined}
+                                    rango={{ desde: filters.fechaInicio, hasta: filters.fechaFin }}
+                                    borrable
+                                />
+
                             </div>
 
                             {/* Fecha Hasta */}
@@ -1044,35 +1023,18 @@ export function DashboardClient({ initialStats, buques }: DashboardClientProps) 
                                     </svg>
                                     Fecha Hasta
                                 </label>
-                                <div className="relative">
-                                    <DatePicker
-                                        selected={filters.fechaFin ? new Date(filters.fechaFin + 'T00:00:00') : null}
-                                        onChange={(date: Date | null) => {
-                                            setAccesoRapidoSeleccionado(null);
-                                            if (date) {
-                                                const year = date.getFullYear();
-                                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                                const day = String(date.getDate()).padStart(2, '0');
-                                                setFilters({ ...filters, fechaFin: `${year}-${month}-${day}` });
-                                            } else {
-                                                setFilters({ ...filters, fechaFin: '' });
-                                            }
-                                        }}
-                                        dateFormat="dd/MM/yyyy"
-                                        locale="es"
-                                        placeholderText="Seleccionar fecha"
-                                        showPopperArrow={false}
-                                        className="w-full px-4 py-3 movil:px-3 bg-simar-papel border border-simar-borde rounded-xl text-base focus:ring-2 focus:ring-simar-marea-tinta focus:border-simar-marea-tinta outline-none text-simar-texto cursor-pointer"
-                                        wrapperClassName="w-full"
-                                        popperClassName="datepicker-popper"
-                                        showMonthDropdown
-                                        showYearDropdown
-                                        dropdownMode="select"
-                                        todayButton="Hoy"
-                                        isClearable
-                                        minDate={filters.fechaInicio ? parseFechaLocal(filters.fechaInicio) : undefined}
-                                    />
-                                </div>
+                                <SelectorFecha
+                                    etiqueta="Fecha hasta"
+                                    valor={filters.fechaFin}
+                                    onCambiar={(fecha) => {
+                                        setAccesoRapidoSeleccionado(null);
+                                        setFilters({ ...filters, fechaFin: fecha });
+                                    }}
+                                    min={filters.fechaInicio || undefined}
+                                    rango={{ desde: filters.fechaInicio, hasta: filters.fechaFin }}
+                                    borrable
+                                />
+
                             </div>
 
                             {/* Selector de Buque */}

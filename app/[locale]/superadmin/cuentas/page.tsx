@@ -53,6 +53,7 @@ import {
     type InvitacionConAsociacion,
 } from '@/lib/services/superadmin';
 import { cancelarInvitacion, getAsociaciones } from '@/lib/services/asociaciones';
+import { BotonFlotante } from '@/components/ui/BotonFlotante';
 import type { AsociacionRecolectora, CuentaUsuario, RolUsuario } from '@/types/database';
 
 type FiltroRol = 'todos' | RolUsuario | 'superadmin';
@@ -121,17 +122,18 @@ export default function CuentasPage() {
     const cuenta = accion?.cuenta;
 
     return (
-        <div className="space-y-5">
+        <div className="space-y-5 movil:space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <Pestanas
                     pestanas={[
                         { id: 'cuentas', label: 'Cuentas', contador: cuentas.length },
-                        { id: 'invitaciones', label: 'Invitaciones pendientes', contador: invitaciones.length },
+                        { id: 'invitaciones', label: 'Invitaciones pendientes', corto: 'Invitaciones', contador: invitaciones.length },
                     ]}
                     activa={pestana}
                     onChange={setPestana}
                 />
-                <BotonPrimario onClick={() => setInvitando(true)}>
+                {/* En celular va en la burbuja flotante */}
+                <BotonPrimario onClick={() => setInvitando(true)} className="movil:hidden">
                     <MailPlus className="w-4 h-4" />
                     Invitar cuenta
                 </BotonPrimario>
@@ -139,8 +141,9 @@ export default function CuentasPage() {
 
             {pestana === 'cuentas' ? (
                 <>
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative flex-1 min-w-[220px] max-w-md">
+                    {/* En celular: el buscador a lo ancho y los dos filtros lado a lado */}
+                    <div className="flex flex-wrap items-center gap-3 movil:grid movil:grid-cols-2 movil:gap-2">
+                        <div className="relative flex-1 min-w-[220px] max-w-md movil:col-span-2 movil:min-w-0 movil:max-w-none">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
@@ -151,7 +154,7 @@ export default function CuentasPage() {
                             />
                         </div>
                         <select
-                            className={`${filtroCls} w-auto`}
+                            className={`${filtroCls} w-auto movil:w-full movil:min-w-0 movil:px-3`}
                             value={filtroRol}
                             onChange={(e) => setFiltroRol(e.target.value as FiltroRol)}
                             aria-label="Filtrar por rol"
@@ -163,7 +166,7 @@ export default function CuentasPage() {
                             <option value="pendiente">Pendientes</option>
                         </select>
                         <select
-                            className={`${filtroCls} w-auto`}
+                            className={`${filtroCls} w-auto movil:w-full movil:min-w-0 movil:px-3`}
                             value={filtroEstado}
                             onChange={(e) => setFiltroEstado(e.target.value as FiltroEstado)}
                             aria-label="Filtrar por estado"
@@ -179,9 +182,11 @@ export default function CuentasPage() {
                         {filtradas.length === 0 ? (
                             <EstadoVacio icono={Users} titulo="Ninguna cuenta coincide con los filtros" />
                         ) : (
+                            // En celular cada cuenta es un bloque: nombre, correo, rol, asociación y fechas a la
+                            // izquierda, el estado arriba a la derecha y las acciones abajo
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead className="border-b border-simar-borde">
+                                <table className="w-full movil:block">
+                                    <thead className="border-b border-simar-borde movil:hidden">
                                         <tr>
                                             <th className={thCls}>Usuario</th>
                                             <th className={thCls}>Rol</th>
@@ -192,31 +197,45 @@ export default function CuentasPage() {
                                             <th className={`${thCls} text-right`}>Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-simar-borde-suave">
+                                    <tbody className="divide-y divide-simar-borde-suave movil:block">
                                         {filtradas.map((c) => {
                                             const esYo = c.id === user?.id;
                                             const protegida = esYo || c.es_superadmin;
                                             return (
-                                                <tr key={c.id} className="hover:bg-simar-papel">
-                                                    <td className={tdCls}>
+                                                <tr
+                                                    key={c.id}
+                                                    className="hover:bg-simar-papel movil:grid movil:grid-cols-[1fr_auto] movil:gap-x-3 movil:gap-y-1.5 movil:px-3.5 movil:py-3"
+                                                >
+                                                    <td className={`${tdCls} movil:p-0 movil:min-w-0`}>
                                                         <p className="font-medium text-simar-texto">
                                                             {c.full_name || 'Sin nombre'}
                                                             {esYo && <span className="ml-1.5 text-[15px] font-normal text-simar-texto-2">(tú)</span>}
                                                         </p>
-                                                        <p className="text-[15px] text-simar-texto-2">{c.email}</p>
+                                                        <p className="text-[15px] text-simar-texto-2 movil:break-all">{c.email}</p>
+                                                        {/* Celular: lo de las columnas Rol, Asociación, Alta y Último acceso */}
+                                                        <div className="hidden movil:flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5">
+                                                            <RolBadge rol={c.rol} superadmin={c.es_superadmin} />
+                                                            {c.asociacion_nombre && (
+                                                                <span className="text-[13px] font-semibold text-simar-texto">{c.asociacion_nombre}</span>
+                                                            )}
+                                                        </div>
+                                                        <p className="hidden movil:block mt-1 text-[13px] text-simar-texto-2">
+                                                            Alta {formatoFecha(c.creado_at)} ·{' '}
+                                                            {c.ultimo_acceso ? `último acceso ${hace(c.ultimo_acceso)}` : 'nunca ha entrado'}
+                                                        </p>
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} movil:hidden`}>
                                                         <RolBadge rol={c.rol} superadmin={c.es_superadmin} />
                                                     </td>
-                                                    <td className={tdCls}>{c.asociacion_nombre ?? <span className="text-simar-texto-2">—</span>}</td>
-                                                    <td className={`${tdCls} whitespace-nowrap`}>{formatoFecha(c.creado_at)}</td>
-                                                    <td className={`${tdCls} whitespace-nowrap`} title={formatoFechaHora(c.ultimo_acceso)}>
+                                                    <td className={`${tdCls} movil:hidden`}>{c.asociacion_nombre ?? <span className="text-simar-texto-2">—</span>}</td>
+                                                    <td className={`${tdCls} whitespace-nowrap movil:hidden`}>{formatoFecha(c.creado_at)}</td>
+                                                    <td className={`${tdCls} whitespace-nowrap movil:hidden`} title={formatoFechaHora(c.ultimo_acceso)}>
                                                         {hace(c.ultimo_acceso)}
                                                     </td>
-                                                    <td className={tdCls}>
+                                                    <td className={`${tdCls} movil:p-0 movil:col-start-2 movil:row-start-1 movil:self-start movil:whitespace-nowrap`}>
                                                         <EstadoCuenta cuenta={c} />
                                                     </td>
-                                                    <td className={`${tdCls} text-right whitespace-nowrap`}>
+                                                    <td className={`${tdCls} text-right whitespace-nowrap movil:p-0 movil:col-span-2 movil:-mr-1.5`}>
                                                         <BotonIcono
                                                             icono={Pencil}
                                                             etiqueta={esYo ? 'No puedes cambiar tu propio rol' : 'Cambiar rol o asociación'}
@@ -269,6 +288,9 @@ export default function CuentasPage() {
                     }
                 />
             )}
+
+            {/* Celular: "Invitar cuenta" flota encima de la barra de navegación */}
+            <BotonFlotante icono={MailPlus} etiqueta="Invitar cuenta" onClick={() => setInvitando(true)} />
 
             {accion?.tipo === 'editar' && cuenta && (
                 <ModalEditarAcceso
@@ -418,9 +440,10 @@ function TablaInvitaciones({
     }
     return (
         <Tarjeta sinPadding>
+            {/* En celular cada invitación es un bloque: correo, rol, asociación y cuándo; cancelar a la derecha */}
             <div className="overflow-x-auto">
-                <table className="w-full">
-                    <thead className="border-b border-simar-borde">
+                <table className="w-full movil:block">
+                    <thead className="border-b border-simar-borde movil:hidden">
                         <tr>
                             <th className={thCls}>Correo</th>
                             <th className={thCls}>Rol</th>
@@ -429,16 +452,25 @@ function TablaInvitaciones({
                             <th className={`${thCls} text-right`}>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-simar-borde-suave">
+                    <tbody className="divide-y divide-simar-borde-suave movil:block">
                         {invitaciones.map((inv) => (
-                            <tr key={inv.id}>
-                                <td className={`${tdCls} font-medium text-simar-texto`}>{inv.email}</td>
-                                <td className={tdCls}>
+                            <tr key={inv.id} className="movil:grid movil:grid-cols-[1fr_auto] movil:items-center movil:gap-x-3 movil:px-3.5 movil:py-3">
+                                <td className={`${tdCls} font-medium text-simar-texto movil:p-0 movil:min-w-0`}>
+                                    <span className="movil:break-all">{inv.email}</span>
+                                    <div className="hidden movil:flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 font-normal">
+                                        <RolBadge rol={inv.rol} />
+                                        {inv.asociacion && (
+                                            <span className="text-[13px] font-semibold text-simar-texto">{inv.asociacion.nombre_asociacion}</span>
+                                        )}
+                                        <span className="text-[13px] text-simar-texto-2">· {hace(inv.created_at)}</span>
+                                    </div>
+                                </td>
+                                <td className={`${tdCls} movil:hidden`}>
                                     <RolBadge rol={inv.rol} />
                                 </td>
-                                <td className={tdCls}>{inv.asociacion?.nombre_asociacion ?? <span className="text-simar-texto-2">—</span>}</td>
-                                <td className={`${tdCls} whitespace-nowrap`}>{hace(inv.created_at)}</td>
-                                <td className={`${tdCls} text-right`}>
+                                <td className={`${tdCls} movil:hidden`}>{inv.asociacion?.nombre_asociacion ?? <span className="text-simar-texto-2">—</span>}</td>
+                                <td className={`${tdCls} whitespace-nowrap movil:hidden`}>{hace(inv.created_at)}</td>
+                                <td className={`${tdCls} text-right movil:p-0`}>
                                     <BotonIcono icono={X} etiqueta="Cancelar invitación" peligro onClick={() => onCancelar(inv)} />
                                 </td>
                             </tr>
