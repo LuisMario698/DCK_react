@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase/server';
-import { getDashboardStats } from '@/lib/services/dashboard_stats';
+import { getEmbarcacionesSinEntregar, getEstadisticasPeriodo } from '@/lib/services/dashboard_stats';
 import { getBuques } from '@/lib/services/buques';
 import { DashboardClient } from '@/components/dashboard/DashboardClient';
 import { BarChart3 } from 'lucide-react';
@@ -7,18 +7,18 @@ import { EncabezadoPantalla } from '@/components/ui/simar';
 
 export const dynamic = 'force-dynamic';
 
-export default async function StatisticsPage({
-    params
-}: {
-    params: Promise<{ locale: string }>;
-}) {
-    const { locale } = await params;
+export default async function StatisticsPage() {
     const supabase = await createServerClient();
 
-    // Obtener datos iniciales en paralelo
-    const [dashboardStats, buques] = await Promise.all([
-        getDashboardStats(supabase),
-        getBuques(supabase)
+    // El período inicial ("1 mes") llega ya calculado; los demás se piden al elegirlos.
+    // "Sin entregar" no depende del período: se pide una vez (si falla, la pantalla sigue sin él).
+    const [estadisticas, buques, sinEntregar] = await Promise.all([
+        getEstadisticasPeriodo(supabase, 'mes'),
+        getBuques(supabase),
+        getEmbarcacionesSinEntregar(supabase).catch((e) => {
+            console.error('Error cargando embarcaciones sin entregar:', e);
+            return undefined;
+        }),
     ]);
 
     return (
@@ -28,10 +28,10 @@ export default async function StatisticsPage({
                 icono={BarChart3}
                 tono="violeta"
                 titulo="Estadísticas y reportes"
-                subtitulo="Análisis detallado de recolección y generación de residuos"
+                subtitulo="Lo que se recibe en el recinto y cómo cambia con el tiempo"
             />
 
-            <DashboardClient initialStats={dashboardStats} buques={buques} />
+            <DashboardClient inicial={estadisticas} buques={buques} sinEntregar={sinEntregar} />
         </div>
     );
 }

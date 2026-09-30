@@ -1,41 +1,5 @@
-export interface DashboardKPIs {
-    totalManifiestos: number;
-    manifiestosPendientes: number;
-    totalBuques: number;
-    buquesActivos: number;
-    totalResiduosReciclados: number; // kg
-    totalBasuraGeneral: number; // kg
-    totalAceiteUsado: number; // litros
-}
-
-export interface ChartDataPoint {
-    label: string;
-    value: number;
-    category?: string;
-    color?: string;
-}
-
-export interface ResiduosPorMes {
-    mes: string; // YYYY-MM
-    aceite: number;
-    basura: number;
-    filtros: number;
-    otros: number;
-}
-
-export interface ResiduosPorBuque {
-    buqueId: number;
-    nombreBuque: string;
-    totalKg: number;
-    cantidadManifiestos: number;
-}
-
-export interface DashboardStats {
-    kpis: DashboardKPIs;
-    residuosPorMes: ResiduosPorMes[];
-    topBuques: ResiduosPorBuque[];
-    distribucionTipos: ChartDataPoint[];
-}
+// Tipos de la pestaña Reportes de Estadísticas. Los de la pestaña Estadísticas (período, totales,
+// serie) viven junto a su consulta en lib/services/dashboard_stats.ts.
 
 export interface ReportFilters {
     fechaInicio?: string;
@@ -54,12 +18,4 @@ export interface ReporteDetalladoItem {
     unidad: string;
     estado: string;
     responsable: string;
-}
-
-export interface Comparaciones {
-    manifestosAnterior: number;
-    aceiteAnterior: number;
-    basuraAnterior: number;
-    basuronAnterior: number;
-    totalAnterior: number;
 }

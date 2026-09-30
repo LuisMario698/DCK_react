@@ -182,21 +182,29 @@ export function EsqueletoPantalla({ variante = 'panel' }: { variante?: 'panel' |
 
             {variante === 'estadisticas' ? (
                 <>
+                    {/* Pestañas, período, frase de resumen, cuatro cifras y la gráfica (ver EstadisticasGenerales) */}
                     <Esqueleto className="h-[68px] w-72 max-w-full rounded-2xl" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Esqueleto className="h-[60px] w-[26rem] max-w-full rounded-xl" />
+                    <div className={`${tarjeta} rounded-[28px] p-6 md:p-8 space-y-3`}>
+                        <Esqueleto className="h-5 w-40" />
+                        <Esqueleto className="h-8 w-[40rem] max-w-full" />
+                        <Esqueleto className="h-8 w-[30rem] max-w-full" />
+                        <Esqueleto className="h-5 w-80 max-w-full" />
+                    </div>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
                         {[0, 1, 2, 3].map((i) => (
-                            <div key={i} className={`${tarjeta} rounded-2xl p-6 space-y-3`}>
-                                <Esqueleto className="w-16 h-16" />
-                                <Esqueleto className="h-5 w-32" />
-                                <Esqueleto className="h-10 w-40" />
+                            <div key={i} className={`${tarjeta} rounded-[22px] p-5 space-y-3`}>
+                                <Esqueleto className="w-12 h-12 rounded-full" />
+                                <Esqueleto className="h-9 w-32 max-w-full" />
+                                <Esqueleto className="h-4 w-36 max-w-full" />
                             </div>
                         ))}
                     </div>
-                    <div className={`${tarjeta} rounded-3xl p-8`}>
-                        <Esqueleto className="h-7 w-72 max-w-full" />
+                    <div className={`${tarjeta} rounded-[28px] p-7`}>
+                        <Esqueleto className="h-7 w-48 max-w-full" />
                         <div className="mt-8 h-56 flex items-end gap-3">
                             {[45, 70, 55, 90, 65, 80].map((alto, i) => (
-                                <Esqueleto key={i} className="flex-1 max-w-[50px] rounded-xl" style={{ height: `${alto}%` }} />
+                                <Esqueleto key={i} className="flex-1 max-w-[56px] rounded-xl" style={{ height: `${alto}%` }} />
                             ))}
                         </div>
                     </div>
