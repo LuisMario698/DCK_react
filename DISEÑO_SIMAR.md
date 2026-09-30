@@ -263,9 +263,9 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
 
 | Pieza | Qué hace | Dónde |
 |---|---|---|
-| `reveal` (+ `useScrollReveal`) | Al entrar en pantalla: de `blur(12px)`, transparente y 28 px abajo a nítido. Escalonar con `data-delay` (ms; llega como `--retraso`). `data-direction="left"/"right"` entra de lado | Antetítulos, párrafos, tarjetas de cada sección |
-| `reveal` + `data-efecto="foto"` | Más desenfoque (22 px) y crece de 96 % a 100 %: la foto "se enfoca" | Fotos de El proyecto y Don Francisco, el mapa de puertos |
-| `reveal reveal-palabras` + `TextoEnfoca` | El título no se mueve: cada palabra se enfoca en cascada (65 ms entre palabras). El lector de pantalla oye la frase entera una vez (`sr-only`) | Títulos `h2` de las secciones y el llamado final |
+| `reveal` (+ `useScrollReveal`) | **Atado al scroll, como las páginas de Apple**: el estado depende de la posición, no del tiempo. Asoma por abajo con `blur(10px)`, transparente y 28 px abajo, y queda nítido al recorrer el 26 % de su paso por la pantalla (`animation-timeline: view()`, `animation-range: cover 0% cover 26%`), o sea en el tercio de abajo. Al bajar rápido todo llega ya nítido; al subir se revierte. `data-delay` (ms) se vuelve un rango que empieza más arriba (650 ms ≈ 16 %). `data-direction="left"/"right"` entra de lado | Antetítulos, párrafos, tarjetas de cada sección |
+| `reveal` + `data-efecto="foto"` | Más desenfoque (18 px) y crece de 95 % a 100 %: la foto "se enfoca" (rango hasta 30 %) | Fotos de El proyecto y Don Francisco, el mapa de puertos |
+| `reveal reveal-palabras` + `TextoEnfoca` | El título no se mueve: cada palabra se enfoca según su posición, cada una 2 % después que la anterior. El lector de pantalla oye la frase entera una vez (`sr-only`) | Títulos `h2` de las secciones y el llamado final |
 | `simar-enfoca` | Lo mismo, al cargar (animación, 1.1 s). Escalonar con `animationDelay` | Contenido del hero |
 | `simar-enfoca-simbolo` | El símbolo se enfoca, crece y gira 50° hasta su lugar: las flechas cierran el ciclo | Símbolo grande del hero |
 | `simar-enfoca-palabras` + `TextoEnfoca` | Palabras en cascada al cargar; el inicio va en `--retraso` | Subtítulo del hero |
@@ -273,6 +273,14 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
 | `simar-hero-tinte` / `simar-hero-velo` | Tinte azul marea (`mix-blend-mode: color`) para que todas las fotos queden en la misma gama; velo `simar-abismo` más oscuro al centro y al pie | Fondo del hero |
 | `simar-hero-sale` | Al bajar, el contenido del hero se difumina y se desvanece (sin moverse), atado al scroll (`view-timeline`). Sólo donde el navegador lo soporta y sin "reducir movimiento" | Contenido del hero |
 
+- Navegadores sin animaciones atadas al scroll (Safari de iOS anterior a 26, Firefox): el
+  `reveal` entra con `IntersectionObserver` y una transición corta (0.55–0.65 s, retrasos al
+  60 %), para que al bajar rápido nada se quede esperando.
+- Dentro de un contenedor con scroll propio (el carrusel de Conciencia Azul en celular) no hay
+  línea de tiempo vertical: ahí `reveal` va sin animación, ya visible.
+- En `animation-range` no uses `var()`: si el valor no sirve, el navegador descarta todo el rango y
+  el elemento se aclara hasta que sale por arriba. Por eso el escalonado va con números en línea
+  (`useScrollReveal`) y el de las palabras con `:nth-of-type`.
 - Un elemento con `simar-presiona` no lleva `reveal` (las dos definen `transition`): el `reveal`
   va en un envoltorio.
 - El hero es oscuro a propósito (logo claro `nombre-grande-oscuro.png` sobre fotos). Las fotos con

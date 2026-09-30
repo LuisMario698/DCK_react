@@ -15,8 +15,26 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
             )
         );
 
+        // Navegador que ata animaciones al scroll: el CSS lo hace todo según la posición (ver
+        // .reveal en globals.css). Aquí sólo el escalonado: data-delay (ms) → el rango empieza
+        // un poco más arriba (650 ms ≈ 16 % del recorrido). Números fijos, sin var(): así el
+        // navegador no descarta el rango.
+        const atadoAlScroll =
+            CSS.supports('animation-timeline: view()') &&
+            !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (atadoAlScroll) {
+            pendientes.forEach((el) => {
+                const desfase = Math.min(Number(el.dataset.delay ?? 0) / 40, 16);
+                if (!desfase) return;
+                const largo = el.dataset.efecto === 'foto' ? 30 : 26;
+                el.style.setProperty('animation-range', `cover ${desfase}% cover ${desfase + largo}%`);
+            });
+            return;
+        }
+
         const revelar = (el: HTMLElement) => {
-            const delay = el.dataset.delay ?? '0';
+            // Retraso más corto que el escrito: al bajar rápido nada se queda esperando
+            const delay = Number(el.dataset.delay ?? 0) * 0.6;
             // Variable y no transitionDelay: la heredan las palabras de TextoEnfoca
             el.style.setProperty('--retraso', `${delay}ms`);
             el.classList.add('reveal--visible');
@@ -31,7 +49,7 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>() {
                     if (entry.isIntersecting) revelar(entry.target as HTMLElement);
                 });
             },
-            { threshold: 0.15, rootMargin: '0px 0px -80px 0px' }
+            { threshold: 0.05, rootMargin: '0px 0px -6% 0px' }
         );
 
         // Un salto (Ctrl+Fin, buscar en la página) puede pasar un elemento de abajo a arriba de

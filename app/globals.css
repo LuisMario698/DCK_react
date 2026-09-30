@@ -321,18 +321,23 @@ body {
   animation: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Reveal al hacer scroll (controlado por useScrollReveal, landing): el elemento llega
-   difuminado y se enfoca mientras sube. El retraso llega en --retraso (data-delay). */
+/* Reveal al hacer scroll (landing, useScrollReveal): el elemento llega difuminado y se enfoca
+   mientras sube.
+   - Navegadores que atan animaciones al scroll (Chrome/Android, Safari 26+): el estado depende de
+     la POSICIÓN del elemento en la pantalla, como en las páginas de Apple. Entra por abajo
+     difuminado y queda nítido antes de llegar a la mitad; al bajar rápido todo llega ya nítido y
+     al subir se revierte. El escalonado (data-delay) lo convierte useScrollReveal en un
+     animation-range en línea.
+   - Los demás: IntersectionObserver + transición corta al entrar (bloque de abajo). */
 .reveal {
   opacity: 0;
-  filter: blur(12px);
+  filter: blur(10px);
   transform: translateY(28px);
   transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 1.1s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--retraso, 0ms);
-  will-change: opacity, filter, transform;
 }
 
 .reveal[data-direction="left"] {
@@ -345,8 +350,8 @@ body {
 
 /* Fotos y mapa: se enfocan como una cámara (más desenfoque, crecen un poco) */
 .reveal[data-efecto="foto"] {
-  filter: blur(22px);
-  transform: scale(0.96);
+  filter: blur(18px);
+  transform: scale(0.95);
 }
 
 /* "none" y no translate(0)/blur(0): al terminar no deja al elemento como contenedor
@@ -357,7 +362,6 @@ body {
   opacity: 1;
   filter: none;
   transform: none;
-  will-change: auto;
 }
 
 /* Títulos: el bloque no se mueve, cada palabra se enfoca en cascada (TextoEnfoca) */
@@ -365,23 +369,83 @@ body {
   opacity: 1;
   filter: none;
   transform: none;
-  will-change: auto;
 }
 .reveal-palabras .palabra {
   display: inline-block;
   opacity: 0;
-  filter: blur(10px);
+  filter: blur(8px);
   transform: translateY(0.4em);
   transition:
-    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  transition-delay: calc(var(--retraso, 0ms) + var(--i, 0) * 65ms);
+    opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--retraso, 0ms) + var(--i, 0) * 40ms);
 }
 .reveal-palabras.reveal--visible .palabra {
   opacity: 1;
   filter: none;
   transform: none;
+}
+
+/* Versión atada al scroll */
+@keyframes simar-revela {
+  from { opacity: 0; filter: blur(10px); transform: translateY(28px); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes simar-revela-izquierda {
+  from { opacity: 0; filter: blur(10px); transform: translateX(-28px); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes simar-revela-derecha {
+  from { opacity: 0; filter: blur(10px); transform: translateX(28px); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes simar-revela-foto {
+  from { opacity: 0; filter: blur(18px); transform: scale(0.95); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@keyframes simar-revela-palabra {
+  from { opacity: 0; filter: blur(8px); transform: translateY(0.4em); }
+  to { opacity: 1; filter: none; transform: none; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* cover 0 % = el borde de arriba asoma por abajo de la pantalla; al 26 % ya subió un cuarto
+       del recorrido y queda nítido (en el tercio de abajo de la pantalla) */
+    .reveal {
+      transition: none;
+      animation: simar-revela ease-out both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 26%;
+    }
+    .reveal[data-direction="left"] {
+      animation-name: simar-revela-izquierda;
+    }
+    .reveal[data-direction="right"] {
+      animation-name: simar-revela-derecha;
+    }
+    .reveal[data-efecto="foto"] {
+      animation-name: simar-revela-foto;
+      animation-range: cover 0% cover 30%;
+    }
+    .reveal.reveal-palabras {
+      animation: none;
+    }
+    /* Cada palabra según su posición, y un poco después que la anterior (sin var() dentro de
+       animation-range: si no, un navegador que no la acepte ignora todo el rango) */
+    .reveal-palabras .palabra {
+      transition: none;
+      animation: simar-revela-palabra ease-out both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 22%;
+    }
+    .reveal-palabras .palabra:nth-of-type(2) { animation-range: cover 2% cover 24%; }
+    .reveal-palabras .palabra:nth-of-type(3) { animation-range: cover 4% cover 26%; }
+    .reveal-palabras .palabra:nth-of-type(4) { animation-range: cover 6% cover 28%; }
+    .reveal-palabras .palabra:nth-of-type(5) { animation-range: cover 8% cover 30%; }
+    .reveal-palabras .palabra:nth-of-type(6) { animation-range: cover 10% cover 32%; }
+    .reveal-palabras .palabra:nth-of-type(n + 7) { animation-range: cover 12% cover 34%; }
+  }
 }
 
 /* Ondas decorativas para secciones marítimas */
@@ -1156,11 +1220,14 @@ html[data-barra-mini] .simar-flotante {
     flex: 0 0 84%;
     scroll-snap-align: start;
   }
-  /* Las tarjetas que entran de lado ya se ven: no esperan al "reveal" vertical */
+  /* Las tarjetas que entran de lado ya se ven: no esperan al "reveal" vertical. Tampoco
+     llevan la versión atada al scroll: su contenedor de scroll más cercano es el carrusel
+     (horizontal), y ahí la línea de tiempo vertical no existiría y se quedarían ocultas */
   .simar-landing .simar-carrusel > .reveal {
     opacity: 1;
     filter: none;
     transform: none;
+    animation: none;
   }
 }
 @media (max-width: 639px) and (prefers-reduced-motion: reduce) {
