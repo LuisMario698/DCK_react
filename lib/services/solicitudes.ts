@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
-import { Recoleccion, SolicitudConAsociacion, SolicitudRecoleccion } from '@/types/database'
+import { Notificacion, Recoleccion, SolicitudConAsociacion, SolicitudRecoleccion } from '@/types/database'
 import type { EstadoSolicitud, TipoResiduo } from '@/lib/constants/residuos'
 
 const SELECT_CON_ASOCIACION =
@@ -53,6 +53,30 @@ export async function contarSolicitudesPendientes() {
 
   if (error) throw error
   return count ?? 0
+}
+
+/**
+ * La solicitud de la que habla un aviso del recinto, para abrirla directo. Los avisos no guardan su
+ * id, pero la base los crea en la misma transacción que el cambio (trigger
+ * `notificar_cambio_solicitud`) y `now()` no cambia dentro de una transacción: el aviso
+ * "nueva_solicitud" tiene la misma hora que el `created_at` de la solicitud y "cancelada", la
+ * misma que su `updated_at` (lo pone el trigger de updated_at; una cancelada ya no cambia).
+ * null si no es un aviso de solicitud o no se encuentra.
+ */
+export async function buscarSolicitudDeAviso(aviso: Pick<Notificacion, 'tipo' | 'asociacion_id' | 'created_at'>): Promise<number | null> {
+  const columna = aviso.tipo === 'nueva_solicitud' ? 'created_at' : aviso.tipo === 'cancelada' ? 'updated_at' : null
+  if (!columna || !aviso.asociacion_id) return null
+
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('solicitudes_recoleccion')
+    .select('id')
+    .eq('asociacion_id', aviso.asociacion_id)
+    .eq(columna, aviso.created_at)
+    .limit(1)
+
+  if (error) throw error
+  return (data?.[0]?.id as number | undefined) ?? null
 }
 
 // ── Acciones (todas pasan por funciones RPC que validan rol e inventario) ──

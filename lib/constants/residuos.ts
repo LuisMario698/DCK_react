@@ -38,6 +38,13 @@ export const UNIDAD_POR_TIPO: Record<TipoResiduo, UnidadResiduo> = {
     filtros: 'pz',
 };
 
+const UNIDAD_ESCRITA: Record<UnidadResiduo, [string, string]> = { kg: ['kg', 'kg'], L: ['litro', 'litros'], pz: ['pieza', 'piezas'] };
+
+/** La unidad para leer (DISEÑO_SIMAR.md: "unidades siempre visibles"): "litros", "piezas", "kg"; en singular si es 1 */
+export function unidadEscrita(u: UnidadResiduo, cantidad = 2): string {
+    return UNIDAD_ESCRITA[u]?.[cantidad === 1 ? 0 : 1] ?? u;
+}
+
 export const TIPO_RESIDUO_COLOR: Record<TipoResiduo, string> = {
     plastico: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     aceite: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',

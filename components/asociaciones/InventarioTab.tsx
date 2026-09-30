@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, Save, X, Package, Droplets, Layers, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Save, Package, Droplets, Layers, Eye, EyeOff } from 'lucide-react';
 import {
     TIPOS_RESIDUO,
     TIPO_RESIDUO_COLOR,
     TIPO_RESIDUO_LABEL,
     UNIDAD_POR_TIPO,
     formatCantidad,
+    unidadEscrita,
     type TipoResiduo,
 } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
@@ -39,12 +40,11 @@ export function InventarioTab() {
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Agregar y editar abren la misma ventana (Modal) en todos los tamaños; en celular sube como hoja
     const [editando, setEditando] = useState<number | null>(null);
     const [creando, setCreando] = useState(false);
     const [draft, setDraft] = useState<Borrador>(BORRADOR_VACIO);
     const [guardando, setGuardando] = useState(false);
-    // En celular el formulario sube como hoja inferior (Modal); en tableta y escritorio se edita en la fila
-    const [enHoja, setEnHoja] = useState(false);
 
     const cargar = useCallback(async () => {
         try {
@@ -84,7 +84,6 @@ export function InventarioTab() {
     const tiposLibres = TIPOS_RESIDUO.filter((t) => !items.some((i) => i.tipo === t));
 
     const startEdit = (item: InventarioResiduo) => {
-        setEnHoja(esCelular());
         setEditando(item.id);
         setCreando(false);
         setDraft({ tipo: item.tipo, cantidad: String(item.cantidad), notas: item.notas ?? '', publicado: item.publicado });
@@ -93,7 +92,6 @@ export function InventarioTab() {
     const cancel = () => {
         setEditando(null);
         setCreando(false);
-        setEnHoja(false);
         setDraft(BORRADOR_VACIO);
     };
 
@@ -158,14 +156,12 @@ export function InventarioTab() {
 
     if (cargando) return <Cargando texto="Cargando inventario…" />;
 
-    // Nuevo residuo (botón del encabezado y, en celular, la burbuja flotante). En la fila el tipo viene
-    // ya elegido; en la hoja se toca uno de los cuadros (salvo que sólo quede uno)
+    // Nuevo residuo (botón del encabezado y, en celular, la burbuja flotante): se toca uno de los
+    // cuadros del material (si sólo queda uno, ya viene elegido)
     const agregarResiduo = () => {
-        const hoja = esCelular();
-        setEnHoja(hoja);
         setCreando(true);
         setEditando(null);
-        setDraft({ ...BORRADOR_VACIO, tipo: hoja && tiposLibres.length > 1 ? '' : tiposLibres[0] ?? '' });
+        setDraft({ ...BORRADOR_VACIO, tipo: tiposLibres.length === 1 ? tiposLibres[0] : '' });
     };
     const itemEditando = items.find((i) => i.id === editando);
 
@@ -234,29 +230,7 @@ export function InventarioTab() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie movil:block">
-                            {creando && !enHoja && (
-                                <FilaEdicion
-                                    draft={draft}
-                                    setDraft={setDraft}
-                                    tiposDisponibles={tiposLibres}
-                                    nuevo
-                                    guardando={guardando}
-                                    onSave={save}
-                                    onCancel={cancel}
-                                />
-                            )}
-                            {items.map((item, idx) =>
-                                editando === item.id && !enHoja ? (
-                                    <FilaEdicion
-                                        key={item.id}
-                                        draft={draft}
-                                        setDraft={setDraft}
-                                        tiposDisponibles={[item.tipo]}
-                                        guardando={guardando}
-                                        onSave={save}
-                                        onCancel={cancel}
-                                    />
-                                ) : (
+                            {items.map((item, idx) => (
                                     <tr
                                         key={item.id}
                                         className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-3 movil:gap-y-2 movil:px-3.5 movil:py-3"
@@ -269,13 +243,13 @@ export function InventarioTab() {
                                             <span className="text-base font-bold text-simar-texto movil:text-[17px] movil:font-extrabold">
                                                 {formatCantidad(item.cantidad)}
                                             </span>
-                                            <span className="text-[15px] text-simar-texto-2 ml-1">{item.unidad}</span>
+                                            <span className="text-[15px] text-simar-texto-2 ml-1">{unidadEscrita(item.unidad, item.cantidad)}</span>
                                         </td>
                                         {/* En celular sólo si hay algo apartado, debajo de la cantidad */}
                                         <td className={`px-4 md:px-5 py-3.5 hidden md:table-cell whitespace-nowrap text-base text-simar-texto-2 movil:p-0 movil:row-start-3 movil:col-span-2 movil:text-[13px] ${reservado[item.tipo] ? 'movil:block' : ''}`}>
                                             {reservado[item.tipo] ? (
                                                 <>
-                                                    {formatCantidad(reservado[item.tipo]!)} {item.unidad}
+                                                    {formatCantidad(reservado[item.tipo]!)} {unidadEscrita(item.unidad, reservado[item.tipo]!)}
                                                     <span className="hidden movil:inline"> apartados por recolectar</span>
                                                 </>
                                             ) : (
@@ -324,9 +298,8 @@ export function InventarioTab() {
                                             </div>
                                         </td>
                                     </tr>
-                                )
-                            )}
-                            {items.length === 0 && (!creando || enHoja) && (
+                            ))}
+                            {items.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="px-6 py-16 text-center">
                                         <div className="inline-flex flex-col items-center gap-3">
@@ -355,7 +328,7 @@ export function InventarioTab() {
                 title={tiposLibres.length === 0 ? 'Todos los tipos de residuo ya están en el inventario' : undefined}
             />
 
-            {enHoja && (creando || itemEditando) && (
+            {(creando || itemEditando) && (
                 <FormularioResiduoModal
                     draft={draft}
                     setDraft={setDraft}
@@ -371,109 +344,11 @@ export function InventarioTab() {
     );
 }
 
-function FilaEdicion({
-    draft,
-    setDraft,
-    tiposDisponibles,
-    nuevo = false,
-    guardando,
-    onSave,
-    onCancel,
-}: {
-    draft: Borrador;
-    setDraft: (d: Borrador) => void;
-    tiposDisponibles: TipoResiduo[];
-    nuevo?: boolean;
-    guardando: boolean;
-    onSave: () => void;
-    onCancel: () => void;
-}) {
-    const campo =
-        'px-3 py-2 text-base rounded-lg border border-simar-campo-borde bg-simar-superficie text-simar-texto focus:ring-2 focus:ring-simar-marea-tinta focus:border-transparent';
-    return (
-        <tr className="bg-simar-marea-suave/60 border-l-2 border-simar-marea-tinta movil:grid movil:grid-cols-2 movil:items-center movil:gap-2.5 movil:px-3.5 movil:py-3">
-            <td className="px-4 md:px-5 py-3 movil:p-0 movil:col-span-2">
-                <select
-                    value={draft.tipo}
-                    disabled={!nuevo}
-                    onChange={(e) => setDraft({ ...draft, tipo: e.target.value as TipoResiduo })}
-                    className={`w-full ${campo} disabled:opacity-70`}
-                >
-                    {nuevo && <option value="">Selecciona tipo…</option>}
-                    {tiposDisponibles.map((t) => (
-                        <option key={t} value={t}>
-                            {TIPO_RESIDUO_LABEL[t]}
-                        </option>
-                    ))}
-                </select>
-            </td>
-            <td className="px-4 md:px-5 py-3 movil:p-0">
-                <div className="flex items-center gap-1.5">
-                    <input
-                        type="number"
-                        min={0}
-                        step="0.01"
-                        autoFocus={!nuevo}
-                        value={draft.cantidad}
-                        onChange={(e) => setDraft({ ...draft, cantidad: e.target.value })}
-                        onKeyDown={(e) => e.key === 'Enter' && onSave()}
-                        className={`w-28 ${campo}`}
-                    />
-                    <span className="text-[15px] text-simar-texto-2">
-                        {draft.tipo ? UNIDAD_POR_TIPO[draft.tipo] : ''}
-                    </span>
-                </div>
-            </td>
-            <td className="px-4 md:px-5 py-3 hidden md:table-cell" />
-            <td className="px-4 md:px-5 py-3 movil:p-0">
-                <label className="inline-flex items-center gap-2 text-[15px] font-medium text-simar-texto cursor-pointer">
-                    <input
-                        type="checkbox"
-                        checked={draft.publicado}
-                        onChange={(e) => setDraft({ ...draft, publicado: e.target.checked })}
-                        className="w-4 h-4 rounded accent-simar-marea-tinta"
-                    />
-                    Publicado
-                </label>
-            </td>
-            <td className="px-4 md:px-5 py-3 hidden lg:table-cell" colSpan={2}>
-                <input
-                    type="text"
-                    placeholder="Notas (opcional)"
-                    value={draft.notas}
-                    onChange={(e) => setDraft({ ...draft, notas: e.target.value })}
-                    className={`w-full ${campo}`}
-                />
-            </td>
-            <td className="px-4 md:px-5 py-3 text-right movil:p-0 movil:col-span-2">
-                <div className="inline-flex items-center gap-1.5">
-                    <button
-                        onClick={onSave}
-                        disabled={guardando}
-                        className="inline-flex items-center gap-1 px-3 py-2 rounded-lg text-white bg-[#127A5D] hover:bg-[#0E6A50] disabled:opacity-60 text-[15px] font-bold shadow-simar transition-all min-h-[52px]"
-                    >
-                        {guardando ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                        Guardar
-                    </button>
-                    <button
-                        onClick={onCancel}
-                        className="p-2 rounded-lg text-simar-texto-2 hover:text-simar-coral hover:bg-simar-coral-suave transition-all min-w-[44px] min-h-[44px] inline-flex items-center justify-center"
-                        title="Cancelar"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
-                </div>
-            </td>
-        </tr>
-    );
-}
-
-// Mismo corte que la variante movil: (DISEÑO_SIMAR.md → "Versión móvil")
-const esCelular = () => window.matchMedia('(max-width: 639px)').matches;
-
 /**
- * Celular: agregar o editar un residuo en una hoja que sube desde abajo (Modal; el CSS de la versión
- * móvil la vuelve hoja), como "Nueva asociación". El tipo se elige tocando un cuadro, no en una lista.
+ * Agregar o editar un residuo, en todos los tamaños: una ventana al centro en computadora y una hoja
+ * que sube desde abajo en celular (el CSS de la versión móvil la vuelve hoja), como "Nueva
+ * asociación". El tipo se elige tocando un cuadro, no en una lista. Antes, en computadora se editaba
+ * dentro de la fila con una lista desplegable, un campo chico y una casilla.
  */
 function FormularioResiduoModal({
     draft,
@@ -496,6 +371,9 @@ function FormularioResiduoModal({
     onCancel: () => void;
 }) {
     const unidad = draft.tipo ? UNIDAD_POR_TIPO[draft.tipo] : null;
+    const escrita = unidad ? unidadEscrita(unidad) : '';
+    // En computadora, al editar, el cursor ya está en la cantidad (en celular no: abriría el teclado)
+    const enfocar = !nuevo && window.matchMedia('(min-width: 640px)').matches;
     return (
         <Modal
             titulo={nuevo ? 'Agregar residuo' : 'Editar residuo'}
@@ -528,7 +406,7 @@ function FormularioResiduoModal({
                                         <span className="min-w-0">
                                             <span className="block text-[17px] font-bold leading-tight">{TIPO_RESIDUO_LABEL[t]}</span>
                                             <span className={`block text-[15px] leading-tight mt-0.5 ${activo ? 'text-white/85' : 'text-simar-texto-2'}`}>
-                                                en {UNIDAD_POR_TIPO[t] === 'L' ? 'litros' : 'kg'}
+                                                en {unidadEscrita(UNIDAD_POR_TIPO[t])}
                                             </span>
                                         </span>
                                     </button>
@@ -541,10 +419,10 @@ function FormularioResiduoModal({
                 )}
 
                 <Campo
-                    label={`Cantidad disponible${unidad ? ` (${unidad})` : ''}`}
+                    label={`Cantidad disponible${escrita ? ` (${escrita})` : ''}`}
                     ayuda={
-                        apartado
-                            ? `Aparte hay ${formatCantidad(apartado)} ${unidad} aprobados por recolectar; ya están descontados.`
+                        apartado && unidad
+                            ? `Aparte hay ${formatCantidad(apartado)} ${unidadEscrita(unidad, apartado)} aprobados por recolectar; ya están descontados.`
                             : 'Lo que hay hoy en el centro de acopio.'
                     }
                 >
@@ -555,14 +433,15 @@ function FormularioResiduoModal({
                             min={0}
                             step="0.01"
                             placeholder="0"
+                            autoFocus={enfocar}
                             value={draft.cantidad}
                             onChange={(e) => setDraft({ ...draft, cantidad: e.target.value })}
                             onKeyDown={(e) => e.key === 'Enter' && onSave()}
-                            className={`${inputCls} pr-16`}
+                            className={`${inputCls} pr-24`}
                         />
                         {unidad && (
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-lg font-bold text-simar-texto-2 pointer-events-none">
-                                {unidad}
+                                {escrita}
                             </span>
                         )}
                     </div>

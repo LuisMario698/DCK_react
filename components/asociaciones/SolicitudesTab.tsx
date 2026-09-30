@@ -18,6 +18,7 @@ import { getInventario } from '@/lib/services/inventario';
 import { abrirComprobante, getRecoleccionPorSolicitud, subirComprobante } from '@/lib/services/recolecciones';
 import { suscribirCambios } from '@/lib/services/notificaciones';
 import { generarPDFRecoleccion } from '@/lib/utils/pdfGeneratorRecoleccion';
+import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 import { useAuth } from '@/components/layout/AuthProvider';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
 import {
@@ -72,9 +73,15 @@ const VACIO: Partial<Record<Filtro, { titulo: string; texto: string }>> = {
 type Accion = { tipo: 'detalle' | 'aprobar' | 'rechazar' | 'completar'; solicitud: SolicitudConAsociacion };
 
 export function SolicitudesTab({
+    filtroInicial = 'pendiente',
+    resaltar,
     onAbrirChat,
     onCambio,
 }: {
+    /** Con qué filtro abre: "Por recolectar" (aprobada) cuando se llega desde el Panel */
+    filtroInicial?: 'pendiente' | 'aprobada';
+    /** Solicitud a la que se llega desde un aviso o el Panel: abre en su filtro y se ilumina un momento */
+    resaltar?: number;
     onAbrirChat?: (asociacionId: number) => void;
     onCambio?: () => void;
 }) {
@@ -82,9 +89,39 @@ export function SolicitudesTab({
     const [inventario, setInventario] = useState<InventarioResiduo[]>([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [tab, setTab] = useState<Filtro>('pendiente');
+    const [tab, setTab] = useState<Filtro>(filtroInicial);
     const [accion, setAccion] = useState<Accion | null>(null);
     const [descargando, setDescargando] = useState<number | null>(null);
+    const reducir = usePrefiereMenosMovimiento();
+
+    // Resaltar: en cuanto la lista cargó, se elige el filtro donde está esa solicitud y se marca. Se
+    // ajusta durante el render (patrón de React para "cambió una prop"), no en un efecto.
+    const [porResaltar, setPorResaltar] = useState(resaltar ?? null);
+    const [resaltarPrevio, setResaltarPrevio] = useState(resaltar);
+    const [resaltada, setResaltada] = useState<number | null>(null);
+    if (resaltar !== resaltarPrevio) {
+        setResaltarPrevio(resaltar);
+        setPorResaltar(resaltar ?? null);
+    }
+    if (porResaltar != null && !cargando) {
+        const s = solicitudes.find((x) => x.id === porResaltar);
+        setPorResaltar(null);
+        if (s) {
+            setTab(s.estado);
+            setResaltada(s.id);
+        }
+    }
+    // Se llevan a la vista el filtro elegido (la fila de filtros se desliza de lado) y la solicitud;
+    // cuando la iluminación termina, se quita la marca
+    useEffect(() => {
+        if (resaltada == null) return;
+        const suave = reducir ? 'auto' : 'smooth';
+        // El de computadora (el de celular no se desliza de lado); oculto en celular, no hace nada
+        document.querySelector('nav[aria-label="Estado de las solicitudes"] [aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: suave });
+        document.querySelector(`[data-solicitud="${resaltada}"]`)?.scrollIntoView({ block: 'center', behavior: suave });
+        const t = setTimeout(() => setResaltada(null), 3200);
+        return () => clearTimeout(t);
+    }, [resaltada, reducir]);
 
     const cargar = useCallback(async () => {
         try {
@@ -158,30 +195,23 @@ export function SolicitudesTab({
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
-                {/* Tabs (tableta y escritorio) */}
-                <div className="border-b border-simar-borde px-4 sm:px-6 bg-simar-papel/50 movil:hidden">
-                    <nav aria-label="Estado de las solicitudes" className="simar-desliza flex gap-1 sm:gap-2 overflow-x-auto -mb-px">
-                        {TABS.map((t) => {
-                            const active = tab === t.value;
-                            return (
-                                <button
-                                    key={t.value}
-                                    onClick={() => setTab(t.value)}
-                                    aria-pressed={active}
-                                    className={`whitespace-nowrap py-3.5 px-4 text-base font-semibold border-b-2 transition-all duration-200 ${
-                                        active
-                                            ? 'border-simar-marea-tinta text-simar-marea-tinta'
-                                            : 'border-transparent text-simar-texto-2 hover:text-simar-texto hover:border-simar-marea-tinta'
-                                    }`}
-                                >
-                                    {t.label}
-                                    <span className={`ml-2 text-[15px] px-2 py-0.5 rounded-full font-bold transition-colors ${active ? 'bg-simar-marea-suave text-simar-marea-tinta' : 'bg-simar-papel text-simar-texto-2'}`}>
-                                        {conteo(t.value)}
-                                    </span>
-                                </button>
-                            );
-                        })}
-                    </nav>
+                {/* Tableta y computadora: el mismo control segmentado que en celular (canal gris y la opción
+                    elegida en blanco), con las seis opciones. Antes eran pestañas subrayadas sobre una
+                    franja beige que no coincidía con la de la tabla ni con su margen. Lo que hay que atender
+                    lleva su número en color (coral / azul); lo demás, en gris */}
+                <div className="px-4 md:px-5 py-3 border-b border-simar-borde movil:hidden">
+                    <ControlSegmentado
+                        vista="computadora"
+                        etiqueta="Estado de las solicitudes"
+                        valor={tab}
+                        onCambiar={setTab}
+                        opciones={TABS.map((t) => ({
+                            valor: t.value,
+                            texto: t.label,
+                            conteo: conteo(t.value),
+                            tono: t.value === 'pendiente' ? ('coral' as const) : t.value === 'aprobada' ? ('marea' as const) : undefined,
+                        }))}
+                    />
                 </div>
 
                 {/* Celular: control segmentado (más discreto que las secciones de arriba). Sólo lo que hay
@@ -236,7 +266,10 @@ export function SolicitudesTab({
                                 return (
                                     <tr
                                         key={s.id}
-                                        className="group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-2.5 movil:gap-y-2 movil:px-3.5 movil:py-3"
+                                        data-solicitud={s.id}
+                                        className={`group bg-simar-superficie hover:bg-simar-marea-suave/30 transition-colors duration-150 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-2.5 movil:gap-y-2 movil:px-3.5 movil:py-3 ${
+                                            s.id === resaltada ? 'simar-resalta' : ''
+                                        }`}
                                         style={{ animationDelay: `${Math.min(idx * 30, 300)}ms` }}
                                     >
                                         <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-span-2 movil:min-w-0">

@@ -6,6 +6,7 @@ import { contarNotificacionesNoLeidas, suscribirNotificaciones } from '@/lib/ser
 import { contarMensajesNoLeidos, suscribirMensajes } from '@/lib/services/mensajes';
 import { getEstadoMiSuscripcion, type EstadoMiSuscripcion } from '@/lib/services/suscripciones';
 import type { AsociacionRecolectora } from '@/types/database';
+import { useInsigniaAvisos } from '@/components/layout/useInsigniaAvisos';
 
 interface RecolectorContextType {
     perfil: PerfilConAsociacion | null;
@@ -44,6 +45,8 @@ export function RecolectorProvider({ children }: { children: React.ReactNode }) 
     const [cargando, setCargando] = useState(true);
     const [notificacionesNoLeidas, setNotificaciones] = useState(0);
     const [mensajesNoLeidos, setMensajes] = useState(0);
+    // Las notificaciones sin leer también en la pestaña y en el ícono de la app instalada
+    useInsigniaAvisos(notificacionesNoLeidas);
 
     const recargarPerfil = useCallback(async () => {
         try {

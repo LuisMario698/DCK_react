@@ -124,15 +124,35 @@ export function ControlSegmentado<T extends string>({
     valor,
     onCambiar,
     etiqueta,
+    vista = 'movil',
 }: {
     opciones: { valor: T; texto: string; conteo?: number; tono?: 'coral' | 'marea' }[];
     valor: T;
     onCambiar: (valor: T) => void;
     /** Nombre del grupo para el lector de pantalla */
     etiqueta: string;
+    /**
+     * 'movil' (lo de siempre): sólo en celular, a lo ancho. 'computadora': sólo en tableta y
+     * computadora, también a lo ancho (las opciones se reparten parejo y el control cuadra con la
+     * tabla de abajo), con la letra y los botones del tamaño de escritorio; si no caben en una fila,
+     * dos filas de tres (pensado para seis opciones: Solicitudes del recinto, cuyos filtros ya no son
+     * pestañas subrayadas).
+     */
+    vista?: 'movil' | 'computadora';
 }) {
-    return (
-        <nav aria-label={etiqueta} className="hidden movil:flex gap-0.5 p-[3px] rounded-[14px] bg-simar-papel">
+    const computadora = vista === 'computadora';
+    const control = (
+        <nav
+            aria-label={etiqueta}
+            className={
+                computadora
+                    ? // Por el ancho de SU contenedor (no de la pantalla): si caben en una fila (≥ 1024 px),
+                      // una fila; si no (laptop con el menú abierto, tableta), dos filas de tres. Siempre de
+                      // orilla a orilla, sin deslizarse (así no quedan opciones escondidas)
+                      'grid grid-cols-3 @5xl:flex gap-1 p-1 rounded-[16px] bg-simar-papel'
+                    : 'hidden movil:flex gap-0.5 p-[3px] rounded-[14px] bg-simar-papel'
+            }
+        >
             {opciones.map((o) => {
                 const activo = o.valor === valor;
                 const n = o.conteo ?? 0;
@@ -150,13 +170,19 @@ export function ControlSegmentado<T extends string>({
                         type="button"
                         onClick={() => onCambiar(o.valor)}
                         aria-pressed={activo}
-                        className={`simar-presiona flex-auto min-w-0 min-h-[42px] px-1.5 rounded-[11px] inline-flex items-center justify-center gap-1 text-[clamp(12px,3.6vw,14px)] font-bold leading-tight transition-colors ${
-                            activo ? 'bg-simar-superficie text-simar-texto shadow-simar' : 'text-simar-texto-2'
-                        }`}
+                        className={`simar-presiona inline-flex items-center justify-center font-bold leading-tight transition-colors ${
+                            computadora
+                                ? 'flex-1 whitespace-nowrap min-h-[48px] px-4 rounded-[12px] gap-2 text-[17px]'
+                                : 'flex-auto min-w-0 min-h-[42px] px-1.5 rounded-[11px] gap-1 text-[clamp(12px,3.6vw,14px)]'
+                        } ${activo ? 'bg-simar-superficie text-simar-texto shadow-simar' : `text-simar-texto-2 ${computadora ? 'hover:text-simar-texto' : ''}`}`}
                     >
                         {o.texto}
                         {o.conteo !== undefined && (
-                            <span className={`flex-shrink-0 min-w-[20px] h-[20px] px-1 rounded-full text-[12px] font-bold tabular-nums inline-flex items-center justify-center ${tonoConteo}`}>
+                            <span
+                                className={`flex-shrink-0 rounded-full font-bold tabular-nums inline-flex items-center justify-center ${
+                                    computadora ? 'min-w-[26px] h-[26px] px-1.5 text-[14px]' : 'min-w-[20px] h-[20px] px-1 text-[12px]'
+                                } ${tonoConteo}`}
+                            >
                                 {o.conteo}
                             </span>
                         )}
@@ -165,6 +191,8 @@ export function ControlSegmentado<T extends string>({
             })}
         </nav>
     );
+    // El de computadora va dentro de un contenedor que mide su propio ancho (@container)
+    return computadora ? <div className="@container movil:hidden">{control}</div> : control;
 }
 
 export const inputCls =

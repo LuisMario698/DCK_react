@@ -3,6 +3,17 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { CalendarDays, Check, Download, FilePlus2, FileText, List, PenLine, Search, Upload } from 'lucide-react';
+import { useAuth } from '@/components/layout/AuthProvider';
+import { tiempoRelativo } from '@/lib/constants/residuos';
+import {
+  borrarSinTerminar,
+  describirSinTerminar,
+  guardarSinTerminar,
+  leerSinTerminar,
+  tieneContenido,
+  type DatosSinTerminar,
+  type ManifiestoSinTerminar,
+} from '@/lib/utils/manifiestoSinTerminar';
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
 import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
 import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
@@ -97,6 +108,15 @@ export default function ManifiestosPage() {
   const [selectedBuqueIndex, setSelectedBuqueIndex] = useState(-1);
 
   const buqueInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Manifiesto sin terminar (ver lib/utils/manifiestoSinTerminar.ts): lo que se captura se guarda
+  // solo en este equipo y, si al entrar había uno, se ofrece continuarlo
+  const { user } = useAuth();
+  const usuarioId = user?.id ?? null;
+  const [sinTerminar, setSinTerminar] = useState<ManifiestoSinTerminar | null>(null);
+  // Nombre del archivo que se había adjuntado: el archivo no se guarda, hay que adjuntarlo otra vez
+  const [archivoPorAdjuntar, setArchivoPorAdjuntar] = useState<string | null>(null);
+  const revisadoParaRef = useRef<string | null>(null);
 
   // Referencias para navegación con Enter
   const fechaRef = useRef<HTMLInputElement>(null);
@@ -364,6 +384,56 @@ export default function ManifiestosPage() {
     loadData();
   }, []);
 
+  // Al entrar (en cuanto se sabe quién es): ¿quedó un manifiesto sin terminar?
+  useEffect(() => {
+    if (!usuarioId || revisadoParaRef.current === usuarioId) return;
+    revisadoParaRef.current = usuarioId;
+    setSinTerminar(leerSinTerminar(usuarioId));
+  }, [usuarioId]);
+
+  // Mientras se escribe se guarda solo, un momento después de la última tecla. Un formulario vacío no
+  // se guarda (ni borra lo guardado): sólo lo borran "Guardar manifiesto" y "Empezar de nuevo".
+  useEffect(() => {
+    if (!usuarioId || saving) return;
+    const datos: DatosSinTerminar = {
+      formData,
+      residuos,
+      nombres: { buque: buqueNombre, motorista: motoristaNombre, cocinero: cocineroNombre, liquidos: liquidosNombre },
+      firmas: { motorista: motoristaSignature, cocinero: cocineroSignature, oficial: oficialSignature, liquidos: liquidosSignature },
+      archivo: archivo?.name ?? archivoPorAdjuntar,
+    };
+    if (!tieneContenido(datos)) return;
+    const espera = setTimeout(() => {
+      guardarSinTerminar(usuarioId, datos);
+      // Se empezó a capturar otro: el que se ofrecía al entrar quedó reemplazado
+      setSinTerminar(null);
+    }, 700);
+    return () => clearTimeout(espera);
+  }, [usuarioId, saving, formData, residuos, buqueNombre, motoristaNombre, cocineroNombre, liquidosNombre, motoristaSignature, cocineroSignature, oficialSignature, liquidosSignature, archivo, archivoPorAdjuntar]);
+
+  const continuarSinTerminar = () => {
+    if (!sinTerminar) return;
+    const m = sinTerminar;
+    setFormData(m.formData);
+    setResiduos(m.residuos);
+    setBuqueNombre(m.nombres.buque);
+    setMotoristaNombre(m.nombres.motorista);
+    setCocineroNombre(m.nombres.cocinero);
+    setLiquidosNombre(m.nombres.liquidos);
+    setMotoristaSignature(m.firmas.motorista);
+    setCocineroSignature(m.firmas.cocinero);
+    setOficialSignature(m.firmas.oficial);
+    setLiquidosSignature(m.firmas.liquidos);
+    setArchivoPorAdjuntar(archivo ? null : m.archivo);
+    setSinTerminar(null);
+  };
+
+  const descartarSinTerminar = () => {
+    if (!confirm('¿Borrar el manifiesto sin terminar? Lo que se había capturado ya no se podrá recuperar.')) return;
+    if (usuarioId) borrarSinTerminar(usuarioId);
+    setSinTerminar(null);
+  };
+
   // Lógica de filtrado de manifiestos con useMemo para mejor rendimiento
   const manifiestosFiltrados = useMemo(() => {
     return manifiestos.filter((manifiesto) => {
@@ -592,6 +662,10 @@ export default function ManifiestosPage() {
       );
 
       alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
+
+      // Ya quedó guardado en la base: lo capturado en este equipo sobra
+      if (usuarioId) borrarSinTerminar(usuarioId);
+      setArchivoPorAdjuntar(null);
 
       setFormData({
         numero_manifiesto: '',
@@ -930,6 +1004,35 @@ export default function ManifiestosPage() {
             { valor: 'registros', texto: 'Registros', icono: List, conteo: manifiestos.length },
           ]}
         />
+
+        {/* Manifiesto sin terminar (guardado solo en este equipo): se ofrece continuarlo */}
+        {sinTerminar && (
+          <div role="status" className={`simar-aparece rounded-2xl p-5 bg-simar-marea-suave flex flex-wrap items-center gap-x-4 gap-y-3 movil:p-3.5 movil:gap-x-3 ${soloEnNuevo}`}>
+            <PenLine className="w-6 h-6 flex-shrink-0 text-simar-marea-tinta movil:w-5 movil:h-5" strokeWidth={2} />
+            <div className="flex-1 min-w-[220px] movil:min-w-0">
+              <p className="text-lg font-bold text-simar-texto movil:text-[15px]">Tienes un manifiesto sin terminar</p>
+              <p className="text-base text-simar-texto-2 movil:text-[13px]">
+                {describirSinTerminar(sinTerminar)} · {tiempoRelativo(new Date(sinTerminar.guardadoEn).toISOString()).toLowerCase()}
+              </p>
+            </div>
+            <div className="flex gap-2.5 movil:w-full movil:gap-2">
+              <button
+                type="button"
+                onClick={descartarSinTerminar}
+                className="simar-presiona min-h-[52px] px-5 rounded-[16px] border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-[17px] font-bold hover:border-simar-marea-tinta transition-colors movil:flex-1 movil:min-h-[44px] movil:px-3 movil:text-[15px]"
+              >
+                Empezar de nuevo
+              </button>
+              <button
+                type="button"
+                onClick={continuarSinTerminar}
+                className="simar-presiona min-h-[52px] px-6 rounded-[16px] bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-extrabold transition-colors movil:flex-1 movil:min-h-[44px] movil:px-3 movil:text-[15px]"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className={`grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6 movil:gap-4 ${soloEnNuevo}`}>
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
@@ -1426,7 +1529,12 @@ export default function ManifiestosPage() {
             </span>
             <div>
               <h2 className="text-lg font-extrabold text-simar-texto">Adjuntar documento</h2>
-              <p className="text-[15px] text-simar-texto-2">Opcional · documento escaneado</p>
+              {archivoPorAdjuntar && !archivo ? (
+                // Se continuó un manifiesto sin terminar que tenía un archivo: el archivo no se guarda
+                <p className="text-[15px] font-bold text-simar-coral">Vuelve a adjuntar «{archivoPorAdjuntar}»</p>
+              ) : (
+                <p className="text-[15px] text-simar-texto-2">Opcional · documento escaneado</p>
+              )}
             </div>
           </div>
 

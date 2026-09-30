@@ -762,6 +762,21 @@ body {
   }
 }
 
+/* Fila a la que se llega desde un aviso o el Panel: se ilumina en azul suave y se apaga sola, para
+   que la vista la encuentre. Con "reducir movimiento" se queda iluminada, sin transición */
+@keyframes simar-resalta {
+  0%, 40% { background-color: var(--simar-marea-suave); }
+}
+.simar-resalta {
+  animation: simar-resalta 2.6s var(--simar-frena) 0.3s backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .simar-resalta {
+    animation: none;
+    background-color: var(--simar-marea-suave);
+  }
+}
+
 /* Gráficas: la barra crece desde su base al aparecer. Escalonar con animationDelay */
 @keyframes simar-crece-y {
   from { transform: scaleY(0); }

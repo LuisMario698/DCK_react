@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import { Package, Inbox, Building2, MessageSquare } from 'lucide-react';
 import { EncabezadoPantalla, TarjetaDato } from '@/components/ui/simar';
 import { InventarioTab } from '@/components/asociaciones/InventarioTab';
@@ -32,9 +32,30 @@ async function obtenerStats() {
     }
 }
 
-export default function AsociacionesPage() {
-    const [tab, setTab] = useState<Tab>('solicitudes');
-    const [asociacionChat, setAsociacionChat] = useState<number | null>(null);
+/**
+ * El Panel ("Por atender") y los avisos de la campana llegan con parámetros:
+ * - `?solicitud=ID`: Solicitudes, en el filtro de esa solicitud y resaltada;
+ * - `?ver=por-recolectar`: Solicitudes en "Por recolectar";
+ * - `?ver=mensajes` (con `&empresa=ID`, en esa conversación): Mensajes;
+ * - `?ver=inventario`: Inventario.
+ */
+type Parametros = { ver?: string; empresa?: string; solicitud?: string };
+
+const idValido = (v?: string) => (Number(v) > 0 ? Number(v) : null);
+const seccionDe = (ver?: string): Tab => (ver === 'mensajes' ? 'chat' : ver === 'inventario' ? 'inventario' : 'solicitudes');
+
+export default function AsociacionesPage({ searchParams }: { searchParams: Promise<Parametros> }) {
+    const { ver, empresa, solicitud } = use(searchParams);
+    const [tab, setTab] = useState<Tab>(seccionDe(ver));
+    const [asociacionChat, setAsociacionChat] = useState<number | null>(ver === 'mensajes' ? idValido(empresa) : null);
+    // Si ya se estaba aquí y llega otro aviso (cambian los parámetros), se va a su sección
+    const clave = `${ver}|${empresa}|${solicitud}`;
+    const [clavePrevia, setClavePrevia] = useState(clave);
+    if (clave !== clavePrevia) {
+        setClavePrevia(clave);
+        setTab(seccionDe(ver));
+        if (ver === 'mensajes') setAsociacionChat(idValido(empresa));
+    }
     const [stats, setStats] = useState({ empresas: 0, pendientes: 0, noLeidos: 0 });
 
     const cargarStats = useCallback(() => {
@@ -120,7 +141,14 @@ export default function AsociacionesPage() {
             {/* Content */}
             <div key={tab} className="">
                 {tab === 'inventario' && <InventarioTab />}
-                {tab === 'solicitudes' && <SolicitudesTab onAbrirChat={abrirChat} onCambio={cargarStats} />}
+                {tab === 'solicitudes' && (
+                    <SolicitudesTab
+                        filtroInicial={ver === 'por-recolectar' ? 'aprobada' : 'pendiente'}
+                        resaltar={idValido(solicitud) ?? undefined}
+                        onAbrirChat={abrirChat}
+                        onCambio={cargarStats}
+                    />
+                )}
                 {tab === 'empresas' && <EmpresasTab onAbrirChat={abrirChat} onCambio={cargarStats} />}
                 {tab === 'chat' && <ChatTab asociacionIdInicial={asociacionChat} onCambio={cargarStats} />}
             </div>

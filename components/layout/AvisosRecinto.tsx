@@ -8,8 +8,10 @@
  * - CampanaMovil: en la píldora de arriba (celular y tableta).
  * - CampanaMenu: renglón "Avisos" del menú lateral (computadora).
  * - PanelAvisos: la lista; en computadora flota junto al menú, en celular sube como hoja.
- * Cada aviso lleva a Asociaciones (abre en Solicitudes). Un aviso nuevo en vivo también sale como
- * mensaje emergente y el número de la campana entra con un pulso (simar-confirma).
+ * Cada aviso abre su solicitud en Asociaciones → Solicitudes, resaltada (si no se encuentra, la
+ * lista). La lista va por días (Hoy, Ayer, Antes). Un aviso nuevo en vivo también sale como mensaje
+ * emergente y el número de la campana entra con un pulso (simar-confirma); ese número también va en
+ * la pestaña y en el ícono de la app instalada (useInsigniaAvisos).
  */
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -26,8 +28,11 @@ import {
 import type { Notificacion } from '@/types/database';
 import { NotifIcon } from '@/components/recolector/NotifIcon';
 import { tiempoRelativo } from '@/lib/constants/residuos';
+import { buscarSolicitudDeAviso } from '@/lib/services/solicitudes';
+import { agruparPorDia } from '@/lib/utils/fechas';
 import { Esqueleto, usePresencia } from '@/components/ui/movimiento';
 import { HojaInferior } from './HojaInferior';
+import { useInsigniaAvisos } from './useInsigniaAvisos';
 
 const ALCANCE: AlcanceNotificaciones = { destinatario: 'admin' };
 
@@ -35,6 +40,8 @@ interface ContextoAvisos {
     /** null mientras no se ha abierto la lista por primera vez */
     avisos: Notificacion[] | null;
     noLeidos: number;
+    /** false hasta que llega el primer conteo (antes, noLeidos vale 0 sin saberse) */
+    contado: boolean;
     error: boolean;
     abierto: boolean;
     alternar: () => void;
@@ -56,6 +63,7 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
     const locale = usePathname().split('/')[1] || 'es';
     const [avisos, setAvisos] = useState<Notificacion[] | null>(null);
     const [noLeidos, setNoLeidos] = useState(0);
+    const [contado, setContado] = useState(false);
     const [error, setError] = useState(false);
     const [abierto, setAbierto] = useState(false);
     const destino = `/${locale}/dashboard/asociaciones`;
@@ -64,11 +72,28 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
         destinoRef.current = destino;
     }, [destino]);
 
+    // El número de la campana también en la pestaña y en el ícono de la app instalada
+    useInsigniaAvisos(noLeidos);
+
+    // Lleva a la solicitud de la que habla el aviso (Solicitudes la resalta); si no se encuentra,
+    // a Solicitudes
+    const irAlAviso = useCallback(
+        async (n: Notificacion) => {
+            const id = await buscarSolicitudDeAviso(n).catch((e) => {
+                console.error('Error buscando la solicitud del aviso:', e);
+                return null;
+            });
+            router.push(id ? `${destinoRef.current}?solicitud=${id}` : destinoRef.current);
+        },
+        [router]
+    );
+
     const cargarLista = useCallback(async () => {
         try {
             const [lista, n] = await Promise.all([getNotificaciones(20, ALCANCE), contarNotificacionesNoLeidas(ALCANCE)]);
             setAvisos(lista);
             setNoLeidos(n);
+            setContado(true);
             setError(false);
         } catch (e) {
             console.error('Error cargando avisos:', e);
@@ -80,7 +105,11 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let vigente = true;
         contarNotificacionesNoLeidas(ALCANCE)
-            .then((n) => vigente && setNoLeidos(n))
+            .then((n) => {
+                if (!vigente) return;
+                setNoLeidos(n);
+                setContado(true);
+            })
             .catch((e) => console.error('Error contando avisos:', e));
         const quitar = suscribirNotificaciones((n) => {
             if (!perteneceAlcance(n, ALCANCE)) return;
@@ -88,14 +117,14 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
             if (!n.leida) setNoLeidos((c) => c + 1);
             toast(n.titulo, {
                 description: n.detalle ?? undefined,
-                action: { label: 'Ver', onClick: () => router.push(destinoRef.current) },
+                action: { label: 'Ver', onClick: () => irAlAviso(n) },
             });
         });
         return () => {
             vigente = false;
             quitar();
         };
-    }, [router]);
+    }, [irAlAviso]);
 
     const alternar = () => {
         // Cada vez que se abre, la lista se pide de nuevo (por si algo cambió desde otra pestaña)
@@ -123,11 +152,11 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
             marcarNotificacionesLeidas([n.id]).catch((e) => console.error('Error marcando aviso:', e));
         }
         setAbierto(false);
-        router.push(destino);
+        irAlAviso(n);
     };
 
     return (
-        <Contexto.Provider value={{ avisos, noLeidos, error, abierto, alternar, cerrar, marcarTodos, abrirAviso }}>
+        <Contexto.Provider value={{ avisos, noLeidos, contado, error, abierto, alternar, cerrar, marcarTodos, abrirAviso }}>
             {children}
         </Contexto.Provider>
     );
@@ -308,27 +337,33 @@ function ListaAvisos() {
                     Marcar todo como leído
                 </button>
             )}
-            <ul className="space-y-1">
-                {avisos.map((n, i) => (
-                    <li key={n.id} className="simar-aparece" style={{ animationDelay: `${Math.min(i, 6) * 0.03}s` }}>
-                        <button
-                            type="button"
-                            onClick={() => abrirAviso(n)}
-                            className={`w-full text-left flex items-start gap-3 rounded-2xl p-2.5 transition-colors ${
-                                n.leida ? 'hover:bg-simar-papel' : 'bg-simar-marea-suave/60 hover:bg-simar-marea-suave'
-                            }`}
-                        >
-                            <NotifIcon tipo={n.tipo} />
-                            <span className="flex-1 min-w-0">
-                                <span className={`block text-[17px] leading-snug text-simar-texto movil:text-[15px] ${n.leida ? 'font-medium' : 'font-bold'}`}>{n.titulo}</span>
-                                {n.detalle && <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[13.5px]">{n.detalle}</span>}
-                                <span className="block mt-0.5 text-[14px] text-simar-texto-2 movil:text-[12.5px]">{tiempoRelativo(n.created_at)}</span>
-                            </span>
-                            {!n.leida && <span aria-label="Sin leer" className="mt-2 w-2.5 h-2.5 flex-shrink-0 rounded-full bg-[#A63F0E]" />}
-                        </button>
-                    </li>
-                ))}
-            </ul>
+            {/* Por días: "Hoy", "Ayer" y "Antes" (la hora de cada aviso sigue abajo de su texto) */}
+            {agruparPorDia(avisos).map(({ grupo, items }) => (
+                <section key={grupo} aria-label={grupo}>
+                    <h3 className="px-2.5 pt-2 pb-1 text-[15px] font-bold text-simar-texto-2 movil:text-[13px]">{grupo}</h3>
+                    <ul className="space-y-1">
+                        {items.map((n) => (
+                            <li key={n.id} className="simar-aparece" style={{ animationDelay: `${Math.min(avisos.indexOf(n), 6) * 0.03}s` }}>
+                                <button
+                                    type="button"
+                                    onClick={() => abrirAviso(n)}
+                                    className={`w-full text-left flex items-start gap-3 rounded-2xl p-2.5 transition-colors ${
+                                        n.leida ? 'hover:bg-simar-papel' : 'bg-simar-marea-suave/60 hover:bg-simar-marea-suave'
+                                    }`}
+                                >
+                                    <NotifIcon tipo={n.tipo} />
+                                    <span className="flex-1 min-w-0">
+                                        <span className={`block text-[17px] leading-snug text-simar-texto movil:text-[15px] ${n.leida ? 'font-medium' : 'font-bold'}`}>{n.titulo}</span>
+                                        {n.detalle && <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[13.5px]">{n.detalle}</span>}
+                                        <span className="block mt-0.5 text-[14px] text-simar-texto-2 movil:text-[12.5px]">{tiempoRelativo(n.created_at)}</span>
+                                    </span>
+                                    {!n.leida && <span aria-label="Sin leer" className="mt-2 w-2.5 h-2.5 flex-shrink-0 rounded-full bg-[#A63F0E]" />}
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ))}
         </div>
     );
 }

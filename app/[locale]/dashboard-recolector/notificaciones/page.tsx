@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { BellOff, CheckCheck } from 'lucide-react';
 import { tiempoRelativo } from '@/lib/constants/residuos';
+import { agruparPorDia } from '@/lib/utils/fechas';
 import { Notificacion } from '@/types/database';
 import {
     getNotificaciones,
@@ -82,34 +83,40 @@ export default function NotificacionesPage() {
                         Aquí verás cuando el centro de acopio apruebe, complete o rechace tus solicitudes.
                     </EstadoVacio>
                 ) : (
-                    <ul className="divide-y divide-simar-borde-suave">
-                        {notificaciones.map((n) => (
-                            <li
-                                key={n.id}
-                                onClick={() => !n.leida && marcar([n.id])}
-                                className={`px-5 sm:px-6 py-4 transition-colors flex items-start gap-3.5 border-l-[5px] ${
-                                    n.leida
-                                        ? 'border-l-transparent hover:bg-simar-papel'
-                                        : 'border-l-simar-marea-tinta bg-simar-marea-suave/50 cursor-pointer'
-                                }`}
-                            >
-                                <NotifIcon tipo={n.tipo} size="md" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="flex flex-wrap items-center gap-2 text-[17px] font-bold text-simar-texto">
-                                        {n.titulo}
-                                        {/* No leída: franja azul y la palabra "Nueva" (el color nunca va solo) */}
-                                        {!n.leida && (
-                                            <span className="px-2.5 py-0.5 rounded-full bg-simar-marea text-white text-[15px] font-bold leading-tight">
-                                                Nueva
-                                            </span>
-                                        )}
-                                    </p>
-                                    {n.detalle && <p className="text-base text-simar-texto-2">{n.detalle}</p>}
-                                    <p className="text-[15px] text-simar-texto-2 mt-1">{tiempoRelativo(n.created_at)}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                    // Por días: "Hoy", "Ayer" y "Antes" (la hora de cada una sigue abajo de su texto)
+                    agruparPorDia(notificaciones).map(({ grupo, items }, g) => (
+                        <section key={grupo} aria-label={grupo} className={g > 0 ? 'border-t border-simar-borde-suave' : ''}>
+                            <h3 className="px-5 sm:px-6 pt-4 pb-1 text-[15px] font-bold text-simar-texto-2 movil:px-3.5 movil:pt-3 movil:text-[13px]">{grupo}</h3>
+                            <ul className="divide-y divide-simar-borde-suave">
+                                {items.map((n) => (
+                                    <li
+                                        key={n.id}
+                                        onClick={() => !n.leida && marcar([n.id])}
+                                        className={`px-5 sm:px-6 py-4 transition-colors flex items-start gap-3.5 border-l-[5px] ${
+                                            n.leida
+                                                ? 'border-l-transparent hover:bg-simar-papel'
+                                                : 'border-l-simar-marea-tinta bg-simar-marea-suave/50 cursor-pointer'
+                                        }`}
+                                    >
+                                        <NotifIcon tipo={n.tipo} size="md" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="flex flex-wrap items-center gap-2 text-[17px] font-bold text-simar-texto">
+                                                {n.titulo}
+                                                {/* No leída: franja azul y la palabra "Nueva" (el color nunca va solo) */}
+                                                {!n.leida && (
+                                                    <span className="px-2.5 py-0.5 rounded-full bg-simar-marea text-white text-[15px] font-bold leading-tight">
+                                                        Nueva
+                                                    </span>
+                                                )}
+                                            </p>
+                                            {n.detalle && <p className="text-base text-simar-texto-2">{n.detalle}</p>}
+                                            <p className="text-[15px] text-simar-texto-2 mt-1">{tiempoRelativo(n.created_at)}</p>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    ))
                 )}
             </div>
         </div>

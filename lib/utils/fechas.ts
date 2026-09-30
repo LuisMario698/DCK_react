@@ -61,3 +61,45 @@ export function hoyLocal(): string {
     const dia = String(ahora.getDate()).padStart(2, '0');
     return `${ahora.getFullYear()}-${mes}-${dia}`;
 }
+
+/**
+ * Puerto Peñasco: UTC-7 todo el año. Para lo que se calcula en el servidor (Vercel corre en UTC),
+ * donde `hoyLocal()` daría la fecha y la hora de otra zona.
+ */
+const ZONA_PUERTO = 'America/Hermosillo';
+
+/** "Buenos días", "Buenas tardes" o "Buenas noches" según la hora en Puerto Peñasco. */
+export function saludoPuerto(ahora = new Date()): string {
+    const hora = Number(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: ZONA_PUERTO }).format(ahora));
+    if (hora >= 5 && hora < 12) return 'Buenos días';
+    if (hora >= 12 && hora < 19) return 'Buenas tardes';
+    return 'Buenas noches';
+}
+
+export type GrupoDelDia = 'Hoy' | 'Ayer' | 'Antes';
+
+/**
+ * Agrupa una lista (ya ordenada de lo más nuevo a lo más viejo) en "Hoy", "Ayer" y "Antes", con la
+ * hora del dispositivo. Sólo en el navegador: en el servidor la zona sería otra.
+ */
+export function agruparPorDia<T extends { created_at: string }>(lista: T[], ahora = new Date()): { grupo: GrupoDelDia; items: T[] }[] {
+    const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate()).getTime();
+    const ayer = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - 1).getTime();
+    const grupos: { grupo: GrupoDelDia; items: T[] }[] = [];
+    for (const item of lista) {
+        const t = new Date(item.created_at).getTime();
+        const grupo: GrupoDelDia = t >= hoy ? 'Hoy' : t >= ayer ? 'Ayer' : 'Antes';
+        const ultimo = grupos[grupos.length - 1];
+        if (ultimo?.grupo === grupo) ultimo.items.push(item);
+        else grupos.push({ grupo, items: [item] });
+    }
+    return grupos;
+}
+
+/** Hoy en Puerto Peñasco, para leer: "Martes 30 de septiembre". */
+export function fechaHoyPuerto(ahora = new Date()): string {
+    const texto = new Intl.DateTimeFormat('es-MX', { weekday: 'long', day: 'numeric', month: 'long', timeZone: ZONA_PUERTO })
+        .format(ahora)
+        .replace(',', '');
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
+}
