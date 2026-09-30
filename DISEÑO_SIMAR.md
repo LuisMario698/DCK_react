@@ -237,6 +237,12 @@ de profundidad.
 | `Esqueleto`, `EsqueletoPantalla` | Esqueletos para los `loading.tsx` (esperan 0.15 s antes de verse, para no parpadear) |
 | `usePrefiereMenosMovimiento()` | Si el sistema pide reducir movimiento (p. ej. el carrusel no avanza solo) |
 | `LineaMarea` (`components/layout/LineaMarea.tsx`) | La ola bajo la sección activa; se dibuja al llegar |
+| `DeslizarParaActualizar` (`components/layout/`) | Sólo con SiMAR instalada como app: arriba del todo, al jalar hacia abajo baja un círculo de vidrio cuya flecha gira con el tirón; pasado el umbral (se pone azul) y al soltar, la página se recarga. No se activa con una hoja o ventana abierta ni en filas que se deslizan de lado. En una pestaña normal no hace nada |
+
+**Cambiar un dato en pantalla** (otro período, otro residuo): lo de antes se queda a la vista
+atenuado con "Actualizando…" (no un círculo que gira ni la pantalla en blanco) y, al llegar lo
+nuevo, los números cuentan y las barras pasan de su alto anterior al nuevo. La clave de cada barra
+es su posición, así React la conserva y la transición de `height` hace el resto.
 
 ### 8.3 Reglas
 
@@ -574,6 +580,58 @@ basura marea, basurón arrecife.
   texto blanco. Ver `dashboard-recolector/impacto`.
 - Barras hechas a mano: colores sólidos (`bg-simar-marea`, `bg-simar-coral`…), nunca los `-suave`
   (sobre blanco casi no se ven).
+- **Nunca se suman unidades distintas.** Basura y basurón en kg, aceite en L, filtros en piezas:
+  cada uno en su cifra, su barra y su comparación. Una barra apilada "kg + L" o una dona con
+  "kg total" que incluye litros es un error, no un resumen.
+- **Pantalla Estadísticas** (`components/dashboard/EstadisticasGenerales.tsx`): todo sale del
+  mismo período (`getEstadisticasPeriodo`). Se acomoda en el orden en que se lee: qué entró →
+  cómo cambia → quién → a dónde se fue → qué se logró. De arriba abajo: el período, con
+  **"Descargar PDF"** a la derecha (en celular, junto a "Período"); un **titular de una
+  línea** con lo más importante ("Más basura +36 % y más aceite +23 % que el mes anterior"; sin
+  período anterior, "10,760 kg de basura y 653 L de aceite en el último mes"), con una línea violeta
+  a la izquierda y el botón **"Leer resumen"**, que despliega la frase completa ("En el último mes
+  se recibieron … en 36 manifiestos de 16 embarcaciones.") con la fila de la cuadrícula pasando de
+  `0fr` a `1fr`. Cerrado por defecto: una frase larga al entrar se sentía como "mucho texto de la
+  nada" y repetía las cifras de abajo. Abierto o cerrado se recuerda en el navegador
+  (`localStorage`, `useSyncExternalStore`); cerrado, el texto es `inert`. Luego cuatro cifras
+  (basura, aceite, basurón, manifiestos) con su comparación
+  **neutra** (flecha y porcentaje en color de texto: más o menos no es bueno ni malo por sí solo);
+  la **tendencia** de un residuo a la vez (control de tres opciones; por día, semana, mes o año
+  según el período; eje Y con números redondos; promedio punteado; la lectura de arriba dice el
+  valor de la barra señalada o el promedio) junto a **Embarcaciones** (un tercio): dos vistas con
+  control de dos opciones, "Más entregas" (llevan a Reportes con esa embarcación y el período) y
+  "Sin entregar" (activas con más de 60 días sin manifiesto, o que nunca han entregado; su número
+  va en coral en la pestaña cuando hay alguna; no depende del período); **"¿A dónde se fue?"** a
+  todo lo ancho; y el **impacto estimado** a todo lo ancho, como cierre. Los filtros de motor ya no
+  tienen tarjeta propia: su desglose va en su renglón de "¿A dónde se fue?".
+- **¿A dónde se fue?** (`DestinoResiduos.tsx`): la trazabilidad que promete SiMAR. Tres tarjetas
+  (una columna en celular y tableta, tres en computadora): aceite (L) y filtros (piezas) con su
+  recorrido **de arriba abajo** — recibido ↓ a reciclaje (verde suave, lo importante) ↓ en acopio
+  hoy — la barra de "% de lo recibido ya salió a reciclaje" (explicada en palabras si salió más de
+  lo recibido o nada) y "Se lo llevaron: empresa (cantidad)". Vertical y no en fila: tres cajas lado
+  a lado en un tercio de ancho cortaban las cantidades. "Materiales reciclables" (plástico, cartón,
+  chatarra, vidrio, orgánico, en kg) no lleva "recibido" ni porcentaje: en los manifiestos sólo hay
+  "basura" en general. Salidas = tabla `recolecciones` del período; en acopio = `inventario_residuos`
+  de hoy.
+- **Descargar PDF** (`components/dashboard/pdfEstadisticas.ts`, jsPDF, se carga al tocar): hoja
+  A4 con el símbolo, el período y sus fechas, el titular, las cuatro cifras, dos gráficas de barras
+  (basura en kg y aceite en L), las embarcaciones (que más entregan y sin entregar), a dónde se fue y
+  el impacto con su nota de factores provisionales; pie con número de hoja. Usa los mismos textos y
+  equivalencias que la pantalla. Las fuentes de jsPDF no traen "₂" ni "−": ahí se escribe "CO2" y "-".
+- **Impacto estimado:** tarjeta blanca como las demás (antes un bloque verde sólido con cuatro
+  cuadros cuyas equivalencias sólo salían al pasar el cursor), a todo lo ancho. **Lo grande es la
+  equivalencia en algo conocido**, no la
+  cifra técnica: tres cuadros verdes suaves (`bg-simar-arrecife-suave`) con el número de la
+  equivalencia en 44 px y su nombre en verde ("1.2 **albercas olímpicas**", "416 **árboles**", "1.5
+  **camiones recolectores**"), una línea que dice qué es ("de agua que no se contaminó con
+  aceite", "absorberían en un año el CO₂ que se evitó", "llenos de basura que no terminó en el
+  mar") y abajo, como dato de apoyo, la cifra técnica ("2.9 millones de litros de agua"). La
+  equivalencia cambia con el tamaño para no decir "0.1 albercas": albercas de 2.5 millones de L o
+  tinacos de 1,100 L; camiones de 8 t o bolsas de 10 kg; árboles o, con muy poco CO₂, km en auto.
+  "¿Cómo se calcula?" despliega las fórmulas y que los factores son provisionales
+  (`lib/constants/impacto.ts`); la etiqueta "Estimado" va junto al título. En celular cada cuadro
+  es un renglón con el ícono a la izquierda.
+- En el eje X de celular: los meses con su inicial y, si no caben, una etiqueta cada tantas barras.
 
 ### 10.19 Cosas que se descubrieron migrando
 
@@ -807,6 +865,7 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
 | Chat al alto de la pantalla | Asociaciones → Mensajes; Mensajes del portal | La caja del chat mide `100dvh` menos lo de arriba y la barra (deja 8 px de respiro). En el portal lo de arriba cambia (aviso de superadmin o de suscripción), así que la pantalla mide dónde empieza la caja y lo pasa como `--arriba`: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado. En una columna (< 768 px) primero se ve la lista de conversaciones, salvo que se llegue con "Abrir chat"; para volver, botón de flecha junto al nombre |
 | "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
 | Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
+| Avisos del recinto | Recinto: campana en la píldora de arriba (celular y tableta) y renglón "Avisos" en el menú lateral (computadora) | `components/layout/AvisosRecinto.tsx`. Número coral de sin leer que entra con un pulso (`simar-confirma`) cada vez que cambia. La lista sube como hoja en celular y flota junto al menú en computadora; sin leer en negritas con fondo azul suave y punto coral; "Marcar todo como leído". Cada aviso lleva a Asociaciones (abre en Solicitudes). Lo nuevo llega en vivo y también sale como mensaje emergente con "Ver" |
 
 ### 16.4 Cristal líquido
 
