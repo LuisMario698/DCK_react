@@ -321,32 +321,67 @@ body {
   animation: scale-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Reveal al hacer scroll (controlado por IntersectionObserver) */
+/* Reveal al hacer scroll (controlado por useScrollReveal, landing): el elemento llega
+   difuminado y se enfoca mientras sube. El retraso llega en --retraso (data-delay). */
 .reveal {
   opacity: 0;
-  transform: translateY(32px);
+  filter: blur(12px);
+  transform: translateY(28px);
   transition:
     opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
-}
-
-.reveal.reveal--visible {
-  opacity: 1;
-  transform: translateY(0);
+    filter 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--retraso, 0ms);
+  will-change: opacity, filter, transform;
 }
 
 .reveal[data-direction="left"] {
-  transform: translateX(-32px);
+  transform: translateX(-28px);
 }
 
 .reveal[data-direction="right"] {
-  transform: translateX(32px);
+  transform: translateX(28px);
 }
 
-.reveal[data-direction="left"].reveal--visible,
-.reveal[data-direction="right"].reveal--visible {
-  transform: translateX(0);
+/* Fotos y mapa: se enfocan como una cámara (más desenfoque, crecen un poco) */
+.reveal[data-efecto="foto"] {
+  filter: blur(22px);
+  transform: scale(0.96);
+}
+
+/* "none" y no translate(0)/blur(0): al terminar no deja al elemento como contenedor
+   de las ventanas fixed de adentro */
+.reveal.reveal--visible,
+.reveal[data-direction].reveal--visible,
+.reveal[data-efecto].reveal--visible {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  will-change: auto;
+}
+
+/* Títulos: el bloque no se mueve, cada palabra se enfoca en cascada (TextoEnfoca) */
+.reveal.reveal-palabras {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  will-change: auto;
+}
+.reveal-palabras .palabra {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(0.4em);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--retraso, 0ms) + var(--i, 0) * 65ms);
+}
+.reveal-palabras.reveal--visible .palabra {
+  opacity: 1;
+  filter: none;
+  transform: none;
 }
 
 /* Ondas decorativas para secciones marítimas */
@@ -434,8 +469,10 @@ body {
     animation: none !important;
   }
 
-  .reveal {
+  .reveal,
+  .reveal-palabras .palabra {
     opacity: 1;
+    filter: none;
     transform: none;
     transition: none;
   }
@@ -1122,6 +1159,7 @@ html[data-barra-mini] .simar-flotante {
   /* Las tarjetas que entran de lado ya se ven: no esperan al "reveal" vertical */
   .simar-landing .simar-carrusel > .reveal {
     opacity: 1;
+    filter: none;
     transform: none;
   }
 }
@@ -1173,9 +1211,85 @@ html[data-barra-mini] .simar-flotante {
 .simar-entra {
   animation: simar-entra 0.9s var(--simar-frena) backwards;
 }
-/* Manchas de luz del hero: aparecen despacio mientras se dibujan las curvas */
-.simar-mancha {
-  animation: simar-funde 1.6s ease-out backwards;
+
+/* Enfoque: llega difuminado y se aclara. Es el gesto de la landing: el hero lo usa al
+   cargar y las secciones al hacer scroll (.reveal). Escalonar con animationDelay */
+@keyframes simar-enfoca {
+  from { opacity: 0; filter: blur(14px); transform: translateY(18px); }
+}
+.simar-enfoca {
+  animation: simar-enfoca 1.1s var(--simar-frena) backwards;
+}
+/* Símbolo del hero: se enfoca y gira hasta su lugar (las flechas cierran el ciclo) */
+@keyframes simar-enfoca-simbolo {
+  from { opacity: 0; filter: blur(24px); transform: scale(0.84) rotate(-50deg); }
+}
+.simar-enfoca-simbolo {
+  animation: simar-enfoca-simbolo 1.8s var(--simar-frena) backwards;
+}
+/* Palabras en cascada al cargar (subtítulo del hero, con TextoEnfoca) */
+.simar-enfoca-palabras .palabra {
+  display: inline-block;
+  animation: simar-enfoca 0.9s var(--simar-frena) backwards;
+  animation-delay: calc(var(--retraso, 0ms) + var(--i, 0) * 55ms);
+}
+
+/* Fondo del hero: las fotos del proyecto se funden y se enfocan una sobre otra.
+   La activa queda encima; la anterior se queda debajo, nítida, hasta que la cubre. */
+.simar-hero-foto {
+  opacity: 0;
+  filter: blur(14px);
+  transition:
+    opacity 2s ease-in-out,
+    filter 2.6s var(--simar-frena);
+}
+.simar-hero-foto[data-estado="activa"],
+.simar-hero-foto[data-estado="anterior"] {
+  opacity: 1;
+  filter: none;
+}
+.simar-hero-foto[data-estado="activa"] {
+  z-index: 2;
+}
+.simar-hero-foto[data-estado="anterior"] {
+  z-index: 1;
+}
+/* Tinte azul marea sobre las fotos: todas quedan en la misma gama, sin importar sus colores */
+.simar-hero-tinte {
+  background: var(--simar-marea);
+  mix-blend-mode: color;
+  opacity: 0.45;
+}
+/* Velo sobre las fotos: oscurece más al centro (logo y texto) y al pie (se funde con la ola) */
+.simar-hero-velo {
+  background:
+    radial-gradient(ellipse 55% 60% at 50% 50%, color-mix(in srgb, var(--simar-abismo) 55%, transparent) 0%, transparent 85%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--simar-abismo) 82%, transparent) 0%,
+      color-mix(in srgb, var(--simar-abismo) 66%, transparent) 35%,
+      color-mix(in srgb, var(--simar-abismo) 74%, transparent) 70%,
+      color-mix(in srgb, var(--simar-abismo) 96%, transparent) 100%
+    );
+}
+
+/* Al bajar, el contenido del hero se difumina y se va (sin moverse). Sólo donde el
+   navegador sabe atar una animación al scroll; en los demás se queda quieto. */
+@keyframes simar-desenfoca {
+  to { opacity: 0; filter: blur(8px); }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .simar-hero {
+      view-timeline: --simar-hero block;
+    }
+    .simar-hero-sale {
+      animation: simar-desenfoca linear both;
+      animation-timeline: --simar-hero;
+      /* Empieza cuando ya se subió un tercio del hero: mientras se lee, sigue nítido */
+      animation-range: exit 35% exit 90%;
+    }
+  }
 }
 
 /* Avance del carrusel: la píldora activa se llena mientras corre la foto */

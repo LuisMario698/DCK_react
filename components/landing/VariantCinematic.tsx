@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef, type CSSProperties } from 'react';
+import { Fragment, useState, useEffect, useRef, type CSSProperties } from 'react';
+import Image from 'next/image';
+import simboloGrande from '@/public/assets/simar/simbolo-grande.png';
+import nombreGrandeOscuro from '@/public/assets/simar/nombre-grande-oscuro.png';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
 import type { VarianteMapa } from './mapa/puertos';
@@ -39,8 +42,28 @@ import { NumeroAnimado, usePrefiereMenosMovimiento, usePresencia } from '@/compo
 /** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
 const SEGUNDOS_POR_FOTO = 6;
 
-/** Ola del logo, larga, bajo la palabra SiMAR del hero (se dibuja al cargar) */
-const OLA_TITULO = `M2 7 Q9.4 1 16.75 7 ${Array.from({ length: 15 }, (_, i) => `T${(2 + (i + 2) * 14.75).toFixed(2)} 7`).join(' ')}`;
+/**
+ * Texto que se enfoca palabra por palabra: dentro de un `.reveal-palabras` lo hace al
+ * aparecer con el scroll; dentro de `.simar-enfoca-palabras`, al cargar. `desde` sigue la
+ * cascada de un texto anterior. El lector de pantalla oye la frase entera, una sola vez.
+ */
+function TextoEnfoca({ texto, desde = 0 }: { texto: string; desde?: number }) {
+    return (
+        <>
+            <span aria-hidden="true">
+                {texto.split(' ').map((palabra, i) => (
+                    <Fragment key={i}>
+                        {i > 0 && ' '}
+                        <span className="palabra" style={{ '--i': desde + i } as CSSProperties}>
+                            {palabra}
+                        </span>
+                    </Fragment>
+                ))}
+            </span>
+            <span className="sr-only">{texto}</span>
+        </>
+    );
+}
 
 /**
  * Borde de ola entre una franja clara y una oscura. `color` es el de la franja vecina;
@@ -93,20 +116,16 @@ function readSavedRole(): RolGuardado | null {
     }
 }
 
-interface MediaItem {
-    type: 'image' | 'video';
-    src: string;
-    poster?: string;
-}
-
-const MEDIA: MediaItem[] = [
-    { type: 'image', src: '/assets/images/img1.jpeg' },
-    { type: 'image', src: '/assets/images/img2.jpeg' },
-    { type: 'image', src: '/assets/images/img3.jpeg' },
-    { type: 'image', src: '/assets/images/img4.jpeg' },
-    { type: 'image', src: '/assets/images/img5.jpeg' },
-    { type: 'image', src: '/assets/images/img6.jpeg' },
-    { type: 'image', src: '/assets/images/img7.jpeg' },
+/**
+ * Fotografías de fondo del hero. `encuadre` = object-position (dónde recortar las verticales).
+ * Los reconocimientos (img6, img7) no van aquí: su texto grande pelea con el logo.
+ */
+const MEDIA: { src: string; encuadre?: string }[] = [
+    { src: '/assets/images/img1.jpeg' },
+    { src: '/assets/images/img2.jpeg' },
+    { src: '/assets/images/img3.jpeg', encuadre: '50% 30%' },
+    { src: '/assets/images/img5.jpeg', encuadre: '50% 35%' },
+    { src: '/assets/images/img4.jpeg', encuadre: '50% 20%' },
 ];
 
 const NAV_LINKS = [
@@ -577,190 +596,185 @@ export function VariantCinematic({
                 )}
             </nav>
 
-            {/* Hero */}
+            {/* Hero: las fotos del proyecto de fondo y el logo grande al centro */}
             {/* overflow-clip y no -hidden: lo decorativo que sobresale no vuelve "desplazable" la franja (al enfocar un botón se corría) */}
-            <header id="top" className="relative overflow-clip">
-                <svg
-                    aria-hidden="true"
-                    width="900"
-                    height="760"
-                    viewBox="300 -200 600 520"
-                    className="absolute -right-32 top-10 pointer-events-none"
-                >
-                    {/* Manchas de luz y curvas de profundidad: las curvas se trazan al cargar, de adentro hacia afuera */}
-                    <ellipse className="simar-mancha" cx="560" cy="40" rx="230" ry="170" style={{ fill: 'var(--simar-blob-1)' }} />
-                    <ellipse className="simar-mancha" cx="700" cy="200" rx="160" ry="120" style={{ fill: 'var(--simar-blob-2)', animationDelay: '0.3s' }} />
-                    <g style={{ fill: 'none', stroke: 'var(--simar-curva)', strokeWidth: 1.5 }}>
-                        <path
-                            pathLength={1}
-                            className="simar-dibuja"
-                            style={{ '--simar-trazo-dur': '2.2s', animationDelay: '0.35s' } as CSSProperties}
-                            d="M722 40 C718 57 690 72 674 86 C659 100 648 115 629 124 C610 133 585 136 560 139 C535 142 498 149 478 141 C457 132 448 106 438 89 C429 73 424 57 421 40 C419 23 412 -1 423 -15 C435 -30 466 -40 488 -47 C511 -55 537 -62 560 -60 C583 -59 601 -46 625 -39 C648 -32 685 -30 701 -17 C717 -4 726 23 722 40 Z"
+            <header id="top" className="simar-hero relative isolate overflow-clip bg-simar-abismo text-white">
+                {/* Fondo: las fotografías se funden y se enfocan una sobre otra. Son decorativas
+                    (el texto no depende de ellas); el velo oscurece para que todo se lea */}
+                <div aria-hidden="true" className="simar-enfoca absolute inset-0 -z-10" style={{ animationDuration: '1.6s' }}>
+                    {MEDIA.map((foto, index) => (
+                        <Image
+                            key={foto.src}
+                            src={foto.src}
+                            alt=""
+                            fill
+                            sizes="100vw"
+                            // Todas están en pantalla (una sobre otra): cualquiera puede ser el LCP
+                            priority={index === 0}
+                            loading={index === 0 ? undefined : 'eager'}
+                            data-estado={index === currentIndex ? 'activa' : index === prevIndex ? 'anterior' : undefined}
+                            className="simar-hero-foto object-cover"
+                            style={{ objectPosition: foto.encuadre }}
                         />
-                        <path
-                            pathLength={1}
-                            className="simar-dibuja"
-                            style={{ '--simar-trazo-dur': '2.6s', animationDelay: '0.7s' } as CSSProperties}
-                            d="M800 40 C791 66 745 84 724 107 C702 130 698 161 671 176 C644 192 598 197 560 198 C522 200 473 199 442 185 C412 171 394 139 377 115 C361 91 349 67 343 40 C337 13 324 -28 343 -49 C362 -70 421 -76 457 -86 C494 -96 525 -107 560 -107 C595 -108 630 -100 666 -90 C702 -81 754 -70 776 -49 C799 -27 809 14 800 40 Z"
-                        />
-                    </g>
-                </svg>
+                    ))}
+                    <div className="simar-hero-tinte absolute inset-0 z-[5]" />
+                    <div className="simar-hero-velo absolute inset-0 z-10" />
+                </div>
 
-                <div className="relative max-w-[1340px] mx-auto px-6 md:px-12 lg:px-24 pt-32 md:pt-44 pb-16 md:pb-24 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[100svh] lg:min-h-[900px] movil:px-5 movil:pt-24 movil:pb-10 movil:gap-8 movil:min-h-0">
-                    {/* Entrada escalonada: lugar, nombre (y su ola), qué es, para qué, acciones */}
-                    <div>
-                        <p className="simar-entra text-lg md:text-xl font-bold text-simar-marea-tinta movil:text-[15px]" style={{ animationDelay: '0.1s' }}>
-                            Puerto Peñasco · Sonora · México
-                        </p>
-                        <h1 className="mt-3.5 font-extrabold leading-none">
-                            <span className="simar-entra relative inline-block text-7xl md:text-[104px] tracking-tight" style={{ animationDelay: '0.2s' }}>
-                                SiMAR
-                                <svg
-                                    aria-hidden="true"
-                                    viewBox="0 0 240 14"
-                                    className="absolute left-1 -bottom-3 md:-bottom-4 w-[92%] h-auto overflow-visible"
-                                >
-                                    <path
-                                        d={OLA_TITULO}
-                                        pathLength={1}
-                                        className="simar-dibuja"
-                                        style={{
-                                            fill: 'none',
-                                            stroke: 'var(--simar-golfo)',
-                                            strokeWidth: 3,
-                                            strokeLinecap: 'round',
-                                            '--simar-trazo-dur': '1.4s',
-                                            animationDelay: '0.75s',
-                                        } as CSSProperties}
-                                    />
-                                </svg>
-                            </span>
-                            <span className="simar-entra block mt-6 md:mt-7 text-2xl md:text-[30px] leading-tight movil:mt-5 movil:text-[21px]" style={{ animationDelay: '0.3s' }}>
-                                Sistema Integral de Manejo Ambiental de Residuos
-                            </span>
-                        </h1>
-                        <p className="simar-entra mt-6 text-lg md:text-[22px] leading-relaxed text-simar-texto-2 max-w-xl movil:mt-4 movil:text-[16px]" style={{ animationDelay: '0.4s' }}>
-                            Transformando la gestión de residuos marinos con <strong className="text-simar-texto">trazabilidad digital</strong> y
-                            compromiso con el <strong className="text-simar-texto">Mar de Cortés</strong>.
-                        </p>
-                        <div className="simar-entra mt-8 md:mt-9 flex flex-col sm:flex-row sm:flex-wrap gap-3.5 movil:mt-6 movil:gap-2.5" style={{ animationDelay: '0.5s' }}>
-                            <button
-                                onClick={openLoginModal}
-                                className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold flex items-center justify-center gap-2.5 cursor-pointer group movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
+                {/* Entrada escalonada: lugar, símbolo (gira hasta su lugar), nombre, qué es, para qué, acciones.
+                    Al bajar, todo se difumina (simar-hero-sale) */}
+                <div className="simar-hero-sale relative max-w-[1100px] mx-auto px-6 md:px-12 pt-32 md:pt-36 pb-40 md:pb-44 min-h-[100svh] md:min-h-[max(100svh,780px)] flex flex-col items-center justify-center text-center movil:px-5 movil:pt-28 movil:pb-36">
+                    <p className="simar-enfoca text-lg md:text-xl font-bold text-simar-espuma movil:text-[15px]" style={{ animationDelay: '0.2s' }}>
+                        Puerto Peñasco · Sonora · México
+                    </p>
+                    <h1 className="mt-9 flex flex-col items-center font-extrabold movil:mt-7">
+                        <span className="relative flex items-center justify-center">
+                            {/* Curvas de profundidad alrededor del símbolo: se trazan al cargar, de adentro hacia afuera */}
+                            <svg
+                                aria-hidden="true"
+                                viewBox="320 -125 500 340"
+                                className="absolute left-1/2 top-1/2 w-[205%] max-w-none h-auto -translate-x-1/2 -translate-y-1/2 pointer-events-none overflow-visible"
+                                style={{ fill: 'none', stroke: 'var(--simar-espuma)', strokeWidth: 1.4, opacity: 0.4 }}
                             >
-                                Acceder a la plataforma
-                                <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
-                            </button>
-                            <a
-                                href="#proyecto"
-                                className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-simar-texto text-simar-texto text-lg md:text-xl font-bold hover:bg-simar-superficie flex items-center justify-center movil:min-h-[50px] movil:rounded-[17px] movil:text-[16px]"
-                            >
-                                Conocer el proyecto
-                            </a>
-                        </div>
+                                <path
+                                    pathLength={1}
+                                    className="simar-dibuja"
+                                    style={{ '--simar-trazo-dur': '2.2s', animationDelay: '0.6s' } as CSSProperties}
+                                    d="M722 40 C718 57 690 72 674 86 C659 100 648 115 629 124 C610 133 585 136 560 139 C535 142 498 149 478 141 C457 132 448 106 438 89 C429 73 424 57 421 40 C419 23 412 -1 423 -15 C435 -30 466 -40 488 -47 C511 -55 537 -62 560 -60 C583 -59 601 -46 625 -39 C648 -32 685 -30 701 -17 C717 -4 726 23 722 40 Z"
+                                />
+                                <path
+                                    pathLength={1}
+                                    className="simar-dibuja"
+                                    style={{ '--simar-trazo-dur': '2.6s', animationDelay: '0.9s', opacity: 0.6 } as CSSProperties}
+                                    d="M800 40 C791 66 745 84 724 107 C702 130 698 161 671 176 C644 192 598 197 560 198 C522 200 473 199 442 185 C412 171 394 139 377 115 C361 91 349 67 343 40 C337 13 324 -28 343 -49 C362 -70 421 -76 457 -86 C494 -96 525 -107 560 -107 C595 -108 630 -100 666 -90 C702 -81 754 -70 776 -49 C799 -27 809 14 800 40 Z"
+                                />
+                            </svg>
+                            <Image
+                                src={simboloGrande}
+                                alt=""
+                                priority
+                                sizes="(max-width: 639px) 136px, 240px"
+                                className="simar-enfoca-simbolo relative h-[clamp(128px,24svh,240px)] w-auto movil:h-[132px]"
+                                style={{ animationDelay: '0.1s' }}
+                            />
+                        </span>
+                        <Image
+                            src={nombreGrandeOscuro}
+                            alt="SiMAR"
+                            priority
+                            sizes="(max-width: 639px) 290px, 600px"
+                            className="simar-enfoca mt-5 w-[clamp(280px,44vw,600px)] h-auto movil:mt-4 movil:w-[280px]"
+                            style={{ animationDelay: '0.6s' }}
+                        />
+                        <span
+                            className="simar-enfoca-palabras mt-6 block text-2xl md:text-[30px] leading-tight movil:mt-4 movil:text-[20px]"
+                            style={{ '--retraso': '0.9s' } as CSSProperties}
+                        >
+                            <TextoEnfoca texto="Sistema Integral de Manejo Ambiental de Residuos" />
+                        </span>
+                    </h1>
+                    <p className="simar-enfoca mt-5 max-w-2xl text-lg md:text-[22px] leading-relaxed text-[#C7D3DD] movil:mt-3 movil:text-[16px]" style={{ animationDelay: '1.3s' }}>
+                        Transformando la gestión de residuos marinos con <strong className="text-white">trazabilidad digital</strong> y
+                        compromiso con el <strong className="text-white">Mar de Cortés</strong>.
+                    </p>
+                    <div className="simar-enfoca mt-9 w-full sm:w-auto flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-3.5 movil:mt-6 movil:gap-2.5" style={{ animationDelay: '1.45s' }}>
+                        <button
+                            onClick={openLoginModal}
+                            className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold flex items-center justify-center gap-2.5 cursor-pointer group shadow-[0_18px_40px_-18px_rgba(27,95,201,0.9)] movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
+                        >
+                            Acceder a la plataforma
+                            <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
+                        </button>
+                        <a
+                            href="#proyecto"
+                            className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-white/80 text-white text-lg md:text-xl font-bold hover:bg-white/10 flex items-center justify-center movil:min-h-[50px] movil:rounded-[17px] movil:text-[16px]"
+                        >
+                            Conocer el proyecto
+                        </a>
                     </div>
+                </div>
 
-                    {/* Carrusel de fotografías del proyecto. Se pausa con el botón, al pasar el cursor o al enfocarlo */}
-                    <figure
-                        className="simar-entra relative m-0 h-[420px] sm:h-[520px] lg:h-[660px] rounded-[40px] overflow-hidden shadow-[0_30px_60px_-36px_rgba(11,34,54,0.6)] movil:h-[300px] movil:rounded-[28px]"
-                        style={{ animationDelay: '0.3s', animationDuration: '1.1s' }}
+                {/* Controles de las fotografías. Se pausan con el botón o al pasar el cursor / enfocar los controles
+                    (el cursor sobre el fondo no las detiene: están detrás de todo el hero) */}
+                <div className="absolute z-20 inset-x-0 bottom-16 md:bottom-24 px-6 md:px-12 lg:px-24 flex justify-center lg:justify-end pointer-events-none movil:bottom-12">
+                    <div
+                        role="group"
+                        aria-label={`Fotografía ${currentIndex + 1} de ${MEDIA.length}`}
+                        className="simar-enfoca simar-vidrio-fuerte pointer-events-auto relative rounded-full pl-1.5 pr-3 py-1.5 flex items-center gap-1"
+                        style={{ animationDelay: '1.7s' }}
                         onMouseEnter={() => setPausaMomentanea(true)}
                         onMouseLeave={() => setPausaMomentanea(false)}
                         onFocus={() => setPausaMomentanea(true)}
                         onBlur={() => setPausaMomentanea(false)}
                     >
-                        {MEDIA.map((item, index) => {
-                            const isActive = index === currentIndex;
-                            const isPrev = index === prevIndex;
-                            let zIndex = 0;
-                            let opacity = 'opacity-0';
-                            if (isActive) {
-                                zIndex = 20;
-                                opacity = 'opacity-100';
-                            } else if (isPrev) {
-                                zIndex = 10;
-                                opacity = 'opacity-100';
-                            }
+                        {!reducirMovimiento && (
+                            <button
+                                type="button"
+                                onClick={() => setPausadoPorUsuario((p) => !p)}
+                                aria-label={pausadoPorUsuario ? 'Reanudar fotografías' : 'Pausar fotografías'}
+                                title={pausadoPorUsuario ? 'Reanudar' : 'Pausar'}
+                                className="simar-presiona w-11 h-11 rounded-full flex items-center justify-center text-simar-texto hover:bg-simar-texto/10 cursor-pointer"
+                            >
+                                {pausadoPorUsuario ? (
+                                    <Play className="w-[18px] h-[18px] ml-0.5" strokeWidth={2.4} />
+                                ) : (
+                                    <Pause className="w-[18px] h-[18px]" strokeWidth={2.4} />
+                                )}
+                            </button>
+                        )}
+                        {MEDIA.map((_, index) => {
+                            const activa = index === currentIndex;
                             return (
-                                <img
+                                <button
                                     key={index}
-                                    src={item.src}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[2000ms] ease-in-out ${opacity}`}
-                                    style={{ zIndex }}
-                                />
+                                    type="button"
+                                    onClick={() => irAFoto(index)}
+                                    aria-label={`Ver fotografía ${index + 1}`}
+                                    aria-current={activa ? 'true' : undefined}
+                                    className="h-11 px-[5px] flex items-center cursor-pointer group/punto"
+                                >
+                                    <span
+                                        className={`relative block h-2.5 rounded-full overflow-hidden transition-[width,background-color] duration-500 ${
+                                            activa ? 'w-10 bg-simar-texto/25' : 'w-2.5 bg-simar-texto/30 group-hover/punto:bg-simar-texto/60'
+                                        }`}
+                                    >
+                                        {/* La barra se llena mientras corre la foto; al llenarse pasa a la siguiente. En pausa se detiene donde va */}
+                                        {activa && (
+                                            <span
+                                                key={currentIndex}
+                                                className={`absolute inset-0 rounded-full bg-simar-texto ${reducirMovimiento ? '' : 'simar-avance'}`}
+                                                style={{
+                                                    '--simar-avance-dur': `${SEGUNDOS_POR_FOTO}s`,
+                                                    animationPlayState: carruselPausado ? 'paused' : 'running',
+                                                } as CSSProperties}
+                                                onAnimationEnd={alTerminarAvance}
+                                            />
+                                        )}
+                                    </span>
+                                </button>
                             );
                         })}
-                        <div
-                            role="group"
-                            aria-label={`Fotografía ${currentIndex + 1} de ${MEDIA.length}`}
-                            className="simar-vidrio-fuerte absolute left-1/2 bottom-5 -translate-x-1/2 z-30 rounded-full pl-1.5 pr-3 py-1.5 flex items-center gap-1"
-                        >
-                            {!reducirMovimiento && (
-                                <button
-                                    type="button"
-                                    onClick={() => setPausadoPorUsuario((p) => !p)}
-                                    aria-label={pausadoPorUsuario ? 'Reanudar fotografías' : 'Pausar fotografías'}
-                                    title={pausadoPorUsuario ? 'Reanudar' : 'Pausar'}
-                                    className="simar-presiona w-11 h-11 rounded-full flex items-center justify-center text-simar-texto hover:bg-simar-texto/10 cursor-pointer"
-                                >
-                                    {pausadoPorUsuario ? (
-                                        <Play className="w-[18px] h-[18px] ml-0.5" strokeWidth={2.4} />
-                                    ) : (
-                                        <Pause className="w-[18px] h-[18px]" strokeWidth={2.4} />
-                                    )}
-                                </button>
-                            )}
-                            {MEDIA.map((_, index) => {
-                                const activa = index === currentIndex;
-                                return (
-                                    <button
-                                        key={index}
-                                        type="button"
-                                        onClick={() => irAFoto(index)}
-                                        aria-label={`Ver fotografía ${index + 1}`}
-                                        aria-current={activa ? 'true' : undefined}
-                                        className="h-11 px-[5px] flex items-center cursor-pointer group/punto"
-                                    >
-                                        <span
-                                            className={`relative block h-2.5 rounded-full overflow-hidden transition-[width,background-color] duration-500 ${
-                                                activa ? 'w-10 bg-simar-texto/25' : 'w-2.5 bg-simar-texto/30 group-hover/punto:bg-simar-texto/60'
-                                            }`}
-                                        >
-                                            {/* La barra se llena mientras corre la foto; al llenarse pasa a la siguiente. En pausa se detiene donde va */}
-                                            {activa && (
-                                                <span
-                                                    key={currentIndex}
-                                                    className={`absolute inset-0 rounded-full bg-simar-texto ${reducirMovimiento ? '' : 'simar-avance'}`}
-                                                    style={{
-                                                        '--simar-avance-dur': `${SEGUNDOS_POR_FOTO}s`,
-                                                        animationPlayState: carruselPausado ? 'paused' : 'running',
-                                                    } as CSSProperties}
-                                                    onAnimationEnd={alTerminarAvance}
-                                                />
-                                            )}
-                                        </span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </figure>
+                    </div>
                 </div>
 
-                <div aria-hidden="true" className="simar-entra hidden lg:flex absolute left-24 bottom-10 items-center gap-2.5 text-base text-simar-texto-2" style={{ animationDelay: '1.1s' }}>
+                <div aria-hidden="true" className="simar-enfoca hidden lg:flex absolute left-24 bottom-[112px] items-center gap-2.5 text-base font-semibold text-white/75" style={{ animationDelay: '1.9s' }}>
                     <ArrowDown className="w-5 h-5" />
                     Desliza
                 </div>
+
+                <OlaSeparador color="var(--simar-superficie)" lado="abajo" />
             </header>
 
             {/* Sección Proyecto */}
             <section id="proyecto" ref={projectRef} className="relative py-20 md:py-28 px-6 bg-simar-superficie overflow-clip movil:py-14 movil:px-5">
-                <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[1fr_540px] gap-12 lg:gap-16 items-center movil:gap-8">
-                    <div className="reveal" data-direction="left">
-                        <p className="text-lg font-bold text-simar-marea-tinta movil:text-[15px]">El proyecto</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">Tecnología al servicio del mar.</h2>
-                        <div className="mt-6 space-y-4 text-lg md:text-xl leading-relaxed text-simar-texto-2 movil:mt-4 movil:space-y-3 movil:text-[16px]">
+                <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[1fr_440px] xl:grid-cols-[1fr_540px] gap-12 lg:gap-16 items-center movil:gap-8">
+                    {/* Cada bloque se enfoca por separado: antetítulo, título palabra por palabra, texto y cifras */}
+                    <div>
+                        <p className="reveal text-lg font-bold text-simar-marea-tinta movil:text-[15px]">El proyecto</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="80">
+                            <TextoEnfoca texto="Tecnología al servicio del mar." />
+                        </h2>
+                        <div className="reveal mt-6 space-y-4 text-lg md:text-xl leading-relaxed text-simar-texto-2 movil:mt-4 movil:space-y-3 movil:text-[16px]" data-delay="300">
                             <p>
                                 Nace de la colaboración entre{' '}
                                 <strong className="text-simar-texto">DCK Conciencia y Cultura</strong> —formada por
@@ -786,7 +800,7 @@ export function VariantCinematic({
                             )}
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-simar-borde grid grid-cols-3 gap-5 movil:mt-5 movil:pt-5 movil:gap-3">
+                        <div className="reveal mt-8 pt-6 border-t border-simar-borde grid grid-cols-3 gap-5 movil:mt-5 movil:pt-5 movil:gap-3" data-delay="150">
                             <div>
                                 <div className="text-3xl md:text-[40px] font-extrabold">3</div>
                                 <div className="text-base md:text-[17px] text-simar-texto-2">Instituciones</div>
@@ -811,7 +825,7 @@ export function VariantCinematic({
                         </div>
                     </div>
 
-                    <figure className="reveal relative m-0 h-[420px] md:h-[560px] rounded-[36px] overflow-hidden movil:h-[260px] movil:rounded-[26px]" data-direction="right" data-delay="150">
+                    <figure className="reveal relative m-0 h-[420px] md:h-[560px] rounded-[36px] overflow-hidden movil:h-[260px] movil:rounded-[26px]" data-efecto="foto" data-delay="150">
                         <img
                             src="/assets/images/img3.jpeg"
                             alt="Puerto Peñasco, Sonora"
@@ -830,13 +844,15 @@ export function VariantCinematic({
             {/* Don Francisco */}
             <section id="don-francisco" ref={francoRef} className="relative py-20 md:py-28 px-6 overflow-clip movil:py-14 movil:px-5">
                 <div className="max-w-[1248px] mx-auto">
-                    <div className="reveal">
-                        <p className="text-lg font-bold text-simar-marea-tinta movil:text-[15px]">El protagonista</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">Conoce a Don Francisco</h2>
+                    <div>
+                        <p className="reveal text-lg font-bold text-simar-marea-tinta movil:text-[15px]">El protagonista</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="80">
+                            <TextoEnfoca texto="Conoce a Don Francisco" />
+                        </h2>
                     </div>
 
                     <div className="mt-10 grid lg:grid-cols-[600px_1fr] gap-10 lg:gap-16 items-start movil:mt-6 movil:gap-6">
-                        <figure className="reveal relative m-0 h-[360px] md:h-[440px] rounded-[36px] overflow-hidden movil:h-[270px] movil:rounded-[26px]" data-direction="left">
+                        <figure className="reveal relative m-0 h-[360px] md:h-[440px] rounded-[36px] overflow-hidden movil:h-[270px] movil:rounded-[26px]" data-efecto="foto">
                             <img
                                 src="/assets/images/img5.jpeg"
                                 alt="Don Francisco en Puerto Peñasco"
@@ -901,10 +917,12 @@ export function VariantCinematic({
                 <OlaSeparador color="var(--simar-papel)" lado="arriba" />
                 <OlaSeparador color="var(--simar-papel)" lado="abajo" />
                 <div className="relative max-w-[1248px] mx-auto">
-                    <div className="max-w-3xl reveal">
-                        <p className="text-lg font-bold text-simar-espuma movil:text-[15px]">Conciencia Azul</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">¿Por qué importan los datos del mar?</h2>
-                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD] movil:mt-3 movil:text-[16px]">
+                    <div className="max-w-3xl">
+                        <p className="reveal text-lg font-bold text-simar-espuma movil:text-[15px]">Conciencia Azul</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="80">
+                            <TextoEnfoca texto="¿Por qué importan los datos del mar?" />
+                        </h2>
+                        <p className="reveal mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD] movil:mt-3 movil:text-[16px]" data-delay="350">
                             Detrás de cada cifra hay un ecosistema. Detrás de cada manifiesto, una decisión
                             que puede proteger —o dañar— al Mar de Cortés por generaciones.
                         </p>
@@ -949,14 +967,16 @@ export function VariantCinematic({
             {/* Equivalencias */}
             <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-clip movil:py-14 movil:px-5">
                 <div className="max-w-[1248px] mx-auto">
-                    <div className="max-w-4xl reveal">
-                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[14px] movil:px-3 movil:py-1.5">
+                    <div className="max-w-4xl">
+                        <span className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[14px] movil:px-3 movil:py-1.5">
                             <span className="w-2 h-2 rounded-full bg-simar-marea-tinta" />
                             {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
                         </span>
-                        <p className="mt-5 text-lg font-bold text-simar-marea-tinta movil:mt-4 movil:text-[15px]">¿Cuánto es cuánto?</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">Equivalencias que te van a sorprender</h2>
-                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-simar-texto-2 movil:mt-3 movil:text-[16px]">
+                        <p className="reveal mt-5 text-lg font-bold text-simar-marea-tinta movil:mt-4 movil:text-[15px]" data-delay="60">¿Cuánto es cuánto?</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="120">
+                            <TextoEnfoca texto="Equivalencias que te van a sorprender" />
+                        </h2>
+                        <p className="reveal mt-4 text-lg md:text-[21px] leading-relaxed text-simar-texto-2 movil:mt-3 movil:text-[16px]" data-delay="400">
                             {hayDatos
                                 ? 'Estos números vienen directamente de los registros que se están capturando en el sistema. Cada cifra es real, viva y crece con cada manifiesto que se registra.'
                                 : 'Los números por sí solos dicen poco. Aquí te mostramos lo que realmente significa cada residuo registrado, en cosas que conoces y entiendes.'}
@@ -1031,9 +1051,11 @@ export function VariantCinematic({
             {/* Impacto / Stats */}
             <section id="impacto" ref={statsRef} className="relative py-20 md:py-24 px-6 bg-simar-superficie overflow-clip movil:py-14 movil:px-5">
                 <div className="max-w-[1248px] mx-auto">
-                    <div className="reveal">
-                        <p className="text-lg font-bold text-simar-marea-tinta movil:text-[15px]">Impacto medible</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">Nuestro avance hasta hoy</h2>
+                    <div>
+                        <p className="reveal text-lg font-bold text-simar-marea-tinta movil:text-[15px]">Impacto medible</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="80">
+                            <TextoEnfoca texto="Nuestro avance hasta hoy" />
+                        </h2>
                     </div>
 
                     {/* En celular cada cifra es un renglón: ícono a la izquierda, cifra, nombre y detalle */}
@@ -1089,16 +1111,18 @@ export function VariantCinematic({
             <section id="mapa" ref={mapRef} className="relative pt-24 md:pt-36 pb-20 md:pb-28 px-6 bg-simar-abismo text-white overflow-clip movil:pt-16 movil:pb-14 movil:px-5">
                 <OlaSeparador color="var(--simar-superficie)" lado="arriba" />
                 <div className="relative max-w-[1248px] mx-auto">
-                    <div className="max-w-3xl mb-10 md:mb-12 reveal movil:mb-6">
-                        <p className="text-lg font-bold text-simar-espuma movil:text-[15px]">Mapa de puertos</p>
-                        <h2 className="mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]">Dónde estamos, a dónde vamos.</h2>
-                        <p className="mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD] movil:mt-3 movil:text-[16px]">
+                    <div className="max-w-3xl mb-10 md:mb-12 movil:mb-6">
+                        <p className="reveal text-lg font-bold text-simar-espuma movil:text-[15px]">Mapa de puertos</p>
+                        <h2 className="reveal reveal-palabras mt-3 text-4xl md:text-[52px] font-extrabold leading-[1.08] movil:mt-2 movil:text-[30px]" data-delay="80">
+                            <TextoEnfoca texto="Dónde estamos, a dónde vamos." />
+                        </h2>
+                        <p className="reveal mt-4 text-lg md:text-[21px] leading-relaxed text-[#C7D3DD] movil:mt-3 movil:text-[16px]" data-delay="350">
                             El modelo está listo para escalar. Cada puerto pesquero de México puede sumarse
                             a una red nacional de trazabilidad ambiental.
                         </p>
                     </div>
 
-                    <div className="reveal" data-delay="100">
+                    <div className="reveal" data-efecto="foto" data-delay="100">
                         <SeccionMapaPuertos variante={varianteMapa} mostrarSelector={compararMapas} />
                     </div>
                 </div>
@@ -1107,21 +1131,26 @@ export function VariantCinematic({
             {/* Llamado final */}
             <section ref={ctaRef} className="relative pt-20 md:pt-24 pb-28 md:pb-36 px-6 bg-simar-abismo text-white border-t border-white/10 overflow-clip movil:pt-14 movil:pb-20 movil:px-5">
                 <OlaSeparador color="var(--simar-superficie)" lado="abajo" />
-                <div className="relative max-w-4xl mx-auto text-center reveal">
-                    <h2 className="text-4xl md:text-[50px] font-extrabold leading-tight movil:text-[30px]">
-                        Cada dato cuenta. <br />
-                        <span className="text-simar-espuma">Cada mar lo agradece.</span>
+                <div className="relative max-w-4xl mx-auto text-center">
+                    <h2 className="reveal reveal-palabras text-4xl md:text-[50px] font-extrabold leading-tight movil:text-[30px]">
+                        <TextoEnfoca texto="Cada dato cuenta." /> <br />
+                        <span className="text-simar-espuma">
+                            <TextoEnfoca texto="Cada mar lo agradece." desde={4} />
+                        </span>
                     </h2>
-                    <p className="mt-4 text-lg md:text-[21px] text-[#C7D3DD] leading-relaxed max-w-2xl mx-auto movil:mt-3 movil:text-[16px]">
+                    <p className="reveal mt-4 text-lg md:text-[21px] text-[#C7D3DD] leading-relaxed max-w-2xl mx-auto movil:mt-3 movil:text-[16px]" data-delay="500">
                         Accede a la plataforma y sé parte del cambio en la gestión de residuos marinos.
                     </p>
-                    <button
-                        onClick={openLoginModal}
-                        className="simar-presiona group mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold inline-flex items-center gap-2.5 cursor-pointer movil:mt-6 movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
-                    >
-                        Iniciar sesión
-                        <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
-                    </button>
+                    {/* El enfoque va en un envoltorio: simar-presiona redefine las transiciones del botón */}
+                    <div className="reveal" data-delay="650">
+                        <button
+                            onClick={openLoginModal}
+                            className="simar-presiona group mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold inline-flex items-center gap-2.5 cursor-pointer movil:mt-6 movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
+                        >
+                            Iniciar sesión
+                            <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
+                        </button>
+                    </div>
                 </div>
             </section>
 

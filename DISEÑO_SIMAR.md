@@ -213,7 +213,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-velo` / `simar-ventana` | El fondo se funde y el panel sube 14 px (0.34 s) | Toda ventana modal: `simar-velo` en el fondo oscuro, `simar-ventana` en el panel |
 | `simar-velo-sale` / `simar-ventana-sale` | La salida, más rápida (0.18 s) | Con `usePresencia` (ver 8.2) |
 | `simar-crece-y` / `simar-crece-x` | La barra crece desde su base / desde la izquierda | Barras de gráficas hechas a mano. Escalonar con `animationDelay` |
-| `simar-dibuja` | Dibuja un trazo SVG. El `<path>` lleva `pathLength={1}`, así sirve para cualquier largo. Duración con la variable `--simar-trazo-dur` | La línea de marea, la palomita, la ola del hero |
+| `simar-dibuja` | Dibuja un trazo SVG. El `<path>` lleva `pathLength={1}`, así sirve para cualquier largo. Duración con la variable `--simar-trazo-dur` | La línea de marea, la palomita, las curvas de profundidad del hero |
 | `simar-confirma` | Aparece con una leve escala, 0.35 s | Insignias de "Firmado" y avisos de éxito |
 | `simar-presiona` | El botón se hunde 1 px al presionarlo | Ya lo lleva `Button`; úsalo en botones principales hechos a mano |
 | `simar-tarjeta-accion` | Sube 3 px con sombra al pasar el cursor y baja al presionarla | Sólo tarjetas que llevan a otra pantalla (Panel, KPIs del portal) |
@@ -248,11 +248,36 @@ de profundidad.
 - Prohibido: rebotes, parallax, *ken burns*, cosas que se mueven solas en bucle (salvo los
   indicadores de carga) y mover algo que la persona está leyendo.
 - Un carrusel que avanza solo necesita botón de pausa, se detiene al pasar el cursor o enfocarlo,
-  y con "reducir movimiento" no avanza (landing).
+  y con "reducir movimiento" no avanza (landing). En el hero las fotos son el fondo de toda la
+  franja: se detienen con el botón o al pasar el cursor / enfocar **sus controles** (si fuera
+  sobre todo el hero casi nunca avanzarían).
 - Con `prefers-reduced-motion` todo se vuelve instantáneo solo (regla al final del bloque de
   movimiento). No hace falta escribir `motion-safe:`.
 - El cambio de tema abre el tema nuevo en círculo desde el botón (View Transitions). En
   navegadores sin soporte, o con "reducir movimiento", cambia al instante.
+
+### 8.4 Landing: el enfoque
+
+El gesto de la landing es **enfocar**: las cosas llegan difuminadas y se aclaran, como una cámara
+que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles no se usa.
+
+| Pieza | Qué hace | Dónde |
+|---|---|---|
+| `reveal` (+ `useScrollReveal`) | Al entrar en pantalla: de `blur(12px)`, transparente y 28 px abajo a nítido. Escalonar con `data-delay` (ms; llega como `--retraso`). `data-direction="left"/"right"` entra de lado | Antetítulos, párrafos, tarjetas de cada sección |
+| `reveal` + `data-efecto="foto"` | Más desenfoque (22 px) y crece de 96 % a 100 %: la foto "se enfoca" | Fotos de El proyecto y Don Francisco, el mapa de puertos |
+| `reveal reveal-palabras` + `TextoEnfoca` | El título no se mueve: cada palabra se enfoca en cascada (65 ms entre palabras). El lector de pantalla oye la frase entera una vez (`sr-only`) | Títulos `h2` de las secciones y el llamado final |
+| `simar-enfoca` | Lo mismo, al cargar (animación, 1.1 s). Escalonar con `animationDelay` | Contenido del hero |
+| `simar-enfoca-simbolo` | El símbolo se enfoca, crece y gira 50° hasta su lugar: las flechas cierran el ciclo | Símbolo grande del hero |
+| `simar-enfoca-palabras` + `TextoEnfoca` | Palabras en cascada al cargar; el inicio va en `--retraso` | Subtítulo del hero |
+| `simar-hero-foto` (`data-estado="activa"/"anterior"`) | Fotos de fondo: la nueva se funde y se enfoca encima; la anterior queda debajo, nítida | Fondo del hero |
+| `simar-hero-tinte` / `simar-hero-velo` | Tinte azul marea (`mix-blend-mode: color`) para que todas las fotos queden en la misma gama; velo `simar-abismo` más oscuro al centro y al pie | Fondo del hero |
+| `simar-hero-sale` | Al bajar, el contenido del hero se difumina y se desvanece (sin moverse), atado al scroll (`view-timeline`). Sólo donde el navegador lo soporta y sin "reducir movimiento" | Contenido del hero |
+
+- Un elemento con `simar-presiona` no lleva `reveal` (las dos definen `transition`): el `reveal`
+  va en un envoltorio.
+- El hero es oscuro a propósito (logo claro `nombre-grande-oscuro.png` sobre fotos). Las fotos con
+  texto grande (reconocimientos) no van de fondo: pelean con el logo.
+- Con "reducir movimiento" todo aparece ya nítido.
 
 ---
 
