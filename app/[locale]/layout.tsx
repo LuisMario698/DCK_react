@@ -8,6 +8,7 @@ import { ThemeProvider } from '@/components/layout/ThemeContext';
 import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Avisos } from "@/components/layout/Avisos";
+import { DeslizarParaActualizar } from "@/components/layout/DeslizarParaActualizar";
 
 // Tipografía única de SiMAR (Braille Institute, pensada para baja visión). Ver DISEÑO_SIMAR.md.
 const atkinson = Atkinson_Hyperlegible_Next({
@@ -68,6 +69,8 @@ export default async function LocaleLayout({
               {children}
               <ThemeToggle />
               <Avisos />
+              {/* Sólo con SiMAR instalada como app: ahí no hay botón de recargar */}
+              <DeslizarParaActualizar />
             </NextIntlClientProvider>
           </AuthProvider>
         </ThemeProvider>
