@@ -821,8 +821,10 @@ gota y el encabezado móvil (sólo lo que flota, sección 7).
   dobla un poco en la orilla, como en un cristal grueso; el centro lleva un desenfoque moderado
   (4 px) para que las palabras se lean sobre cualquier contenido.
 - **Sólo Chromium** (Chrome, Edge, Android) sabe aplicar filtros SVG al fondo. En Safari/iPhone y
-  Firefox queda el vidrio de la clase: más opaco y con desenfoque normal. Con "reducir
-  transparencia" es sólido. El elemento lleva `data-refraccion` cuando la refracción está activa.
+  Firefox queda el vidrio de la clase, **igual de transparente** (50 % de blanco, 46 % en oscuro;
+  `blur(4px) saturate(160%)`, los mismos valores del filtro): sólo le falta la lente del canto.
+  Antes era esmerilado (62 %, 18 px) y en iPhone se veía lechoso. Con "reducir transparencia" es
+  sólido. El elemento lleva `data-refraccion` cuando la refracción está activa.
 - El hook devuelve `[ref, { filtro, estilo, activo }]`: la ref va al elemento, `filtro` (el `<svg>`)
   se dibuja junto a él y `estilo` lleva el `backdrop-filter`.
 - Los hijos del cristal van con `z-index: 1` para quedar encima de la gota.
