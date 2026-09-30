@@ -25,25 +25,34 @@ function textoEmpresas(empresas: EmpresaRecolectora[], unidad: string) {
 }
 
 /**
- * El recorrido, de arriba abajo: recibido ↓ a reciclaje ↓ en acopio hoy (o sin "recibido").
- * Vertical y no en fila: en la tarjeta de un tercio de ancho, tres cajas lado a lado cortaban
- * las cantidades.
+ * El recorrido: recibido → a reciclaje → en acopio hoy (o sin "recibido"). Se acomoda al ancho de
+ * SU tarjeta (la tarjeta es @container), no al de la pantalla:
+ * - Desde 20rem por dentro: en fila, cajas lado a lado con flechas →. La cifra se escala con el
+ *   ancho de la tarjeta (cqi) para que "12,369 kg" quepa en tres cajas.
+ * - Más angosta (tres tarjetas en una laptop con el menú abierto, celular): de arriba abajo, con la
+ *   etiqueta a la izquierda y la cantidad a la derecha. En fila ahí se cortaban las cantidades.
  */
 function Recorrido({ pasos }: { pasos: { etiqueta: string; valor: number; unidad: string; destacado?: boolean }[] }) {
     return (
-        <ol className="mt-4 movil:mt-3">
+        <ol className="mt-4 @xs:flex @xs:items-stretch @xs:gap-1.5 movil:mt-3">
             {pasos.map((p, i) => (
-                <li key={p.etiqueta}>
-                    {i > 0 && <ArrowDown aria-hidden="true" className="ml-3.5 my-0.5 w-4 h-4 text-simar-texto-3" strokeWidth={2.4} />}
+                <li key={p.etiqueta} className="@xs:flex @xs:items-center @xs:gap-1.5 @xs:flex-1 @xs:min-w-0">
+                    {i > 0 && (
+                        <ArrowDown aria-hidden="true" className="ml-3.5 my-0.5 w-4 h-4 flex-shrink-0 text-simar-texto-3 @xs:m-0 @xs:-rotate-90" strokeWidth={2.4} />
+                    )}
                     <div
-                        className={`flex items-baseline justify-between gap-3 rounded-xl px-3.5 py-2.5 movil:px-3 movil:py-2 ${p.destacado ? 'bg-simar-arrecife-suave' : 'bg-simar-papel'}`}
+                        className={`flex items-baseline justify-between gap-3 rounded-xl px-3.5 py-2.5 @xs:flex-col @xs:items-start @xs:justify-start @xs:gap-1.5 @xs:flex-1 @xs:self-stretch @xs:min-w-0 @xs:px-3 @xs:py-3 movil:px-3 movil:py-2 ${
+                            p.destacado ? 'bg-simar-arrecife-suave' : 'bg-simar-papel'
+                        }`}
                     >
-                        <span className={`text-[15px] font-bold leading-tight movil:text-[13.5px] ${p.destacado ? 'text-simar-arrecife-tinta' : 'text-simar-texto-2'}`}>
+                        <span
+                            className={`text-[15px] font-bold leading-tight @xs:text-[13.5px] movil:text-[13.5px] ${p.destacado ? 'text-simar-arrecife-tinta' : 'text-simar-texto-2'}`}
+                        >
                             {p.etiqueta}
                         </span>
-                        <span className="text-[21px] font-extrabold leading-none text-simar-texto whitespace-nowrap movil:text-[18px]">
+                        <span className="text-[21px] font-extrabold leading-none text-simar-texto whitespace-nowrap @xs:text-[clamp(16px,6.2cqi,24px)] movil:text-[18px]">
                             <NumeroAnimado valor={p.valor} decimales={p.valor < 100 && !Number.isInteger(p.valor) ? 1 : 0} />
-                            <span className="ml-1 text-[14px] font-bold text-simar-texto-2 movil:text-[12.5px]">{p.unidad}</span>
+                            <span className="ml-1 text-[14px] font-bold text-simar-texto-2 @xs:text-[13px] movil:text-[12.5px]">{p.unidad}</span>
                         </span>
                     </div>
                 </li>
@@ -94,7 +103,8 @@ function TarjetaMaterial({
     empresas: string;
 }) {
     return (
-        <li className="rounded-[22px] border border-simar-borde-suave p-4 md:p-5 flex flex-col min-w-0 movil:p-3.5 movil:rounded-[18px]">
+        // @container: el recorrido de adentro se acomoda al ancho de esta tarjeta
+        <li className="@container rounded-[22px] border border-simar-borde-suave p-4 md:p-5 flex flex-col min-w-0 movil:p-3.5 movil:rounded-[18px]">
             <div className="flex items-center gap-2.5">
                 <span className="w-10 h-10 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center movil:w-8 movil:h-8">
                     <Icono className="w-5 h-5 movil:w-[17px] movil:h-[17px]" strokeWidth={2} aria-hidden="true" />

@@ -606,10 +606,13 @@ basura marea, basurón arrecife.
   tienen tarjeta propia: su desglose va en su renglón de "¿A dónde se fue?".
 - **¿A dónde se fue?** (`DestinoResiduos.tsx`): la trazabilidad que promete SiMAR. Tres tarjetas
   (una columna en celular y tableta, tres en computadora): aceite (L) y filtros (piezas) con su
-  recorrido **de arriba abajo** — recibido ↓ a reciclaje (verde suave, lo importante) ↓ en acopio
-  hoy — la barra de "% de lo recibido ya salió a reciclaje" (explicada en palabras si salió más de
-  lo recibido o nada) y "Se lo llevaron: empresa (cantidad)". Vertical y no en fila: tres cajas lado
-  a lado en un tercio de ancho cortaban las cantidades. "Materiales reciclables" (plástico, cartón,
+  recorrido — recibido → a reciclaje (verde suave, lo importante) → en acopio hoy — la barra de
+  "% de lo recibido ya salió a reciclaje" (explicada en palabras si salió más de lo recibido o nada)
+  y "Se lo llevaron: empresa (cantidad)". El recorrido **se acomoda al ancho de su tarjeta**, no al
+  de la pantalla (la tarjeta es `@container`): desde 20rem por dentro va en fila, con la cifra
+  escalada al ancho (`cqi`); más angosta (tres tarjetas en una laptop de 1280–1440 con el menú
+  abierto, o celular) va de arriba abajo, etiqueta a la izquierda y cantidad a la derecha, porque
+  en fila ahí se cortaban las cantidades. "Materiales reciclables" (plástico, cartón,
   chatarra, vidrio, orgánico, en kg) no lleva "recibido" ni porcentaje: en los manifiestos sólo hay
   "basura" en general. Salidas = tabla `recolecciones` del período; en acopio = `inventario_residuos`
   de hoy.
