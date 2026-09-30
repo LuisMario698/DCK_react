@@ -22,6 +22,13 @@ export const metadata: Metadata = {
   title: "SiMAR — Sistema Integral de Manejo Ambiental de Residuos",
   description:
     "Gestión digital de manifiestos de residuos de embarcaciones pesqueras en Puerto Peñasco, Sonora. Formato MARPOL Anexo V.",
+  // Instalada desde Safari (Agregar a inicio) abre como app, sin la barra del navegador.
+  // El resto de la PWA está en app/manifest.ts
+  appleWebApp: {
+    capable: true,
+    title: "SiMAR",
+    statusBarStyle: "default",
+  },
 };
 
 // Color de la barra del navegador en celular: papel en claro, abismo en oscuro
