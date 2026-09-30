@@ -8,6 +8,7 @@ import { FondoSimar } from './FondoSimar';
 import { BarraInferior } from './BarraInferior';
 import { HojaMas } from './HojaMas';
 import { UserProfileModal } from './UserProfileModal';
+import { AvisosRecintoProvider, PanelAvisos } from './AvisosRecinto';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -70,6 +71,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         menuAbierto={hojaAbierta}
       />
       <HojaMas />
+      <PanelAvisos colapsado={isCollapsed} />
       <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />
     </div>
   );
@@ -78,7 +80,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
-      <DashboardContent>{children}</DashboardContent>
+      {/* Avisos: una sola consulta y suscripción para la campana del celular y la del menú */}
+      <AvisosRecintoProvider>
+        <DashboardContent>{children}</DashboardContent>
+      </AvisosRecintoProvider>
     </SidebarProvider>
   );
 }

@@ -21,6 +21,7 @@ import { useAuth } from '@/components/layout/AuthProvider';
 import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
+import { CampanaMenu } from '@/components/layout/AvisosRecinto';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 
 export function Sidebar() {
@@ -127,8 +128,9 @@ export function Sidebar() {
           </nav>
         </div>
 
-        {/* Perfil, tema, colapsar y cerrar sesión */}
+        {/* Avisos, perfil, tema, colapsar y cerrar sesión */}
         <div className="flex flex-col gap-2.5">
+          <CampanaMenu colapsado={isCollapsed} />
           <button
             onClick={abrirPerfil}
             title={isCollapsed ? nombre : ''}

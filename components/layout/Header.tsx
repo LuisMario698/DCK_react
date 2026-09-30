@@ -8,11 +8,12 @@ import { useAuth } from './AuthProvider';
 import { useSidebar } from './SidebarContext';
 import { useOcultarAlBajar } from './useOcultarAlBajar';
 import { useRefraccion } from '@/components/ui/vidrioLiquido';
+import { CampanaMovil } from './AvisosRecinto';
 
 /**
  * Barra superior sólo en celular y tableta, en cristal líquido flotante (como la barra inferior):
- * el logo (lleva al Panel), el tema y el perfil. Se esconde al bajar y vuelve al subir. Las
- * secciones están en la barra inferior.
+ * el logo (lleva al Panel), el tema, los avisos y el perfil. Se esconde al bajar y vuelve al
+ * subir. Las secciones están en la barra inferior.
  */
 export function Header() {
     const locale = usePathname().split('/')[1] || 'es';
@@ -41,6 +42,7 @@ export function Header() {
                 </Link>
                 <div className="flex items-center gap-1">
                     <BotonTemaIcono compacto plano />
+                    <CampanaMovil />
                     <button
                         type="button"
                         onClick={abrirPerfil}
