@@ -8,6 +8,19 @@ type Theme = 'light' | 'dark';
 /** Punto de la pantalla (px) desde donde se abre el tema nuevo: el centro del botón. */
 type Origen = { x: number; y: number };
 
+/**
+ * WebKit (Safari, y cualquier navegador de iPhone/iPad: por dentro todos son Safari) toma mal
+ * la "foto" de la transición de tema: lo que lleva vidrio (backdrop-filter: encabezado, barra
+ * inferior) sale sin desenfoque y lo fijo (position: fixed) se pierde si la página está
+ * desplazada. Se ve como un parpadeo, así que ahí el cambio es instantáneo.
+ */
+function esWebKit() {
+    const ua = navigator.userAgent;
+    // Chrome/Edge de computadora y Android también dicen "AppleWebKit": se excluyen por nombre.
+    // En iOS, Chrome (CriOS), Firefox (FxiOS) y Edge (EdgiOS) usan WebKit y sí quedan dentro.
+    return /AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg\//.test(ua);
+}
+
 interface ThemeContextType {
     theme: Theme;
     toggleTheme: (origen?: Origen) => void;
@@ -59,8 +72,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const nuevo: Theme = theme === 'dark' ? 'light' : 'dark';
         const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Sin View Transitions (o con "reducir movimiento") el cambio es instantáneo, como antes
-        if (typeof document.startViewTransition !== 'function' || reducir) {
+        // Sin View Transitions, con "reducir movimiento" o en WebKit el cambio es instantáneo
+        if (typeof document.startViewTransition !== 'function' || reducir || esWebKit()) {
             setTheme(nuevo);
             return;
         }

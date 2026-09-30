@@ -254,7 +254,10 @@ de profundidad.
 - Con `prefers-reduced-motion` todo se vuelve instantáneo solo (regla al final del bloque de
   movimiento). No hace falta escribir `motion-safe:`.
 - El cambio de tema abre el tema nuevo en círculo desde el botón (View Transitions). En
-  navegadores sin soporte, o con "reducir movimiento", cambia al instante.
+  navegadores sin soporte, con "reducir movimiento" o en WebKit (Safari y todos los navegadores
+  de iPhone/iPad) cambia al instante: WebKit toma mal la "foto" de la transición, el vidrio
+  (`backdrop-filter`) sale sin desenfoque y lo fijo se pierde con la página desplazada, y se ve
+  un parpadeo en el encabezado y la barra inferior (`esWebKit()` en `ThemeContext`).
 
 ### 8.4 Landing: el enfoque
 
