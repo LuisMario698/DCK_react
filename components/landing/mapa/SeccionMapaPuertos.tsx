@@ -81,10 +81,11 @@ export function SeccionMapaPuertos({
             )}
 
             <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-8 items-stretch movil:gap-4">
-                {/* Mapa */}
+                {/* Mapa. w-full: en la cuadrícula, Safari no estira a lo ancho un elemento con
+                    aspect-ratio (lo deja del ancho de su contenido, y aquí todo es absolute: 0 px) */}
                 <div
                     ref={contenedor}
-                    className={`relative isolate rounded-[28px] overflow-hidden border border-white/10 bg-[#030712] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] ${
+                    className={`relative isolate w-full rounded-[28px] overflow-hidden border border-white/10 bg-[#030712] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] ${
                         // La silueta conserva la proporción del mapa; los mapas MapLibre usan alto fijo
                         variante === 'silueta' ? 'aspect-[1000/651] lg:aspect-auto lg:h-[560px]' : 'h-[360px] sm:h-[460px] lg:h-[560px]'
                     }`}
