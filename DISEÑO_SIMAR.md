@@ -220,6 +220,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-esqueleto` | Bloque con un brillo lento | Sólo esqueletos de carga (es un indicador de carga, por eso puede repetirse) |
 | `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
 | `simar-desplegable` | Baja 6 px desde el campo y aparece (0.2 s); si se abrió arriba del campo, sube | Panel flotante del selector de fecha y hora en computadora (`Desplegable`) |
+| `simar-resalta` | La fila se ilumina en azul suave y se apaga sola (2.6 s, empieza a los 0.3 s). Con "reducir movimiento" se queda iluminada un momento, sin transición | La fila a la que se llega desde un aviso o el Panel (Solicitudes, `?solicitud=ID`), para que la vista la encuentre |
 | `simar-encabezado-movil` | Con `data-oculto="true"` sube y se desvanece | Encabezado móvil del recinto: se esconde al bajar y vuelve al subir (`useOcultarAlBajar`) |
 | `simar-trazo` | Trazo con `stroke-dasharray: 420` | Heredada; para trazos nuevos usa `simar-dibuja` |
 
@@ -379,6 +380,45 @@ una línea de descripción.
 
 Los accesos secundarios van como pastillas (`OtraSeccion`): 60 px, ícono azul y texto de 19 px.
 
+**El Panel del recinto** (`components/dashboard/PanelInicio.tsx`; los datos, en
+`lib/services/panel_recinto.ts` → `getResumenPanel`) sigue siendo un menú, pero dice lo que va del
+día y lo que falta, sin gráficas:
+
+- **Saludo con contexto:** la fecha ("Miércoles 30 de septiembre"), "Buenos días / Buenas tardes /
+  Buenas noches" según la hora de Puerto Peñasco (el servidor corre en UTC: `saludoPuerto` y
+  `fechaHoyPuerto` en `lib/utils/fechas.ts`) y una línea: "Hoy van **3 manifiestos** y **1 recibo
+  del basurón**." Los números cuentan (`NumeroAnimado`). Sin registros: "Aún no hay registros de hoy."
+- **Por atender:** sólo aparece si hay algo. Un renglón por tarea, en este orden: solicitudes
+  **por recolectar** con fecha de hoy o anterior (coral si alguna ya pasó su fecha), solicitudes
+  **por revisar** (coral) y **mensajes sin leer** de las empresas. Cada renglón lleva a donde se
+  resuelve: Asociaciones con `?ver=por-recolectar` (Solicitudes en "Por recolectar"),
+  `?solicitud=ID` si es una sola (abre en su filtro y la fila se ilumina con `simar-resalta`) o
+  `?ver=mensajes&empresa=ID` (esa conversación). Si es una sola, el detalle la dice completa
+  ("Reciclados del Golfo · 200 L de aceite usado · hoy"). El número entra con `simar-confirma`
+  cada vez que cambia.
+- **Todo al día / Nada pendiente:** sin pendientes, una insignia verde con `PalomitaAnimada` (como
+  "Firmado") en el saludo. Si la campana tiene avisos sin leer dice "Nada pendiente" (los avisos
+  son historial, no tareas; "Todo al día" junto a una campana con número se leía como
+  contradicción). `InsigniaCalma` sigue a la campana en vivo. En celular así el Panel cabe en una
+  pantalla.
+- **Un vistazo, debajo de las tarjetas grandes** (`getVistazoPanel`; si falla, lo de arriba
+  sigue): **Lo último registrado** (los 5 movimientos más recientes entre manifiestos, recibos del
+  basurón y recolecciones: título de qué es, detalle con la cantidad primero y luego quién —si no
+  cabe se corta el nombre—, y la hora; cada uno lleva a su pantalla, la recolección a su solicitud)
+  y **En el centro de acopio** (el inventario con cantidad, cada residuo con su color, la cantidad
+  grande y su unidad escrita: litros, piezas, kg; "Sin publicar" si las empresas no lo ven; sin
+  barras, porque kg, L y piezas no se comparan). En computadora van lado a lado; en celular bajan al
+  final, después de "Otras secciones".
+- **Otras secciones con cuántos hay:** "Embarcaciones 12", "Personas 18", "Asociaciones 3 activas".
+- **Un dato vivo por tarjeta**, en una pastilla bajo la descripción (`clasePastilla` en
+  `components/dashboard/pastilla.ts`): "Último: hace 2 h" (Manifiesto y Basurón) y "34 manifiestos en 30 días" (el mismo número que Estadísticas en "1 mes"). En una
+  tarjeta angosta pasa a dos renglones; por eso sus esquinas son de 16 px y no de píldora. Si en
+  el equipo quedó un **manifiesto sin terminar** (ver 10.8), la de Manifiesto lo dice en blanco con
+  un lápiz: "Sin terminar: Don Chuy II" (`PastillaManifiesto`).
+- **En vivo:** `PanelEnVivo` vuelve a pedir el Panel (`router.refresh`) cuando cambia una solicitud,
+  llega un mensaje o se regresa a la app después de un minuto; lo de pantalla se queda y los
+  números pasan del valor anterior al nuevo. Si la consulta falla, el Panel queda como menú sin datos.
+
 ### 10.4 Campo de formulario
 
 Etiqueta arriba (nunca sólo placeholder), caja de 60 px con borde de 2 px que se vuelve azul al
@@ -445,6 +485,16 @@ derecha).
 Cuando un formulario es largo, las acciones finales viven en una barra de vidrio pegada abajo
 (`simar-vidrio sticky bottom-4`). A la izquierda, una frase con el estado ("2 firmas listas."); a
 la derecha, el botón secundario y el principal.
+
+**Manifiesto sin terminar** (`lib/utils/manifiestoSinTerminar.ts`): mientras se captura un
+manifiesto, lo escrito (datos, residuos, nombres y firmas) se guarda solo en ese equipo, un momento
+después de la última tecla, por usuario. Si al volver a la pantalla había uno, arriba del
+formulario sale un aviso informativo (azul suave, ícono de lápiz): "Tienes un manifiesto sin
+terminar · Don Chuy II · 1 firma · hace 20 min" con **Empezar de nuevo** (pide confirmación) y
+**Continuar** (llena todo otra vez). Si en vez de elegir se empieza a escribir otro, el nuevo
+reemplaza al anterior. Se borra al guardar el manifiesto; caduca a los 7 días. El archivo adjunto
+no se guarda: si había uno, junto a "Adjuntar documento" sale en coral "Vuelve a adjuntar «…»". No
+es el "Descargar borrador" de la misma pantalla (el PDF para firmar a mano).
 
 ### 10.9 Filtros
 
@@ -859,16 +909,16 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
 | Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación), Inventario (Agregar residuo), Mis solicitudes del portal (Nueva solicitud, lleva a Residuos) y el superadmin (Invitar cuenta, Nuevo plan) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
 | Pestañas con su aviso | Asociaciones | En celular las tarjetas de conteo se ocultan. Las cuatro secciones en una fila (ícono arriba, palabra abajo) y **sólo los avisos** van en la esquina del ícono, en coral con un aro del color de fondo (pendientes, sin leer), como en las apps del teléfono. Un número que no pide nada (asociaciones activas) no va en la pestaña: va dentro de su sección ("3 activas de 4 registradas") |
 | Jerarquía de navegación | Asociaciones | Tres niveles que no se parecen: la **barra inferior** (cristal), las **secciones** de la pantalla (pastilla azul rellena, el único azul) y los **filtros** de cada sección (`ControlSegmentado`: canal gris y la opción elegida en blanco). Dos niveles con el mismo azul relleno se leen como uno solo |
-| Filtro segmentado de pocas opciones | Asociaciones → Solicitudes y Asociaciones; portal: Mis solicitudes e Impacto (periodo) | `ControlSegmentado` (`components/asociaciones/ui.tsx`): una fila sin deslizar, palabra de `clamp(12px, 3.6vw, 14px)`. Va dentro de una tarjeta blanca (su canal gris no se ve sobre el fondo de la página). Si hay muchas opciones, se agrupan y se afinan con un selector nativo ("Mostrar: Completadas (3)"): en el recinto **Pendientes · Por recolectar · Historial** (lo que hay que atender primero, con su número; coral si hay pendientes); en el portal **Todas · Activas · Terminadas** ("Activas" como en su Inicio). En tableta y escritorio siguen las pestañas de siempre |
+| Filtro segmentado de pocas opciones | Asociaciones → Solicitudes y Asociaciones; portal: Mis solicitudes e Impacto (periodo) | `ControlSegmentado` (`components/asociaciones/ui.tsx`): una fila sin deslizar, palabra de `clamp(12px, 3.6vw, 14px)`. Va dentro de una tarjeta blanca (su canal gris no se ve sobre el fondo de la página). Si hay muchas opciones, se agrupan y se afinan con un selector nativo ("Mostrar: Completadas (3)"): en el recinto **Pendientes · Por recolectar · Historial** (lo que hay que atender primero, con su número; coral si hay pendientes); en el portal **Todas · Activas · Terminadas** ("Activas" como en su Inicio). En tableta y escritorio, Solicitudes del recinto usa el mismo control con `vista="computadora"` (a todo lo ancho de la tabla, las opciones repartidas parejo; si en su contenedor no caben en una fila —laptop con el menú abierto, tableta—, dos filas de tres con `@container`, nunca deslizándose; botones de 48 px y letra de 17 px) y sus seis opciones con su número (coral / azul en lo que hay que atender, gris en lo demás), alineado con la primera columna de la tabla; antes eran pestañas subrayadas sobre una franja beige que se veían desfasadas. Las demás pantallas siguen con su selector o sus fichas |
 | Renglón de solicitud | Asociaciones → Solicitudes | Nombre en hasta dos líneas (`movil:line-clamp-2`) con la fecha de recolección debajo; estado a la derecha (etiqueta angosta en celular); residuo y cantidad; la acción principal **con su palabra** (Aprobar, Rechazar, Completar, Comprobante) a la izquierda y las de ícono a la derecha |
-| Formulario en hoja, no en la fila | Asociaciones → Inventario (agregar y editar residuo) | En celular no se edita dentro del renglón: se abre un `Modal` (que ya sube como hoja inferior) como el de "Nueva asociación". El tipo se elige tocando cuadros de dos columnas (color del material y su unidad), la unidad va dentro del campo de cantidad y "Publicado" es un interruptor que ocupa toda la fila. La pantalla decide al abrir con `matchMedia('(max-width: 639px)')`; en tableta y escritorio sigue la edición en la fila |
+| Formulario en ventana, no en la fila | Asociaciones → Inventario (agregar y editar residuo) | No se edita dentro del renglón en ningún tamaño: se abre un `Modal` (ventana al centro en computadora; en celular sube como hoja inferior) como el de "Nueva asociación". El tipo se elige tocando cuadros de dos columnas (color del material y su unidad escrita: "en litros", "en piezas", "en kg"), la unidad va dentro del campo de cantidad y "Publicado" es un interruptor que ocupa toda la fila. Al editar en computadora el cursor ya está en la cantidad (en celular no, abriría el teclado). Antes, en tableta y escritorio se editaba en la fila con una lista desplegable, un campo chico y una casilla |
 | Filtros que se abren | Superadmin → Auditoría | Con cinco filtros o más, en celular van detrás de un botón **Filtros** (con cuántos hay activos y "Limpiar" al lado) que los despliega en dos columnas; a la vista ocuparían media pantalla antes del primer registro |
 | Mucha información por renglón | Superadmin: Cuentas, Suscripciones, Pagos, Auditoría | La primera celda junta en líneas de 13 px lo de las columnas ocultas (rol y asociación; plan, precio y vigencia; método y referencia; registro, fecha y usuario). En Auditoría la fecha va antes del correo: si no cabe, que se corte el correo y no la hora |
 | Gráfica de 12 meses | Superadmin → Resumen (ingresos) | En celular el eje X lleva sólo la inicial del mes (E F M A…): "ene", "feb" no caben en columnas de ~22 px; el mes completo sale al tocar la columna |
 | Chat al alto de la pantalla | Asociaciones → Mensajes; Mensajes del portal | La caja del chat mide `100dvh` menos lo de arriba y la barra (deja 8 px de respiro). En el portal lo de arriba cambia (aviso de superadmin o de suscripción), así que la pantalla mide dónde empieza la caja y lo pasa como `--arriba`: el campo para escribir siempre queda arriba de la barra. Sin la ayuda de teclado. En una columna (< 768 px) primero se ve la lista de conversaciones, salvo que se llegue con "Abrir chat"; para volver, botón de flecha junto al nombre |
 | "Leer más" | Landing: El proyecto, Don Francisco | En celular sólo el primer párrafo; el botón muestra el resto |
 | Carrusel de tarjetas | Landing: Conciencia Azul | Clase `simar-carrusel`: se desliza de lado con imán, cada tarjeta al 84 % del ancho |
-| Avisos del recinto | Recinto: campana en la píldora de arriba (celular y tableta) y renglón "Avisos" en el menú lateral (computadora) | `components/layout/AvisosRecinto.tsx`. Número coral de sin leer que entra con un pulso (`simar-confirma`) cada vez que cambia. La lista sube como hoja en celular y flota junto al menú en computadora; sin leer en negritas con fondo azul suave y punto coral; "Marcar todo como leído". Cada aviso lleva a Asociaciones (abre en Solicitudes). Lo nuevo llega en vivo y también sale como mensaje emergente con "Ver" |
+| Avisos del recinto | Recinto: campana en la píldora de arriba (celular y tableta) y renglón "Avisos" en el menú lateral (computadora) | `components/layout/AvisosRecinto.tsx`. Número coral de sin leer que entra con un pulso (`simar-confirma`) cada vez que cambia. La lista sube como hoja en celular y flota junto al menú en computadora; sin leer en negritas con fondo azul suave y punto coral; "Marcar todo como leído". La lista va por días (**Hoy**, **Ayer**, **Antes**; `agruparPorDia` en `lib/utils/fechas.ts`, también en Notificaciones del portal). Cada aviso abre **su** solicitud (`?solicitud=ID`: su filtro y la fila iluminada); los avisos no guardan el id, se encuentra por la hora exacta (`buscarSolicitudDeAviso`). Lo nuevo llega en vivo y también sale como mensaje emergente con "Ver". El número de sin leer también va en el título de la pestaña ("(3) SiMAR — …") y en el ícono de la app instalada (`useInsigniaAvisos`; en el portal, sus notificaciones) |
 
 ### 16.4 Cristal líquido
 
