@@ -13,8 +13,7 @@ Francisco Javier Bojórquez Ochoa ("Don Francisco").
 
 > **Sobre el nombre.** En el código conviven tres nombres para el mismo sistema:
 > **SiMAR** (el más visible: landing, login, sidebars, hub del dashboard — es el nombre
-> canónico), **CIAD** (metadata de la app: `"CIAD - Sistema de Manifiestos"`, `SidebarVariantD`,
-> parte de la documentación antigua) y **DCK/CDK** (nombre del repositorio, de la asociación y de
+> canónico), **CIAD** (parte de la documentación antigua) y **DCK/CDK** (nombre del repositorio, de la asociación y de
 > los logos). Conviene unificar a **SiMAR**. Este README usa SiMAR.
 
 ---
@@ -97,14 +96,14 @@ distintos** que ambos se llaman "manifiesto"; no confundirlos.
 | PDF | **jsPDF** | `^3` | Generación 100% en el cliente |
 | Gráficas | **Recharts** | `^3.5` | Usado en **un solo archivo** (`dashboard-recolector/impacto`) |
 | Mapas | **MapLibre GL JS** + **react-map-gl** | `^5` / `^8` | Teselas vectoriales de OpenFreeMap (gratis, sin API key); un solo componente (`recolector/MapaCentroAcopio`) |
-| Fechas | Propios | — | `components/ui/SelectorFecha` y `SelectorHora` (sin librería; `date-fns` y `react-datepicker` quedaron instalados sin uso) |
+| Fechas | Propios | — | `components/ui/SelectorFecha` y `SelectorHora` (sin librería) |
 | Iconos | **lucide-react** | — | + set SVG propio en `components/ui/Icons.tsx` |
 | Toasts | **sonner** | `^2` | |
 | Excel | **xlsx** (SheetJS) | `^0.18` | Export de reportes |
 
-**Dependencias instaladas pero NO utilizadas** (candidatas a eliminar): `html2canvas`,
-`react-time-picker`, `react-time-picker-input`, `browser-image-compression`, `react-datepicker`,
-`@types/react-datepicker` y `date-fns`.
+Las dependencias que nadie usaba (`html2canvas`, `react-time-picker`, `react-time-picker-input`,
+`browser-image-compression`, `react-datepicker`, `@types/react-datepicker` y `date-fns`) se
+desinstalaron el 2026-09-30.
 
 - **Node.js**: 20+ (`@types/node ^20`).
 - El campo `name` de `package.json` sigue siendo `my_app_react_ejemplo` (resto del andamiaje
@@ -178,14 +177,13 @@ DCK_react/
 │       ├── login/page.tsx             # selector de rol + LoginForm
 │       ├── dashboard/                 # área "Administrador Portuario"
 │       │   ├── layout.tsx             # monta <DashboardLayout> (Sidebar + Header)
-│       │   ├── page.tsx               # hub con 3 tarjetas
-│       │   ├── manifiesto/page.tsx    # ⭐ pantalla núcleo (~2250 líneas)
+│       │   ├── page.tsx               # Panel: 3 tarjetas + lo del día (PanelInicio)
+│       │   ├── manifiesto/page.tsx    # ⭐ pantalla núcleo (~2400 líneas)
 │       │   ├── manifiesto-basuron/page.tsx
 │       │   ├── estadisticas/page.tsx  # → <DashboardClient>
 │       │   ├── personas/page.tsx
 │       │   ├── embarcaciones/page.tsx
-│       │   ├── asociaciones/page.tsx  # Inventario / Solicitudes / Asociaciones / Mensajes
-│       │   └── simple/page.tsx        # "modo simple" para usuarios no técnicos
+│       │   └── asociaciones/page.tsx  # "Empresas recolectoras": Inventario / Solicitudes / Empresas / Mensajes
 │       ├── dashboard-recolector/      # portal "Empresa Recolectora" (rol recolector)
 │       └── acceso-pendiente/          # cuentas sin rol asignado
 │           ├── layout.tsx             # layout propio (no usa DashboardLayout)
@@ -193,24 +191,25 @@ DCK_react/
 │           ├── impacto/  · notificaciones/ · perfil/ · configuracion/
 │
 ├── components/
-│   ├── ui/            # Button, Table, ConfirmationModal, Icons, SignaturePad, SelectorFecha, SelectorHora
-│   ├── layout/        # DashboardLayout, Sidebar, Header, *Context, ThemeToggle,
-│   │   └── sidebars/  #   LanguageSwitcher (no montado), UserProfileModal, SidebarVariantD
+│   ├── ui/            # Button, Table, ConfirmationModal, Confirmar, useVentanaAccesible, Icons,
+│   │                  #   SignaturePad, SelectorFecha, SelectorHora, simar, movimiento
+│   ├── layout/        # DashboardLayout, Sidebar, Header, *Context, ThemeToggle, useTituloPestana,
+│   │                  #   UserProfileModal, BarraInferior, HojaInferior, HojaMas
 │   ├── auth/          # LoginForm (5 vistas)
 │   ├── landing/       # VariantCinematic, mapa/ (puertos, SVG + MapLibre), useScrollReveal
-│   ├── dashboard/     # DashboardClient (~1700 líneas), DashboardBackground
-│   ├── manifiestos/   # CreateManifiestoModal, CreateManifiestoBasuronModal, ManifiestoBasuronDetails
-│   ├── personas/      # PersonasTable, CreatePersonaModal, TiposPersonaManager
+│   ├── dashboard/     # DashboardClient, PanelInicio, EstadisticasGenerales, pdfEstadisticas,
+│   │                  #   ReporteDelMes + pdfReporteMensual (reporte del mes para SEMARNAT)
+│   ├── manifiestos/   # CreateManifiestoBasuronModal, ManifiestoBasuronDetails
+│   ├── personas/      # PersonasTable, CreatePersonaModal
 │   ├── embarcaciones/ # EmbarcacionesTable, CreateEmbarcacionModal, Pagination (reusado)
 │   ├── asociaciones/  # ChatTab, EmpresasTab, InventarioTab, SolicitudesTab, Conversacion, ui
-│   ├── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, MapaCentroAcopio (MapLibre)
-│   └── simple/        # SimpleManifiestoForm, SimpleEstadisticas, SimpleBasuronForm (VACÍO)
+│   └── recolector/    # RecolectorContext, Sidebar/HeaderRecolector, NotifIcon, MapaCentroAcopio (MapLibre)
 │
 ├── lib/
-│   ├── supabase/      # client.ts (browser), server.ts (RSC solo-lectura)
+│   ├── supabase/      # client.ts (browser), server.ts (RSC solo-lectura), paginar.ts (traerTodas)
 │   ├── services/      # capa de datos (ver §9)
-│   ├── utils/         # pdfGenerator.ts, pdfGeneratorBasuron.ts
-│   ├── constants/     # residuos.ts (catálogo de residuos), impacto.ts (factores CO₂e)
+│   ├── utils/         # pdfGenerator*.ts, fechas.ts (hora del puerto), equivalencias.ts, errores.ts
+│   ├── constants/     # residuos.ts (catálogo de residuos), impacto.ts (factores CO₂e), titulo.ts
 │   └── data.ts        # datos demo legacy (en desuso)
 │
 ├── types/             # database.ts (autoritativo) + dashboard.ts + tipos legacy
@@ -237,14 +236,13 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
 |---|---|---|---|
 | `/[locale]` | Server (`revalidate = 3600`) | **Landing** `VariantCinematic`: hero cinemático, secciones de concientización ("Conciencia Azul"), mapa SVG de México con puertos, equivalencias ambientales con cifras vivas, modal de login con selector de rol. | **Supabase real** — `getLandingStats()` |
 | `/[locale]/login` | Client | Selector de rol (**Administrador Portuario** / **Empresa Recolectora**) → guarda cookie `simar_user_role` → `LoginForm` con `redirectTo` según el rol. | — |
-| `/[locale]/dashboard` | Server (`force-dynamic`) | Hub con 3 tarjetas grandes (Manifiesto / Basurón / Estadísticas) + accesos rápidos. | Estático |
-| `/[locale]/dashboard/manifiesto` | Client (~2250 líneas) | **Pantalla núcleo.** Alta/lista/edición de manifiestos de embarcación; autocompletado y **auto-creación** de buque/persona/tipo; 4 firmas en `<canvas>` (motorista/cocinero/oficial/líquidos) + modal flotante de firma; subida de imagen del manifiesto físico; genera y sube el PDF; botones "Descargar borrador" e "Imprimir"; filtros (buque, motorista, cocinero, fecha, número) y paginación (15/pág). | **Supabase real** — `buques`, `personas`, `manifiestos`, `storage`, `pdfGenerator` |
-| `/[locale]/dashboard/manifiesto-basuron` | Client | **"Recibo Relleno Sanitario"**: lista + búsqueda (ticket/fecha/total) + paginación + modal de alta + vista de detalle + descarga de PDF. | **Supabase real** — `manifiesto_basuron`, `buques`, `pdfGeneratorBasuron` |
-| `/[locale]/dashboard/estadisticas` | Server (`force-dynamic`) | `<DashboardClient>`: KPIs, gráficas **hechas a mano** (barras CSS, donut SVG), comparación contra el período anterior, panel de "Impacto Ambiental" y pestaña **Reportes** (RPC `get_reporte_detallado` → export CSV / Excel / PDF impreso). | **Supabase real** — `dashboard_stats`, `buques` |
+| `/[locale]/dashboard` | Server (`force-dynamic`) | **Panel**: 3 tarjetas grandes (Manifiesto / Basurón / Estadísticas), lo que va del día, lo pendiente, lo último registrado (cada renglón abre ese registro), el centro de acopio y las otras secciones con cuántos hay. Ver DISEÑO_SIMAR.md §10.3. | **Supabase real** — `panel_recinto` |
+| `/[locale]/dashboard/manifiesto` | Client (~2400 líneas) | **Pantalla núcleo.** Alta/lista/edición de manifiestos de embarcación; autocompletado y **auto-creación** de buque/persona/tipo; 4 firmas en `<canvas>` (motorista/cocinero/oficial/líquidos) + modal flotante de firma; subida de imagen del manifiesto físico; genera y sube el PDF; botones "Descargar borrador" e "Imprimir"; filtros (embarcación, motorista, cocinero, fecha, número) y paginación (15/pág); **manifiesto sin terminar** guardado en el equipo; "Usar los mismos" responsables del último manifiesto del barco; `?ver=ID` abre ese manifiesto. | **Supabase real** — `buques`, `personas`, `manifiestos`, `storage`, `pdfGenerator` |
+| `/[locale]/dashboard/manifiesto-basuron` | Client | **"Basurón"** (recibo del relleno sanitario): lista + búsqueda (ticket/fecha/total) + paginación + modal de alta + vista de detalle (`?ver=ID` la abre) + descarga de PDF. | **Supabase real** — `manifiesto_basuron`, `buques`, `pdfGeneratorBasuron` |
+| `/[locale]/dashboard/estadisticas` | Server (`force-dynamic`) | `<DashboardClient>`: KPIs, gráficas **hechas a mano** (barras CSS, donut SVG), comparación contra el período anterior, panel de "Impacto Ambiental", **"PDF del período"** y **"Reporte del mes"** (PDF para SEMARNAT con cada manifiesto, los viajes al basurón y las entregas a empresas; `reporte_mensual`), y pestaña **Reportes** (RPC `get_reporte_detallado` → export CSV / Excel / PDF impreso). | **Supabase real** — `dashboard_stats`, `buques` |
 | `/[locale]/dashboard/personas` | Client | CRUD de personas: `PersonasTable`, `CreatePersonaModal`, búsqueda, filtro por tipo, alerta de "registro incompleto", borrado con manejo de violación de FK. | **Supabase real** — `personas`, `tipos_persona` |
 | `/[locale]/dashboard/embarcaciones` | Client | CRUD de buques: `EmbarcacionesTable`, `CreateEmbarcacionModal`, búsqueda, filtro por estado, alerta de registro incompleto. | **Supabase real** — `buques` |
-| `/[locale]/dashboard/asociaciones` | Client | 4 pestañas: **Solicitudes** (aprobar / rechazar / completar con firmas y comprobante PDF) / **Inventario** / **Asociaciones** (CRUD, estado, vincular usuarios) / **Mensajes** (chat en tiempo real). | `inventario`, `solicitudes`, `recolecciones`, `asociaciones`, `mensajes` |
-| `/[locale]/dashboard/simple` | Client | **"Modo simple"** para usuarios no técnicos (Don Francisco): botones grandes, `SimpleManifiestoForm` + `SimpleEstadisticas`, navbar propia. El botón "Basurón" hace `router.push('/dashboard/manifiesto-basuron')` (sin prefijo de locale — el middleware lo re-prefija). | **Supabase real** vía componentes `simple/` |
+| `/[locale]/dashboard/asociaciones` | Client | En la interfaz, **"Empresas recolectoras"**. 4 pestañas: **Solicitudes** (aprobar / rechazar / completar con firmas y comprobante PDF) / **Inventario** / **Empresas** (CRUD, estado, vincular usuarios) / **Mensajes** (chat en tiempo real). | `inventario`, `solicitudes`, `recolecciones`, `asociaciones`, `mensajes` |
 | `/[locale]/dashboard-recolector` | Client, **layout propio** (`RecolectorProvider`) | Portal de la empresa recolectora. Sub-rutas: `page` (KPIs + mapa + actividad), `mapa` (inventario publicado + crear solicitud), `solicitudes` (seguimiento / cancelar), `historial` (comprobantes PDF + CSV), `impacto` (Recharts), `mensajes`, `notificaciones`, `perfil` (datos de la asociación + contraseña). | `inventario`, `solicitudes`, `recolecciones`, `mensajes`, `notificaciones`, `perfil` |
 | `/[locale]/acceso-pendiente` | Client | Aviso para cuentas con rol `pendiente` (registradas sin invitación) o suspendidas (`?motivo=suspendida`). | — |
 | `/[locale]/superadmin` | Client, **layout propio** | **Panel del desarrollador** (sólo `es_superadmin`): Resumen, Cuentas, Suscripciones, Planes, Auditoría y Sistema. Ver [`Contexto-DCK/panel-superadmin.md`](./Contexto-DCK/panel-superadmin.md). | `superadmin`, `suscripciones`, `configuracion` |
@@ -400,16 +398,23 @@ fallan o devuelven vacío contra la BD actual.
 Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await supabase...; if
 (error) throw error; return data`.
 
+**Listas completas:** Supabase corta cada respuesta en 1,000 filas aunque se pida más. Las listas
+que pueden pasar de ahí (manifiestos, basurón, personas, embarcaciones, recolecciones, solicitudes,
+conversaciones, estadísticas y el reporte del mes) leen de 1,000 en 1,000 con
+`traerTodas((desde, hasta) => consulta.order(...).order('id').range(desde, hasta))`
+(`lib/supabase/paginar.ts`). El `.order('id')` de desempate evita que una fila salte de página.
+
 | Archivo | Funciones principales |
 |---|---|
 | `buques.ts` | `getBuques(supabase?)` (acepta cliente inyectado para RSC), `getBuqueById`, `createBuque`, `updateBuque`, `deleteBuque`, `searchBuques` (nombre \| matrícula), `getBuquesByEstado`, **`createBuqueAutomatico(nombre)`** (crea el buque referido en un manifiesto si no existe), `getBuquesIncompletos`. |
 | `personas.ts` | CRUD + `searchPersonas`, `getPersonasByTipo`, **`createPersonaAutomatica(nombre, tipoId)`** (`registro_completo = false`), `getPersonasIncompletas`, **`getOrCreateTipoPersona(nombreTipo)`**. |
 | `tipos_persona.ts` | CRUD de `tipos_persona`. |
-| `manifiestos.ts` | **`generarNumeroManifiesto(fecha)`** → `MAN<ddmmaaaa><NNN>`; `getManifiestos()` (filas → relaciones embebidas → join en JS con `manifiestos_residuos`); `getManifiestoById`; **`createManifiesto(manifiesto, residuos?, archivo?, pdfFile?, numeroPredefinido?)`** (resuelve el folio, sube imagen/PDF a los buckets en paralelo, inserta `manifiestos` + `manifiestos_residuos`, marca `estado_digitalizacion = 'completado'` si hubo archivo); `updateManifiesto` (upsert de residuos `onConflict: 'manifiesto_id'`); `deleteManifiesto`; `getManifiestosByEstado`, `getManifiestosByBuque`. |
+| `manifiestos.ts` | **`generarNumeroManifiesto(fecha)`** → `MAN<ddmmaaaa><NNN>`; `getManifiestos()` (una sola consulta con relaciones y `residuos: manifiestos_residuos(*)`, completa con `traerTodas`); `getManifiestoById`; **`createManifiesto(manifiesto, residuos?, archivo?, pdfFile?, numeroPredefinido?)`** (resuelve el folio, sube imagen/PDF a los buckets en paralelo, inserta `manifiestos` + `manifiestos_residuos`, marca `estado_digitalizacion = 'completado'` si hubo archivo); `updateManifiesto` (upsert de residuos `onConflict: 'manifiesto_id'`); `deleteManifiesto`; `getManifiestosByEstado`, `getManifiestosByBuque`. |
 | `manifiesto_basuron.ts` | CRUD; **`completarManifiestoBasuron(id, pesoSalida)`** (fija `peso_salida`, `estado = 'Completado'`, genera y sube el PDF final); filtros por buque / fecha / rango / ticket; `getManifiestosEnProceso`; `getEstadisticasManifiestosBasuron` (agrega totales en JS). |
 | `manifiestos_no_firmados.ts` | CRUD + flujo de estados (`marcarComoDescargado`, `marcarComoFirmado`) + `uploadPDFToStorage` (carpeta por año) + `getDownloadURL` (signed 1 h). **Sin consumidores.** |
 | `storage.ts` | `uploadManifiestoImage` (`manifiestos_img`), `uploadManifiestoPDF` (`manifiestos_pdf`), `deleteManifiestoImage`, `getManifiestoImageUrl`. |
 | `dashboard_stats.ts` | Recibe `supabase` como argumento. **`getEstadisticasPeriodo(supabase, periodo)`** (`semana \| mes \| trimestre \| anio \| todo`): todo lo de la pestaña Estadísticas del mismo período — totales (basura y basurón en kg, aceite en L, filtros en piezas; **nunca se suman unidades distintas**), el período anterior del mismo largo para comparar, la serie de la gráfica (por día, semana, mes o año según el período, con los tramos vacíos), las 5 embarcaciones con más manifiestos, la flota y `destino` (a dónde se fue: aceite, filtros y reciclables — salidas de la tabla `recolecciones` del período y lo que hay hoy en `inventario_residuos`, con las empresas que se lo llevaron). **`getEmbarcacionesSinEntregar(supabase, dias = 60)`**: activas cuyo último manifiesto tiene más de `dias` días o que nunca han entregado (no depende del período; la página la pide una vez). Dos consultas cubren el período actual y el anterior; lee de 1,000 en 1,000 con `.range()` porque Supabase corta cada respuesta en 1,000 filas aunque se pida un `limit` mayor. `rangoEstadisticas(periodo)` da las fechas. **`getReporteComplejo`** → RPC `get_reporte_detallado`. |
+| `reporte_mensual.ts` | `getReporteMensual(anio, mes)` — todo lo de un mes calendario para el "Reporte del mes": cada manifiesto con sus residuos, los recibos del basurón, las recolecciones de las empresas y los totales (sin sumar unidades distintas ni la basura con el basurón). `rangoDelMes`. |
 | `landing_stats.ts` | `getLandingStats(supabase)` — totales históricos para la landing (`totalManifiestos`, `totalAceiteUsado`, `totalBasura`, `totalBasuron`, `filtrosAceite/Diesel/Aire`). |
 | `reportes.ts` | `getReporteResiduosPorFechas`, `getTotalesGenerales`. ⚠️ **`saveFirmaDigital(...)` es un stub sin efecto** — no existe la columna correspondiente en la BD. |
 | `asociaciones.ts` | CRUD de `asociaciones_recolectoras`; usuarios vinculados e invitaciones (`invitarUsuario`, `revocarAcceso`); `actualizarMiAsociacion` (portal recolector). |
@@ -444,8 +449,7 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
 
 ## 10. Generación de PDF y firmas
 
-- **Sólo jsPDF**, en el cliente (`doc.output('blob')`). `html2canvas` está instalado pero **no
-  se usa**.
+- **Sólo jsPDF**, en el cliente (`doc.output('blob')`).
 - **`lib/utils/pdfGenerator.ts`** → `generarPDFManifiesto(manifiesto, firmas?)`. Reproduce el
   formato físico *"MANIFIESTO DE ENTREGA-RECEPCIÓN — Basura y Residuos Aceitosos (MARPOL Anexo
   V)"* del centro de acopio. Logos: SEMARNAT (desde el bucket `images`), DCK
@@ -458,12 +462,17 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
   la línea de firma va **vacía** (sin imagen). Nombre: `Manifiesto_Basuron_{id}_{YYYY-MM-DD}.pdf`.
 - **`components/ui/SignaturePad.tsx`** — captura de firma en `<canvas>` (resolución interna
   600×N), soporta **mouse y touch**, `forwardRef` que expone `{ clear(), isEmpty(), toDataURL()
-  }`. Lo usan `CreateManifiestoModal` (3 firmas) y `SimpleManifiestoForm` (1). La pantalla
+  }`. Lo usa `SolicitudesTab` (firmas al completar una recolección). La pantalla
   grande `app/[locale]/dashboard/manifiesto/page.tsx` implementa **su propia** lógica de firma
   en canvas (motorista/cocinero/oficial/líquidos) con un modal flotante, en lugar de reutilizar
   `SignaturePad`.
 - La pestaña **Reportes** de `DashboardClient` genera un "PDF" abriendo una ventana HTML y
   llamando `window.print()` (no jsPDF).
+- **Estadísticas** tiene dos PDF con jsPDF, cargados al tocar el botón:
+  `components/dashboard/pdfEstadisticas.ts` (resumen del período en pantalla) y
+  `pdfReporteMensual.ts` (**reporte del mes** para SEMARNAT: tablas de manifiestos, basurón y
+  entregas a empresas, con encabezado repetido en cada hoja y renglones de firma). Nombre:
+  `SiMAR_reporte_{YYYY-MM}.pdf`.
 - Guías detalladas en la raíz: `GUIA_PDF_MANIFIESTOS.md`, `GUIA_IMAGENES_MANIFIESTOS.md`,
   `MANIFIESTOS_OPTIMIZATION_SUMMARY.md`.
 
@@ -480,8 +489,8 @@ Wrappers finos sobre Supabase. Patrón general: `const { data, error } = await s
   `embarcaciones` y `manifiesto` llaman `useTranslations`. La landing, el login, `estadisticas`,
   `manifiesto-basuron`, `asociaciones` y **todo el portal recolector están en español
   hardcodeado**.
-- **`components/layout/LanguageSwitcher.tsx` existe pero no está montado en ninguna parte** — no
-  hay forma de cambiar de idioma desde la UI.
+- No hay forma de cambiar de idioma desde la UI (el viejo `LanguageSwitcher`, que nunca se montó,
+  se borró). `/en` funciona si se escribe en la dirección.
 - `messages/es.json` tiene una **clave `"logout"` duplicada** dentro de `Sidebar.menu`.
 
 ---
@@ -587,29 +596,28 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 - **`saveFirmaDigital`** (firma del Responsable de Líquidos guardada en el PDF) — pendiente en
   BD y en el módulo de PDF; el servicio es un *stub*.
 - **Factores de CO₂e** de `lib/constants/impacto.ts` son provisionales; validarlos con el asesor
-  externo antes de usarlos en reportes oficiales.
+  externo antes de usarlos en reportes oficiales. Decidido el 2026-09-30 mientras tanto: 1 L de
+  aceite contamina 1,000 L de agua y evita 1.0 kg de CO₂e (el mismo factor en el recinto, el
+  portal y la landing, todos vía `lib/utils/equivalencias.ts`).
 
 ### Deuda técnica / cosas a saber antes de tocar el código
 
 - **Migraciones:** los cambios de esquema nuevos van en `supabase/migrations/`. Los `.sql`
   sueltos de la raíz son históricos.
-- **`components/simple/SimpleBasuronForm.tsx` está vacío** (0 bytes).
-- **`app/[locale]/dashboard/manifiesto/page.tsx`** (~2250 líneas) es la pantalla real de
-  producción y **duplica** buena parte de `components/manifiestos/CreateManifiestoModal.tsx`
-  (incluida su propia lógica de firma en canvas).
+- **`app/[locale]/dashboard/manifiesto/page.tsx`** (~2400 líneas) es la pantalla real de
+  producción, con su propia lógica de firma en canvas (`CreateManifiestoModal`, que la duplicaba
+  sin usarse, se borró).
 - **Recharts se usa en un único archivo** (`dashboard-recolector/impacto/page.tsx`); todo lo
   demás son gráficas hechas a mano con divs/SVG. El mapa del portal recolector usa **MapLibre GL
   JS + react-map-gl** con teselas de OpenFreeMap (`components/recolector/MapaCentroAcopio.tsx`).
   `maplibre-gl` está fijado en v5: la v6 carga su web worker con `import.meta.url` y falla con
   Turbopack. El mapa de la landing es SVG puro.
-- **Dependencias sin usar**: `html2canvas`, `react-time-picker`,
-  `react-time-picker-input`, `browser-image-compression`.
 - **Servicios que consultan tablas eliminadas** (`tipos_residuos`, `usuarios_sistema`) — ver §8.
 - **Nombres de marca inconsistentes** (SiMAR / CIAD / DCK / CDK) en toda la UI.
-- Algunos `router.push` omiten el prefijo de locale (p. ej. en `dashboard/simple`) y dependen
-  del middleware para re-prefijar.
-- `dashboard/manifiesto-basuron/page.tsx` importa `DashboardLayout` aunque el segmento ya tiene
-  layout (doble layout anidado).
+- Algunos `router.push` omiten el prefijo de locale (p. ej. `router.push('/')` en
+  `AuthProvider`) y dependen del middleware para re-prefijar.
+- `dashboard/manifiesto-basuron/page.tsx` todavía importa `DashboardLayout`, aunque ya no lo
+  monta (el segmento tiene su layout).
 - Archivos sueltos en la raíz: `nuevoDiseño.tsx`, `debug_dashboard_data.ts` (script no
   conectado).
 

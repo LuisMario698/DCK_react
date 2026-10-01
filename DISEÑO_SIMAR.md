@@ -365,7 +365,9 @@ encabezado móvil y en la hoja "Más" (ver 16.2).
 
 `app/[locale]/dashboard/page.tsx` → `ActionCard`. Máximo **tres** por pantalla; sólo una es
 principal (fondo `simar-marea`). Ícono de 34 px en círculo de 72 px, título de 32 px abajo y
-una línea de descripción.
+una línea de descripción. La tarjeta es `@container` y el título mide
+`min(32px, 100cqi / 7.2)` desde tableta: en una laptop con el menú abierto las tres tarjetas se
+angostan y "Estadísticas" se partía a media palabra; así se achica con su tarjeta y nunca se corta.
 
 ```tsx
 <Link href={href} style={{ animationDelay: '0.08s' }}
@@ -384,14 +386,15 @@ Los accesos secundarios van como pastillas (`OtraSeccion`): 60 px, ícono azul y
 `lib/services/panel_recinto.ts` → `getResumenPanel`) sigue siendo un menú, pero dice lo que va del
 día y lo que falta, sin gráficas:
 
-- **Saludo con contexto:** la fecha ("Miércoles 30 de septiembre"), "Buenos días / Buenas tardes /
+- **Saludo con contexto** (el logo grande a la izquierda sólo desde `xl`; más angosto le
+  quitaba espacio a la frase): la fecha ("Miércoles 30 de septiembre"), "Buenos días / Buenas tardes /
   Buenas noches" según la hora de Puerto Peñasco (el servidor corre en UTC: `saludoPuerto` y
   `fechaHoyPuerto` en `lib/utils/fechas.ts`) y una línea: "Hoy van **3 manifiestos** y **1 recibo
   del basurón**." Los números cuentan (`NumeroAnimado`). Sin registros: "Aún no hay registros de hoy."
 - **Por atender:** sólo aparece si hay algo. Un renglón por tarea, en este orden: solicitudes
   **por recolectar** con fecha de hoy o anterior (coral si alguna ya pasó su fecha), solicitudes
   **por revisar** (coral) y **mensajes sin leer** de las empresas. Cada renglón lleva a donde se
-  resuelve: Asociaciones con `?ver=por-recolectar` (Solicitudes en "Por recolectar"),
+  resuelve: Empresas recolectoras (ruta `asociaciones`) con `?ver=por-recolectar` (Solicitudes en "Por recolectar"),
   `?solicitud=ID` si es una sola (abre en su filtro y la fila se ilumina con `simar-resalta`) o
   `?ver=mensajes&empresa=ID` (esa conversación). Si es una sola, el detalle la dice completa
   ("Reciclados del Golfo · 200 L de aceite usado · hoy"). El número entra con `simar-confirma`
@@ -407,9 +410,12 @@ día y lo que falta, sin gráficas:
   cabe se corta el nombre—, y la hora; cada uno lleva a su pantalla, la recolección a su solicitud)
   y **En el centro de acopio** (el inventario con cantidad, cada residuo con su color, la cantidad
   grande y su unidad escrita: litros, piezas, kg; "Sin publicar" si las empresas no lo ven; sin
-  barras, porque kg, L y piezas no se comparan). En computadora van lado a lado; en celular bajan al
-  final, después de "Otras secciones".
-- **Otras secciones con cuántos hay:** "Embarcaciones 12", "Personas 18", "Asociaciones 3 activas".
+  barras, porque kg, L y piezas no se comparan). Lado a lado sólo desde `xl` (columnas
+  `minmax(0,…)`, si no se desbordaban a 1100 px); más angosto, uno debajo del otro; en celular bajan
+  al final, después de "Otras secciones". Cada renglón de "Lo último registrado" **abre ese
+  registro**: `manifiesto?ver=ID` y `manifiesto-basuron?ver=ID` abren su ventana de detalle en
+  cuanto carga la lista.
+- **Otras secciones con cuántos hay:** "Embarcaciones 12", "Personas 18", "Empresas 3 activas".
 - **Un dato vivo por tarjeta**, en una pastilla bajo la descripción (`clasePastilla` en
   `components/dashboard/pastilla.ts`): "Último: hace 2 h" (Manifiesto y Basurón) y "34 manifiestos en 30 días" (el mismo número que Estadísticas en "1 mes"). En una
   tarjeta angosta pasa a dos renglones; por eso sus esquinas son de 16 px y no de píldora. Si en
@@ -496,6 +502,13 @@ reemplaza al anterior. Se borra al guardar el manifiesto; caduca a los 7 días. 
 no se guarda: si había uno, junto a "Adjuntar documento" sale en coral "Vuelve a adjuntar «…»". No
 es el "Descargar borrador" de la misma pantalla (el PDF para firmar a mano).
 
+**Los mismos responsables que la vez pasada:** al elegir una embarcación que ya entregó, y si aún
+no se escribió ningún responsable, debajo del campo sale en azul suave "La vez pasada (12 sep):
+Juan Pérez (motorista) · … [Usar los mismos]". El botón llena nombres e identificaciones del último
+manifiesto de ese barco; las firmas no, ésas siempre se hacen de nuevo. La validación de
+"embarcación" acepta un nombre escrito aunque no se haya elegido de la lista ("* Escribe o elige la
+embarcación"), y cada campo del formulario tiene su etiqueta ligada (`htmlFor`/`id`).
+
 ### 10.9 Filtros
 
 Chips de 48 px `rounded-full`: activo `bg-simar-marea text-white`; inactivo
@@ -528,7 +541,21 @@ etiqueta de 17 px y `select` de 56 px.
   `simar-velo-sale` / `simar-ventana-sale` mientras `saliendo` (así lo hacen `ConfirmationModal`,
   `UserProfileModal`, `CreatePersonaModal`, el `Modal` de `components/asociaciones/ui.tsx` y la
   ventana de acceso de la landing).
-- Botón de cerrar de 52 px arriba a la derecha con `aria-label="Cerrar"`.
+- Botón de cerrar de 52 px arriba a la derecha con `aria-label="Cerrar"`. Escape también cierra.
+- **Teclado y lector de pantalla:** `role="dialog"` y `aria-modal="true"` van en el **panel** (no en
+  el velo), con `tabIndex={-1}` y `outline-none`. `useVentanaAccesible(ref, abierto)`
+  (`components/ui/useVentanaAccesible.ts`) pone el foco adentro al abrir (respeta el `autoFocus`
+  de un campo), no deja que Tab se salga y al cerrar lo regresa al botón que la abrió (aunque
+  adentro haya un `autoFocus`, y también con el doble montaje de React en desarrollo). Con
+  `{ alEscape: cerrar }` Escape la cierra; si hay una ventana encima de otra (una confirmación sobre
+  un formulario), sólo la de arriba. Ya lo usan
+  el `Modal` de `components/asociaciones/ui.tsx`, `ConfirmationModal`, `UserProfileModal`, las
+  ventanas de Personas, Embarcaciones y Basurón, el visor y la firma del manifiesto, la ventana de
+  acceso de la landing y `HojaInferior` (con `{ enfocar: false }`: la hoja ya maneja su foco).
+- **Preguntar antes de borrar o deshacer:** `await confirmar({ titulo, mensaje, accion, peligro })`
+  (`components/ui/Confirmar.tsx`), nunca `window.confirm()`: la cajita del navegador no sigue el
+  diseño, no crece con la letra y en celular parece un error. Con `peligro` el botón va en coral y
+  el foco empieza en "Cancelar". `<Confirmador />` va montado una vez en `app/[locale]/layout.tsx`.
 - Si el componente vive dentro del menú lateral (que tiene `transform`), monta la ventana con
   `createPortal(…, document.body)`.
 
@@ -538,6 +565,16 @@ etiqueta de 17 px y `select` de 56 px.
 `rounded-2xl p-5 text-base text-simar-texto` + fondo suave del tono + ícono de 24 px del tono.
 Informativo = marea, advertencia = coral, crítico = coral con borde, superadmin/mantenimiento =
 violeta.
+
+**Avisos breves** (lo que acaba de pasar: "Manifiesto guardado", "No se pudo guardar…"): `toast`
+de sonner, con frase de tú y el siguiente paso en `description`. Nunca `alert()`. Los errores no
+muestran el mensaje crudo de Supabase: para leerlo en un `catch` sin `any` usa
+`detalleDe(causa)` (`lib/utils/errores.ts`).
+
+**Sesión por inactividad** (`AuthProvider`): a los 29 minutos sin actividad sale un aviso con
+"Sigo aquí"; a los 30 se cierra la sesión y, ya en la entrada, un aviso dice por qué ("Cerramos tu
+sesión tras 30 minutos sin actividad"). Se mide con la hora de la última actividad (un reloj de 15 s
+y al volver a la pestaña), no con un temporizador que el teléfono pausa.
 
 ### 10.13 Estado vacío
 
@@ -575,6 +612,9 @@ No dibujes a mano lo que ya existe. Estas piezas ya siguen el lenguaje:
 | `app/[locale]/dashboard/loading.tsx` | Esqueleto mientras llega una pantalla del recinto (Estadísticas tiene el suyo) |
 | `components/ui/Button.tsx` | `variant`: `primary` (marea), `secondary` (borde 2 px), `danger` (coral sólido); `size`: `sm` 44 px, `md` 52 px, `lg` 60 px |
 | `components/ui/ConfirmationModal.tsx` | Confirmación de borrado |
+| `components/ui/Confirmar.tsx` | `confirmar()` (pregunta como función, devuelve `Promise<boolean>`) y `<Confirmador />`. Ver 10.11 |
+| `components/ui/useVentanaAccesible.ts` | Foco adentro, Tab que no se sale y foco de regreso en cualquier ventana. Ver 10.11 |
+| `components/layout/useTituloPestana.ts` + `lib/constants/titulo.ts` | Título de la pestaña del navegador: `tituloPantalla('Personas')` → "Personas · SiMAR". Conserva el "(3) " de avisos sin leer y lo vuelve a poner si Next reescribe el `<title>` |
 | `components/ui/Table.tsx` | `Table`, `TableHeader`, `TableHead`, `TableRow`, `TableCell` |
 | `components/embarcaciones/Pagination.tsx` | Paginación de 44 px |
 | `components/asociaciones/ui.tsx` | `Modal`, `Campo` + `inputCls`, `BotonPrimario`, `BotonSecundario`, `EstadoSolicitudBadge`, `ResiduoBadge`, `Cargando`, `ErrorCarga` |
@@ -636,7 +676,8 @@ basura marea, basurón arrecife.
 - **Pantalla Estadísticas** (`components/dashboard/EstadisticasGenerales.tsx`): todo sale del
   mismo período (`getEstadisticasPeriodo`). Se acomoda en el orden en que se lee: qué entró →
   cómo cambia → quién → a dónde se fue → qué se logró. De arriba abajo: el período, con
-  **"Descargar PDF"** a la derecha (en celular, junto a "Período"); un **titular de una
+  **"PDF del período"** y **"Reporte del mes"** a la derecha (en celular, en su propia fila de dos
+  debajo de los botones del período); un **titular de una
   línea** con lo más importante ("Más basura +36 % y más aceite +23 % que el mes anterior"; sin
   período anterior, "10,760 kg de basura y 653 L de aceite en el último mes"), con una línea violeta
   a la izquierda y el botón **"Leer resumen"**, que despliega la frase completa ("En el último mes
@@ -666,11 +707,21 @@ basura marea, basurón arrecife.
   chatarra, vidrio, orgánico, en kg) no lleva "recibido" ni porcentaje: en los manifiestos sólo hay
   "basura" en general. Salidas = tabla `recolecciones` del período; en acopio = `inventario_residuos`
   de hoy.
-- **Descargar PDF** (`components/dashboard/pdfEstadisticas.ts`, jsPDF, se carga al tocar): hoja
+- **PDF del período** (`components/dashboard/pdfEstadisticas.ts`, jsPDF, se carga al tocar): hoja
   A4 con el símbolo, el período y sus fechas, el titular, las cuatro cifras, dos gráficas de barras
   (basura en kg y aceite en L), las embarcaciones (que más entregan y sin entregar), a dónde se fue y
   el impacto con su nota de factores provisionales; pie con número de hoja. Usa los mismos textos y
   equivalencias que la pantalla. Las fuentes de jsPDF no traen "₂" ni "−": ahí se escribe "CO2" y "-".
+- **Reporte del mes** (`ReporteDelMes.tsx` → `lib/services/reporte_mensual.ts` →
+  `pdfReporteMensual.ts`), para entregar a SEMARNAT: no depende del período. Una ventana con los
+  últimos 12 meses en cuadros de dos o tres columnas (el que va en curso dice "en curso"; del 25 en
+  adelante viene elegido el mes que termina y antes, el pasado) y "Descargar septiembre 2026". El
+  PDF (`SiMAR_reporte_2026-09.pdf`, mismo estilo que el del período): una frase con el mes, cinco
+  cifras (manifiestos, basura, aceite, filtros con su desglose, basurón), la tabla de **cada
+  manifiesto** (fecha, folio, embarcación, motorista, basura kg, aceite L, filtros) con renglón de
+  total, los **viajes al basurón** (con la nota de que no se suman a la basura de arriba), las
+  **entregas a empresas** y renglones para firmar (Elaboró / Recibió). El encabezado de cada tabla
+  se repite al cambiar de hoja; lo que no cabe en su columna se corta con "...".
 - **Impacto estimado:** tarjeta blanca como las demás (antes un bloque verde sólido con cuatro
   cuadros cuyas equivalencias sólo salían al pasar el cursor), a todo lo ancho. **Lo grande es la
   equivalencia en algo conocido**, no la
@@ -682,7 +733,13 @@ basura marea, basurón arrecife.
   equivalencia cambia con el tamaño para no decir "0.1 albercas": albercas de 2.5 millones de L o
   tinacos de 1,100 L; camiones de 8 t o bolsas de 10 kg; árboles o, con muy poco CO₂, km en auto.
   "¿Cómo se calcula?" despliega las fórmulas y que los factores son provisionales
-  (`lib/constants/impacto.ts`); la etiqueta "Estimado" va junto al título. En celular cada cuadro
+  (`lib/constants/impacto.ts`); la etiqueta "Estimado" va junto al título.
+- **Una sola forma de calcular el impacto** (`lib/utils/equivalencias.ts`: `aguaProtegidaL`,
+  `co2EvitadoKg`, `equivalenciaAgua/CO2/Basura`): la usan Estadísticas, su PDF y la landing, así
+  que la misma cifra dice lo mismo en todos lados. 1 L de aceite contamina **1,000 L** de agua; el
+  aceite evita **1.0 kg de CO₂e por litro** (el mismo factor que el portal de empresas). La basura
+  que se cuenta es la de los **manifiestos**: el basurón es esa misma basura camino al relleno y
+  sumarlas la contaba dos veces. En celular cada cuadro
   es un renglón con el ícono a la izquierda.
 - En el eje X de celular: los meses con su inicial y, si no caben, una etiqueta cada tantas barras.
 
@@ -733,6 +790,16 @@ basura marea, basurón arrecife.
 - Nada de jerga técnica en la interfaz (ni "registro creado en BD", ni códigos de error crudos).
 - Mensajes de estado en positivo y con el siguiente paso: "Aún no hay firmas. También puedes
   adjuntar el documento firmado."
+- **Nombres fijos** (así se dicen en toda la interfaz; en el código y la base de datos siguen los
+  nombres de siempre):
+  - **Basurón** para el recibo del relleno sanitario ("Recibo del basurón", "Recibos del basurón"),
+    no "manifiesto basurón".
+  - **Empresas recolectoras** (o "empresa") para quienes se llevan los residuos, no "asociaciones".
+    La ruta sigue siendo `/dashboard/asociaciones` y las tablas `asociaciones_recolectoras`.
+  - **Embarcación**, no "buque" (también en filtros y encabezados de Excel).
+- Fechas con `toLocaleDateString('es-MX', …)`, no `es-ES`. Cantidades con `formatCantidad`.
+- Sin "exitosamente": "Persona guardada", no "Persona creada exitosamente".
+- El título de la pestaña del navegador dice la pantalla: "Manifiesto · SiMAR" (`tituloPantalla`).
 
 ---
 
@@ -779,8 +846,8 @@ basura marea, basurón arrecife.
 Recibo relleno sanitario (Basurón), Embarcaciones, Personas, Estadísticas, Asociaciones (con sus
 cuatro pestañas), perfil de usuario, el portal de empresas completo (Inicio, Residuos disponibles,
 Mis solicitudes, Historial, Impacto, Mensajes, Notificaciones, Perfil), el panel de superadmin
-(Resumen, Cuentas, Suscripciones, Planes, Auditoría, Sistema), Acceso pendiente, Mantenimiento y
-el modo simple (`/dashboard/simple`).
+(Resumen, Cuentas, Suscripciones, Planes, Auditoría, Sistema), Acceso pendiente y Mantenimiento.
+El modo simple (`/dashboard/simple`) se borró: nadie lo usaba y duplicaba el Panel.
 
 **Se quedaron como estaban, a propósito:**
 
@@ -788,9 +855,9 @@ el modo simple (`/dashboard/simple`).
   en una banda oscura y tiene su propio estilo. Su panel (`SeccionMapaPuertos.tsx`: cifras, ficha
   del puerto, leyenda y botones) ya sigue la escala SiMAR: 15 px o más, sin mayúsculas, botones de
   48 px.
-- Código que ninguna pantalla importa: `components/manifiestos/CreateManifiestoModal.tsx`,
-  `components/layout/sidebars/SidebarVariantD.tsx`, `components/layout/LanguageSwitcher.tsx`. Si
-  alguno vuelve a usarse, mígralo primero.
+- El código que ninguna pantalla importaba (`CreateManifiestoModal`, `SidebarVariantD`,
+  `LanguageSwitcher`, `TiposPersonaManager`, `DashboardBackground`, `components/simple/`) se borró
+  el 2026-09-30, junto con las dependencias que nadie usaba.
 
 ### Cómo migrar una pantalla (o una nueva que llegue con estilos viejos)
 
