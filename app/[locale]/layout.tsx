@@ -8,6 +8,8 @@ import { ThemeProvider } from '@/components/layout/ThemeContext';
 import { AuthProvider } from "@/components/layout/AuthProvider";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { Avisos } from "@/components/layout/Avisos";
+import { Confirmador } from "@/components/ui/Confirmar";
+import { TITULO_APP } from "@/lib/constants/titulo";
 import { DeslizarParaActualizar } from "@/components/layout/DeslizarParaActualizar";
 
 // Tipografía única de SiMAR (Braille Institute, pensada para baja visión). Ver DISEÑO_SIMAR.md.
@@ -20,7 +22,8 @@ const atkinson = Atkinson_Hyperlegible_Next({
 });
 
 export const metadata: Metadata = {
-  title: "SiMAR — Sistema Integral de Manejo Ambiental de Residuos",
+  // Las pantallas de los paneles cambian el título con useTituloPestana ("Manifiesto · SiMAR")
+  title: TITULO_APP,
   description:
     "Gestión digital de manifiestos de residuos de embarcaciones pesqueras en Puerto Peñasco, Sonora. Formato MARPOL Anexo V.",
   // Instalada desde Safari (Agregar a inicio) abre como app, sin la barra del navegador.
@@ -55,7 +58,7 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
 
-  if (!locales.includes(locale as any)) {
+  if (!(locales as readonly string[]).includes(locale)) {
     notFound();
   }
   const messages = await getMessages();
@@ -69,6 +72,8 @@ export default async function LocaleLayout({
               {children}
               <ThemeToggle />
               <Avisos />
+              {/* Las confirmaciones propias (confirmar()), en lugar de las del navegador */}
+              <Confirmador />
               {/* Sólo con SiMAR instalada como app: ahí no hay botón de recargar */}
               <DeslizarParaActualizar />
             </NextIntlClientProvider>

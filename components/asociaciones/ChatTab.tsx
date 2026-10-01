@@ -77,7 +77,7 @@ export function ChatTab({
                         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                         <input
                             type="text"
-                            placeholder="Buscar asociación…"
+                            placeholder="Buscar empresa…"
                             value={busqueda}
                             onChange={(e) => setBusqueda(e.target.value)}
                             className="w-full pl-10 pr-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -133,7 +133,7 @@ export function ChatTab({
                     })}
                     {lista.length === 0 && (
                         <div className="p-8 text-center text-[15px] text-simar-texto-2">
-                            {asociaciones.length === 0 ? 'Registra una asociación para poder escribirle.' : 'No hay coincidencias.'}
+                            {asociaciones.length === 0 ? 'Registra una empresa para poder escribirle.' : 'No hay coincidencias.'}
                         </div>
                     )}
                 </div>
@@ -172,7 +172,7 @@ export function ChatTab({
                         </div>
                         <p className="text-base font-bold text-simar-texto">Selecciona una conversación</p>
                         <p className="text-base text-simar-texto-2 mt-1">
-                            Elige una asociación de la izquierda para ver los mensajes.
+                            Elige una empresa de la izquierda para ver los mensajes.
                         </p>
                     </div>
                 )}

@@ -27,7 +27,7 @@ async function obtenerStats() {
             noLeidos,
         };
     } catch (err) {
-        console.error('Error cargando estadísticas de asociaciones:', err);
+        console.error('Error cargando estadísticas de empresas:', err);
         return null;
     }
 }
@@ -77,7 +77,7 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
     const tabs: { value: Tab; label: string; icon: React.ReactNode; badge?: number; badgeTexto?: string }[] = [
         { value: 'solicitudes', label: 'Solicitudes', icon: <Inbox className="w-5 h-5" />, badge: stats.pendientes, badgeTexto: 'pendientes' },
         { value: 'inventario', label: 'Inventario', icon: <Package className="w-5 h-5" /> },
-        { value: 'empresas', label: 'Asociaciones', icon: <Building2 className="w-5 h-5" /> },
+        { value: 'empresas', label: 'Empresas', icon: <Building2 className="w-5 h-5" /> },
         { value: 'chat', label: 'Mensajes', icon: <MessageSquare className="w-5 h-5" />, badge: stats.noLeidos, badgeTexto: 'sin leer' },
     ];
 
@@ -91,13 +91,13 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
             {/* Lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
             <EncabezadoPantalla
                 icono={Building2}
-                titulo="Asociaciones recolectoras"
+                titulo="Empresas recolectoras"
                 subtitulo="Publica residuos, gestiona solicitudes y comunícate con las empresas."
             />
 
             {/* Conteos. En celular se ocultan: cada número va en su pestaña (pendientes, sin leer, activas) */}
             <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:hidden" style={{ animationDelay: '0.06s' }}>
-                <TarjetaDato apilada etiqueta="Asociaciones activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
+                <TarjetaDato apilada etiqueta="Empresas activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
                 <TarjetaDato apilada etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
                 <TarjetaDato apilada etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
             </div>
@@ -106,7 +106,7 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
                 de cada sección van más discretos). En celular, las cuatro en una fila con el ícono arriba y
                 la palabra abajo; el aviso va en la esquina del ícono, como en las apps del teléfono */}
             <div className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar movil:p-1 movil:rounded-[20px]">
-                <nav aria-label="Secciones de asociaciones" className="grid grid-cols-2 sm:flex gap-1 movil:grid-cols-4 movil:gap-0.5">
+                <nav aria-label="Secciones de empresas" className="grid grid-cols-2 sm:flex gap-1 movil:grid-cols-4 movil:gap-0.5">
                     {tabs.map((t) => {
                         const active = tab === t.value;
                         return (

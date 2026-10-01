@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Mail, Phone, MapPin, Building2, FileText, Edit3, Save, Globe, User, X, Home, Check } from 'lucide-react';
 import { TIPOS_RESIDUO, TIPO_RESIDUO_LABEL, type TipoResiduo } from '@/lib/constants/residuos';
@@ -33,7 +33,7 @@ export default function PerfilPage() {
 
     if (cargando) return <Cargando />;
     if (!asociacion) {
-        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una asociación.</p>;
+        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una empresa.</p>;
     }
 
     const datos = editing && form ? form : aFormulario(asociacion);
@@ -80,7 +80,7 @@ export default function PerfilPage() {
                             <div className="min-w-0">
                                 <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate movil:whitespace-normal">{asociacion.nombre_asociacion}</h3>
                                 <p className="text-base text-simar-texto-2">
-                                    {asociacion.tipo_asociacion || 'Asociación recolectora'} · {asociacion.estado}
+                                    {asociacion.tipo_asociacion || 'Empresa recolectora'} · {asociacion.estado}
                                 </p>
                             </div>
                         </div>
@@ -256,10 +256,13 @@ function PasswordInput({
     onChange: (v: string) => void;
     autoComplete: string;
 }) {
+    // Cada campo de contraseña con su propio id, para ligar la etiqueta
+    const id = useId();
     return (
         <div>
-            <label className="block mb-2 text-[17px] font-bold text-simar-texto">{label}</label>
+            <label htmlFor={id} className="block mb-2 text-[17px] font-bold text-simar-texto">{label}</label>
             <input
+                id={id}
                 type="password"
                 value={value}
                 autoComplete={autoComplete}

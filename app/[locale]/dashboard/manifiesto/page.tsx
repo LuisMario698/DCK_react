@@ -1,9 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { use, useState, useEffect, useRef, useMemo } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
 import { useTranslations } from 'next-intl';
 import { CalendarDays, Check, Download, FilePlus2, FileText, List, PenLine, Search, Upload } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '@/components/layout/AuthProvider';
+import { confirmar } from '@/components/ui/Confirmar';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { tiempoRelativo } from '@/lib/constants/residuos';
 import {
   borrarSinTerminar,
@@ -26,11 +30,15 @@ import { PestanasMovil } from '@/components/ui/simar';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
 
 
-export default function ManifiestosPage() {
+/** `?ver=ID` abre ese manifiesto en su ventana de detalle (así llega "Lo último registrado" del Panel) */
+export default function ManifiestosPage({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
+  const { ver } = use(searchParams);
   const t = useTranslations('Manifiestos');
   const tm = useTranslations('Manifiestos.mensajes');
   const [manifiestos, setManifiestos] = useState<ManifiestoConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
+  // El manifiesto a abrir con ?ver=ID: se abre en cuanto carga la lista (ajuste durante el render)
+  const [porAbrir, setPorAbrir] = useState(Number(ver) > 0 ? Number(ver) : null);
   const [saving, setSaving] = useState(false);
   const [viewingManifiesto, setViewingManifiesto] = useState<ManifiestoConRelaciones | null>(null);
   const [generandoPDF, setGenerandoPDF] = useState<string | null>(null);
@@ -117,6 +125,12 @@ export default function ManifiestosPage() {
   // Nombre del archivo que se había adjuntado: el archivo no se guarda, hay que adjuntarlo otra vez
   const [archivoPorAdjuntar, setArchivoPorAdjuntar] = useState<string | null>(null);
   const revisadoParaRef = useRef<string | null>(null);
+
+  // Ventanas del visor y de la firma: foco adentro, Tab no se sale y al cerrar regresa al botón
+  const visorRef = useRef<HTMLDivElement>(null);
+  const firmaRef = useRef<HTMLDivElement>(null);
+  useVentanaAccesible(visorRef, !!viewingManifiesto, { alEscape: () => setViewingManifiesto(null) });
+  useVentanaAccesible(firmaRef, !!signatureModalType, { alEscape: () => closeSignatureModal() });
 
   // Referencias para navegación con Enter
   const fechaRef = useRef<HTMLInputElement>(null);
@@ -428,13 +442,57 @@ export default function ManifiestosPage() {
     setSinTerminar(null);
   };
 
-  const descartarSinTerminar = () => {
-    if (!confirm('¿Borrar el manifiesto sin terminar? Lo que se había capturado ya no se podrá recuperar.')) return;
+  const descartarSinTerminar = async () => {
+    const ok = await confirmar({
+      titulo: '¿Borrar el manifiesto sin terminar?',
+      mensaje: 'Lo que se había capturado ya no se podrá recuperar.',
+      accion: 'Borrar',
+      peligro: true,
+    });
+    if (!ok) return;
     if (usuarioId) borrarSinTerminar(usuarioId);
     setSinTerminar(null);
   };
 
   // Lógica de filtrado de manifiestos con useMemo para mejor rendimiento
+  // Repetir responsables: los barcos entregan seguido con la misma tripulación. Al elegir una
+  // embarcación que ya entregó, se ofrecen los responsables de su último manifiesto (las firmas no:
+  // ésas siempre se hacen de nuevo). Sólo si todavía no se ha escrito ningún responsable.
+  const ultimoDelBarco = useMemo(() => {
+    if (!formData.buque_id) return null;
+    const id = Number(formData.buque_id);
+    return manifiestos.find((m) => m.buque_id === id) ?? null;
+  }, [formData.buque_id, manifiestos]);
+  const anteriores = ultimoDelBarco
+    ? [
+        { rol: 'motorista', persona: ultimoDelBarco.responsable_principal },
+        { rol: 'cocinero', persona: ultimoDelBarco.responsable_secundario },
+        { rol: 'líquidos', persona: ultimoDelBarco.responsable_liquidos },
+      ].filter((r) => r.persona?.nombre)
+    : [];
+  const ofrecerRepetir = anteriores.length > 0 && !motoristaNombre.trim() && !cocineroNombre.trim() && !liquidosNombre.trim();
+
+  const usarResponsablesAnteriores = () => {
+    const u = ultimoDelBarco;
+    if (!u) return;
+    setFormData((f) => ({
+      ...f,
+      responsable_principal_id: u.responsable_principal ? String(u.responsable_principal.id) : f.responsable_principal_id,
+      responsable_secundario_id: u.responsable_secundario ? String(u.responsable_secundario.id) : f.responsable_secundario_id,
+      responsable_liquidos_id: u.responsable_liquidos ? String(u.responsable_liquidos.id) : f.responsable_liquidos_id,
+    }));
+    if (u.responsable_principal?.nombre) setMotoristaNombre(u.responsable_principal.nombre);
+    if (u.responsable_secundario?.nombre) setCocineroNombre(u.responsable_secundario.nombre);
+    if (u.responsable_liquidos?.nombre) setLiquidosNombre(u.responsable_liquidos.nombre);
+    toast.success('Mismos responsables que la vez pasada', { description: 'Las firmas se hacen de nuevo.' });
+  };
+
+  if (porAbrir != null && !loading) {
+    setPorAbrir(null);
+    const m = manifiestos.find((x) => x.id === porAbrir);
+    if (m) setViewingManifiesto(m);
+  }
+
   const manifiestosFiltrados = useMemo(() => {
     return manifiestos.filter((manifiesto) => {
       // Obtener nombres para búsqueda
@@ -535,7 +593,8 @@ export default function ManifiestosPage() {
       setBuques(buquesData);
       setPersonas(personasData);
       setManifiestos(manifestosData);
-    } catch (error: any) {
+    } catch (causa) {
+      const error = detalleDe(causa);
       console.error('❌ Error cargando datos:', error);
     } finally {
       setLoading(false);
@@ -573,7 +632,7 @@ export default function ManifiestosPage() {
     try {
       // Validar campos requeridos (ahora validamos por nombre, no por ID)
       if (!formData.fecha_emision || (!formData.buque_id && !buqueNombre.trim()) || (!formData.responsable_principal_id && !motoristaNombre.trim())) {
-        alert('❌ Por favor completa todos los campos obligatorios');
+        toast.error('Faltan datos: la fecha, el barco y el motorista son obligatorios.');
         setShowValidation(true);
         return;
       }
@@ -609,9 +668,9 @@ export default function ManifiestosPage() {
       if (!archivo) {
         try {
           // Construir objetos completos para el PDF
-          const buqueObj = buqueResult || buques.find(b => b.id === Number(buqueId)) || { id: Number(buqueId), nombre_buque: buqueNombre.trim() } as any;
-          const respPrincObj = motoristaResult || personas.find(p => p.id === Number(motoristaId)) || { id: Number(motoristaId), nombre: motoristaNombre.trim() } as any;
-          const respSecObj = cocineroResult || personas.find(p => p.id === Number(cocineroId)) || (cocineroNombre.trim() ? { id: Number(cocineroId || 0), nombre: cocineroNombre.trim() } as any : undefined);
+          const buqueObj = buqueResult || buques.find(b => b.id === Number(buqueId)) || ({ id: Number(buqueId), nombre_buque: buqueNombre.trim() } as unknown as Buque);
+          const respPrincObj = motoristaResult || personas.find(p => p.id === Number(motoristaId)) || ({ id: Number(motoristaId), nombre: motoristaNombre.trim() } as unknown as PersonaConTipo);
+          const respSecObj = cocineroResult || personas.find(p => p.id === Number(cocineroId)) || (cocineroNombre.trim() ? ({ id: Number(cocineroId || 0), nombre: cocineroNombre.trim() } as unknown as PersonaConTipo) : undefined);
 
           const manifestoCompleto = {
             id: 0, // ID temporal
@@ -647,7 +706,7 @@ export default function ManifiestosPage() {
         responsable_principal_id: parseInt(motoristaId),
         responsable_secundario_id: cocineroId ? parseInt(cocineroId) : null,
         responsable_liquidos_id: formData.responsable_liquidos_id ? parseInt(formData.responsable_liquidos_id) : null,
-        estado_digitalizacion: 'completado' as any,
+        estado_digitalizacion: 'completado' as const,
         observaciones: formData.observaciones || null,
         imagen_manifiesto_url: null,
         pdf_manifiesto_url: null,
@@ -661,7 +720,7 @@ export default function ManifiestosPage() {
         numeroManifiesto // Pasamos el número generado
       );
 
-      alert(`✅ Manifiesto ${resultado.numero_manifiesto} creado exitosamente`);
+      toast.success(`Manifiesto ${resultado.numero_manifiesto} guardado`);
 
       // Ya quedó guardado en la base: lo capturado en este equipo sobra
       if (usuarioId) borrarSinTerminar(usuarioId);
@@ -694,9 +753,10 @@ export default function ManifiestosPage() {
       setLiquidosSignature(null);
 
       loadData();
-    } catch (error: any) {
+    } catch (causa) {
+      const error = detalleDe(causa);
       console.error('Error guardando manifiesto:', error);
-      alert('❌ Error al guardar el manifiesto: ' + (error.message || 'Error desconocido'));
+      toast.error('No se pudo guardar el manifiesto. Revisa tu conexión e inténtalo de nuevo: lo capturado sigue guardado en este equipo.');
     } finally {
       setSaving(false);
       setGenerandoPDF(null);
@@ -704,15 +764,20 @@ export default function ManifiestosPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Estás seguro de eliminar este manifiesto?')) {
-      try {
-        await deleteManifiesto(id);
-        alert('✅ Manifiesto eliminado exitosamente');
-        loadData();
-      } catch (error) {
-        console.error('Error eliminando manifiesto:', error);
-        alert('❌ Error al eliminar el manifiesto');
-      }
+    const ok = await confirmar({
+      titulo: '¿Eliminar este manifiesto?',
+      mensaje: 'Ya no se podrá recuperar.',
+      accion: 'Eliminar',
+      peligro: true,
+    });
+    if (!ok) return;
+    try {
+      await deleteManifiesto(id);
+      toast.success('Manifiesto eliminado');
+      loadData();
+    } catch (error) {
+      console.error('Error eliminando manifiesto:', error);
+      toast.error('No se pudo eliminar el manifiesto. Inténtalo de nuevo.');
     }
   };
 
@@ -720,7 +785,7 @@ export default function ManifiestosPage() {
     try {
       // 1. Validar datos mínimos (Nombre de buque requerido, aunque no esté registrado)
       if (!formData.buque_id && !buqueNombre.trim()) {
-        alert('Por favor ingresa un nombre de buque');
+        toast.error('Escribe el nombre del barco para descargar el borrador.');
         return;
       }
 
@@ -751,17 +816,17 @@ export default function ManifiestosPage() {
       let buqueObj = buqueResult || buques.find(b => b.id === Number(buqueIdFinal));
       if (!buqueObj && buqueNombre.trim()) {
         // Fallback visual si por alguna razón no tenemos objeto DB aún
-        buqueObj = { id: 0, nombre_buque: buqueNombre.trim(), estado: 'Activo' } as any;
+        buqueObj = { id: 0, nombre_buque: buqueNombre.trim(), estado: 'Activo' } as unknown as Buque;
       }
 
       let motoristaObj = motoristaResult || personas.find(p => p.id === Number(motoristaIdFinal));
       if (!motoristaObj && motoristaNombre.trim()) {
-        motoristaObj = { id: 0, nombre: motoristaNombre.trim() } as any;
+        motoristaObj = { id: 0, nombre: motoristaNombre.trim() } as unknown as PersonaConTipo;
       }
 
       let cocineroObj = cocineroResult || personas.find(p => p.id === Number(cocineroIdFinal));
       if (!cocineroObj && cocineroNombre.trim()) {
-        cocineroObj = { id: 0, nombre: cocineroNombre.trim() } as any;
+        cocineroObj = { id: 0, nombre: cocineroNombre.trim() } as unknown as PersonaConTipo;
       }
 
       // Actualizar el formulario con los nuevos IDs para que el usuario no tenga que volver a seleccionarlos
@@ -778,7 +843,7 @@ export default function ManifiestosPage() {
       }
 
       if (!buqueObj) {
-        alert('Error: No se pudo determinar el buque. verifica los datos.');
+        toast.error('No se encontró el barco. Revisa el nombre e inténtalo de nuevo.');
         setGenerandoPDF(null);
         return;
       }
@@ -798,8 +863,8 @@ export default function ManifiestosPage() {
         imagen_manifiesto_url: null,
         updated_at: new Date().toISOString(),
         buque: buqueObj,
-        responsable_principal: motoristaObj as any, // Cast para evitar conflictos estrictos de tipo en borrador
-        responsable_secundario: cocineroObj as any,
+        responsable_principal: motoristaObj,
+        responsable_secundario: cocineroObj,
         residuos: {
           id: 0,
           manifiesto_id: 0,
@@ -835,7 +900,7 @@ export default function ManifiestosPage() {
 
     } catch (error) {
       console.error('Error generando borrador:', error);
-      alert('Error al generar el borrador');
+      toast.error('No se pudo generar el borrador. Inténtalo de nuevo.');
     } finally {
       setGenerandoPDF(null);
     }
@@ -899,10 +964,10 @@ export default function ManifiestosPage() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      alert(tm('descargaExitosa'));
+      toast.success(tm('descargaExitosa'));
     } catch (error) {
       console.error('Error generando/descargando PDF:', error);
-      alert(tm('errorDescarga'));
+      toast.error(tm('errorDescarga'));
     } finally {
       setGenerandoPDF(null);
     }
@@ -960,7 +1025,7 @@ export default function ManifiestosPage() {
 
     } catch (error) {
       console.error('Error al imprimir:', error);
-      alert('Error al intentar imprimir.');
+      toast.error('No se pudo abrir la impresión. Inténtalo de nuevo.');
     } finally {
       setGenerandoPDF(null);
     }
@@ -985,7 +1050,7 @@ export default function ManifiestosPage() {
           </span>
           <div className="flex-1 min-w-[240px] movil:min-w-0">
             <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Manifiesto de entrega-recepción</h1>
-            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
           </div>
           {formData.numero_manifiesto && (
             <div className={`px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:w-full movil:flex movil:items-center movil:justify-between movil:px-4 movil:py-2 ${soloEnNuevo}`}>
@@ -1059,11 +1124,11 @@ export default function ManifiestosPage() {
 
               {/* NOMBRE DEL BARCO */}
               <div>
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Barco</label>
+                <label htmlFor="manifiesto-barco" className="block mb-2 text-[17px] font-bold text-simar-texto">Barco</label>
                 <div className="relative">
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id && !buqueNombre.trim() ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <Search className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
-                    <input
+                    <input id="manifiesto-barco"
                       ref={buqueInputRef}
                       type="text"
                       value={buqueNombre}
@@ -1128,7 +1193,23 @@ export default function ManifiestosPage() {
                       )}
                     </div>
                   )}
-                  {showValidation && !formData.buque_id && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Seleccione una embarcación válida</p>}
+                  {showValidation && !formData.buque_id && !buqueNombre.trim() && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Escribe o elige la embarcación</p>}
+                  {ofrecerRepetir && ultimoDelBarco && (
+                    <div className="simar-aparece mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] bg-simar-marea-suave px-3.5 py-2.5 movil:px-3 movil:py-2">
+                      <p className="flex-1 min-w-[190px] text-[15px] leading-snug text-simar-texto movil:min-w-0 movil:text-[13px]">
+                        <span className="font-bold">La vez pasada</span>
+                        {ultimoDelBarco.fecha_emision ? ` (${parseFechaLocal(ultimoDelBarco.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })})` : ''}:{' '}
+                        {anteriores.map((r) => `${r.persona!.nombre} (${r.rol})`).join(' · ')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={usarResponsablesAnteriores}
+                        className="simar-presiona min-h-[44px] px-4 rounded-xl bg-simar-marea hover:bg-simar-marea-hover text-white text-[15px] font-bold transition-colors movil:min-h-[40px] movil:w-full movil:text-[14px]"
+                      >
+                        Usar los mismos
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1137,9 +1218,9 @@ export default function ManifiestosPage() {
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 movil:mt-3 movil:grid-cols-2 movil:gap-x-2.5 movil:gap-y-3">
               {/* ACEITE USADO */}
               <div>
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
+                <label htmlFor="manifiesto-aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <input
+                  <input id="manifiesto-aceite"
                     ref={aceiteRef}
                     type="number"
                     min="0"
@@ -1158,9 +1239,9 @@ export default function ManifiestosPage() {
 
               {/* FILTROS DE ACEITE */}
               <div>
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aceite</label>
+                <label htmlFor="manifiesto-filtros-aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aceite</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <input
+                  <input id="manifiesto-filtros-aceite"
                     ref={filtrosAceiteRef}
                     type="number"
                     min="0"
@@ -1178,9 +1259,9 @@ export default function ManifiestosPage() {
 
               {/* FILTROS DE DIESEL */}
               <div>
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de diésel</label>
+                <label htmlFor="manifiesto-filtros-diesel" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de diésel</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <input
+                  <input id="manifiesto-filtros-diesel"
                     ref={filtrosDieselRef}
                     type="number"
                     min="0"
@@ -1198,9 +1279,9 @@ export default function ManifiestosPage() {
 
               {/* FILTROS DE AIRE */}
               <div>
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aire</label>
+                <label htmlFor="manifiesto-filtros-aire" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aire</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <input
+                  <input id="manifiesto-filtros-aire"
                     ref={filtrosAireRef}
                     type="number"
                     min="0"
@@ -1218,9 +1299,9 @@ export default function ManifiestosPage() {
 
               {/* BASURA */}
               <div className="movil:col-span-2">
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Basura</label>
+                <label htmlFor="manifiesto-basura" className="block mb-2 text-[17px] font-bold text-simar-texto">Basura</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                  <input
+                  <input id="manifiesto-basura"
                     ref={basuraRef}
                     type="number"
                     min="0"
@@ -1240,8 +1321,8 @@ export default function ManifiestosPage() {
 
             {/* Observaciones (crece para que la tarjeta termine a la par de Firmas) */}
             <div className="mt-5 flex-1 flex flex-col movil:mt-3">
-              <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
-              <textarea
+              <label htmlFor="manifiesto-observaciones" className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
+              <textarea id="manifiesto-observaciones"
                 value={formData.observaciones}
                 onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                 onFocus={() => setActiveField('observaciones')}
@@ -1634,7 +1715,7 @@ export default function ManifiestosPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por número, buque, motorista, cocinero..."
+              placeholder="Buscar por número, embarcación, motorista o cocinero…"
               className="block w-full min-h-[56px] pl-11 pr-12 border-2 border-simar-campo-borde rounded-2xl bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
             />
             {searchQuery && (
@@ -1668,7 +1749,7 @@ export default function ManifiestosPage() {
                 : 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta'
                 }`}
             >
-              Por buque
+              Por embarcación
             </button>
             <button
               onClick={() => { setFiltroActivo('motorista'); setShowFiltroFecha(false); setFiltroSeleccionBuque(null); setFiltroSeleccionCocinero(null); }}
@@ -1730,13 +1811,13 @@ export default function ManifiestosPage() {
           {/* Selector de Buque */}
           {filtroActivo === 'buque' && (
             <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
-              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un buque</label>
-              <select
+              <label htmlFor="filtro-embarcacion" className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona una embarcación</label>
+              <select id="filtro-embarcacion"
                 value={filtroSeleccionBuque || ''}
                 onChange={(e) => setFiltroSeleccionBuque(e.target.value ? Number(e.target.value) : null)}
                 className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
               >
-                <option value="">-- Todos los buques --</option>
+                <option value="">Todas las embarcaciones</option>
                 {buques.map((buque) => (
                   <option key={buque.id} value={buque.id}>
                     {buque.nombre_buque}
@@ -1749,8 +1830,8 @@ export default function ManifiestosPage() {
           {/* Selector de Motorista */}
           {filtroActivo === 'motorista' && (
             <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
-              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un motorista</label>
-              <select
+              <label htmlFor="filtro-motorista" className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un motorista</label>
+              <select id="filtro-motorista"
                 value={filtroSeleccionMotorista || ''}
                 onChange={(e) => setFiltroSeleccionMotorista(e.target.value ? Number(e.target.value) : null)}
                 className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
@@ -1772,8 +1853,8 @@ export default function ManifiestosPage() {
           {/* Selector de Cocinero */}
           {filtroActivo === 'cocinero' && (
             <div className="p-4 bg-simar-papel rounded-2xl border border-simar-borde">
-              <label className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un cocinero</label>
-              <select
+              <label htmlFor="filtro-cocinero" className="block text-[17px] font-bold text-simar-texto mb-2">Selecciona un cocinero</label>
+              <select id="filtro-cocinero"
                 value={filtroSeleccionCocinero || ''}
                 onChange={(e) => setFiltroSeleccionCocinero(e.target.value ? Number(e.target.value) : null)}
                 className="w-full min-h-[56px] px-4 border-2 border-simar-campo-borde rounded-xl bg-simar-superficie text-lg text-simar-texto focus:outline-none focus:border-simar-marea-tinta"
@@ -1849,7 +1930,7 @@ export default function ManifiestosPage() {
                   <thead className="hidden sm:table-header-group">
                     <tr className="bg-simar-papel border-b border-simar-borde">
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Número</th>
-                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Buque</th>
+                      <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2">Embarcación</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden md:table-cell">Motorista</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden lg:table-cell">Cocinero</th>
                       <th className="px-4 md:px-5 py-3 text-left text-[15px] font-bold text-simar-texto-2 hidden sm:table-cell">Fecha</th>
@@ -1907,7 +1988,7 @@ export default function ManifiestosPage() {
                                 {buqueNombre}
                                 <span className="font-normal text-simar-texto-2">
                                   {' · '}
-                                  {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </span>
                               </p>
                               <p className="sm:hidden text-[15px] text-simar-texto-2 movil:text-[14px] movil:truncate">Motorista: {respPrincipal}</p>
@@ -1930,7 +2011,7 @@ export default function ManifiestosPage() {
                             </td>
                             <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell">
                               <span className="text-base text-simar-texto-2 whitespace-nowrap">
-                                {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                               </span>
                             </td>
                             <td className="block sm:table-cell px-4 pt-3 pb-4 sm:py-3.5 md:px-5 movil:absolute movil:top-[10px] movil:right-3 movil:p-0">
@@ -2051,7 +2132,7 @@ export default function ManifiestosPage() {
       {viewingManifiesto && (
         <div className="simar-velo fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
           <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8">
+            <div ref={visorRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Detalle del manifiesto" className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8 outline-none">
 
               {/* Botón de cierre flotante */}
               <div className="flex justify-end sticky top-0 z-10 pt-2 pr-2">
@@ -2096,7 +2177,7 @@ export default function ManifiestosPage() {
                   <div className="space-y-1">
                     <p className="text-[15px] font-bold text-simar-texto-2">Fecha de emisión</p>
                     <p className="text-simar-texto font-medium text-lg">
-                      {new Date(viewingManifiesto.fecha_emision + 'T12:00:00').toLocaleDateString('es-ES', {
+                      {new Date(viewingManifiesto.fecha_emision + 'T12:00:00').toLocaleDateString('es-MX', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
@@ -2106,7 +2187,7 @@ export default function ManifiestosPage() {
 
                   {/* Buque */}
                   <div className="space-y-1">
-                    <p className="text-[15px] font-bold text-simar-texto-2">Buque</p>
+                    <p className="text-[15px] font-bold text-simar-texto-2">Embarcación</p>
                     <p className="text-simar-texto font-medium text-lg">
                       {viewingManifiesto.buque?.nombre_buque || buques.find(b => b.id === viewingManifiesto.buque_id)?.nombre_buque || 'N/A'}
                     </p>
@@ -2240,7 +2321,7 @@ export default function ManifiestosPage() {
           />
 
           {/* Panel de firma */}
-          <div className="simar-ventana relative w-full max-w-2xl bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden">
+          <div ref={firmaRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Firma" className="simar-ventana relative w-full max-w-2xl bg-simar-superficie rounded-[28px] shadow-2xl overflow-hidden outline-none">
             {/* Header */}
             <div className="px-6 pt-6 pb-2 flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -2251,7 +2332,7 @@ export default function ManifiestosPage() {
                 </div>
                 <div>
                   <h3 className="text-[22px] font-extrabold text-simar-texto leading-tight">{getSignatureModalTitle()}</h3>
-                  <p className="text-simar-texto-2 text-[17px]">Dibuje su firma en el área de abajo</p>
+                  <p className="text-simar-texto-2 text-[17px]">Dibuja la firma en el recuadro de abajo</p>
                 </div>
               </div>
               <button

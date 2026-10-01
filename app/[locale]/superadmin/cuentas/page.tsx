@@ -147,7 +147,7 @@ export default function CuentasPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
-                                placeholder="Buscar por correo, nombre o asociación"
+                                placeholder="Buscar por correo, nombre o empresa"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
                                 aria-label="Buscar cuentas"
@@ -190,7 +190,7 @@ export default function CuentasPage() {
                                         <tr>
                                             <th className={thCls}>Usuario</th>
                                             <th className={thCls}>Rol</th>
-                                            <th className={thCls}>Asociación</th>
+                                            <th className={thCls}>Empresa</th>
                                             <th className={thCls}>Alta</th>
                                             <th className={thCls}>Último acceso</th>
                                             <th className={thCls}>Estado</th>
@@ -238,7 +238,7 @@ export default function CuentasPage() {
                                                     <td className={`${tdCls} text-right whitespace-nowrap movil:p-0 movil:col-span-2 movil:-mr-1.5`}>
                                                         <BotonIcono
                                                             icono={Pencil}
-                                                            etiqueta={esYo ? 'No puedes cambiar tu propio rol' : 'Cambiar rol o asociación'}
+                                                            etiqueta={esYo ? 'No puedes cambiar tu propio rol' : 'Cambiar rol o empresa'}
                                                             disabled={esYo}
                                                             onClick={() => setAccion({ tipo: 'editar', cuenta: c })}
                                                         />
@@ -447,7 +447,7 @@ function TablaInvitaciones({
                         <tr>
                             <th className={thCls}>Correo</th>
                             <th className={thCls}>Rol</th>
-                            <th className={thCls}>Asociación</th>
+                            <th className={thCls}>Empresa</th>
                             <th className={thCls}>Invitado</th>
                             <th className={`${thCls} text-right`}>Acciones</th>
                         </tr>
@@ -496,8 +496,8 @@ function SelectorAsociacion({
 }) {
     return (
         <Campo
-            label={opcional ? 'Asociación para el portal recolector' : 'Asociación'}
-            ayuda={opcional ? 'Opcional: con ella puede usar el portal a nombre de esa asociación.' : undefined}
+            label={opcional ? 'Empresa para el portal recolector' : 'Empresa'}
+            ayuda={opcional ? 'Opcional: con ella puede usar el portal a nombre de esa empresa.' : undefined}
         >
             <select
                 className={inputCls}
@@ -505,7 +505,7 @@ function SelectorAsociacion({
                 onChange={(e) => onChange(e.target.value ? Number(e.target.value) : null)}
                 required={!opcional}
             >
-                <option value="">{opcional ? 'Sin asociación' : 'Selecciona una asociación…'}</option>
+                <option value="">{opcional ? 'Sin empresa' : 'Selecciona una empresa…'}</option>
                 {asociaciones.map((a) => (
                     <option key={a.id} value={a.id}>
                         {a.nombre_asociacion}
@@ -534,7 +534,7 @@ function ModalEditarAcceso({
 
     const guardar = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (rol === 'recolector' && !asociacionId) return toast.error('Elige la asociación del recolector.');
+        if (rol === 'recolector' && !asociacionId) return toast.error('Elige la empresa del recolector.');
         setGuardando(true);
         try {
             await onGuardar(rol, asociacionId);
@@ -635,7 +635,7 @@ function ModalInvitar({
     const enviar = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return toast.error('El correo no es válido.');
-        if (rol === 'recolector' && !asociacionId) return toast.error('Elige la asociación del recolector.');
+        if (rol === 'recolector' && !asociacionId) return toast.error('Elige la empresa del recolector.');
         setEnviando(true);
         await onInvitar(email.trim(), rol, asociacionId);
         setEnviando(false);

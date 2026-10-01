@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTituloPestana } from '@/components/layout/useTituloPestana';
 import { usePathname } from 'next/navigation';
 import { ArrowLeft, LayoutGrid } from 'lucide-react';
 import { FondoSimar } from '@/components/layout/FondoSimar';
@@ -8,6 +9,7 @@ import { LogoSimar } from '@/components/layout/LogoSimar';
 
 /** Página "no encontrada" dentro de /es o /en, con el lenguaje de diseño SiMAR. */
 export default function PaginaNoEncontrada() {
+    useTituloPestana('Página no encontrada');
     const locale = usePathname().split('/')[1] || 'es';
 
     return (

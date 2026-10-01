@@ -69,7 +69,7 @@ const ActionCard = ({
   <Link
     href={href}
     style={{ animationDelay: delay }}
-    className={`simar-aparece simar-tarjeta-accion relative flex flex-row items-center gap-5 min-h-[112px] p-5 md:flex-col md:items-stretch md:gap-0 md:min-h-[250px] md:p-7 rounded-[28px] ${principal
+    className={`@container simar-aparece simar-tarjeta-accion relative flex flex-row items-center gap-5 min-h-[112px] p-5 md:flex-col md:items-stretch md:gap-0 md:min-h-[250px] md:p-7 rounded-[28px] ${principal
       ? 'bg-simar-marea text-white shadow-simar movil:col-span-2 movil:min-h-[108px] movil:gap-4 movil:p-4'
       : 'bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto movil:flex-col movil:items-start movil:gap-3 movil:min-h-[140px] movil:p-4'
       }`}
@@ -78,7 +78,8 @@ const ActionCard = ({
       <Icon className="w-[30px] h-[30px] md:w-[34px] md:h-[34px]" strokeWidth={2} />
     </span>
     <span className="flex-1 min-w-0 flex flex-col md:mt-auto md:pt-6">
-      <span className={`text-[26px] md:text-[32px] font-extrabold leading-tight ${principal ? 'movil:text-[22px]' : 'movil:text-[19px]'}`}>{title}</span>
+      {/* En tarjetas angostas (laptop con el menú abierto) el título se achica con la tarjeta: 32 px se salía ("Estadísticas") */}
+      <span className={`text-[26px] md:text-[length:min(32px,calc(100cqi/7.2))] font-extrabold leading-tight ${principal ? 'movil:text-[22px]' : 'movil:text-[19px]'}`}>{title}</span>
       <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2 movil:text-[14px] movil:leading-snug'}`}>{description}</span>
       {typeof dato === 'string' ? <span className={clasePastilla(principal)}>{dato}</span> : dato}
     </span>
@@ -227,7 +228,7 @@ function describirMovimiento(m: MovimientoReciente, base: string) {
         tono: 'bg-simar-marea-suave text-simar-marea-tinta',
         titulo: m.numero ? `Manifiesto ${m.numero}` : 'Manifiesto',
         detalle: m.embarcacion ?? 'Sin embarcación',
-        href: `${base}/manifiesto`,
+        href: `${base}/manifiesto?ver=${m.id}`,
       };
     case 'basuron':
       return {
@@ -235,7 +236,7 @@ function describirMovimiento(m: MovimientoReciente, base: string) {
         tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
         titulo: 'Recibo del basurón',
         detalle: [`${formatCantidad(m.kg)} kg`, m.deQuien].filter(Boolean).join(' · '),
-        href: `${base}/manifiesto-basuron`,
+        href: `${base}/manifiesto-basuron?ver=${m.id}`,
       };
     case 'recoleccion':
       return {
@@ -351,20 +352,18 @@ export function PanelInicio({
 
       {/* Encabezado: marca SiMAR + saludo del momento y lo que va del día */}
       <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9 movil:p-4 movil:gap-2.5">
-        {/* En celular el logo ya está en el encabezado: aquí sólo va el saludo */}
-        <div className="flex items-center gap-4 flex-shrink-0 movil:hidden">
-          {/* En celular la marca es más chica: el saludo es lo importante */}
-          <LogoSimar variante="simbolo" tamano={64} className="md:hidden" />
-          <LogoSimar variante="simbolo" tamano={92} className="hidden md:inline-flex" />
+        {/* La marca grande sólo con espacio (≥ 1280 px): en pantallas menores ya está en el menú o en la
+            píldora de arriba, y le quitaba lugar al saludo ("Buenas / noches" en dos renglones) */}
+        <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
+          <LogoSimar variante="simbolo" tamano={92} />
           <div>
-            <LogoSimar variante="nombre" tamano={60} className="md:hidden" />
-            <LogoSimar variante="nombre" tamano={80} className="hidden md:inline-flex" />
-            <p className="mt-2 md:mt-2.5 text-[15px] md:text-[17px] leading-snug text-simar-texto-2 max-w-[240px]">
+            <LogoSimar variante="nombre" tamano={80} />
+            <p className="mt-2.5 text-[17px] leading-snug text-simar-texto-2 max-w-[240px]">
               Sistema Integral de Manejo Ambiental de Residuos
             </p>
           </div>
         </div>
-        <div aria-hidden="true" className="hidden md:block w-px self-stretch bg-simar-borde" />
+        <div aria-hidden="true" className="hidden xl:block w-px self-stretch bg-simar-borde" />
         <div className="min-w-0">
           <p className="text-[17px] md:text-[19px] font-semibold text-simar-texto-2 movil:text-[14px]">{fechaHoyPuerto()}</p>
           <h1 className="mt-0.5 text-3xl md:text-[38px] font-extrabold leading-tight tracking-tight text-simar-texto">
@@ -436,7 +435,7 @@ export function PanelInicio({
         <ActionCard
           title="Estadísticas"
           Icon={BarChart3}
-          description="Ver reportes y KPI"
+          description="Cifras y reportes"
           dato={resumen ? `${formatCantidad(resumen.manifiestosMes)} ${plural(resumen.manifiestosMes, 'manifiesto', 'manifiestos')} en 30 días` : undefined}
           href={`${base}/estadisticas`}
           tono="bg-simar-violeta-suave text-simar-violeta"
@@ -447,7 +446,7 @@ export function PanelInicio({
       {/* Un vistazo: lo último registrado y lo que hay en el acopio. En celular va al final, después
           de "Otras secciones", para que lo de arriba siga cabiendo en una pantalla */}
       {vistazo && (
-        <div className="mt-5 md:mt-7 grid grid-cols-1 md:grid-cols-[1.35fr_1fr] gap-4 md:gap-6 movil:order-1 movil:mt-5 movil:gap-3">
+        <div className="mt-5 md:mt-7 grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-4 md:gap-6 movil:order-1 movil:mt-5 movil:gap-3">
           <LoUltimo recientes={vistazo.recientes} base={base} />
           <Acopio acopio={vistazo.acopio} base={base} />
         </div>
@@ -462,7 +461,7 @@ export function PanelInicio({
           <OtraSeccion
             href={`${base}/asociaciones`}
             Icon={Building2}
-            label="Asociaciones"
+            label="Empresas"
             dato={conteos && `${conteos.asociacionesActivas} ${plural(conteos.asociacionesActivas, 'activa', 'activas')}`}
           />
         </div>

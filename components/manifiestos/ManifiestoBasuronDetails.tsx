@@ -1,6 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import { ManifiestoBasuronConRelaciones } from '@/types/database';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
+import { formatCantidad } from '@/lib/constants/residuos';
 import { parseFechaLocal } from '@/lib/utils/fechas';
 
 interface ManifiestoBasuronDetailsProps {
@@ -10,12 +13,15 @@ interface ManifiestoBasuronDetailsProps {
 }
 
 export function ManifiestoBasuronDetails({ isOpen, onClose, manifiesto }: ManifiestoBasuronDetailsProps) {
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+    const panelRef = useRef<HTMLDivElement>(null);
+    useVentanaAccesible(panelRef, isOpen && !!manifiesto, { alEscape: onClose });
     if (!isOpen || !manifiesto) return null;
 
     return (
         <div className="simar-velo fixed inset-0 z-50 overflow-y-auto bg-[rgba(11,34,54,0.72)] backdrop-blur-sm">
             <div className="flex min-h-screen items-center justify-center p-4">
-                <div className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8">
+                <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Detalle del recibo del basurón" className="simar-ventana relative w-full max-w-5xl flex flex-col gap-6 my-8 outline-none">
 
                     {/* Botón de cierre pegajoso o flotante */}
                     <div className="flex justify-end sticky top-0 z-10 pt-2 pr-2">
@@ -42,7 +48,7 @@ export function ManifiestoBasuronDetails({ isOpen, onClose, manifiesto }: Manifi
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="space-y-1">
                                 <p className="text-[15px] font-bold text-simar-texto-2">Fecha</p>
-                                <p className="text-lg text-simar-texto font-medium">{parseFechaLocal(manifiesto.fecha).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
+                                <p className="text-lg text-simar-texto font-medium">{parseFechaLocal(manifiesto.fecha).toLocaleDateString('es-MX', { dateStyle: 'long' })}</p>
                             </div>
                             <div className="space-y-1">
                                 <p className="text-[15px] font-bold text-simar-texto-2">Horario</p>
@@ -74,7 +80,7 @@ export function ManifiestoBasuronDetails({ isOpen, onClose, manifiesto }: Manifi
                             <div className="space-y-1 md:col-span-3 lg:col-span-3">
                                 <div className="bg-simar-marea-suave p-4 rounded-[22px] text-center">
                                     <p className="text-[17px] font-bold text-simar-texto mb-1">Total depositado</p>
-                                    <p className="text-3xl font-extrabold text-simar-marea-tinta">{Number(manifiesto.total_depositado || 0).toFixed(2)} kg</p>
+                                    <p className="text-3xl font-extrabold text-simar-marea-tinta">{formatCantidad(Number(manifiesto.total_depositado || 0))} kg</p>
                                 </div>
                             </div>
                             {manifiesto.observaciones && (

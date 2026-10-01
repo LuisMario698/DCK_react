@@ -29,17 +29,6 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
 
-  // Exponer métodos al componente padre
-  useImperativeHandle(ref, () => ({
-    clear: () => {
-      clearCanvas();
-    },
-    isEmpty: () => !hasSignature,
-    toDataURL: () => {
-      return canvasRef.current?.toDataURL('image/png') || '';
-    }
-  }));
-
   // Inicializar canvas
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -124,6 +113,17 @@ const SignaturePad = forwardRef<SignaturePadRef, SignaturePadProps>(({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
   };
+
+  // Exponer métodos al componente padre (después de clearCanvas, que usa)
+  useImperativeHandle(ref, () => ({
+    clear: () => {
+      clearCanvas();
+    },
+    isEmpty: () => !hasSignature,
+    toDataURL: () => {
+      return canvasRef.current?.toDataURL('image/png') || '';
+    }
+  }));
 
   // Guardar firma
   const handleSave = () => {

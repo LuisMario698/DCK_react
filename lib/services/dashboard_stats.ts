@@ -1,5 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ReportFilters, ReporteDetalladoItem } from '@/types/dashboard';
+import { hoyPuerto } from '@/lib/utils/fechas';
+import { traerTodas } from '@/lib/supabase/paginar';
 
 // ── Estadísticas por período (pantalla Estadísticas del recinto) ─────────────
 //
@@ -109,7 +111,12 @@ function lunesDe(texto: string): string {
 }
 
 /** Rango del período actual y del anterior (mismo largo, justo antes) */
-export function rangoEstadisticas(periodo: PeriodoEstadisticas, hoy = new Date()) {
+/**
+ * `hoy` es el día de Puerto Peñasco: en el servidor (Vercel, en UTC) después de las 5 pm ya era
+ * mañana, y el período inicial que calculaba el servidor no coincidía con el que calculaba el
+ * navegador al cambiar de período.
+ */
+export function rangoEstadisticas(periodo: PeriodoEstadisticas, hoy = fechaLocal(hoyPuerto())) {
     const fin = fechaTexto(hoy);
     if (periodo === 'todo') return { inicio: null, fin, anterior: null, granularidad: 'anio' as Granularidad };
     if (periodo === 'anio') {
@@ -127,21 +134,6 @@ export function rangoEstadisticas(periodo: PeriodoEstadisticas, hoy = new Date()
         anterior: { inicio: sumarDias(finAnterior, -(dias - 1)), fin: finAnterior },
         granularidad: (periodo === 'semana' ? 'dia' : 'semana') as Granularidad,
     };
-}
-
-/**
- * Trae todas las filas de una consulta, de 1,000 en 1,000. Supabase corta cada respuesta en
- * 1,000 filas aunque se pida un `limit` mayor; con el histórico completo eso dejaba fuera datos.
- */
-async function traerTodas(pagina: (desde: number, hasta: number) => PromiseLike<{ data: unknown[] | null; error: unknown }>): Promise<unknown[]> {
-    const TAMANO = 1000;
-    const filas: unknown[] = [];
-    for (let desde = 0; ; desde += TAMANO) {
-        const { data, error } = await pagina(desde, desde + TAMANO - 1);
-        if (error) throw error;
-        filas.push(...(data ?? []));
-        if (!data || data.length < TAMANO) return filas;
-    }
 }
 
 interface FilaManifiesto {
@@ -363,7 +355,7 @@ export async function getEmbarcacionesSinEntregar(supabase: SupabaseClient, dias
         const previa = ultima.get(m.buque_id);
         if (!previa || m.fecha_emision > previa) ultima.set(m.buque_id, m.fecha_emision);
     }
-    const hoy = fechaLocal(fechaTexto(new Date())).getTime();
+    const hoy = fechaLocal(hoyPuerto()).getTime();
     const lista: EmbarcacionSinEntregar[] = (activas.data ?? []).map((b) => {
         const u = ultima.get(b.id) ?? null;
         return {
@@ -463,7 +455,9 @@ export async function getReporteComplejo(supabase: SupabaseClient, filters: Repo
         throw error;
     }
 
-    return (data || []).map((item: any) => ({
+    // Filas de la función get_reporte_detallado (en snake_case)
+    type FilaReporte = { fecha: string; folio: string; buque: string; tipo_residuo: string; cantidad: number | string; unidad: string; estado: string; responsable: string | null };
+    return ((data || []) as FilaReporte[]).map((item) => ({
         fecha: item.fecha,
         folio: item.folio,
         buque: item.buque,

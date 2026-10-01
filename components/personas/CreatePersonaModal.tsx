@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { usePresencia } from '@/components/ui/movimiento';
 import { createPersona, updatePersona } from '@/lib/services/personas';
@@ -80,7 +82,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
     e.preventDefault();
 
     if (!formData.tipo_persona_id) {
-      alert(t('seleccioneTipo'));
+      toast.error(t('seleccioneTipo'));
       return;
     }
 
@@ -98,7 +100,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
           info_contacto: formData.info_contacto,
           registro_completo: isRegistroCompleto
         });
-        alert(tm('personaEditada'));
+        toast.success(tm('personaEditada'));
       } else {
         // Crear nueva persona
         await createPersona({
@@ -107,7 +109,7 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
           info_contacto: formData.info_contacto,
           registro_completo: isRegistroCompleto,
         });
-        alert(tm('personaCreada'));
+        toast.success(tm('personaCreada'));
       }
 
       resetForm();
@@ -115,19 +117,22 @@ export function CreatePersonaModal({ isOpen, onClose, onCreate, personaToEdit }:
       onClose();
     } catch (error) {
       console.error('Error guardando persona:', error);
-      alert(personaToEdit ? tm('errorEditar') : tm('errorCrear'));
+      toast.error(personaToEdit ? tm('errorEditar') : tm('errorCrear'));
     } finally {
       setLoading(false);
     }
   };
 
   // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+  // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+  const panelRef = useRef<HTMLDivElement>(null);
+  useVentanaAccesible(panelRef, isOpen, { alEscape: () => !loading && onClose() });
   const { montado, saliendo } = usePresencia(isOpen);
   if (!montado) return null;
 
   return (
     <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4`}>
-      <div className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] p-7 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl`}>
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={personaToEdit ? t('tituloEditar') : t('tituloCrear')} className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] p-7 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl outline-none`}>
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-[22px] font-extrabold leading-tight text-simar-texto">
             {personaToEdit ? t('tituloEditar') : t('tituloCrear')}

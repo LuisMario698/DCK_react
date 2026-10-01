@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { confirmar } from '@/components/ui/Confirmar';
 import {
     Mail, Phone, MapPin, Globe, Building2, MessageSquare, CheckCircle2, Search, Plus, Pencil,
     Truck, UserPlus, Users, Trash2, Clock, UserX, Package,
@@ -77,7 +78,7 @@ export function EmpresasTab({
             setRecolecciones(rec);
             setError(null);
         } catch (err) {
-            setError(mensajeError(err, 'No se pudieron cargar las asociaciones.'));
+            setError(mensajeError(err, 'No se pudieron cargar las empresas.'));
         } finally {
             setCargando(false);
         }
@@ -114,7 +115,7 @@ export function EmpresasTab({
         setSeleccionada(asociacion);
     };
 
-    if (cargando) return <Cargando texto="Cargando asociaciones…" />;
+    if (cargando) return <Cargando texto="Cargando empresas…" />;
 
     return (
         <div className="space-y-6">
@@ -124,7 +125,7 @@ export function EmpresasTab({
                 <div className="flex items-center justify-between gap-3 flex-wrap mb-5 movil:mb-3">
                     {/* En celular el título ya está arriba de la pantalla: sólo buscador y filtro */}
                     <div className="movil:hidden">
-                        <h3 className="text-lg font-bold text-simar-texto">Asociaciones recolectoras</h3>
+                        <h3 className="text-lg font-bold text-simar-texto">Empresas recolectoras</h3>
                         <p className="text-base text-simar-texto-2 mt-0.5">
                             Registra empresas, vincula a sus usuarios y controla su estado.
                         </p>
@@ -258,8 +259,8 @@ export function EmpresasTab({
                             </div>
                             <p className="text-base text-simar-texto-2">
                                 {asociaciones.length === 0
-                                    ? 'Aún no hay asociaciones registradas.'
-                                    : 'No se encontraron asociaciones con ese criterio.'}
+                                    ? 'Aún no hay empresas registradas.'
+                                    : 'No se encontraron empresas con ese criterio.'}
                             </p>
                         </div>
                     </div>
@@ -288,7 +289,7 @@ export function EmpresasTab({
             )}
 
             {/* Celular: "Nueva asociación" flota encima de la barra de navegación */}
-            <BotonFlotante icono={Plus} etiqueta="Nueva asociación" onClick={() => setFormulario('nueva')} />
+            <BotonFlotante icono={Plus} etiqueta="Nueva empresa" onClick={() => setFormulario('nueva')} />
 
             {formulario && (
                 <FormularioModal
@@ -358,7 +359,8 @@ function PerfilModal({
     };
 
     const quitarAcceso = async (u: Perfil) => {
-        if (!confirm(`¿Quitar el acceso de ${u.email}? Su cuenta quedará pendiente de aprobación.`)) return;
+        const ok = await confirmar({ titulo: `¿Quitar el acceso de ${u.email}?`, mensaje: 'Su cuenta quedará pendiente de aprobación.', accion: 'Quitar acceso', peligro: true });
+        if (!ok) return;
         try {
             await revocarAcceso(u.id);
             toast.success('Acceso revocado');
@@ -380,7 +382,7 @@ function PerfilModal({
     const cambiarEstado = async (estado: Estado) => {
         try {
             const actualizada = await updateAsociacion(empresa.id, { estado });
-            toast.success(`Asociación marcada como ${estado.toLowerCase()}`);
+            toast.success(`Empresa marcada como ${estado.toLowerCase()}`);
             onCambio(actualizada);
         } catch (err) {
             toast.error(mensajeError(err));
@@ -389,12 +391,13 @@ function PerfilModal({
 
     const eliminar = async () => {
         if (metricas?.recolecciones) {
-            return toast.error('La asociación tiene recolecciones registradas; suspéndela o márcala inactiva en lugar de eliminarla.');
+            return toast.error('La empresa tiene recolecciones registradas; suspéndela o márcala inactiva en lugar de eliminarla.');
         }
-        if (!confirm(`¿Eliminar ${empresa.nombre_asociacion}? También se borrarán sus solicitudes y mensajes.`)) return;
+        const ok = await confirmar({ titulo: `¿Eliminar ${empresa.nombre_asociacion}?`, mensaje: 'También se borrarán sus solicitudes y mensajes. No se puede deshacer.', accion: 'Eliminar', peligro: true });
+        if (!ok) return;
         try {
             await deleteAsociacion(empresa.id);
-            toast.success('Asociación eliminada');
+            toast.success('Empresa eliminada');
             onCambio(null);
             onClose();
         } catch (err) {
@@ -597,7 +600,7 @@ function FormularioModal({
         setGuardando(true);
         try {
             const guardada = inicial ? await updateAsociacion(inicial.id, payload) : await createAsociacion(payload);
-            toast.success(inicial ? 'Asociación actualizada' : 'Asociación registrada');
+            toast.success(inicial ? 'Empresa actualizada' : 'Empresa registrada');
             onGuardado(guardada);
         } catch (err) {
             toast.error(mensajeError(err));
@@ -606,7 +609,7 @@ function FormularioModal({
     };
 
     return (
-        <Modal titulo={inicial ? 'Editar asociación' : 'Nueva asociación recolectora'} onClose={onClose} ancho="max-w-2xl">
+        <Modal titulo={inicial ? 'Editar empresa' : 'Nueva empresa recolectora'} onClose={onClose} ancho="max-w-2xl">
             <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Campo label="Nombre o razón social *" className="sm:col-span-2">
@@ -682,7 +685,7 @@ function FormularioModal({
                 <div className="grid grid-cols-2 gap-3 pt-1">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
                     <BotonPrimario onClick={guardar} cargando={guardando}>
-                        {inicial ? 'Guardar cambios' : 'Registrar asociación'}
+                        {inicial ? 'Guardar cambios' : 'Registrar empresa'}
                     </BotonPrimario>
                 </div>
             </div>

@@ -34,6 +34,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
   // el menú de celular (isOpen) siempre empieza cerrado, para no tapar la pantalla al volver.
   useEffect(() => {
     const savedCollapsed = localStorage.getItem('sidebarCollapsed');
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage sólo existe en el navegador
     if (savedCollapsed !== null) setIsCollapsed(savedCollapsed === 'true');
     setMounted(true);
   }, []);

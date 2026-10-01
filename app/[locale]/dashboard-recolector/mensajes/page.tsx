@@ -27,7 +27,7 @@ export default function MensajesPage() {
 
     if (cargando) return <Cargando />;
     if (!asociacion) {
-        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una asociación.</p>;
+        return <p className="text-base text-simar-texto-2">Tu usuario no está vinculado a una empresa.</p>;
     }
 
     return (

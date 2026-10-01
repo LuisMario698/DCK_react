@@ -6,11 +6,11 @@
       "personas": "People",
       "embarcaciones": "Vessels",
       "manifiesto": "Manifest",
-      "manifiestoBasuron": "Sanitary Landfill Receipt"
+      "manifiestoBasuron": "Landfill"
     },
     "externos": {
       "titulo": "External Management",
-      "asociaciones": "Collection Associations"
+      "asociaciones": "Collection companies"
     },
     "version": "CIAD System v1.0"
   },
@@ -21,7 +21,7 @@
       "totalManifiestos": "Total Manifests",
       "totalBuques": "Total Vessels",
       "totalPersonas": "Total People",
-      "totalAsociaciones": "Total Associations"
+      "totalAsociaciones": "Total companies"
     },
     "actividad": {
       "titulo": "Recent Activity",
@@ -32,7 +32,7 @@
       "nuevoManifiesto": "New Manifest",
       "nuevoBuque": "New Vessel",
       "nuevaPersona": "New Person",
-      "nuevaAsociacion": "New Association"
+      "nuevaAsociacion": "New company"
     }
   },
   "Personas": {

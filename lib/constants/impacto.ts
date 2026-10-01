@@ -21,14 +21,19 @@ export const CO2E_EVITADO_POR_UNIDAD: Record<TipoResiduo, number> = {
 /** Absorción anual aproximada de CO₂ de un árbol adulto, en kg. */
 export const KG_CO2_POR_ARBOL_ANIO = 21;
 
-// Estimaciones de la pantalla Estadísticas del recinto (también ⚠️ PROVISIONALES). Son las que
-// ya usaba esa pantalla; ojo: el aceite no coincide con CO2E_EVITADO_POR_UNIDAD.aceite del
-// portal recolector (1.0). Validar y unificar con el asesor externo.
-/** kg de CO₂ evitados por litro de aceite usado recolectado (recinto). */
-export const RECINTO_CO2_POR_LITRO_ACEITE = 2.5;
+// Estimaciones del recinto: Estadísticas, su PDF y la landing (también ⚠️ PROVISIONALES; las
+// cuentas están en lib/utils/equivalencias.ts). El aceite usa el mismo factor que el portal
+// recolector: antes Estadísticas decía 2.5 y el portal 1.0, y se unificó en 1.0, el más
+// conservador, mientras lo valida el asesor externo (decisión del 2026-09-30).
+/** kg de CO₂ evitados por litro de aceite usado recolectado (recinto): el mismo que el portal. */
+export const RECINTO_CO2_POR_LITRO_ACEITE = CO2E_EVITADO_POR_UNIDAD.aceite;
 /** kg de CO₂ evitados por kg llevado al relleno sanitario (basurón). */
 export const RECINTO_CO2_POR_KG_BASURON = 0.5;
-/** Litros de agua que no se contaminan por cada litro de aceite recolectado. */
+/**
+ * Litros de agua que no se contaminan por cada litro de aceite recolectado. 1,000 L es la cifra
+ * conservadora y la más citada en México; la landing decía 1,000,000 (un caso extremo) y se
+ * unificó con ésta (decisión del 2026-09-30).
+ */
 export const LITROS_AGUA_POR_LITRO_ACEITE = 1000;
 
 // Tamaños para las equivalencias ("esto equivale a…"): cosas conocidas, no factores de impacto.

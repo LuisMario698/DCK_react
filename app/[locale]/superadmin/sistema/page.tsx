@@ -262,7 +262,7 @@ function TarjetaSuscripciones({
     };
 
     return (
-        <Tarjeta titulo="Reglas de suscripción" subtitulo="Qué pasa cuando una asociación no está al corriente">
+        <Tarjeta titulo="Reglas de suscripción" subtitulo="Qué pasa cuando una empresa no está al corriente">
             <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3 rounded-xl px-4 py-3 bg-simar-papel">
                     <span className="flex items-center gap-2 text-base font-semibold text-simar-texto">
@@ -273,12 +273,12 @@ function TarjetaSuscripciones({
                 </div>
                 <p className="text-[15px] text-simar-texto-2">
                     {obligatorias
-                        ? 'Una asociación sin suscripción en prueba o activa (sin vencer) no puede crear solicitudes de recolección.'
-                        : 'Las suscripciones son informativas: ninguna asociación se bloquea por no pagar.'}
+                        ? 'Una empresa sin suscripción en prueba o activa (sin vencer) no puede crear solicitudes de recolección.'
+                        : 'Las suscripciones son informativas: ninguna empresa se bloquea por no pagar.'}
                 </p>
                 {obligatorias && bloqueadas.length > 0 && (
                     <p className="rounded-lg bg-simar-coral-suave border border-simar-coral/30 px-3 py-2 text-[15px] text-simar-coral">
-                        {bloqueadas.length} asociación(es) activa(s) quedarían bloqueadas:{' '}
+                        {bloqueadas.length} empresa(s) activa(s) quedarían bloqueadas:{' '}
                         {bloqueadas
                             .slice(0, 4)
                             .map((a) => a.nombre_asociacion)

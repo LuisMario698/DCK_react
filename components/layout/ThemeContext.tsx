@@ -33,6 +33,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- el tema guardado sólo existe en el navegador
         setMounted(true);
         // Recuperar tema guardado
         try {

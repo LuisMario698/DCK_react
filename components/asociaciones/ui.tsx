@@ -4,6 +4,7 @@
 // portal recolector).
 
 import { useEffect, useRef, useState } from 'react';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { Ban, CheckCircle2, Clock, Loader2, Package, Truck, X, XCircle } from 'lucide-react';
 import {
     ESTADO_SOLICITUD_LABEL,
@@ -72,26 +73,25 @@ export function Modal({
         espera.current = setTimeout(onClose, reducir ? 0 : 180);
     };
     const cerrarRef = useRef(cerrar);
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+    const panelRef = useRef<HTMLDivElement>(null);
+    useVentanaAccesible(panelRef, true, { alEscape: () => cerrarRef.current() });
     useEffect(() => {
         cerrarRef.current = cerrar;
     });
-
-    useEffect(() => {
-        const onKey = (e: KeyboardEvent) => e.key === 'Escape' && cerrarRef.current();
-        document.addEventListener('keydown', onKey);
-        return () => document.removeEventListener('keydown', onKey);
-    }, []);
 
     return (
         <div
             className={`${cerrando ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]`}
             onClick={cerrar}
-            role="dialog"
-            aria-modal="true"
-            aria-label={titulo}
         >
             <div
-                className={`${cerrando ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-simar-borde`}
+                ref={panelRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label={titulo}
+                tabIndex={-1}
+                className={`${cerrando ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full ${ancho} max-h-[92vh] flex flex-col border border-simar-borde outline-none`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between gap-4 px-7 pt-7 pb-5">
@@ -273,7 +273,7 @@ export function ErrorCarga({ mensaje, onReintentar }: { mensaje: string; onReint
 export function mensajeError(err: unknown, porDefecto = 'Ocurrió un error. Inténtalo de nuevo.'): string {
     if (err && typeof err === 'object' && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
         const msg = (err as { message: string }).message;
-        if (msg.includes('duplicate key') && msg.includes('nombre_asociacion')) return 'Ya existe una asociación con ese nombre.';
+        if (msg.includes('duplicate key') && msg.includes('nombre_asociacion')) return 'Ya existe una empresa con ese nombre.';
         if (msg.includes('duplicate key') && msg.includes('tipo')) return 'Ese residuo ya está en el inventario; edítalo en lugar de crearlo.';
         if (msg.includes('row-level security')) return 'No tienes permiso para realizar esta acción.';
         return msg;

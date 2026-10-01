@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { hoyLocal } from '@/lib/utils/fechas';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createBuque, updateBuque } from '@/lib/services/buques';
@@ -15,6 +18,9 @@ interface Props {
 }
 
 export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props) {
+  // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+  const panelRef = useRef<HTMLDivElement>(null);
+  useVentanaAccesible(panelRef, true, { alEscape: () => !loading && onClose() });
   const t = useTranslations('Embarcaciones.modal');
   const tm = useTranslations('Embarcaciones.mensajes');
 
@@ -55,15 +61,16 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
 
       if (buqueToEdit) {
         await updateBuque(buqueToEdit.id, buqueData);
-        alert(tm('embarcacionEditada'));
+        toast.success(tm('embarcacionEditada'));
       } else {
         try {
           await createBuque(buqueData);
-          alert(tm('embarcacionCreada'));
-        } catch (err: any) {
+          toast.success(tm('embarcacionCreada'));
+        } catch (causa) {
+          const err = detalleDe(causa);
           // Capturar error de índice único (código Postgres 23505)
           if (err.code === '23505' || err.message?.includes('unique') || err.details?.includes('already exists')) {
-            alert('Error: Ya existe una embarcación con este nombre.');
+            toast.error('Ya existe una embarcación con este nombre.');
             setLoading(false);
             return;
           }
@@ -77,7 +84,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
       setFechaRegistro(hoyLocal());
     } catch (error) {
       console.error('Error guardando buque:', error);
-      alert(buqueToEdit ? tm('errorEditar') : tm('errorCrear'));
+      toast.error(buqueToEdit ? tm('errorEditar') : tm('errorCrear'));
     } finally {
       setLoading(false);
     }
@@ -85,7 +92,7 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
 
   return (
     <div className="simar-velo fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(11,34,54,0.55)]">
-      <div role="dialog" aria-modal="true" className="simar-ventana w-full max-w-lg bg-simar-superficie rounded-[28px] shadow-2xl p-7">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={buqueToEdit ? t('tituloEditar') : t('tituloCrear')} className="simar-ventana w-full max-w-lg bg-simar-superficie rounded-[28px] shadow-2xl p-7 outline-none">
         <div className="flex items-center justify-between gap-4 mb-6">
           <h3 className="text-[22px] font-extrabold leading-tight text-simar-texto">
             {buqueToEdit ? t('tituloEditar') : t('tituloCrear')}
@@ -95,8 +102,8 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="text-[17px] font-bold text-simar-texto mb-2 block">{t('nombreBuque')} *</label>
-            <input
+            <label htmlFor="create-embarcacion-modal-1" className="text-[17px] font-bold text-simar-texto mb-2 block">{t('nombreBuque')} *</label>
+            <input id="create-embarcacion-modal-1"
               required
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
@@ -107,8 +114,8 @@ export function CreateEmbarcacionModal({ onCreate, onClose, buqueToEdit }: Props
 
             {buqueToEdit && (
               <div className="mt-4">
-                <label className="text-[17px] font-bold text-simar-texto mb-2 block">Estado</label>
-                <select
+                <label htmlFor="create-embarcacion-modal-2" className="text-[17px] font-bold text-simar-texto mb-2 block">Estado</label>
+                <select id="create-embarcacion-modal-2"
                   value={estado}
                   onChange={(e) => setEstado(e.target.value as 'Activo' | 'Inactivo')}
                   className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"

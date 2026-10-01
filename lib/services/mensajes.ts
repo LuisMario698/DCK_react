@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Mensaje } from '@/types/database'
 
 /** Mensajes de una conversación (una por asociación), del más antiguo al más nuevo. */
@@ -28,12 +29,15 @@ export interface ResumenConversacion {
 export async function getResumenConversaciones(): Promise<ResumenConversacion[]> {
   const supabase = createClient()
 
-  const { data, error } = await supabase
-    .from('mensajes')
-    .select('*')
-    .order('created_at', { ascending: true })
-
-  if (error) throw error
+  // Todos, por páginas de 1,000: con más mensajes, el último y los no leídos salían mal
+  const data = await traerTodas((desde, hasta) =>
+    supabase
+      .from('mensajes')
+      .select('*')
+      .order('created_at', { ascending: true })
+      .order('id', { ascending: true })
+      .range(desde, hasta)
+  )
 
   const porAsociacion = new Map<number, ResumenConversacion>()
   for (const m of data as Mensaje[]) {

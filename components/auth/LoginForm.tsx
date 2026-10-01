@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
@@ -124,7 +125,8 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 }
             }
 
-        } catch (err: any) {
+        } catch (causa) {
+            const err = detalleDe(causa);
             const msg: string = err?.message ?? '';
 
             if (msg === 'User already registered') {
@@ -159,7 +161,8 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
             const { error } = await supabase.auth.resend({ type: 'signup', email });
             if (error) throw error;
             setMessage('Código reenviado. Revisa tu bandeja y la carpeta de spam.');
-        } catch (err: any) {
+        } catch (causa) {
+            const err = detalleDe(causa);
             setError(err?.message || 'No se pudo reenviar el código.');
         } finally {
             setLoading(false);
@@ -218,7 +221,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 {view === 'register' && (
                     <p className="text-base text-simar-texto-2 leading-relaxed">
                         El acceso se habilita cuando el administrador del centro de acopio vincula tu correo a tu
-                        asociación. Si te registras con otro correo, tu cuenta quedará pendiente de aprobación.
+                        empresa. Si te registras con otro correo, tu cuenta quedará pendiente de aprobación.
                     </p>
                 )}
 

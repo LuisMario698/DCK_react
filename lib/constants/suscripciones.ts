@@ -1,3 +1,4 @@
+import { hoyPuerto } from '@/lib/utils/fechas';
 // Catálogo del módulo de suscripciones (panel de superadmin).
 // Debe coincidir con los CHECK de supabase/migrations/20260925000005_panel_superadmin.sql.
 // Todos los importes son en MXN.
@@ -38,10 +39,8 @@ export const METODO_PAGO_LABEL: Record<MetodoPago, string> = {
     otro: 'Otro',
 };
 
-/** Fecha de hoy en Puerto Peñasco (UTC-7), como `public.hoy_local()` (no la zona del navegador). */
-export function hoyPuerto(): string {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Hermosillo' }).format(new Date());
-}
+// hoyPuerto vive en lib/utils/fechas.ts; se re-exporta para las pantallas que ya lo importan de aquí
+export { hoyPuerto };
 
 /** Igual que `public.estado_efectivo_suscripcion()`: prueba/activa con fecha pasada = vencida. */
 export function estadoEfectivo(estado: EstadoSuscripcion, venceEl: string | null): EstadoSuscripcion {

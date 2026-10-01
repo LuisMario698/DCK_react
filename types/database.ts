@@ -90,7 +90,8 @@ export interface ManifiestoBasuron {
   peso_entrada: number;
   peso_salida: number | null;
   total_depositado: number | null;
-  buque_id: number;
+  /** Opcional: el recibo del basurón puede no ser de una embarcación */
+  buque_id: number | null;
   observaciones: string | null;
   created_at: string | null;
   updated_at: string | null;

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { EmbarcacionesTable } from '@/components/embarcaciones/EmbarcacionesTable';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { Button } from '@/components/ui/Button';
@@ -41,7 +43,7 @@ export default function EmbarcacionesPage() {
       setBuques(data);
     } catch (error) {
       console.error('Error cargando buques:', error);
-      alert('Error al cargar los buques');
+      toast.error('No se pudieron cargar las embarcaciones. Revisa tu conexión.');
     } finally {
       setLoading(false);
     }
@@ -86,13 +88,14 @@ export default function EmbarcacionesPage() {
       await loadBuques();
       setDeleteModalOpen(false);
       setBuqueToDelete(null);
-    } catch (error: any) {
+    } catch (causa) {
+      const error = detalleDe(causa);
       console.error('❌ Error eliminando buque:', error);
       setDeleteModalOpen(false);
       if (error?.code === '23503' || error?.message?.includes('violates foreign key constraint') || error?.details?.includes('is still referenced')) {
-        alert('No se puede eliminar porque esta embarcación tiene manifiestos o registros asociados.\n\nSugerencia: Edítala y cambia su estado a "Inactivo".');
+        toast.error('No se puede eliminar: esta embarcación tiene manifiestos registrados. Si ya no opera, edítala y márcala como inactiva.', { duration: 10000 });
       } else {
-        alert(t('mensajes.errorEliminar'));
+        toast.error(t('mensajes.errorEliminar'));
       }
     } finally {
       setIsDeleting(false);
@@ -141,7 +144,7 @@ export default function EmbarcacionesPage() {
 
       {/* Conteos (en celular, los tres en una fila con tarjetas apiladas) */}
       <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:gap-2" style={{ animationDelay: '0.06s' }}>
-        <TarjetaDato apilada etiqueta="Total de buques" valor={estadisticas.total} icono={Ship} />
+        <TarjetaDato apilada etiqueta="Total de embarcaciones" valor={estadisticas.total} icono={Ship} />
         <TarjetaDato apilada etiqueta="Activos" valor={estadisticas.activos} icono={CheckCircle2} tono="arrecife" />
         <TarjetaDato apilada etiqueta="Inactivos" valor={estadisticas.inactivos} icono={Ban} tono="neutro" />
       </div>

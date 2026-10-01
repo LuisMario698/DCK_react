@@ -81,9 +81,9 @@ function Contenido({ children }: { children: React.ReactNode }) {
             <div className="mx-auto w-16 h-16 rounded-full bg-simar-coral-suave text-simar-coral flex items-center justify-center mb-5">
                 <Unlink className="w-8 h-8" />
             </div>
-            <p className="text-[22px] font-extrabold text-simar-texto leading-tight">Tu usuario no está vinculado a una asociación</p>
+            <p className="text-[22px] font-extrabold text-simar-texto leading-tight">Tu usuario no está vinculado a una empresa</p>
             <p className="text-lg text-simar-texto-2 mt-3">
-                Pide al centro de acopio de Puerto Peñasco que vincule tu correo a tu empresa desde el módulo de Asociaciones.
+                Pide al centro de acopio de Puerto Peñasco que vincule tu correo a tu empresa desde el módulo de Empresas.
             </p>
         </div>
     );
@@ -100,11 +100,11 @@ function AvisoSuperadmin() {
             <ShieldCheck className="w-6 h-6 flex-shrink-0 text-simar-violeta movil:w-5 movil:h-5 movil:self-start movil:mt-0.5" />
             <p className="flex-1 min-w-[220px] movil:min-w-0">
                 <strong>Modo superadmin:</strong> usas el portal como <strong>{asociacion.nombre_asociacion}</strong>.
-                <span className="movil:hidden"> Las solicitudes y mensajes que envíes quedan a nombre de esta asociación.</span>
+                <span className="movil:hidden"> Las solicitudes y mensajes que envíes quedan a nombre de esta empresa.</span>
             </p>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base font-bold text-simar-violeta movil:basis-full movil:pl-[30px] movil:text-[14px]">
                 <Link href={`/${locale}/superadmin?elegir_asociacion=1`} className="min-h-[44px] inline-flex items-center underline-offset-4 hover:underline">
-                    Cambiar asociación
+                    Cambiar empresa
                 </Link>
                 <Link href={`/${locale}/superadmin`} className="min-h-[44px] inline-flex items-center underline-offset-4 hover:underline">
                     <span className="movil:hidden">Volver al panel de superadmin</span>
@@ -123,18 +123,18 @@ function AvisoEstado() {
             <AlertTriangle className="w-6 h-6 flex-shrink-0 text-simar-coral movil:w-5 movil:h-5" />
             {motivoBloqueo === 'asociacion' ? (
                 <p>
-                    Tu asociación está <strong>{asociacion.estado.toLowerCase()}</strong>. Puedes consultar tu historial y
+                    Tu empresa está <strong>{asociacion.estado.toLowerCase()}</strong>. Puedes consultar tu historial y
                     escribir al centro de acopio, pero no crear nuevas solicitudes de recolección.
                 </p>
             ) : (
                 <p>
                     {suscripcion?.estado ? (
                         <>
-                            La suscripción de tu asociación está{' '}
+                            La suscripción de tu empresa está{' '}
                             <strong>{ESTADO_SUSCRIPCION_LABEL[suscripcion.estado].toLowerCase()}</strong>.
                         </>
                     ) : (
-                        'Tu asociación no tiene una suscripción activa.'
+                        'Tu empresa no tiene una suscripción activa.'
                     )}{' '}
                     Puedes consultar tu historial y escribir al centro de acopio, pero no crear nuevas solicitudes hasta
                     renovarla.

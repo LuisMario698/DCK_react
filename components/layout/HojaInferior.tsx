@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { usePresencia } from '@/components/ui/movimiento';
 
 /**
@@ -38,7 +39,11 @@ export function HojaInferior({
         cerrarRef.current = onCerrar;
     }, [onCerrar]);
 
-    // Al abrir: foco en la hoja, Escape para cerrar y la página de atrás quieta
+    // Tab da la vuelta dentro de la hoja (el foco inicial y el regreso los hace el efecto de abajo). Va
+    // antes de ese efecto para que al cerrar los dos regresen el foco al mismo botón
+    useVentanaAccesible(panelRef, abierto, { enfocar: false, alEscape: () => cerrarRef.current() });
+
+    // Al abrir: foco en la hoja y la página de atrás quieta (Escape lo maneja useVentanaAccesible)
     useEffect(() => {
         if (!abierto) return;
         const previo = document.activeElement as HTMLElement | null;
@@ -46,13 +51,8 @@ export function HojaInferior({
         const overflowPrevio = html.style.overflow;
         html.style.overflow = 'hidden';
         panelRef.current?.focus({ preventScroll: true });
-        const alTeclear = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') cerrarRef.current();
-        };
-        window.addEventListener('keydown', alTeclear);
         return () => {
             html.style.overflow = overflowPrevio;
-            window.removeEventListener('keydown', alTeclear);
             previo?.focus?.({ preventScroll: true });
         };
     }, [abierto]);

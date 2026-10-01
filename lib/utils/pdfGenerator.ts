@@ -28,7 +28,8 @@ interface ImageInfo {
   ratio: number;
 }
 
-async function cargarImagen(url: string | any): Promise<ImageInfo | null> {
+/** `url`: una dirección o una imagen importada con `import` (trae su `src`) */
+async function cargarImagen(url: string | { src: string } | null | undefined): Promise<ImageInfo | null> {
   if (!url) return null;
   const src = typeof url === 'string' ? url : url.src;
 
@@ -123,7 +124,7 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
     const watermarkH = 140; // Alto fijo
     const watermarkW = watermarkH * escudoInfo.ratio; // Ancho proporcional (para no estirar)
     
-    // @ts-ignore
+    // @ts-expect-error GState no está en los tipos de jsPDF (sí existe en tiempo de ejecución)
     const gstate = doc.GState ? new doc.GState({ opacity: 0.05 }) : null;
     if (gstate) doc.setGState(gstate);
     
@@ -132,7 +133,7 @@ export async function generarPDFManifiesto(manifiesto: ManifiestoConRelaciones, 
     
     doc.addImage(escudoInfo.data, 'PNG', xWatermark, yWatermark, watermarkW, watermarkH);
     
-    // @ts-ignore
+    // @ts-expect-error GState no está en los tipos de jsPDF (sí existe en tiempo de ejecución)
     if (doc.GState) doc.setGState(new doc.GState({ opacity: 1 }));
   }
 

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Manifiesto, ManifiestoConRelaciones } from '@/types/database'
 import { uploadManifiestoImage, uploadManifiestoPDF } from './storage'
 import { parseFechaLocal } from '@/lib/utils/fechas'
@@ -39,73 +40,35 @@ export async function generarNumeroManifiesto(fecha: string): Promise<string> {
   return `MAN${fechaFormato}${numeroFormateado}`
 }
 
+/**
+ * Todos los manifiestos con su embarcación, responsables y residuos, del más nuevo al más viejo. Por
+ * páginas de 1,000 (traerTodas); antes eran tres consultas (sin relaciones, con relaciones y todos
+ * los residuos por separado) y se cortaban en 1,000 sin avisar.
+ */
 export async function getManifiestos() {
   const supabase = createClient()
 
-  console.log('🔍 Obteniendo manifiestos...')
+  const data = await traerTodas((desde, hasta) =>
+    supabase
+      .from('manifiestos')
+      .select(`
+        *,
+        buque: buque_id(id, nombre_buque),
+        responsable_principal: responsable_principal_id(id, nombre),
+        responsable_secundario: responsable_secundario_id(id, nombre),
+        responsable_liquidos: responsable_liquidos_id(id, nombre),
+        residuos: manifiestos_residuos(*)
+      `)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+      .range(desde, hasta)
+  )
 
-  // Primero intenta obtener solo los manifiestos sin relaciones
-  const { data: manifiestosSolos, error: errorSolos } = await supabase
-    .from('manifiestos')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (errorSolos) {
-    console.error('❌ Error obteniendo manifiestos (sin relaciones):', errorSolos)
-    throw errorSolos
-  }
-
-  console.log('✅ Manifiestos obtenidos (sin relaciones):', manifiestosSolos?.length || 0, 'registros')
-
-  // Si no hay manifiestos, retorna array vacío
-  if (!manifiestosSolos || manifiestosSolos.length === 0) {
-    console.log('ℹ️ No hay manifiestos en la base de datos')
-    return []
-  }
-
-  // Intenta obtener con relaciones - usando sintaxis simplificada
-  const { data, error } = await supabase
-    .from('manifiestos')
-    .select(`
-  *,
-  buque: buque_id(id, nombre_buque),
-    responsable_principal: responsable_principal_id(id, nombre),
-      responsable_secundario: responsable_secundario_id(id, nombre),
-        responsable_liquidos: responsable_liquidos_id(id, nombre)
-        `)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('❌ Error obteniendo manifiestos con relaciones:', error)
-    console.log('⚠️ Retornando manifiestos sin relaciones')
-    return manifiestosSolos as ManifiestoConRelaciones[]
-  }
-
-  console.log('✅ Manifiestos obtenidos con relaciones:', data?.length || 0, 'registros')
-
-  // Cargar residuos manualmente para cada manifiesto
-  if (data && data.length > 0) {
-    const { data: residuosData, error: residuosError } = await supabase
-      .from('manifiestos_residuos')
-      .select('*')
-
-    if (!residuosError && residuosData) {
-      console.log('✅ Residuos cargados:', residuosData.length, 'registros')
-
-      // Asociar residuos a cada manifiesto
-      const manifestosConResiduos = data.map(manifiesto => ({
-        ...manifiesto,
-        residuos: residuosData.find(r => r.manifiesto_id === manifiesto.id) || null
-      }))
-
-      console.log('📊 Primer manifiesto con residuos:', manifestosConResiduos[0])
-      return manifestosConResiduos as ManifiestoConRelaciones[]
-    } else {
-      console.warn('⚠️ No se pudieron cargar los residuos:', residuosError)
-    }
-  }
-
-  return data as ManifiestoConRelaciones[]
+  // Un renglón de residuos por manifiesto; según la versión de PostgREST llega como arreglo u objeto
+  return data.map((m) => ({
+    ...m,
+    residuos: Array.isArray(m.residuos) ? (m.residuos[0] ?? null) : (m.residuos ?? null),
+  })) as ManifiestoConRelaciones[]
 }
 
 export async function getManifiestoById(id: number) {

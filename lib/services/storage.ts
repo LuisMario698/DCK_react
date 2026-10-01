@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { detalleDe } from '@/lib/utils/errores';
 
 const BUCKET_NAME = 'manifiestos_img';
 const BUCKET_PDF = 'manifiestos_pdf';
@@ -37,7 +38,8 @@ export async function uploadManifiestoImage(file: File, numeroManifiesto: string
     console.log('🔗 URL pública imagen:', publicUrlData.publicUrl);
 
     return publicUrlData.publicUrl;
-  } catch (error: any) {
+  } catch (causa) {
+    const error = detalleDe(causa);
     console.error('❌ Error en uploadManifiestoImage:', error);
     throw error;
   }
@@ -80,7 +82,8 @@ export async function uploadManifiestoPDF(file: File | Blob, numeroManifiesto: s
     console.log('🔗 URL PDF generada:', publicUrlData.publicUrl);
 
     return publicUrlData.publicUrl;
-  } catch (error: any) {
+  } catch (causa) {
+    const error = detalleDe(causa);
     console.error('❌ Error en uploadManifiestoPDF:', error);
     throw error;
   }
@@ -110,7 +113,8 @@ export async function deleteManifiestoImage(imageUrl: string): Promise<void> {
     }
 
     console.log('✅ Imagen eliminada exitosamente');
-  } catch (error: any) {
+  } catch (causa) {
+    const error = detalleDe(causa);
     console.error('❌ Error en deleteManifiestoImage:', error);
     throw error;
   }

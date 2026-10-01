@@ -90,10 +90,10 @@ function Enlaces({
         { clave: 'superadmin', label: 'Panel de superadmin', href: `/${locale}/superadmin`, icon: ShieldCheck },
         { clave: 'recinto', label: 'Recinto portuario', href: `/${locale}/dashboard`, icon: Anchor },
         asociacion
-            ? { clave: 'asociacion', label: 'Portal de asociación', detalle: asociacion.nombre_asociacion, href: `/${locale}/dashboard-recolector`, icon: Recycle }
+            ? { clave: 'asociacion', label: 'Portal de empresas', detalle: asociacion.nombre_asociacion, href: `/${locale}/dashboard-recolector`, icon: Recycle }
             : actual === 'superadmin'
-              ? { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', icon: Recycle, onClick: elegirAqui }
-              : { clave: 'asociacion', label: 'Portal de asociación', detalle: 'Elegir asociación', href: elegirUrl, icon: Recycle },
+              ? { clave: 'asociacion', label: 'Portal de empresas', detalle: 'Elegir empresa', icon: Recycle, onClick: elegirAqui }
+              : { clave: 'asociacion', label: 'Portal de empresas', detalle: 'Elegir empresa', href: elegirUrl, icon: Recycle },
     ];
 
     // Mismo tamaño que los items del menú lateral; violeta = superadmin (ver DISEÑO_SIMAR.md)
@@ -136,11 +136,11 @@ function Enlaces({
                 <button
                     type="button"
                     onClick={() => (actual === 'superadmin' ? elegirAqui() : router.push(elegirUrl))}
-                    title={colapsado ? 'Cambiar asociación' : undefined}
+                    title={colapsado ? 'Cambiar empresa' : undefined}
                     className={itemCls}
                 >
                     <ArrowLeftRight className="w-6 h-6 flex-shrink-0" strokeWidth={2} />
-                    {!colapsado && <span className="ml-3.5 text-lg leading-tight">Cambiar asociación</span>}
+                    {!colapsado && <span className="ml-3.5 text-lg leading-tight">Cambiar empresa</span>}
                 </button>
             )}
 

@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { confirmar } from '@/components/ui/Confirmar';
 import { CheckCircle2, XCircle, Truck, Eye, MessageSquare, Inbox, Ban, FileDown, Loader2 } from 'lucide-react';
-import { formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
+import { formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
 import { InventarioResiduo, SolicitudConAsociacion } from '@/types/database';
 import {
@@ -155,11 +156,17 @@ export function SolicitudesTab({
     const disponibleDe = (s: SolicitudConAsociacion) => inventario.find((i) => i.tipo === s.tipo)?.cantidad ?? 0;
 
     const cancelar = async (s: SolicitudConAsociacion) => {
-        const aviso =
-            s.estado === 'aprobada'
-                ? `¿Cancelar la solicitud? Los ${formatCantidad(s.cantidad_aprobada ?? 0)} ${s.unidad} aprobados regresarán al inventario.`
-                : '¿Cancelar esta solicitud?';
-        if (!confirm(aviso)) return;
+        const ok = await confirmar({
+            titulo: '¿Cancelar esta solicitud?',
+            mensaje:
+                s.estado === 'aprobada'
+                    ? `Los ${formatCantidad(s.cantidad_aprobada ?? 0)} ${unidadEscrita(s.unidad, s.cantidad_aprobada ?? 0)} aprobados regresarán al inventario.`
+                    : undefined,
+            accion: 'Cancelar solicitud',
+            volver: 'No, dejarla',
+            peligro: true,
+        });
+        if (!ok) return;
         try {
             await cancelarSolicitud(s.id);
             toast.success('Solicitud cancelada');
@@ -251,7 +258,7 @@ export function SolicitudesTab({
                     <table className="min-w-full border-collapse movil:block">
                         <thead className="movil:hidden">
                             <tr className="bg-simar-papel border-b border-simar-borde">
-                                <Th>Asociación</Th>
+                                <Th>Empresa</Th>
                                 <Th>Residuo</Th>
                                 <Th className="hidden sm:table-cell">Cantidad</Th>
                                 <Th className="hidden md:table-cell">Recolección</Th>
@@ -261,7 +268,7 @@ export function SolicitudesTab({
                         </thead>
                         <tbody className="divide-y divide-simar-borde-suave bg-simar-superficie movil:block">
                             {filtradas.map((s, idx) => {
-                                const nombre = s.asociacion?.nombre_asociacion ?? 'Asociación';
+                                const nombre = s.asociacion?.nombre_asociacion ?? 'Empresa';
                                 const cantidad = cantidadVigente(s);
                                 return (
                                     <tr
@@ -439,7 +446,7 @@ function DetalleModal({
                                 {[a.ubicacion, a.telefono, a.email].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
                             </p>
                             {a.estado !== 'Activo' && (
-                                <p className="text-[15px] font-semibold text-simar-coral mt-1">Asociación {a.estado.toLowerCase()}</p>
+                                <p className="text-[15px] font-semibold text-simar-coral mt-1">Empresa {a.estado.toLowerCase()}</p>
                             )}
                         </div>
                         <button
@@ -473,7 +480,7 @@ function DetalleModal({
                     </InfoCard>
                 </div>
 
-                {s.mensaje && <Nota titulo="Mensaje de la asociación">{s.mensaje}</Nota>}
+                {s.mensaje && <Nota titulo="Mensaje de la empresa">{s.mensaje}</Nota>}
                 {s.motivo_rechazo && <Nota titulo="Motivo del rechazo">{s.motivo_rechazo}</Nota>}
 
                 <p className="text-[15px] text-simar-texto-2">
@@ -600,12 +607,12 @@ function RechazarModal({
     return (
         <Modal titulo="Rechazar solicitud" subtitulo={s.asociacion?.nombre_asociacion} onClose={onClose}>
             <div className="space-y-4">
-                <Campo label="Motivo del rechazo" ayuda="La asociación verá este motivo en su notificación.">
+                <Campo label="Motivo del rechazo" ayuda="La empresa verá este motivo en su notificación.">
                     <textarea
                         rows={3}
                         value={motivo}
                         onChange={(e) => setMotivo(e.target.value)}
-                        placeholder="Ej. La cantidad ya fue asignada a otra asociación."
+                        placeholder="Ej. La cantidad ya fue asignada a otra empresa."
                         className={inputCls}
                         autoFocus
                     />
@@ -673,7 +680,7 @@ function CompletarModal({
             });
             const ruta = await subirComprobante(rec, pdf);
             toast.success(`Recolección ${rec.folio} registrada`, {
-                description: 'El comprobante ya está disponible para la asociación.',
+                description: 'El comprobante ya está disponible para la empresa.',
                 action: { label: 'Ver PDF', onClick: () => abrirComprobante(ruta) },
             });
         } catch (err) {
@@ -710,7 +717,7 @@ function CompletarModal({
                     <Campo label="Entrega (centro de acopio)">
                         <input value={entregadoPor} onChange={(e) => setEntregadoPor(e.target.value)} placeholder="Nombre" className={inputCls} />
                     </Campo>
-                    <Campo label="Recibe (asociación)">
+                    <Campo label="Recibe (empresa)">
                         <input value={recibidoPor} onChange={(e) => setRecibidoPor(e.target.value)} placeholder="Nombre del operador" className={inputCls} />
                     </Campo>
                 </div>

@@ -41,7 +41,7 @@ export function formatearFecha(
 
 /** Fecha larga en español: "26 de agosto de 2026". */
 export function formatearFechaLarga(fecha: string | Date): string {
-    return parseFechaLocal(fecha).toLocaleDateString('es-ES', {
+    return parseFechaLocal(fecha).toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
@@ -67,6 +67,11 @@ export function hoyLocal(): string {
  * donde `hoyLocal()` daría la fecha y la hora de otra zona.
  */
 const ZONA_PUERTO = 'America/Hermosillo';
+
+/** Fecha de hoy en Puerto Peñasco ('YYYY-MM-DD'), como `public.hoy_local()`, se calcule donde se calcule. */
+export function hoyPuerto(): string {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_PUERTO }).format(new Date());
+}
 
 /** "Buenos días", "Buenas tardes" o "Buenas noches" según la hora en Puerto Peñasco. */
 export function saludoPuerto(ahora = new Date()): string {

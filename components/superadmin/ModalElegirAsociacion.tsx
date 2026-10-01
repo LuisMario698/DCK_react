@@ -33,7 +33,7 @@ export function ModalElegirAsociacion({
     useEffect(() => {
         getAsociaciones()
             .then(setAsociaciones)
-            .catch((err) => toast.error(mensajeError(err, 'No se pudieron cargar las asociaciones.')));
+            .catch((err) => toast.error(mensajeError(err, 'No se pudieron cargar las empresas.')));
     }, []);
 
     const filtradas = useMemo(() => {
@@ -56,15 +56,15 @@ export function ModalElegirAsociacion({
 
     return (
         <Modal
-            titulo="Portal de asociación"
-            subtitulo="Elige a nombre de qué asociación usarás el portal recolector."
+            titulo="Portal de empresas"
+            subtitulo="Elige a nombre de qué empresa usarás el portal recolector."
             onClose={onClose}
         >
             {!asociaciones ? (
                 <Cargando />
             ) : asociaciones.length === 0 ? (
                 <p className="text-base text-simar-texto-2 py-6 text-center">
-                    No hay asociaciones registradas. Créalas en el recinto portuario → Asociaciones recolectoras.
+                    No hay empresas registradas. Créalas en el recinto portuario → Empresas recolectoras.
                 </p>
             ) : (
                 <div className="space-y-4">
@@ -73,14 +73,14 @@ export function ModalElegirAsociacion({
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
-                                placeholder="Buscar asociación"
+                                placeholder="Buscar empresa"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
-                                aria-label="Buscar asociación"
+                                aria-label="Buscar empresa"
                             />
                         </div>
                     )}
-                    <ul role="radiogroup" aria-label="Asociaciones" className="space-y-2 max-h-[45vh] overflow-y-auto">
+                    <ul role="radiogroup" aria-label="Empresas" className="space-y-2 max-h-[45vh] overflow-y-auto">
                         {filtradas.map((a) => {
                             const activa = elegida === a.id;
                             return (
@@ -102,7 +102,7 @@ export function ModalElegirAsociacion({
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-base font-semibold text-simar-texto">{a.nombre_asociacion}</span>
                                             <span className="block text-[15px] text-simar-texto-2">
-                                                {a.estado !== 'Activo' ? `Asociación ${a.estado.toLowerCase()} · ` : ''}
+                                                {a.estado !== 'Activo' ? `Empresa ${a.estado.toLowerCase()} · ` : ''}
                                                 {a.rfc || 'Sin RFC'}
                                             </span>
                                         </span>
@@ -114,7 +114,7 @@ export function ModalElegirAsociacion({
                     </ul>
                     <p className="text-[15px] text-simar-texto-2">
                         Sigues siendo administrador del recinto portuario. En el portal, las solicitudes y los mensajes que
-                        envíes quedan a nombre de la asociación elegida.
+                        envíes quedan a nombre de la empresa elegida.
                     </p>
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                         {actual ? (

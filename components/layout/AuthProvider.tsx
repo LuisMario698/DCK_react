@@ -2,7 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -27,41 +28,68 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const supabase = createClient();
-    const pathname = usePathname();
 
-    // INACTIVIDAD (30 minutos)
+    // INACTIVIDAD: a los 30 min sin tocar nada se cierra la sesión; un minuto antes sale un aviso con
+    // "Sigo aquí", y al cerrarla se dice por qué. Se mide con la hora de la última actividad y no con
+    // un temporizador de 30 min: con la pantalla del teléfono apagada los temporizadores se detienen,
+    // y al volver la sesión seguía abierta o se cerraba de golpe sin explicación.
     useEffect(() => {
-        // Solo aplicar timeout si hay usuario logueado
         if (!user) return;
 
-        let timeoutId: NodeJS.Timeout;
-        const TIMEOUT_DURATION = 30 * 60 * 1000; // 30 minutos
+        const LIMITE_MS = 30 * 60 * 1000;
+        const AVISO_MS = 60 * 1000;
+        const AVISO_ID = 'aviso-inactividad';
+        let ultimaActividad = Date.now();
+        let avisado = false;
+        let cerrando = false;
 
-        const resetTimer = () => {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(async () => {
-                console.log('⏳ Sesión expirada por inactividad');
-                await signOut();
-            }, TIMEOUT_DURATION);
+        const actividad = () => {
+            ultimaActividad = Date.now();
+            if (avisado) {
+                avisado = false;
+                toast.dismiss(AVISO_ID);
+            }
         };
 
-        // Eventos a escuchar
-        const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
-
-        // Configurar listeners
-        const setupListeners = () => {
-            events.forEach(event => document.addEventListener(event, resetTimer));
-            resetTimer(); // Iniciar timer
+        const revisar = async () => {
+            if (cerrando) return;
+            const quieto = Date.now() - ultimaActividad;
+            if (quieto >= LIMITE_MS) {
+                cerrando = true;
+                toast.dismiss(AVISO_ID);
+                await supabase.auth.signOut();
+                toast.info('Cerramos tu sesión tras 30 minutos sin actividad', {
+                    description: 'Si estabas capturando un manifiesto, lo escrito sigue guardado en este equipo.',
+                    duration: 15000,
+                });
+                router.push('/');
+            } else if (quieto >= LIMITE_MS - AVISO_MS && !avisado) {
+                avisado = true;
+                toast.warning('Tu sesión se cerrará en un minuto', {
+                    id: AVISO_ID,
+                    description: 'No has usado SiMAR en un rato.',
+                    duration: Infinity,
+                    action: { label: 'Sigo aquí', onClick: actividad },
+                });
+            }
         };
 
-        setupListeners();
+        const eventos = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'] as const;
+        eventos.forEach((e) => document.addEventListener(e, actividad, { passive: true }));
+        const intervalo = setInterval(revisar, 15_000);
+        // Al volver a la pestaña o a la app, se revisa en ese momento (no hasta el siguiente intervalo)
+        const alVolver = () => {
+            if (!document.hidden) revisar();
+        };
+        document.addEventListener('visibilitychange', alVolver);
 
-        // Limpiar
         return () => {
-            clearTimeout(timeoutId);
-            events.forEach(event => document.removeEventListener(event, resetTimer));
+            clearInterval(intervalo);
+            eventos.forEach((e) => document.removeEventListener(e, actividad));
+            document.removeEventListener('visibilitychange', alVolver);
+            toast.dismiss(AVISO_ID);
         };
-    }, [user]);
+    }, [user, supabase, router]);
 
     // OBSEVAR ESTADO DE AUTH
     useEffect(() => {

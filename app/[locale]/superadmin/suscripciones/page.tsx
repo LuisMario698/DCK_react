@@ -174,7 +174,7 @@ export default function SuscripcionesPage() {
             {/* En celular, dos por fila */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 movil:grid-cols-2 movil:gap-2.5">
                 <Kpi label="Ingreso mensual recurrente" valor={formatoMXN(kpis.mrr)} icono={TrendingUp} detalle="Suscripciones activas" />
-                <Kpi label="Activas" valor={kpis.activas} icono={CheckCircle2} detalle={`de ${asociaciones.length} asociación(es)`} />
+                <Kpi label="Activas" valor={kpis.activas} icono={CheckCircle2} detalle={`de ${asociaciones.length} empresa(s)`} />
                 <Kpi label="En prueba" valor={kpis.prueba} icono={Hourglass} />
                 <Kpi
                     label="Vencidas o por vencer"
@@ -187,7 +187,7 @@ export default function SuscripcionesPage() {
 
             <Pestanas
                 pestanas={[
-                    { id: 'asociaciones', label: 'Asociaciones', contador: asociaciones.length },
+                    { id: 'asociaciones', label: 'Empresas', contador: asociaciones.length },
                     { id: 'pagos', label: 'Pagos', contador: pagos.length },
                 ]}
                 activa={pestana}
@@ -202,10 +202,10 @@ export default function SuscripcionesPage() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-simar-texto-2" />
                             <input
                                 className={`${inputCls} pl-9`}
-                                placeholder="Buscar asociación, RFC o plan"
+                                placeholder="Buscar empresa, RFC o plan"
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
-                                aria-label="Buscar asociaciones"
+                                aria-label="Buscar empresas"
                             />
                         </div>
                         <select
@@ -228,11 +228,11 @@ export default function SuscripcionesPage() {
                         {asociaciones.length === 0 ? (
                             <EstadoVacio
                                 icono={CreditCard}
-                                titulo="No hay asociaciones registradas"
-                                texto="Las asociaciones recolectoras se dan de alta desde el panel del centro de acopio (Asociaciones)."
+                                titulo="No hay empresas registradas"
+                                texto="Las empresas recolectoras se dan de alta desde el panel del centro de acopio (Empresas)."
                             />
                         ) : filtradas.length === 0 ? (
-                            <EstadoVacio icono={Search} titulo="Ninguna asociación coincide con los filtros" />
+                            <EstadoVacio icono={Search} titulo="Ninguna empresa coincide con los filtros" />
                         ) : (
                             // En celular cada asociación es un bloque: nombre y plan a la izquierda, estado a la
                             // derecha, vigencia y usuarios debajo y las acciones al final
@@ -240,7 +240,7 @@ export default function SuscripcionesPage() {
                                 <table className="w-full movil:block">
                                     <thead className="border-b border-simar-borde movil:hidden">
                                         <tr>
-                                            <th className={thCls}>Asociación</th>
+                                            <th className={thCls}>Empresa</th>
                                             <th className={thCls}>Plan</th>
                                             <th className={`${thCls} text-right`}>Precio</th>
                                             <th className={thCls}>Estado</th>
@@ -265,7 +265,7 @@ export default function SuscripcionesPage() {
                                                         <p className="text-[15px] text-simar-texto-2">
                                                             {a.estado === 'Activo' ? a.rfc || 'Sin RFC' : (
                                                                 <span className="font-semibold text-simar-coral">
-                                                                    Asociación {a.estado.toLowerCase()}
+                                                                    Empresa {a.estado.toLowerCase()}
                                                                 </span>
                                                             )}
                                                         </p>
@@ -365,7 +365,7 @@ export default function SuscripcionesPage() {
                                                         />
                                                         <BotonIcono
                                                             icono={a.estado === 'Activo' ? Ban : CheckCircle2}
-                                                            etiqueta={a.estado === 'Activo' ? 'Suspender asociación' : 'Activar asociación'}
+                                                            etiqueta={a.estado === 'Activo' ? 'Suspender empresa' : 'Activar empresa'}
                                                             peligro={a.estado === 'Activo'}
                                                             onClick={() => setCambioEstado(a)}
                                                         />
@@ -418,7 +418,7 @@ export default function SuscripcionesPage() {
 
             {cambioEstado && (
                 <ModalConfirmar
-                    titulo={cambioEstado.estado === 'Activo' ? 'Suspender asociación' : 'Activar asociación'}
+                    titulo={cambioEstado.estado === 'Activo' ? 'Suspender empresa' : 'Activar empresa'}
                     textoConfirmar={cambioEstado.estado === 'Activo' ? 'Suspender' : 'Activar'}
                     peligro={cambioEstado.estado === 'Activo'}
                     onClose={() => setCambioEstado(null)}
@@ -500,9 +500,9 @@ function TablaPagos({
                     className={`${filtroCls} w-auto movil:w-full`}
                     value={filtro}
                     onChange={(e) => onFiltro(e.target.value === 'todas' ? 'todas' : Number(e.target.value))}
-                    aria-label="Filtrar pagos por asociación"
+                    aria-label="Filtrar pagos por empresa"
                 >
-                    <option value="todas">Todas las asociaciones</option>
+                    <option value="todas">Todas las empresas</option>
                     {asociaciones.map((a) => (
                         <option key={a.id} value={a.id}>
                             {a.nombre_asociacion}
@@ -519,7 +519,7 @@ function TablaPagos({
                     <EstadoVacio
                         icono={Receipt}
                         titulo="Sin pagos registrados"
-                        texto="Registra un pago desde la pestaña Asociaciones con el botón de cartera."
+                        texto="Registra un pago desde la pestaña Empresas con el botón de cartera."
                     />
                 ) : (
                     // En celular cada pago es un bloque: asociación y monto arriba; fecha, método, referencia
@@ -529,7 +529,7 @@ function TablaPagos({
                             <thead className="border-b border-simar-borde movil:hidden">
                                 <tr>
                                     <th className={thCls}>Fecha</th>
-                                    <th className={thCls}>Asociación</th>
+                                    <th className={thCls}>Empresa</th>
                                     <th className={`${thCls} text-right`}>Monto</th>
                                     <th className={thCls}>Método</th>
                                     <th className={thCls}>Referencia</th>
@@ -696,8 +696,8 @@ function ModalSuscripcion({
             >
                 <p>
                     {numPagos > 0
-                        ? `También se borrarán sus ${numPagos} pago(s) registrados (quedan en la bitácora). Si la asociación dejó de pagar, mejor márcala como cancelada o suspendida.`
-                        : 'La asociación quedará sin suscripción.'}
+                        ? `También se borrarán sus ${numPagos} pago(s) registrados (quedan en la bitácora). Si la empresa dejó de pagar, mejor márcala como cancelada o suspendida.`
+                        : 'La empresa quedará sin suscripción.'}
                 </p>
             </ModalConfirmar>
         );

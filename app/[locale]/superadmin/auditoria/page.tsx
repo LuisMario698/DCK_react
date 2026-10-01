@@ -14,11 +14,11 @@ const POR_PAGINA = 25;
 const TABLAS: { id: string; label: string }[] = [
     { id: 'manifiestos', label: 'Manifiestos' },
     { id: 'manifiestos_residuos', label: 'Residuos de manifiesto' },
-    { id: 'manifiesto_basuron', label: 'Recibos relleno sanitario' },
+    { id: 'manifiesto_basuron', label: 'Recibos del basurón' },
     { id: 'buques', label: 'Embarcaciones' },
     { id: 'personas', label: 'Personas' },
     { id: 'tipos_persona', label: 'Tipos de persona' },
-    { id: 'asociaciones_recolectoras', label: 'Asociaciones' },
+    { id: 'asociaciones_recolectoras', label: 'Empresas' },
     { id: 'inventario_residuos', label: 'Inventario' },
     { id: 'solicitudes_recoleccion', label: 'Solicitudes' },
     { id: 'recolecciones', label: 'Recolecciones' },

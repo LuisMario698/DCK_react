@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { toast } from 'sonner';
@@ -43,6 +45,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     }, [user, isOpen]);
 
     // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+    const panelRef = useRef<HTMLDivElement>(null);
+    useVentanaAccesible(panelRef, isOpen, { alEscape: () => !loading && onClose() });
     const { montado, saliendo } = usePresencia(isOpen);
     if (!montado) return null;
 
@@ -58,7 +63,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             if (error) throw error;
             toast.success('Nombre actualizado correctamente');
             setMode('view');
-        } catch (error: any) {
+        } catch (causa) {
+            const error = detalleDe(causa);
             toast.error(error.message);
         } finally {
             setLoading(false);
@@ -71,13 +77,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
         try {
             // Verify password by signing in (re-auth)
             const { error } = await supabase.auth.signInWithPassword({
-                email: user?.email!,
+                email: user?.email ?? '',
                 password: currentPassword
             });
             if (error) throw error;
 
             setStep(2); // Move to input new email
-        } catch (error: any) {
+        } catch (causa) {
+            const error = detalleDe(causa);
             toast.error('Contraseña incorrecta');
         } finally {
             setLoading(false);
@@ -94,8 +101,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             setStep(3); // Show verification instructions
             setCurrentPassword('');
             // setNewEmail(''); // Keep to show in message
-        } catch (error: any) {
-            let msg = error.message;
+        } catch (causa) {
+            const error = detalleDe(causa);
+            let msg = error.message ?? 'No se pudo cambiar el correo. Inténtalo de nuevo.';
             if (msg.includes('already registered') || msg.includes('assigned to another user')) {
                 msg = 'Este correo electrónico ya está registrado por otro usuario.';
             }
@@ -109,11 +117,12 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
     const handleSendResetCode = async () => {
         setLoading(true);
         try {
-            const { error } = await supabase.auth.resetPasswordForEmail(user?.email!);
+            const { error } = await supabase.auth.resetPasswordForEmail(user?.email ?? '');
             if (error) throw error;
             toast.success('Código enviado a tu correo');
             setStep(2); // Move to verify code
-        } catch (error: any) {
+        } catch (causa) {
+            const error = detalleDe(causa);
             toast.error(error.message);
         } finally {
             setLoading(false);
@@ -129,7 +138,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
         try {
             // Verify OTP
             const { error: verifyError, data } = await supabase.auth.verifyOtp({
-                email: user?.email!,
+                email: user?.email ?? '',
                 token: resetToken,
                 type: 'recovery'
             });
@@ -152,7 +161,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                 setShowNewPassword(false);
                 setShowConfirmPassword(false);
             }
-        } catch (error: any) {
+        } catch (causa) {
+            const error = detalleDe(causa);
             let msg = error.message || 'Error al restablecer contraseña';
 
             // Translate common errors
@@ -184,7 +194,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
 
     return (
         <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4`}>
-            <div className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-simar-borde`}>
+            <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Mi perfil" className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl w-full max-w-md overflow-hidden border border-simar-borde outline-none`}>
                 {/* Header */}
                 <div className="px-7 pt-7 pb-2 flex justify-between items-center gap-4">
                     <h2 className="text-[22px] font-extrabold text-simar-texto">Mi perfil</h2>
@@ -246,8 +256,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                     {mode === 'edit_name' && (
                         <div className="space-y-4 simar-aparece">
                             <div>
-                                <label className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo nombre</label>
-                                <input
+                                <label htmlFor="user-profile-modal-1" className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo nombre</label>
+                                <input id="user-profile-modal-1"
                                     type="text"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
@@ -272,8 +282,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                         Por seguridad, confirma tu contraseña actual para cambiar el correo.
                                     </div>
                                     <div>
-                                        <label className="block text-[17px] font-bold text-simar-texto mb-2">Contraseña actual (para verificar)</label>
-                                        <input
+                                        <label htmlFor="user-profile-modal-2" className="block text-[17px] font-bold text-simar-texto mb-2">Contraseña actual (para verificar)</label>
+                                        <input id="user-profile-modal-2"
                                             type="password"
                                             value={currentPassword}
                                             onChange={(e) => setCurrentPassword(e.target.value)}
@@ -290,8 +300,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             ) : step === 2 ? (
                                 <>
                                     <div>
-                                        <label className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo correo electrónico</label>
-                                        <input
+                                        <label htmlFor="user-profile-modal-3" className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo correo electrónico</label>
+                                        <input id="user-profile-modal-3"
                                             type="email"
                                             value={newEmail}
                                             onChange={(e) => setNewEmail(e.target.value)}
@@ -355,8 +365,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                 <>
                                     <div className="space-y-3">
                                         <div>
-                                            <label className="block text-[17px] font-bold text-simar-texto mb-2">Código de verificación</label>
-                                            <input
+                                            <label htmlFor="user-profile-modal-4" className="block text-[17px] font-bold text-simar-texto mb-2">Código de verificación</label>
+                                            <input id="user-profile-modal-4"
                                                 type="text"
                                                 value={resetToken}
                                                 onChange={(e) => setResetToken(e.target.value)}
@@ -365,9 +375,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[17px] font-bold text-simar-texto mb-2">Nueva contraseña</label>
+                                            <label htmlFor="user-profile-modal-5" className="block text-[17px] font-bold text-simar-texto mb-2">Nueva contraseña</label>
                                             <div className="relative">
-                                                <input
+                                                <input id="user-profile-modal-5"
                                                     type={showNewPassword ? "text" : "password"}
                                                     value={newPassword}
                                                     onChange={(e) => setNewPassword(e.target.value)}
@@ -387,9 +397,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="block text-[17px] font-bold text-simar-texto mb-2">Confirmar contraseña</label>
+                                            <label htmlFor="user-profile-modal-6" className="block text-[17px] font-bold text-simar-texto mb-2">Confirmar contraseña</label>
                                             <div className="relative">
-                                                <input
+                                                <input id="user-profile-modal-6"
                                                     type={showConfirmPassword ? "text" : "password"}
                                                     value={confirmNewPassword}
                                                     onChange={(e) => setConfirmNewPassword(e.target.value)}

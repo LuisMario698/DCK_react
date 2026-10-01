@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTituloPestana } from '@/components/layout/useTituloPestana';
 import { Bell, ClipboardList, History, LayoutGrid, Leaf, Map as MapIcon, MessageSquare, UserCircle, type LucideIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRecolector } from './RecolectorContext';
@@ -40,6 +41,8 @@ function usePantalla() {
 export function HeaderRecolector() {
     const { locale, meta } = usePantalla();
     const { notificacionesNoLeidas, asociacion } = useRecolector();
+    // "Mis solicitudes · SiMAR" en la pestaña
+    useTituloPestana(meta.title);
 
     return (
         <>

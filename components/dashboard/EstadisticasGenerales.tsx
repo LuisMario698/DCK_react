@@ -2,7 +2,7 @@
 
 /**
  * Pestaña "Estadísticas" del recinto: todo sale del mismo período (ver getEstadisticasPeriodo).
- * En el orden en que se lee: el período (y descargar su resumen en PDF); un titular de una línea
+ * En el orden en que se lee: el período (con su resumen en PDF y el reporte de un mes para SEMARNAT); un titular de una línea
  * (la frase completa se abre aparte); cuatro cifras; la tendencia de un residuo a la vez (cada uno
  * en su unidad: nunca se suman kilos con litros) junto a las embarcaciones (las que más entregan y
  * las que no entregan); a dónde se fue lo recibido; y el impacto estimado como cierre.
@@ -15,39 +15,40 @@ import { toast } from 'sonner';
 import {
     ArrowDownRight,
     ArrowUpRight,
-    Car,
     Check,
     ChevronDown,
     ChevronRight,
     Clock,
-    Cylinder,
     Download,
     Droplet,
-    Droplets,
     FileText,
-    Fish,
     Leaf,
     LineChart,
     Loader2,
     Minus,
     Ship,
-    ShoppingBag,
     Trash2,
-    TreeDeciduous,
     Truck,
-    Waves,
     type LucideIcon,
 } from 'lucide-react';
 import { NumeroAnimado } from '@/components/ui/movimiento';
 import type { EstadisticasPeriodo, Granularidad, PeriodoEstadisticas, SinEntregar, TotalesPeriodo, TramoSerie } from '@/lib/services/dashboard_stats';
 import { DestinoResiduos } from './DestinoResiduos';
+import { ReporteDelMes } from './ReporteDelMes';
 import {
-    KG_BOLSA_BASURA,
+    aguaProtegidaL,
+    co2EvitadoKg,
+    decimalesEquivalencia,
+    equivalenciaAgua,
+    equivalenciaBasura,
+    equivalenciaCO2,
+    type Equivalencia,
+} from '@/lib/utils/equivalencias';
+import {
     KG_CAMION_RECOLECTOR,
     KG_CO2_POR_ARBOL_ANIO,
     LITROS_AGUA_POR_LITRO_ACEITE,
     LITROS_ALBERCA_OLIMPICA,
-    LITROS_TINACO,
     RECINTO_CO2_POR_KG_BASURON,
     RECINTO_CO2_POR_LITRO_ACEITE,
 } from '@/lib/constants/impacto';
@@ -104,6 +105,8 @@ export function EstadisticasGenerales({
 
     // El PDF (y jsPDF) se cargan al tocar el botón: no pesan en la pantalla
     const [generandoPdf, setGenerandoPdf] = useState(false);
+    const claseBoton =
+        'simar-presiona inline-flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto shadow-simar hover:bg-simar-papel disabled:opacity-60 movil:min-h-[38px] movil:gap-1.5 movil:px-3 movil:rounded-full movil:text-[13.5px] movil:shadow-none';
     const descargarPdf = async () => {
         setGenerandoPdf(true);
         try {
@@ -124,17 +127,20 @@ export function EstadisticasGenerales({
                 onCambiar={onCambiarPeriodo}
                 actualizando={actualizando}
                 accion={
-                    <button
-                        type="button"
-                        onClick={descargarPdf}
-                        // Mientras llega otro período el PDF saldría con los datos anteriores
-                        disabled={generandoPdf || actualizando}
-                        aria-busy={generandoPdf}
-                        className="simar-presiona inline-flex items-center gap-2 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto shadow-simar hover:bg-simar-papel disabled:opacity-60 movil:min-h-[38px] movil:px-3 movil:rounded-full movil:text-[13.5px] movil:shadow-none"
-                    >
-                        {generandoPdf ? <Loader2 className="w-5 h-5 animate-spin movil:w-4 movil:h-4" aria-hidden="true" /> : <Download className="w-5 h-5 movil:w-4 movil:h-4" aria-hidden="true" />}
-                        {generandoPdf ? 'Generando…' : 'Descargar PDF'}
-                    </button>
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center movil:gap-1.5">
+                        <button
+                            type="button"
+                            onClick={descargarPdf}
+                            // Mientras llega otro período el PDF saldría con los datos anteriores
+                            disabled={generandoPdf || actualizando}
+                            aria-busy={generandoPdf}
+                            className={claseBoton}
+                        >
+                            {generandoPdf ? <Loader2 className="w-5 h-5 animate-spin movil:w-4 movil:h-4" aria-hidden="true" /> : <Download className="w-5 h-5 movil:w-4 movil:h-4" aria-hidden="true" />}
+                            {generandoPdf ? 'Generando…' : 'PDF del período'}
+                        </button>
+                        <ReporteDelMes className={claseBoton} />
+                    </div>
                 }
             />
 
@@ -212,11 +218,11 @@ function SelectorPeriodo({
     periodo: PeriodoEstadisticas;
     onCambiar: (p: PeriodoEstadisticas) => void;
     actualizando: boolean;
-    /** Botón a la derecha (Descargar PDF). En celular va junto a "Período", arriba de los botones */
+    /** Botones a la derecha (los PDF). En celular van en su propia fila, debajo de los del período */
     accion?: ReactNode;
 }) {
     return (
-        // En celular: "Período" arriba y los cinco botones repartidos a lo ancho
+        // En celular: "Período" arriba, los cinco botones repartidos a lo ancho y abajo los PDF
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2 movil:gap-y-1.5">
             <span id="titulo-periodo" className="text-[17px] text-simar-texto font-bold movil:px-1 movil:text-[15px]">
                 Período
@@ -243,7 +249,7 @@ function SelectorPeriodo({
             <span role="status" className={`text-[15px] text-simar-texto-2 transition-opacity duration-200 ${actualizando ? 'opacity-100' : 'opacity-0'}`}>
                 {actualizando ? 'Actualizando…' : ''}
             </span>
-            {accion && <div className="order-1 sm:order-none ml-auto">{accion}</div>}
+            {accion && <div className="order-3 sm:order-none basis-full sm:basis-auto sm:ml-auto">{accion}</div>}
         </div>
     );
 }
@@ -811,45 +817,10 @@ const fmtEntero = (n: number) => Math.round(n).toLocaleString('es-MX');
 const fmtCifra = (n: number, unidad: string) =>
     n >= 1_000_000 ? `${(n / 1_000_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })} millones de ${unidad === 'L' ? 'litros' : unidad}` : `${fmtEntero(n)} ${unidad}`;
 
-export interface Equivalencia {
-    icono: LucideIcon;
-    valor: number;
-    /** Nombre en singular y plural: "árbol" / "árboles" */
-    nombre: [string, string];
-    /** Qué quiere decir, en una línea */
-    descripcion: string;
-}
-
-/** Decimales: uno para cantidades chicas con fracción (1.2 albercas), ninguno de 10 para arriba */
-export const decimalesEquivalencia = (n: number) => (n < 10 && !Number.isInteger(Math.round(n * 10) / 10) ? 1 : 0);
-
-export function equivalenciaCO2(co2: number): Equivalencia | null {
-    const arboles = co2 / KG_CO2_POR_ARBOL_ANIO;
-    if (arboles >= 1) return { icono: TreeDeciduous, valor: arboles, nombre: ['árbol', 'árboles'], descripcion: 'absorberían en un año el CO₂ que se evitó' };
-    if (co2 > 0) return { icono: Car, valor: co2 / 0.21, nombre: ['km en auto', 'km en auto'], descripcion: 'equivale al CO₂ que se evitó' };
-    return null;
-}
-export function equivalenciaAgua(litros: number): Equivalencia | null {
-    if (litros >= LITROS_ALBERCA_OLIMPICA)
-        return { icono: Waves, valor: litros / LITROS_ALBERCA_OLIMPICA, nombre: ['alberca olímpica', 'albercas olímpicas'], descripcion: 'de agua que no se contaminó con aceite' };
-    if (litros >= LITROS_TINACO)
-        return { icono: Cylinder, valor: litros / LITROS_TINACO, nombre: ['tinaco', 'tinacos'], descripcion: 'de agua (de 1,100 L) que no se contaminaron con aceite' };
-    if (litros > 0) return { icono: Droplets, valor: litros, nombre: ['litro', 'litros'], descripcion: 'de agua que no se contaminaron con aceite' };
-    return null;
-}
-export function equivalenciaBasura(kg: number): Equivalencia | null {
-    if (kg >= KG_CAMION_RECOLECTOR)
-        return { icono: Truck, valor: kg / KG_CAMION_RECOLECTOR, nombre: ['camión recolector', 'camiones recolectores'], descripcion: 'llenos de basura que no terminó en el mar' };
-    if (kg >= KG_BOLSA_BASURA)
-        return { icono: ShoppingBag, valor: kg / KG_BOLSA_BASURA, nombre: ['bolsa de basura', 'bolsas de basura'], descripcion: 'llenas que no terminaron en el mar' };
-    if (kg > 0) return { icono: Fish, valor: kg, nombre: ['kilo', 'kilos'], descripcion: 'de basura que no terminaron en el mar' };
-    return null;
-}
-
 function ImpactoAmbiental({ totales }: { totales: TotalesPeriodo }) {
     const [verCalculo, setVerCalculo] = useState(false);
-    const co2 = totales.aceiteL * RECINTO_CO2_POR_LITRO_ACEITE + totales.basuronKg * RECINTO_CO2_POR_KG_BASURON;
-    const agua = totales.aceiteL * LITROS_AGUA_POR_LITRO_ACEITE;
+    const co2 = co2EvitadoKg(totales.aceiteL, totales.basuronKg);
+    const agua = aguaProtegidaL(totales.aceiteL);
     const basura = totales.basuraKg;
 
     const tarjetas = [

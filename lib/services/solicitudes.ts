@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Notificacion, Recoleccion, SolicitudConAsociacion, SolicitudRecoleccion } from '@/types/database'
 import type { EstadoSolicitud, TipoResiduo } from '@/lib/constants/residuos'
 
@@ -30,16 +31,17 @@ export function cantidadVigente(s: SolicitudConAsociacion): number {
 export async function getSolicitudes(filtros: { estado?: EstadoSolicitud; asociacionId?: number } = {}) {
   const supabase = createClient()
 
-  let query = supabase
-    .from('solicitudes_recoleccion')
-    .select(SELECT_CON_ASOCIACION)
-    .order('created_at', { ascending: false })
-
-  if (filtros.estado) query = query.eq('estado', filtros.estado)
-  if (filtros.asociacionId) query = query.eq('asociacion_id', filtros.asociacionId)
-
-  const { data, error } = await query
-  if (error) throw error
+  // Todas, por páginas de 1,000 (Supabase corta cada respuesta en 1,000 filas)
+  const data = await traerTodas((desde, hasta) => {
+    let query = supabase
+      .from('solicitudes_recoleccion')
+      .select(SELECT_CON_ASOCIACION)
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
+    if (filtros.estado) query = query.eq('estado', filtros.estado)
+    if (filtros.asociacionId) query = query.eq('asociacion_id', filtros.asociacionId)
+    return query.range(desde, hasta)
+  })
   return (data as SolicitudConAsociacion[]).map(normalizar)
 }
 

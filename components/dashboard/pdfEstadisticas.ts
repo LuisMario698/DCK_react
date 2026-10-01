@@ -16,21 +16,19 @@ import {
     RECINTO_CO2_POR_KG_BASURON,
     RECINTO_CO2_POR_LITRO_ACEITE,
 } from '@/lib/constants/impacto';
+import { aguaProtegidaL, co2EvitadoKg, decimalesEquivalencia, equivalenciaAgua, equivalenciaBasura, equivalenciaCO2 } from '@/lib/utils/equivalencias';
 import {
     PERIODOS,
     TEXTO_PERIODO,
     POR_TRAMO,
     cambio,
-    decimalesEquivalencia,
-    equivalenciaAgua,
-    equivalenciaBasura,
-    equivalenciaCO2,
     etiquetaTramo,
     topeRedondo,
 } from './EstadisticasGenerales';
 
-type RGB = [number, number, number];
-const C = {
+export type RGB = [number, number, number];
+/** Colores SiMAR en RGB para jsPDF (también los usa el reporte mensual) */
+export const C = {
     texto: [11, 34, 54] as RGB,
     texto2: [62, 81, 99] as RGB,
     borde: [214, 206, 189] as RGB,
@@ -55,7 +53,7 @@ const fechaLarga = (t: string) => {
 };
 
 /** El símbolo de SiMAR como imagen para el PDF (null si no carga: el PDF sale igual) */
-function cargarSimbolo(): Promise<string | null> {
+export function cargarSimbolo(): Promise<string | null> {
     return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
@@ -317,8 +315,8 @@ export async function descargarResumenPdf(datos: EstadisticasPeriodo, sinEntrega
 
     // ── Impacto ambiental (estimado) ──────────────────────────────────────────
     titulo('Impacto ambiental (estimado)', 'Lo que el período ayudó a evitar, en cosas conocidas.');
-    const co2 = actual.aceiteL * RECINTO_CO2_POR_LITRO_ACEITE + actual.basuronKg * RECINTO_CO2_POR_KG_BASURON;
-    const agua = actual.aceiteL * LITROS_AGUA_POR_LITRO_ACEITE;
+    const co2 = co2EvitadoKg(actual.aceiteL, actual.basuronKg);
+    const agua = aguaProtegidaL(actual.aceiteL);
     const impactos = [
         { eq: equivalenciaAgua(agua), dato: `${fmtCifra(agua, 'L')} de agua` },
         { eq: equivalenciaCO2(co2), dato: `${fmtCifra(co2, 'kg')} de CO2` },

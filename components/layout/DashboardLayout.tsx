@@ -1,6 +1,7 @@
 'use client';
 
 import { Sidebar } from './Sidebar';
+import { useTituloPestana } from './useTituloPestana';
 import { Header } from './Header';
 import { SidebarProvider, useSidebar } from './SidebarContext';
 import { AvisoGlobal } from './AvisoGlobal';
@@ -14,6 +15,17 @@ import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { BarChart3, Ellipsis, FileText, LayoutGrid, Recycle } from 'lucide-react';
 
+/** Nombre de cada pantalla del recinto en la pestaña del navegador */
+const TITULOS_RECINTO: Record<string, string> = {
+  dashboard: 'Panel',
+  manifiesto: 'Manifiesto',
+  'manifiesto-basuron': 'Basurón',
+  estadisticas: 'Estadísticas',
+  personas: 'Personas',
+  embarcaciones: 'Embarcaciones',
+  asociaciones: 'Empresas recolectoras',
+};
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
@@ -24,6 +36,8 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const t = useTranslations('Sidebar');
   const locale = pathname.split('/')[1] || 'es';
+  // "Manifiesto · SiMAR" en la pestaña (por la última parte de la ruta)
+  useTituloPestana(TITULOS_RECINTO[pathname.split('/').filter(Boolean).pop() ?? ''] ?? 'Panel');
 
   // En celular el menú lateral y la hoja "Más" se cierran solos al llegar a otra pantalla
   useEffect(() => {

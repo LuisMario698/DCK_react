@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { ReporteDetalladoItem } from '@/types/dashboard';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import { getEstadisticasPeriodo, getReporteComplejo, type EstadisticasPeriodo, type PeriodoEstadisticas, type SinEntregar } from '@/lib/services/dashboard_stats';
@@ -115,7 +116,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
 
     // Función para exportar a CSV
     const exportToCSV = (data: ReporteDetalladoItem[]) => {
-        const headers = ['Fecha', 'Folio', 'Buque', 'Tipo Residuo', 'Cantidad', 'Unidad', 'Estado', 'Responsable'];
+        const headers = ['Fecha', 'Folio', 'Embarcación', 'Tipo Residuo', 'Cantidad', 'Unidad', 'Estado', 'Responsable'];
         const csvContent = [
             headers.join(','),
             ...data.map(item => [
@@ -146,7 +147,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
             const exportData = data.map(item => ({
                 'Fecha': parseFechaLocal(item.fecha).toLocaleDateString(),
                 'Folio': item.folio,
-                'Buque': item.buque,
+                'Embarcación': item.buque,
                 'Tipo Residuo': item.tipoResiduo,
                 'Cantidad': item.cantidad,
                 'Unidad': item.unidad,
@@ -178,7 +179,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
 
         } catch (error) {
             console.error("Error exportando a Excel:", error);
-            alert("Error al generar el archivo Excel");
+            toast.error('No se pudo generar el archivo de Excel. Inténtalo de nuevo.');
         }
     };
 
@@ -252,7 +253,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                         <tr>
                             <th>Fecha</th>
                             <th>Folio</th>
-                            <th>Buque</th>
+                            <th>Embarcación</th>
                             <th>Tipo</th>
                             <th>Cantidad</th>
                             <th>Estado</th>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTituloPestana } from '@/components/layout/useTituloPestana';
 import { usePathname } from 'next/navigation';
 import { CreditCard, Layers, LayoutDashboard, ScrollText, Settings2, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
@@ -12,7 +13,7 @@ import { EncabezadoPantalla } from '@/components/ui/simar';
 const PANTALLAS: Record<string, { title: string; subtitle: string; icon: LucideIcon }> = {
     superadmin: { title: 'Resumen', subtitle: 'Estado general de cuentas, suscripciones e ingresos', icon: LayoutDashboard },
     cuentas: { title: 'Cuentas', subtitle: 'Usuarios, roles, suspensiones e invitaciones', icon: Users },
-    suscripciones: { title: 'Suscripciones', subtitle: 'Planes contratados por las asociaciones y sus pagos', icon: CreditCard },
+    suscripciones: { title: 'Suscripciones', subtitle: 'Planes contratados por las empresas y sus pagos', icon: CreditCard },
     planes: { title: 'Planes', subtitle: 'Catálogo de planes y precios (MXN)', icon: Layers },
     auditoria: { title: 'Auditoría', subtitle: 'Bitácora de cambios en la base de datos', icon: ScrollText },
     sistema: { title: 'Sistema', subtitle: 'Mantenimiento, avisos, reglas y uso de recursos', icon: Settings2 },
@@ -32,6 +33,8 @@ function usePantalla() {
  */
 export function HeaderSuperadmin() {
     const { locale, meta } = usePantalla();
+    // "Cuentas · SiMAR" en la pestaña
+    useTituloPestana(meta.title);
 
     return (
         <>

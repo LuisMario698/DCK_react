@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { Button } from './Button';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { usePresencia } from './movimiento';
 
 interface ConfirmationModalProps {
@@ -25,12 +27,15 @@ export function ConfirmationModal({
     isLoading = false
 }: ConfirmationModalProps) {
     // Se queda montada mientras hace la salida (ver DISEÑO_SIMAR.md → Movimiento)
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón que la abrió
+    const panelRef = useRef<HTMLDivElement>(null);
+    useVentanaAccesible(panelRef, isOpen, { alEscape: () => !isLoading && onClose() });
     const { montado, saliendo } = usePresencia(isOpen);
     if (!montado) return null;
 
     return (
         <div className={`${saliendo ? 'simar-velo-sale' : 'simar-velo'} fixed inset-0 z-50 flex items-center justify-center bg-[rgba(11,34,54,0.55)] p-4`}>
-            <div role="alertdialog" aria-modal="true" className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden`}>
+            <div ref={panelRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-label={title} className={`${saliendo ? 'simar-ventana-sale' : 'simar-ventana'} bg-simar-superficie rounded-[28px] shadow-2xl max-w-md w-full overflow-hidden`}>
                 <div className="p-7">
                     <h3 className="text-[22px] font-extrabold text-simar-texto leading-tight mb-2">{title}</h3>
                     <p className="text-lg text-simar-texto-2">{message}</p>

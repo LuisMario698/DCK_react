@@ -85,7 +85,7 @@ export default function PlanesPage() {
                     <EstadoVacio
                         icono={Layers}
                         titulo="Todavía no hay planes"
-                        texto="Crea los planes que ofreces a las asociaciones recolectoras (por ejemplo Básico y Profesional)."
+                        texto="Crea los planes que ofreces a las empresas recolectoras (por ejemplo Básico y Profesional)."
                         accion={
                             <BotonPrimario onClick={() => setEditando('nuevo')}>
                                 <Plus className="w-4 h-4" />
@@ -196,7 +196,7 @@ function TarjetaPlan({
             <ul className="mt-4 space-y-1.5 text-base text-simar-texto flex-1">
                 <li className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-simar-violeta" />
-                    {plan.limite_usuarios ? `Hasta ${plan.limite_usuarios} usuario(s) por asociación` : 'Usuarios ilimitados'}
+                    {plan.limite_usuarios ? `Hasta ${plan.limite_usuarios} usuario(s) por empresa` : 'Usuarios ilimitados'}
                 </li>
                 {plan.caracteristicas.map((c) => (
                     <li key={c} className="flex items-start gap-2">

@@ -1,18 +1,18 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
+import { toast } from 'sonner';
 import { createManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
+import type { Buque as BuqueBD } from '@/types/database';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import { SelectorHora } from '@/components/ui/SelectorHora';
 import { CalendarDays, Check, Clock, Scale, Upload } from 'lucide-react';
 import { horaLocal, hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
 
-interface Buque {
-  id: number;
-  nombre_buque: string;
-  matricula?: string;
-}
+/** Lo que el recibo usa de cada embarcación */
+type Buque = Pick<BuqueBD, 'id' | 'nombre_buque' | 'matricula'>;
 
 interface CreateManifiestoBasuronModalProps {
   isOpen: boolean;
@@ -111,7 +111,7 @@ export function CreateManifiestoBasuronModal({
         ? `${formData.hora_salida}:00`
         : (formData.hora_salida ? formData.hora_salida : null);
 
-      const payload: any = {
+      const payload: Partial<Parameters<typeof createManifiestoBasuron>[0]> = {
         fecha: formData.fecha,
         hora_entrada: horaEntradaSql,
         hora_salida: horaSalidaSql,
@@ -126,17 +126,20 @@ export function CreateManifiestoBasuronModal({
         nombre_usuario: formData.nombre_usuario, // Mantenemos compatibilidad por si acaso
       };
 
-      await createManifiestoBasuron(payload, file || undefined);
+      // Lo que no se captura aquí (estado, ticket, PDF) lo pone la base de datos
+      await createManifiestoBasuron(payload as Parameters<typeof createManifiestoBasuron>[0], file || undefined);
 
-      alert('✅ Registro creado exitosamente');
+      toast.success('Recibo del basurón guardado');
       onSuccess();
       onClose();
       resetForm();
-    } catch (error: any) {
+    } catch (causa) {
+      const error = detalleDe(causa);
       const details = typeof error === 'object' ? JSON.stringify(error) : String(error);
       console.error('Error creando manifiesto basurón:', error, details);
       const msg = error?.message || error?.details || error?.hint || details || 'Error desconocido';
-      alert('❌ Error al crear el registro: ' + msg);
+      console.error('Detalle:', msg);
+      toast.error('No se pudo guardar el recibo. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }
@@ -158,8 +161,8 @@ export function CreateManifiestoBasuronModal({
               <Scale className="w-[30px] h-[30px] movil:w-[22px] movil:h-[22px]" strokeWidth={2} />
             </span>
             <div className="flex-1 min-w-[240px] movil:min-w-0">
-              <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Recibo del relleno sanitario</h1>
-              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+              <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Recibo del basurón</h1>
+              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
             </div>
             {/* En celular el total ya se ve al final de Pesaje */}
             <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:hidden">
@@ -215,8 +218,8 @@ export function CreateManifiestoBasuronModal({
 
               {/* RECIBIMOS DE - Campo de texto libre */}
               <div className="mt-5 movil:mt-3">
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibimos de</label>
-                <input
+                <label htmlFor="create-manifiesto-basuron-modal-1" className="block mb-2 text-[17px] font-bold text-simar-texto">Recibimos de</label>
+                <input id="create-manifiesto-basuron-modal-1"
                   type="text"
                   value={formData.recibimos_de}
                   onChange={(e) => {
@@ -234,8 +237,8 @@ export function CreateManifiestoBasuronModal({
 
               {/* DIRECCIÓN */}
               <div className="mt-5 movil:mt-3">
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Dirección <span className="font-medium text-simar-texto-2">(opcional)</span></label>
-                <input
+                <label htmlFor="create-manifiesto-basuron-modal-2" className="block mb-2 text-[17px] font-bold text-simar-texto">Dirección <span className="font-medium text-simar-texto-2">(opcional)</span></label>
+                <input id="create-manifiesto-basuron-modal-2"
                   type="text"
                   value={formData.direccion}
                   onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
@@ -249,8 +252,8 @@ export function CreateManifiestoBasuronModal({
 
               {/* RECIBÍ */}
               <div className="mt-5 movil:mt-3">
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Recibí</label>
-                <input
+                <label htmlFor="create-manifiesto-basuron-modal-3" className="block mb-2 text-[17px] font-bold text-simar-texto">Recibí</label>
+                <input id="create-manifiesto-basuron-modal-3"
                   type="text"
                   value={formData.nombre_usuario}
                   onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
@@ -264,8 +267,8 @@ export function CreateManifiestoBasuronModal({
 
               {/* Observaciones (crece para que la tarjeta termine a la par de Pesaje) */}
               <div className="mt-5 flex-1 flex flex-col movil:mt-3">
-                <label className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
-                <textarea
+                <label htmlFor="create-manifiesto-basuron-modal-4" className="block mb-2 text-[17px] font-bold text-simar-texto">Observaciones <span className="font-medium text-simar-texto-2">(opcional)</span></label>
+                <textarea id="create-manifiesto-basuron-modal-4"
                   value={formData.observaciones}
                   onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                   onFocus={() => setActiveField('observaciones')}

@@ -1,18 +1,22 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Persona, PersonaConTipo } from '@/types/database'
 
 export async function getPersonas() {
   const supabase = createClient()
 
-  const { data, error } = await supabase
-    .from('personas')
-    .select(`
+  // Todas, por páginas de 1,000 (Supabase corta cada respuesta en 1,000 filas)
+  const data = await traerTodas((desde, hasta) =>
+    supabase
+      .from('personas')
+      .select(`
       *,
       tipo_persona:tipos_persona(*)
     `)
-    .order('nombre')
-
-  if (error) throw error
+      .order('nombre')
+      .order('id')
+      .range(desde, hasta)
+  )
   return data as PersonaConTipo[]
 }
 

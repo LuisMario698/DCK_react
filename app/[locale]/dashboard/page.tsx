@@ -1,7 +1,7 @@
 import { PanelInicio } from '@/components/dashboard/PanelInicio';
 import { createServerClient } from '@/lib/supabase/server';
 import { getResumenPanel, getVistazoPanel } from '@/lib/services/panel_recinto';
-import { hoyPuerto } from '@/lib/constants/suscripciones';
+import { hoyPuerto } from '@/lib/utils/fechas';
 
 export const dynamic = 'force-dynamic';
 

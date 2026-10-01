@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTituloPestana } from '@/components/layout/useTituloPestana';
 import { usePathname } from 'next/navigation';
 import { LogOut, RefreshCw, Wrench } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
@@ -11,6 +12,7 @@ import { getConfiguracionPublica } from '@/lib/services/configuracion';
  * entran a un panel mientras está activo (salvo los superadmins).
  */
 export default function MantenimientoPage() {
+    useTituloPestana('En mantenimiento');
     const { user, signOut } = useAuth();
     const pathname = usePathname();
     const locale = pathname.split('/')[1] || 'es';

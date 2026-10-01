@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Recoleccion, RecoleccionConAsociacion } from '@/types/database'
 
 const BUCKET = 'recolecciones_pdf'
@@ -7,16 +8,16 @@ const BUCKET = 'recolecciones_pdf'
 export async function getRecolecciones(asociacionId?: number) {
   const supabase = createClient()
 
-  let query = supabase
-    .from('recolecciones')
-    .select('*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, rfc, ubicacion)')
-    .order('fecha', { ascending: false })
-    .order('id', { ascending: false })
-
-  if (asociacionId) query = query.eq('asociacion_id', asociacionId)
-
-  const { data, error } = await query
-  if (error) throw error
+  // Todas, por páginas de 1,000 (Supabase corta cada respuesta en 1,000 filas)
+  const data = await traerTodas((desde, hasta) => {
+    let query = supabase
+      .from('recolecciones')
+      .select('*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, rfc, ubicacion)')
+      .order('fecha', { ascending: false })
+      .order('id', { ascending: false })
+    if (asociacionId) query = query.eq('asociacion_id', asociacionId)
+    return query.range(desde, hasta)
+  })
   return (data as RecoleccionConAsociacion[]).map((r) => ({ ...r, cantidad: Number(r.cantidad) }))
 }
 

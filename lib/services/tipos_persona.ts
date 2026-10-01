@@ -48,7 +48,7 @@ export async function createTipoPersona(tipo: Omit<TipoPersona, 'id' | 'created_
 export async function updateTipoPersona(id: number, tipo: Partial<TipoPersona>) {
   const supabase = createClient()
   
-  const updateData: any = {};
+  const updateData: Partial<Pick<TipoPersona, 'nombre_tipo' | 'descripcion'>> = {};
   if (tipo.nombre_tipo !== undefined) updateData.nombre_tipo = tipo.nombre_tipo;
   if (tipo.descripcion !== undefined) updateData.descripcion = tipo.descripcion || null;
   

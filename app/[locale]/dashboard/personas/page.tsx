@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { detalleDe } from '@/lib/utils/errores';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { PersonasTable } from '@/components/personas/PersonasTable';
 import { CreatePersonaModal } from '@/components/personas/CreatePersonaModal';
 import { Pagination } from '@/components/embarcaciones/Pagination';
@@ -42,7 +44,7 @@ export default function PersonasPage() {
       setPersonas(data);
     } catch (error) {
       console.error('Error cargando personas:', error);
-      alert('Error al cargar las personas');
+      toast.error('No se pudieron cargar las personas. Revisa tu conexión.');
     } finally {
       setLoading(false);
     }
@@ -88,15 +90,16 @@ export default function PersonasPage() {
       await loadPersonas();
       setDeleteModalOpen(false);
       setPersonaToDelete(null);
-    } catch (error: any) {
+    } catch (causa) {
+      const error = detalleDe(causa);
       console.error('❌ Error eliminando persona:', error);
       setDeleteModalOpen(false);
 
       // Manejo de errores de llave foránea (similar a embarcaciones)
       if (error?.code === '23503' || error?.message?.includes('violates foreign key constraint') || error?.details?.includes('is still referenced')) {
-        alert('No se puede eliminar porque esta persona tiene registros asociados (ej. Manifiestos o Buques).\n\nSugerencia: Edítala y cambia su estado a "Inactivo" si es posible.');
+        toast.error('No se puede eliminar: esta persona aparece en manifiestos o embarcaciones. Si ya no participa, edítala y márcala como inactiva.', { duration: 10000 });
       } else {
-        alert(t('mensajes.errorEliminar'));
+        toast.error(t('mensajes.errorEliminar'));
       }
     } finally {
       setIsDeleting(false);

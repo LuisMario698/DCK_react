@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { confirmar } from '@/components/ui/Confirmar';
 import { Eye, Ban, Plus, Inbox, FileText } from 'lucide-react';
 import { PUERTO_PENASCO, formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
@@ -85,7 +86,8 @@ export default function SolicitudesPage() {
     }, [cargar]);
 
     const cancelar = async (s: SolicitudConAsociacion) => {
-        if (!confirm('¿Cancelar esta solicitud?')) return;
+        const ok = await confirmar({ titulo: '¿Cancelar esta solicitud?', mensaje: 'El centro de acopio ya no la verá como pendiente.', accion: 'Cancelar solicitud', volver: 'No, dejarla', peligro: true });
+        if (!ok) return;
         try {
             await cancelarSolicitud(s.id);
             toast.success('Solicitud cancelada');

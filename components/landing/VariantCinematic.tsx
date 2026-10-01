@@ -19,11 +19,10 @@ import {
     Recycle,
     FileCheck,
     ShieldCheck,
-    Sprout,
     TreePine,
+    Wrench,
     Waves,
     Anchor,
-    LineChart,
     Quote,
     Globe2,
     X,
@@ -38,6 +37,17 @@ import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 import { NumeroAnimado, usePrefiereMenosMovimiento, usePresencia } from '@/components/ui/movimiento';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
+import {
+    aguaProtegidaL,
+    co2EvitadoKg,
+    decimalesEquivalencia,
+    equivalenciaAgua,
+    equivalenciaBasura,
+    equivalenciaCO2,
+    esUno,
+    type Equivalencia,
+} from '@/lib/utils/equivalencias';
 
 /** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
 const SEGUNDOS_POR_FOTO = 6;
@@ -154,7 +164,8 @@ const AWARENESS_PANELS: {
         icon: Droplets,
         title: 'Aceites y combustibles',
         stat: '1 L',
-        statLabel: 'contamina hasta 1,000,000 L de agua',
+        // Mismo factor que las equivalencias y Estadísticas (LITROS_AGUA_POR_LITRO_ACEITE)
+        statLabel: 'puede contaminar 1,000 L de agua',
         desc: 'Los aceites usados y residuos de diésel derramados en el mar forman películas que impiden el intercambio de oxígeno y afectan toda la cadena alimentaria marina.',
         color: 'bg-[rgba(242,193,78,0.16)] text-[#F2C14E]',
         accent: 'text-[#F2C14E]',
@@ -173,11 +184,12 @@ const AWARENESS_PANELS: {
     {
         icon: Recycle,
         title: 'Economía circular',
-        stat: '100%',
-        cifra: 100,
-        sufijo: '%',
-        statLabel: 'de residuos con destino verificado',
-        desc: 'Cada filtro, cada litro de aceite y cada bolsa de basura es rastreada desde la embarcación hasta su disposición final certificada, cerrando el ciclo.',
+        // Lo que el sistema de verdad registra (antes: "100% de residuos con destino verificado")
+        stat: '3 pasos',
+        cifra: 3,
+        sufijo: ' pasos',
+        statLabel: 'del barco al reciclaje o al relleno',
+        desc: 'Cada filtro, litro de aceite y kilo de basura queda registrado: la embarcación que lo entregó, lo que hay en el centro de acopio y la empresa que se lo llevó a reciclar o el viaje al relleno sanitario.',
         color: 'bg-[rgba(95,209,160,0.16)] text-[#6FD9AE]',
         accent: 'text-[#6FD9AE]',
     },
@@ -186,7 +198,7 @@ const AWARENESS_PANELS: {
         title: 'Cumplimiento MARPOL',
         stat: 'Anexo V',
         statLabel: 'Convenio Internacional',
-        desc: 'MARPOL es la norma internacional que regula la contaminación generada por buques. Nuestro sistema garantiza su cumplimiento con evidencia digital trazable.',
+        desc: 'MARPOL es la norma internacional que regula la contaminación generada por buques. SiMAR guarda la evidencia digital que ayuda a demostrar que se cumple.',
         color: 'bg-[rgba(138,180,248,0.16)] text-[#9DBEF7]',
         accent: 'text-[#9DBEF7]',
     },
@@ -244,71 +256,88 @@ function ModalRoleCard({
     );
 }
 
+/** Año del manifiesto más antiguo recuperado ("Histórico desde", sección de Don Francisco) */
+const ANIO_INICIO_HISTORICO = 2014;
+/** Minutos de papeleo a mano que se estima que ahorra cada manifiesto digital */
+const MINUTOS_POR_MANIFIESTO = 25;
+
+/**
+ * Las equivalencias de "¿Cuánto es cuánto?". Las cuentas son las mismas de Estadísticas
+ * (lib/utils/equivalencias.ts): mismos factores y misma forma de decirlo (albercas, árboles,
+ * camiones). Antes la landing usaba otras (1 L de aceite = 1,000,000 L de agua, bolsas de
+ * plástico a partir de toda la basura, 0.02 árboles por hojas de papel, 40 L de tierra por filtro)
+ * y sumaba la basura de los barcos con la del basurón, que es la misma basura camino al relleno.
+ */
 function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
     const aceite       = stats?.totalAceiteUsado ?? 0;
-    const basuraKg     = (stats?.totalBasura ?? 0) + (stats?.totalBasuron ?? 0);
+    // Sólo lo que entregaron los barcos: el basurón es esa misma basura camino al relleno
+    const basuraKg     = stats?.totalBasura ?? 0;
+    const basuronKg    = stats?.totalBasuron ?? 0;
     const totalFiltros = (stats?.filtrosAceite ?? 0) + (stats?.filtrosDiesel ?? 0) + (stats?.filtrosAire ?? 0);
     const manifiestos  = stats?.totalManifiestos ?? 0;
 
-    const piscinas   = (aceite * 1_000_000) / 2_500_000;
-    const hojas      = manifiestos * 3;
-    const arboles    = hojas / 10_000;
-    const sueloL     = totalFiltros * 40;
-    const bolsas     = basuraKg * 125;
-    const horas      = (manifiestos * 25) / 60;
+    const agua  = aguaProtegidaL(aceite);
+    const co2   = co2EvitadoKg(aceite, basuronKg);
+    const horas = (manifiestos * MINUTOS_POR_MANIFIESTO) / 60;
+    const anios = new Date().getFullYear() - ANIO_INICIO_HISTORICO;
+
+    // Lo grande de la tarjeta sale de la equivalencia; sin datos, ceros con el nombre de siempre
+    const impacto = (eq: Equivalencia | null, porDefecto: { unidad: string; descripcion: string }) =>
+        eq
+            ? {
+                  impactValue: eq.valor,
+                  impactDecimals: decimalesEquivalencia(eq.valor),
+                  impactUnit: esUno(eq.valor) ? eq.nombre[0] : eq.nombre[1],
+                  impactDescription: eq.descripcion,
+              }
+            : { impactValue: 0, impactDecimals: 0, impactUnit: porDefecto.unidad, impactDescription: porDefecto.descripcion };
+    const eqAgua = equivalenciaAgua(agua);
+    const eqBasura = equivalenciaBasura(basuraKg);
+    const eqCO2 = equivalenciaCO2(co2);
 
     return [
         {
-            icon: Waves,
+            icon: eqAgua?.icono ?? Waves,
             label: 'Agua protegida',
             inputValue: aceite,
             inputDecimals: 1,
             inputUnit: 'L',
-            inputCaption: 'de aceite recopilado',
-            impactValue: piscinas,
-            impactDecimals: piscinas >= 100 ? 0 : 1,
-            impactUnit: 'piscinas olímpicas',
-            impactDescription: 'de agua que no se contaminó',
+            inputCaption: 'de aceite recolectado',
+            ...impacto(eqAgua, { unidad: 'albercas olímpicas', descripcion: 'de agua que no se contaminó con aceite' }),
             tono: 'bg-white text-[#1B5FC9]',
             featured: true,
         },
         {
-            icon: Fish,
+            icon: eqBasura?.icono ?? Fish,
             label: 'Mar limpio',
             inputValue: basuraKg,
-            inputDecimals: 1,
+            inputDecimals: 0,
             inputUnit: 'kg',
-            inputCaption: 'de basura gestionada',
-            impactValue: bolsas,
-            impactDecimals: 0,
-            impactUnit: 'bolsas de plástico',
-            impactDescription: 'que no llegaron al océano',
+            inputCaption: 'de basura que entregaron las embarcaciones',
+            ...impacto(eqBasura, { unidad: 'bolsas de basura', descripcion: 'llenas que no terminaron en el mar' }),
             tono: 'bg-[#E4F5F7] text-[#0E7C8A] dark:bg-[rgba(32,178,196,0.2)] dark:text-[#7FE0D6]',
         },
         {
-            icon: TreePine,
-            label: 'Árboles en pie',
-            inputValue: hojas,
+            icon: eqCO2?.icono ?? TreePine,
+            label: 'Aire más limpio',
+            inputValue: co2,
             inputDecimals: 0,
-            inputUnit: 'hojas',
-            inputCaption: 'de papel evitadas',
-            impactValue: arboles,
-            impactDecimals: arboles >= 10 ? 0 : 2,
-            impactUnit: 'árboles',
-            impactDescription: 'que siguen absorbiendo CO₂',
+            inputUnit: 'kg',
+            inputCaption: 'de CO₂ que se evitó (estimado)',
+            ...impacto(eqCO2, { unidad: 'árboles', descripcion: 'absorberían en un año el CO₂ que se evitó' }),
             tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta',
         },
         {
-            icon: Sprout,
-            label: 'Suelo protegido',
-            inputValue: totalFiltros,
+            icon: Wrench,
+            label: 'Filtros de motor',
+            inputValue: manifiestos,
             inputDecimals: 0,
-            inputUnit: 'filtros',
-            inputCaption: 'de motor recibidos',
-            impactValue: sueloL,
+            inputUnit: 'manifiestos',
+            inputCaption: 'capturados',
+            impactValue: totalFiltros,
             impactDecimals: 0,
-            impactUnit: 'litros de tierra',
-            impactDescription: 'libres de contaminación',
+            impactUnit: totalFiltros === 1 ? 'filtro' : 'filtros',
+            impactDescription: 'de aceite, diésel y aire entregados en el puerto',
             tono: 'bg-simar-coral-suave text-simar-coral',
         },
         {
@@ -321,7 +350,7 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             impactValue: horas,
             impactDecimals: 0,
             impactUnit: 'horas',
-            impactDescription: 'devueltas al cuidado del mar',
+            impactDescription: 'de papeleo que ya no se hace a mano',
             tono: 'bg-simar-marea-suave text-simar-marea-tinta',
         },
         {
@@ -329,12 +358,12 @@ function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
             label: 'Historia viva',
             inputValue: manifiestos,
             inputDecimals: 0,
-            inputUnit: 'puntos',
+            inputUnit: 'registros',
             inputCaption: 'de datos ambientales',
-            impactValue: 11,
+            impactValue: anios,
             impactDecimals: 0,
             impactUnit: 'años',
-            impactDescription: 'del Mar de Cortés en evidencia',
+            impactDescription: 'del Mar de Cortés en evidencia digital',
             tono: 'bg-simar-violeta-suave text-simar-violeta',
         },
     ];
@@ -369,6 +398,9 @@ export function VariantCinematic({
     const [menuMovil, setMenuMovil] = useState(false);
     // La ventana de acceso se queda montada mientras hace su salida
     const ventanaAcceso = usePresencia(showLoginModal, 200);
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón "Iniciar sesión"
+    const accesoRef = useRef<HTMLDivElement>(null);
+    useVentanaAccesible(accesoRef, showLoginModal);
 
     // Carrusel: se puede pausar (botón, o al pasar el cursor / enfocar la foto).
     // Con "reducir movimiento" no avanza solo.
@@ -397,6 +429,7 @@ export function VariantCinematic({
             const param = params.get('siguiente');
             const destino = param && /^\/(?!\/)[\w\-/]*$/.test(param) ? param : null;
             // Si se pidió el panel de superadmin, el modal abre directo en el acceso de desarrollador
+            // eslint-disable-next-line react-hooks/set-state-in-effect -- la URL sólo existe en el navegador
             setModalRole(destino && /^\/(\w{2}\/)?superadmin(\/|$)/.test(destino) ? 'superadmin' : readSavedRole());
             setShowLoginModal(true);
             if (destino) setSiguiente(destino);
@@ -418,6 +451,20 @@ export function VariantCinematic({
             window.history.replaceState(null, '', window.location.pathname + (qs ? `?${qs}` : ''));
         }
     };
+
+    // Escape cierra la ventana de acceso, como todas las ventanas de SiMAR
+    const cerrarLoginRef = useRef(cerrarLoginModal);
+    useEffect(() => {
+        cerrarLoginRef.current = cerrarLoginModal;
+    });
+    useEffect(() => {
+        if (!showLoginModal) return;
+        const alTeclear = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') cerrarLoginRef.current();
+        };
+        document.addEventListener('keydown', alTeclear);
+        return () => document.removeEventListener('keydown', alTeclear);
+    }, [showLoginModal]);
 
     const selectModalRole = (r: RolGuardado) => {
         saveRole(r);
@@ -813,7 +860,7 @@ export function VariantCinematic({
                                             {stats.totalManifiestos >= 1000 ? '+' : ''}
                                         </>
                                     ) : (
-                                        '5,000+'
+                                        '—'
                                     )}
                                 </div>
                                 <div className="text-base md:text-[17px] text-simar-texto-2">Manifiestos</div>
@@ -899,7 +946,7 @@ export function VariantCinematic({
 
                             <div className="mt-6 grid grid-cols-2 gap-4 movil:mt-4 movil:gap-3">
                                 <div className="rounded-[22px] bg-simar-superficie border border-simar-borde shadow-simar px-5 py-4 movil:px-4 movil:py-3 min-w-0">
-                                    <div className="text-3xl font-extrabold movil:text-[24px]">2014</div>
+                                    <div className="text-3xl font-extrabold movil:text-[24px]">{ANIO_INICIO_HISTORICO}</div>
                                     <div className="text-base md:text-[17px] text-simar-texto-2">Histórico desde</div>
                                 </div>
                                 <div className="rounded-[22px] bg-simar-superficie border border-simar-borde shadow-simar px-5 py-4 movil:px-4 movil:py-3 min-w-0">
@@ -978,7 +1025,7 @@ export function VariantCinematic({
                         </h2>
                         <p className="reveal mt-4 text-lg md:text-[21px] leading-relaxed text-simar-texto-2 movil:mt-3 movil:text-[16px]" data-delay="400">
                             {hayDatos
-                                ? 'Estos números vienen directamente de los registros que se están capturando en el sistema. Cada cifra es real, viva y crece con cada manifiesto que se registra.'
+                                ? 'Salen de los registros reales que se capturan en el sistema, traducidos a cosas que conoces. Crecen con cada manifiesto que se registra.'
                                 : 'Los números por sí solos dicen poco. Aquí te mostramos lo que realmente significa cada residuo registrado, en cosas que conoces y entiendes.'}
                         </p>
                     </div>
@@ -1041,8 +1088,9 @@ export function VariantCinematic({
                             );
                         })}
                         <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[13px]" data-delay="200">
-                            Cifras calculadas en tiempo real con estándares internacionales (MARPOL · SEMARNAT).
-                            Cada registro que se captura hace crecer estos números.
+                            Estimaciones con los registros reales del sistema y factores aproximados: 1 L de aceite
+                            contamina unos 1,000 L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
+                            papeleo. Cada registro que se captura hace crecer estos números.
                         </p>
                     </div>
                 </div>
@@ -1069,24 +1117,31 @@ export function VariantCinematic({
                                         {stats.totalManifiestos >= 1000 ? '+' : ''}
                                     </>
                                 ) : (
-                                    '5,000+'
+                                    '—'
                                 ),
                                 label: 'Reportes digitalizados',
                                 detail: stats?.totalManifiestos
                                     ? `${stats.totalManifiestos.toLocaleString('es-MX')} registros capturados en el sistema.`
                                     : 'Recuperados de hojas físicas deterioradas.',
                             },
+                            // Un dato real en lugar de "100% · Cada residuo rastreable de inicio a fin"
                             {
-                                icon: LineChart,
-                                value: '100%',
-                                label: 'Trazabilidad digital',
-                                detail: 'Cada residuo rastreable de inicio a fin.',
+                                icon: Droplets,
+                                value: stats?.totalAceiteUsado ? (
+                                    <>
+                                        <NumeroAnimado valor={stats.totalAceiteUsado} duracion={1400} /> L
+                                    </>
+                                ) : (
+                                    '—'
+                                ),
+                                label: 'Aceite usado recuperado',
+                                detail: 'Litros que las embarcaciones entregaron en el puerto en lugar de tirarlos al mar.',
                             },
                             {
                                 icon: Globe2,
-                                value: '2014 – 2025',
+                                value: `${ANIO_INICIO_HISTORICO} – ${new Date().getFullYear()}`,
                                 label: 'Histórico recuperado',
-                                detail: '11 años de datos ambientales preservados.',
+                                detail: `${new Date().getFullYear() - ANIO_INICIO_HISTORICO} años de datos ambientales preservados.`,
                             },
                         ].map((stat, i) => {
                             const Icon = stat.icon;
@@ -1167,14 +1222,15 @@ export function VariantCinematic({
                         </ul>
                     </div>
                     <div className="md:ml-auto md:text-right">
-                        <p className="text-[17px] text-simar-texto-2">© 2025 DCK / ITSPP. Todos los derechos reservados.</p>
-                        {/* Acceso interno al panel de superadmin: discreto a propósito */}
+                        <p className="text-[17px] text-simar-texto-2">© {new Date().getFullYear()} SiMAR · DCK / ITSPP. Todos los derechos reservados.</p>
+                        {/* Acceso interno al panel de superadmin: discreto a propósito (texto chico y gris, sin
+                            ícono; el área que se toca sigue siendo de 44 px). También se llega entrando a
+                            /es/superadmin sin sesión */}
                         <button
                             type="button"
                             onClick={abrirAccesoDesarrollador}
-                            className="mt-1 min-h-[44px] inline-flex items-center gap-2 text-base font-bold text-simar-texto-2 hover:text-simar-texto transition-colors cursor-pointer"
+                            className="mt-1 min-h-[44px] inline-flex items-center text-[14px] text-simar-texto-3 hover:text-simar-texto-2 hover:underline underline-offset-2 transition-colors cursor-pointer"
                         >
-                            <SquareTerminal className="w-[18px] h-[18px]" />
                             Acceso desarrollador
                         </button>
                     </div>
@@ -1184,7 +1240,9 @@ export function VariantCinematic({
             {/* Login Modal: entra y sale (usePresencia); cada paso entra con simar-ventana */}
             {ventanaAcceso.montado && (
                 <div
-                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto"
+                    ref={accesoRef}
+                    tabIndex={-1}
+                    className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto outline-none"
                     role="dialog"
                     aria-modal="true"
                     aria-label="Iniciar sesión"

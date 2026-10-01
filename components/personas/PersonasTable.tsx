@@ -107,7 +107,7 @@ export function PersonasTable({
                 {persona.info_contacto || <span className="text-simar-texto-2">—</span>}
               </TableCell>
               <TableCell className="hidden md:table-cell text-simar-texto-2 whitespace-nowrap">
-                {new Date(persona.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                {new Date(persona.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">

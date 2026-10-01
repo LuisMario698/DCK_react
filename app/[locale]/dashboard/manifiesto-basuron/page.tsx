@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
+import { formatCantidad } from '@/lib/constants/residuos';
+import { toast } from 'sonner';
+import { confirmar } from '@/components/ui/Confirmar';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
-import { ManifiestoBasuronConRelaciones } from '@/types/database';
+import { Buque, ManifiestoBasuronConRelaciones } from '@/types/database';
 import { descargarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron';
 import { ManifiestoBasuronDetails } from '@/components/manifiestos/ManifiestoBasuronDetails';
 import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
@@ -14,11 +17,20 @@ import { parseFechaLocal } from '@/lib/utils/fechas';
 import { PestanasMovil } from '@/components/ui/simar';
 import { FilePlus2, List } from 'lucide-react';
 
-export default function ManifiestoBasuronPage() {
+/** `?ver=ID` abre ese recibo en su ventana de detalle (así llega "Lo último registrado" del Panel) */
+export default function ManifiestoBasuronPage({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
+  const { ver } = use(searchParams);
   const [manifiestos, setManifiestos] = useState<ManifiestoBasuronConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
-  const [buques, setBuques] = useState<any[]>([]);
+  const [buques, setBuques] = useState<Buque[]>([]);
   const [selectedManifiesto, setSelectedManifiesto] = useState<ManifiestoBasuronConRelaciones | null>(null);
+  // El recibo a abrir con ?ver=ID: se abre en cuanto carga la lista (ajuste durante el render)
+  const [porAbrir, setPorAbrir] = useState(Number(ver) > 0 ? Number(ver) : null);
+  if (porAbrir != null && !loading) {
+    setPorAbrir(null);
+    const m = manifiestos.find((x) => x.id === porAbrir);
+    if (m) setSelectedManifiesto(m);
+  }
 
   // Estados para búsqueda y paginación
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,7 +76,7 @@ export default function ManifiestoBasuronPage() {
         );
       case 'fecha':
         // Búsqueda por fecha (formato legible o ISO)
-        const fechaLegible = parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase();
+        const fechaLegible = parseFechaLocal(m.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }).toLowerCase();
         return m.fecha.includes(query) || fechaLegible.includes(query);
       case 'total':
         return m.total_depositado?.toString().includes(query) || false;
@@ -98,13 +110,15 @@ export default function ManifiestoBasuronPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('¿Eliminar?')) {
-      try {
-        await deleteManifiestoBasuron(id);
-        await loadData();
-      } catch (error) {
-        alert('Error al eliminar');
-      }
+    const ok = await confirmar({ titulo: '¿Eliminar este recibo del basurón?', mensaje: 'Ya no se podrá recuperar.', accion: 'Eliminar', peligro: true });
+    if (!ok) return;
+    try {
+      await deleteManifiestoBasuron(id);
+      toast.success('Recibo eliminado');
+      await loadData();
+    } catch (error) {
+      console.error('Error eliminando recibo del basurón:', error);
+      toast.error('No se pudo eliminar el recibo. Inténtalo de nuevo.');
     }
   };
 
@@ -153,7 +167,7 @@ export default function ManifiestoBasuronPage() {
       <div id="lista-registros" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6 movil:p-4 movil:space-y-3 ${vistaMovil === 'nuevo' ? 'movil:hidden' : ''}`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto">Recibos del relleno sanitario</h2>
+            <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto">Recibos del basurón</h2>
             <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">Lista de todos los recibos de pesaje registrados</p>
           </div>
         </div>
@@ -164,11 +178,11 @@ export default function ManifiestoBasuronPage() {
           <div className="flex flex-col sm:flex-row w-full gap-3 movil:flex-row movil:gap-2">
             <select
               value={searchCriteria}
-              onChange={(e) => setSearchCriteria(e.target.value as any)}
+              onChange={(e) => setSearchCriteria(e.target.value as 'ticket' | 'fecha' | 'total')}
               aria-label="Buscar por"
               className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[14px]"
             >
-              <option value="ticket">Ticket / Buque</option>
+              <option value="ticket">Ticket o embarcación</option>
               <option value="fecha">Fecha</option>
               <option value="total">Total</option>
             </select>
@@ -234,10 +248,10 @@ export default function ManifiestoBasuronPage() {
                               <div className="hidden movil:block">
                                 <div className="flex items-center justify-between gap-2">
                                   <span className="font-mono text-[13px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2 py-0.5 rounded-lg whitespace-nowrap truncate">#{m.numero_ticket || m.id}</span>
-                                  <strong className="text-[15px] font-extrabold text-simar-texto whitespace-nowrap">{Number(m.total_depositado || 0).toFixed(2)} kg</strong>
+                                  <strong className="text-[15px] font-extrabold text-simar-texto whitespace-nowrap">{formatCantidad(Number(m.total_depositado || 0))} kg</strong>
                                 </div>
                                 <p className="mt-1.5 flex items-center gap-2 min-w-0">
-                                  <span className="text-[15px] font-bold text-simar-texto truncate">{m.buque?.nombre_buque || 'Sin buque'}</span>
+                                  <span className="text-[15px] font-bold text-simar-texto truncate">{m.buque?.nombre_buque || 'Sin embarcación'}</span>
                                   {m.estado && (
                                     <span className={`flex-shrink-0 px-2 py-px text-[13px] font-bold rounded-full ${m.estado === 'Completado' ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta' : m.estado === 'En Proceso' || m.estado === 'Cancelado' ? 'bg-simar-coral-suave text-simar-coral' : 'bg-simar-papel text-simar-texto-2'}`}>
                                       {m.estado}
@@ -245,7 +259,7 @@ export default function ManifiestoBasuronPage() {
                                   )}
                                 </p>
                                 <p className="mt-1 min-h-[38px] flex items-center pr-[150px] text-[14px] text-simar-texto-2">
-                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   {m.hora_entrada ? ` · ${m.hora_entrada.slice(0, 5)}` : ''}
                                 </p>
                               </div>
@@ -263,26 +277,26 @@ export default function ManifiestoBasuronPage() {
                                   )}
                                 </div>
                                 <span className="text-base font-bold text-simar-texto truncate max-w-[200px]">
-                                  {m.buque?.nombre_buque || 'Sin buque'}
+                                  {m.buque?.nombre_buque || 'Sin embarcación'}
                                 </span>
                                 {/* En celular: fecha, hora y total debajo del ticket */}
                                 <span className="sm:hidden text-base text-simar-texto-2">
-                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                  {parseFechaLocal(m.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                   {m.hora_entrada ? ` · ${m.hora_entrada}` : ''}
                                   {' · '}
-                                  <strong className="text-simar-texto">{Number(m.total_depositado || 0).toFixed(2)} kg</strong>
+                                  <strong className="text-simar-texto">{formatCantidad(Number(m.total_depositado || 0))} kg</strong>
                                 </span>
                               </div>
                             </td>
                             <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto text-center whitespace-nowrap font-medium">
-                              {parseFechaLocal(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                              {parseFechaLocal(m.fecha).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                             </td>
                             <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-simar-texto-2 text-center font-mono">
                               {m.hora_entrada}
                             </td>
                             <td className="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-base text-center">
                               <span className="font-bold text-simar-texto bg-simar-papel px-3 py-1 rounded-full whitespace-nowrap">
-                                {Number(m.total_depositado || 0).toFixed(2)} kg
+                                {formatCantidad(Number(m.total_depositado || 0))} kg
                               </span>
                             </td>
                             <td className="block sm:table-cell px-4 pt-3 pb-4 sm:px-4 md:px-6 sm:py-4 text-base text-simar-texto movil:absolute movil:right-3.5 movil:bottom-3 movil:p-0">

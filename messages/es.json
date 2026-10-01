@@ -7,12 +7,12 @@
       "embarcaciones": "Embarcaciones",
       "logout": "Cerrar sesión",
       "manifiesto": "Manifiesto",
-      "manifiestoBasuron": "Recibo relleno sanitario",
+      "manifiestoBasuron": "Basurón",
       "logout": "Cerrar sesión"
     },
     "externos": {
       "titulo": "Gestión externa",
-      "asociaciones": "Asociaciones recolectoras"
+      "asociaciones": "Empresas recolectoras"
     },
     "version": "CIAD Sistema v1.0"
   },
@@ -23,7 +23,7 @@
       "totalManifiestos": "Total Manifiestos",
       "totalBuques": "Total Buques",
       "totalPersonas": "Total Personas",
-      "totalAsociaciones": "Total Asociaciones"
+      "totalAsociaciones": "Total de empresas"
     },
     "actividad": {
       "titulo": "Actividad Reciente",
@@ -34,7 +34,7 @@
       "nuevoManifiesto": "Nuevo Manifiesto",
       "nuevoBuque": "Nuevo Buque",
       "nuevaPersona": "Nueva persona",
-      "nuevaAsociacion": "Nueva Asociación"
+      "nuevaAsociacion": "Nueva empresa"
     }
   },
   "Personas": {
@@ -70,7 +70,7 @@
       "nombre": "Nombre completo",
       "rut": "RUT",
       "tipo": "Tipo de persona",
-      "seleccioneTipo": "Seleccione un tipo",
+      "seleccioneTipo": "Elige un tipo",
       "email": "Email",
       "telefono": "Teléfono",
       "cancelar": "Cancelar",
@@ -86,13 +86,13 @@
       "cerrar": "Cerrar"
     },
     "mensajes": {
-      "personaCreada": "Persona creada exitosamente",
-      "personaEditada": "Persona actualizada exitosamente",
-      "personaEliminada": "Persona eliminada exitosamente",
-      "errorCrear": "Error al crear persona",
-      "errorEditar": "Error al editar persona",
-      "errorEliminar": "Error al eliminar persona",
-      "confirmEliminar": "¿Está seguro de eliminar esta persona?"
+      "personaCreada": "Persona registrada",
+      "personaEditada": "Cambios guardados",
+      "personaEliminada": "Persona eliminada",
+      "errorCrear": "No se pudo registrar a la persona. Inténtalo de nuevo.",
+      "errorEditar": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+      "errorEliminar": "No se pudo eliminar a la persona. Inténtalo de nuevo.",
+      "confirmEliminar": "¿Eliminar a esta persona? Ya no se podrá recuperar."
     }
   },
   "Embarcaciones": {
@@ -101,7 +101,7 @@
     "buscar": "Buscar embarcación...",
     "nuevaEmbarcacion": "Nueva embarcación",
     "tabla": {
-      "nombre": "Nombre del buque",
+      "nombre": "Nombre de la embarcación",
       "matricula": "Matrícula",
       "bandera": "Bandera",
       "tipo": "Tipo",
@@ -124,33 +124,33 @@
     "modal": {
       "tituloCrear": "Crear nueva embarcación",
       "tituloEditar": "Editar embarcación",
-      "nombreBuque": "Nombre del buque",
+      "nombreBuque": "Nombre de la embarcación",
       "matricula": "Matrícula",
       "numeroOMI": "Número OMI",
       "bandera": "Bandera",
-      "tipoBuque": "Tipo de buque",
-      "seleccioneTipo": "Seleccione un tipo",
+      "tipoBuque": "Tipo de embarcación",
+      "seleccioneTipo": "Elige un tipo",
       "eslora": "Eslora (metros)",
       "manga": "Manga (metros)",
       "puntal": "Puntal (metros)",
       "propietario": "Propietario",
-      "seleccionePropietario": "Seleccione un propietario",
+      "seleccionePropietario": "Elige al propietario",
       "capitan": "Capitán",
-      "seleccioneCapitan": "Seleccione un capitán",
+      "seleccioneCapitan": "Elige al capitán",
       "armador": "Armador",
-      "seleccioneArmador": "Seleccione un armador",
+      "seleccioneArmador": "Elige al armador",
       "cancelar": "Cancelar",
       "crear": "Crear embarcación",
       "guardar": "Guardar cambios"
     },
     "mensajes": {
-      "embarcacionCreada": "Embarcación creada exitosamente",
-      "embarcacionEditada": "Embarcación actualizada exitosamente",
-      "embarcacionEliminada": "Embarcación eliminada exitosamente",
-      "errorCrear": "Error al crear embarcación",
-      "errorEditar": "Error al editar embarcación",
-      "errorEliminar": "Error al eliminar embarcación",
-      "confirmEliminar": "¿Está seguro de eliminar esta embarcación?"
+      "embarcacionCreada": "Embarcación registrada",
+      "embarcacionEditada": "Cambios guardados",
+      "embarcacionEliminada": "Embarcación eliminada",
+      "errorCrear": "No se pudo registrar la embarcación. Inténtalo de nuevo.",
+      "errorEditar": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
+      "errorEliminar": "No se pudo eliminar la embarcación. Inténtalo de nuevo.",
+      "confirmEliminar": "¿Eliminar esta embarcación? Ya no se podrá recuperar."
     }
   },
   "Manifiestos": {
@@ -164,11 +164,11 @@
     },
     "mensajes": {
       "generandoPDF": "Generando PDF...",
-      "pdfGenerado": "PDF generado exitosamente",
-      "errorGenerarPDF": "Error al generar PDF",
+      "pdfGenerado": "PDF listo",
+      "errorGenerarPDF": "No se pudo generar el PDF. Inténtalo de nuevo.",
       "descargando": "Descargando...",
-      "descargaExitosa": "Descarga completada",
-      "errorDescarga": "Error al descargar PDF"
+      "descargaExitosa": "PDF descargado",
+      "errorDescarga": "No se pudo descargar el PDF. Inténtalo de nuevo."
     }
   }
 }

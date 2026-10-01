@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { confirmar } from '@/components/ui/Confirmar';
 import { Plus, Pencil, Trash2, Save, Package, Droplets, Layers, Eye, EyeOff } from 'lucide-react';
 import {
     TIPOS_RESIDUO,
@@ -133,7 +134,7 @@ export function InventarioTab() {
     const togglePublicado = async (item: InventarioResiduo) => {
         try {
             await updateInventario(item.id, { publicado: !item.publicado });
-            toast.success(item.publicado ? 'Residuo oculto para las asociaciones' : 'Residuo publicado');
+            toast.success(item.publicado ? 'Residuo oculto para las empresas' : 'Residuo publicado');
             await cargar();
         } catch (err) {
             toast.error(mensajeError(err));
@@ -144,7 +145,8 @@ export function InventarioTab() {
         if (reservado[item.tipo]) {
             return toast.error('Hay solicitudes aprobadas de este residuo pendientes de recolectar. Complétalas o cancélalas primero.');
         }
-        if (!confirm(`¿Eliminar ${TIPO_RESIDUO_LABEL[item.tipo]} del inventario?`)) return;
+        const ok = await confirmar({ titulo: `¿Quitar ${TIPO_RESIDUO_LABEL[item.tipo].toLowerCase()} del inventario?`, mensaje: 'Las empresas recolectoras ya no lo verán. Puedes volver a agregarlo después.', accion: 'Quitar', peligro: true });
+        if (!ok) return;
         try {
             await deleteInventario(item.id);
             toast.success('Residuo eliminado del inventario');
@@ -187,7 +189,8 @@ export function InventarioTab() {
                     label="Líquidos disponibles"
                     value={`${formatCantidad(totalL)} L`}
                     icon={<Droplets className="w-7 h-7" />}
-                    gradient="bg-simar-coral-suave text-simar-coral"
+                    // El color del aceite (su residuo), no coral: en SiMAR el coral quiere decir "pendiente"
+                    gradient={TIPO_RESIDUO_COLOR.aceite}
                 />
             </div>
 
@@ -264,7 +267,7 @@ export function InventarioTab() {
                                                         ? 'bg-simar-arrecife-suave text-simar-arrecife-tinta hover:bg-simar-arrecife-suave'
                                                         : 'bg-simar-papel text-simar-texto-2 hover:bg-simar-borde-suave'
                                                 }`}
-                                                title={item.publicado ? 'Ocultar a las asociaciones' : 'Publicar a las asociaciones'}
+                                                title={item.publicado ? 'Ocultar a las empresas' : 'Publicar a las empresas'}
                                             >
                                                 {item.publicado ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                                                 {item.publicado ? 'Publicado' : 'Oculto'}
@@ -308,7 +311,7 @@ export function InventarioTab() {
                                             </div>
                                             <p className="text-base text-simar-texto-2">
                                                 Aún no hay residuos en el inventario. Agrega el primero para que las
-                                                asociaciones puedan solicitarlo.
+                                                empresas puedan solicitarlo.
                                             </p>
                                         </div>
                                     </td>

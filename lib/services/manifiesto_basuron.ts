@@ -1,19 +1,23 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { ManifiestoBasuron, ManifiestoBasuronConRelaciones } from '@/types/database'
 import { generarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron'
 
 export async function getManifiestosBasuron() {
   const supabase = createClient()
 
-  const { data, error } = await supabase
-    .from('manifiesto_basuron')
-    .select(`
+  // Todos, por páginas de 1,000 (Supabase corta cada respuesta en 1,000 filas)
+  const data = await traerTodas((desde, hasta) =>
+    supabase
+      .from('manifiesto_basuron')
+      .select(`
       *,
       buque:buque_id(id, nombre_buque)
     `)
-    .order('fecha', { ascending: false })
-
-  if (error) throw error
+      .order('fecha', { ascending: false })
+      .order('id', { ascending: false })
+      .range(desde, hasta)
+  )
   return data as ManifiestoBasuronConRelaciones[]
 }
 
@@ -125,7 +129,7 @@ export async function completarManifiestoBasuron(
 
   if (!updatedData) throw new Error('No se pudo actualizar el manifiesto')
 
-  let finalData = updatedData as ManifiestoBasuronConRelaciones;
+  const finalData = updatedData as ManifiestoBasuronConRelaciones;
 
   // 2. Generar y Subir PDF
   try {

@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useState } from 'react';
+import { useTituloPestana } from '@/components/layout/useTituloPestana';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Ban, Clock, LogOut, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/components/layout/AuthProvider';
@@ -11,6 +12,7 @@ import { useAuth } from '@/components/layout/AuthProvider';
  * también a las cuentas suspendidas por un superadmin (?motivo=suspendida).
  */
 export default function AccesoPendientePage() {
+    useTituloPestana('Acceso pendiente');
     // useSearchParams necesita un límite de Suspense para el prerender
     return (
         <Suspense>
@@ -65,7 +67,7 @@ function AccesoPendiente() {
                             {user?.email ? (
                                 <>
                                     La cuenta <strong className="text-simar-texto">{user.email}</strong> todavía no
-                                    está vinculada a una asociación recolectora ni tiene permisos de administrador.
+                                    está vinculada a una empresa recolectora ni tiene permisos de administrador.
                                 </>
                             ) : (
                                 'Tu cuenta todavía no tiene permisos asignados.'
@@ -73,7 +75,7 @@ function AccesoPendiente() {
                         </p>
                         <p className="text-base text-simar-texto-2 mt-2 leading-relaxed">
                             Pide al centro de acopio de Puerto Peñasco que vincule tu correo desde el módulo de
-                            Asociaciones. En cuanto lo haga podrás entrar.
+                            Empresas. En cuanto lo haga podrás entrar.
                         </p>
                     </>
                 )}

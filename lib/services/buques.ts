@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { traerTodas } from '@/lib/supabase/paginar'
 import { Buque } from '@/types/database'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { hoyLocal } from '@/lib/utils/fechas'
@@ -6,12 +7,15 @@ import { hoyLocal } from '@/lib/utils/fechas'
 export async function getBuques(supabase?: SupabaseClient) {
   const client = supabase || createClient()
 
-  const { data, error } = await client
-    .from('buques')
-    .select('*')
-    .order('fecha_registro', { ascending: false })
-
-  if (error) throw error
+  // Todas, por páginas de 1,000 (Supabase corta cada respuesta en 1,000 filas)
+  const data = await traerTodas((desde, hasta) =>
+    client
+      .from('buques')
+      .select('*')
+      .order('fecha_registro', { ascending: false })
+      .order('id', { ascending: false })
+      .range(desde, hasta)
+  )
   return data as Buque[]
 }
 
