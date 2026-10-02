@@ -1,12 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { use, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { confirmar } from '@/components/ui/Confirmar';
 import { Eye, Ban, Plus, Inbox, FileText } from 'lucide-react';
-import { PUERTO_PENASCO, formatCantidad, type EstadoSolicitud } from '@/lib/constants/residuos';
+import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
 import { SolicitudConAsociacion } from '@/types/database';
 import { cancelarSolicitud, cantidadVigente, getSolicitudes } from '@/lib/services/solicitudes';
@@ -24,6 +24,7 @@ import {
 } from '@/components/asociaciones/ui';
 import { Aviso, EstadoVacio, claseChip } from '@/components/ui/simar';
 import { BotonFlotante } from '@/components/ui/BotonFlotante';
+import { LineaDeTiempo } from '@/components/asociaciones/LineaDeTiempo';
 
 // 'activas' y 'terminadas' (grupos de estados) sólo se eligen en celular
 type Filtro = EstadoSolicitud | 'todas' | 'activas' | 'terminadas';
@@ -56,7 +57,9 @@ const OPCIONES_GRUPO: Record<'activas' | 'terminadas', { value: Filtro; label: s
     ],
 };
 
-export default function SolicitudesPage() {
+/** `?ver=ID` abre esa solicitud (así llegan los avisos y "Tu próxima recolección" del Inicio) */
+export default function SolicitudesPage({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
+    const { ver } = use(searchParams);
     const pathname = usePathname();
     const router = useRouter();
     const locale = pathname.split('/')[1] || 'es';
@@ -66,6 +69,19 @@ export default function SolicitudesPage() {
     const [tab, setTab] = useState<Filtro>('todas');
     const [detalle, setDetalle] = useState<SolicitudConAsociacion | null>(null);
     const asociacionId = useRecolector().asociacion?.id;
+    // La solicitud a abrir con ?ver=ID: se abre en cuanto carga la lista (ajuste durante el render).
+    // Si cambia el enlace estando en la pantalla (otro aviso), se abre la nueva
+    const [verAnterior, setVerAnterior] = useState(ver);
+    const [porAbrir, setPorAbrir] = useState(Number(ver) > 0 ? Number(ver) : null);
+    if (ver !== verAnterior) {
+        setVerAnterior(ver);
+        setPorAbrir(Number(ver) > 0 ? Number(ver) : null);
+    }
+    if (porAbrir != null && !cargando) {
+        setPorAbrir(null);
+        const s = solicitudes.find((x) => x.id === porAbrir);
+        if (s) setDetalle(s);
+    }
 
     const cargar = useCallback(async () => {
         if (!asociacionId) return;
@@ -282,29 +298,19 @@ export default function SolicitudesPage() {
             <BotonFlotante icono={Plus} etiqueta="Nueva solicitud" onClick={() => router.push(`/${locale}/dashboard-recolector/mapa`)} />
 
             {detalle && (
-                <Modal titulo={`Solicitud #${detalle.id}`} subtitulo={PUERTO_PENASCO.nombre} onClose={() => setDetalle(null)}>
+                <Modal
+                    titulo={`${TIPO_RESIDUO_LABEL[detalle.tipo]} · ${formatCantidad(cantidadVigente(detalle))} ${unidadEscrita(detalle.unidad, cantidadVigente(detalle))}`}
+                    subtitulo={`Solicitud n.º ${detalle.id} · ${PUERTO_PENASCO.nombre}`}
+                    onClose={() => setDetalle(null)}
+                >
                     <div className="space-y-4">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <EstadoSolicitudBadge estado={detalle.estado} />
-                            <ResiduoBadge tipo={detalle.tipo} />
+                        {/* El residuo ya va en el título: aquí sólo el estado */}
+                        <EstadoSolicitudBadge estado={detalle.estado} />
+                        {/* Seguimiento: enviada → aprobada → recolectada, con sus fechas (el motivo de un rechazo va en su paso) */}
+                        <div className="rounded-2xl border border-simar-borde p-4 movil:p-3">
+                            <LineaDeTiempo solicitud={detalle} />
                         </div>
-                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 movil:grid-cols-2 movil:gap-2">
-                            <Dato label="Solicitado" valor={`${formatCantidad(detalle.cantidad_solicitada)} ${detalle.unidad}`} />
-                            <Dato
-                                label="Aprobado"
-                                valor={detalle.cantidad_aprobada !== null ? `${formatCantidad(detalle.cantidad_aprobada)} ${detalle.unidad}` : '—'}
-                            />
-                            {detalle.recoleccion && (
-                                <Dato
-                                    label={`Recolectado · ${detalle.recoleccion.folio}`}
-                                    valor={`${formatCantidad(detalle.recoleccion.cantidad)} ${detalle.unidad}`}
-                                />
-                            )}
-                            <Dato label="Fecha propuesta" valor={formatearFecha(detalle.fecha_propuesta)} />
-                            <Dato label="Enviada" valor={formatearFecha(detalle.created_at)} />
-                        </dl>
                         {detalle.mensaje && <Nota titulo="Tu mensaje">{detalle.mensaje}</Nota>}
-                        {detalle.motivo_rechazo && <Nota titulo="Motivo del rechazo">{detalle.motivo_rechazo}</Nota>}
                         {detalle.estado === 'aprobada' && (
                             <Aviso titulo="Tu recolección está aprobada">
                                 Preséntate en el centro de acopio en la fecha acordada. Al recoger, el personal registrará
@@ -328,15 +334,6 @@ export default function SolicitudesPage() {
                     </div>
                 </Modal>
             )}
-        </div>
-    );
-}
-
-function Dato({ label, valor }: { label: string; valor: string }) {
-    return (
-        <div className="rounded-2xl bg-simar-papel px-4 py-3.5 movil:px-3 movil:py-2.5">
-            <dt className="text-[15px] font-bold text-simar-texto-2">{label}</dt>
-            <dd className="mt-0.5 text-[20px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{valor}</dd>
         </div>
     );
 }

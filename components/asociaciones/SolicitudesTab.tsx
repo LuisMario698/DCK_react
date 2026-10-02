@@ -4,8 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { confirmar } from '@/components/ui/Confirmar';
 import { CheckCircle2, XCircle, Truck, Eye, MessageSquare, Inbox, Ban, FileDown, Loader2 } from 'lucide-react';
-import { formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
+import { TIPO_RESIDUO_LABEL, formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
 import { formatearFecha } from '@/lib/utils/fechas';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
+import { LineaDeTiempo } from './LineaDeTiempo';
 import { InventarioResiduo, SolicitudConAsociacion } from '@/types/database';
 import {
     aprobarSolicitud,
@@ -431,7 +433,12 @@ function DetalleModal({
 }) {
     const a = s.asociacion;
     return (
-        <Modal titulo={`Solicitud #${s.id}`} onClose={onClose} ancho="max-w-xl">
+        <Modal
+            titulo={`${TIPO_RESIDUO_LABEL[s.tipo]} · ${formatCantidad(cantidadVigente(s))} ${unidadEscrita(s.unidad, cantidadVigente(s))}`}
+            subtitulo={`Solicitud n.º ${s.id}`}
+            onClose={onClose}
+            ancho="max-w-xl"
+        >
             <div className="space-y-4">
                 <EstadoSolicitudBadge estado={s.estado} />
 
@@ -446,7 +453,7 @@ function DetalleModal({
                                 {[a.ubicacion, a.telefono, a.email].filter(Boolean).join(' · ') || 'Sin datos de contacto'}
                             </p>
                             {a.estado !== 'Activo' && (
-                                <p className="text-[15px] font-semibold text-simar-coral mt-1">Empresa {a.estado.toLowerCase()}</p>
+                                <p className="text-[15px] font-semibold text-simar-coral mt-1">Empresa {ESTADO_EMPRESA_LABEL[a.estado].toLowerCase()}</p>
                             )}
                         </div>
                         <button
@@ -481,12 +488,11 @@ function DetalleModal({
                 </div>
 
                 {s.mensaje && <Nota titulo="Mensaje de la empresa">{s.mensaje}</Nota>}
-                {s.motivo_rechazo && <Nota titulo="Motivo del rechazo">{s.motivo_rechazo}</Nota>}
 
-                <p className="text-[15px] text-simar-texto-2">
-                    Creada {formatearFecha(s.created_at)}
-                    {s.resuelta_at && ` · actualizada ${formatearFecha(s.resuelta_at)}`}
-                </p>
+                {/* Seguimiento con sus fechas (el motivo de un rechazo va en su paso) */}
+                <div className="rounded-2xl border border-simar-borde p-4 movil:p-3">
+                    <LineaDeTiempo solicitud={s} para="recinto" />
+                </div>
 
                 {s.estado === 'pendiente' && (
                     <div className="grid grid-cols-2 gap-3 pt-1">

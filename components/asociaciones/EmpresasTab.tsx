@@ -11,9 +11,11 @@ import {
     TIPOS_RESIDUO,
     TIPO_RESIDUO_LABEL,
     formatCantidad,
+    unidadEscrita,
     type TipoResiduo,
 } from '@/lib/constants/residuos';
-import { formatearFecha } from '@/lib/utils/fechas';
+import { formatearFecha, hoyPuerto, parseFechaLocal } from '@/lib/utils/fechas';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 import { AsociacionRecolectora, Invitacion, Perfil, RecoleccionConAsociacion } from '@/types/database';
 import {
     cancelarInvitacion,
@@ -28,6 +30,7 @@ import {
     type AsociacionInput,
 } from '@/lib/services/asociaciones';
 import { getRecolecciones } from '@/lib/services/recolecciones';
+import { getSolicitudes } from '@/lib/services/solicitudes';
 import {
     BotonPrimario,
     BotonSecundario,
@@ -53,7 +56,18 @@ const ESTADO_CLS: Record<Estado, string> = {
 interface Metricas {
     recolecciones: number;
     porUnidad: Record<string, number>;
+    /** Fecha (YYYY-MM-DD) de su recolección más reciente */
+    ultima: string | null;
 }
+
+/** "hoy", "ayer" o "hace 12 días" (la fecha de una recolección no tiene hora) */
+const haceDias = (fecha: string) => {
+    const d = Math.round((parseFechaLocal(hoyPuerto()).getTime() - parseFechaLocal(fecha).getTime()) / 86400000);
+    return d <= 0 ? 'hoy' : d === 1 ? 'ayer' : `hace ${d} días`;
+};
+
+/** Lo que cada empresa tiene abierto: por revisar (pendientes) y por recolectar (aprobadas) */
+type Abiertas = Map<number, { porRevisar: number; porRecolectar: number }>;
 
 export function EmpresasTab({
     onAbrirChat,
@@ -64,6 +78,7 @@ export function EmpresasTab({
 }) {
     const [asociaciones, setAsociaciones] = useState<AsociacionRecolectora[]>([]);
     const [recolecciones, setRecolecciones] = useState<RecoleccionConAsociacion[]>([]);
+    const [abiertas, setAbiertas] = useState<Abiertas>(new Map());
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [busqueda, setBusqueda] = useState('');
@@ -73,9 +88,19 @@ export function EmpresasTab({
 
     const cargar = useCallback(async () => {
         try {
-            const [aso, rec] = await Promise.all([getAsociaciones(), getRecolecciones()]);
+            const [aso, rec, pendientes, aprobadas] = await Promise.all([
+                getAsociaciones(),
+                getRecolecciones(),
+                getSolicitudes({ estado: 'pendiente' }),
+                getSolicitudes({ estado: 'aprobada' }),
+            ]);
             setAsociaciones(aso);
             setRecolecciones(rec);
+            const a: Abiertas = new Map();
+            const de = (id: number) => a.get(id) ?? a.set(id, { porRevisar: 0, porRecolectar: 0 }).get(id)!;
+            pendientes.forEach((s) => de(s.asociacion_id).porRevisar++);
+            aprobadas.forEach((s) => de(s.asociacion_id).porRecolectar++);
+            setAbiertas(a);
             setError(null);
         } catch (err) {
             setError(mensajeError(err, 'No se pudieron cargar las empresas.'));
@@ -91,9 +116,10 @@ export function EmpresasTab({
     const metricas = useMemo(() => {
         const m = new Map<number, Metricas>();
         recolecciones.forEach((r) => {
-            const actual = m.get(r.asociacion_id) ?? { recolecciones: 0, porUnidad: {} };
+            const actual = m.get(r.asociacion_id) ?? { recolecciones: 0, porUnidad: {}, ultima: null };
             actual.recolecciones++;
             actual.porUnidad[r.unidad] = (actual.porUnidad[r.unidad] ?? 0) + r.cantidad;
+            if (!actual.ultima || r.fecha > actual.ultima) actual.ultima = r.fecha;
             m.set(r.asociacion_id, actual);
         });
         return m;
@@ -183,39 +209,58 @@ export function EmpresasTab({
                         return (
                             <div
                                 key={emp.id}
-                                className="group relative border border-simar-borde rounded-2xl p-5 hover:border-simar-marea-tinta/30 transition-all duration-300 bg-simar-superficie overflow-hidden movil:p-3.5"
+                                className="simar-aparece border border-simar-borde rounded-2xl p-5 hover:border-simar-marea-tinta/40 transition-colors bg-simar-superficie flex flex-col movil:p-3.5"
                                 style={{ animationDelay: `${Math.min(idx * 60, 400)}ms` }}
                             >
-                                <div className="absolute inset-x-0 top-0 h-1 bg-simar-marea opacity-0 group-hover:opacity-100 transition-opacity" />
-
                                 <div className="flex items-start gap-3 mb-4 movil:mb-2.5">
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-simar-marea flex items-center justify-center text-white font-extrabold text-xl shadow-simar group-hover:rotate-3 transition-transform duration-300 movil:w-11 movil:h-11 movil:text-[17px] movil:rounded-[14px]">
+                                    <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-simar-marea flex items-center justify-center text-white font-extrabold text-xl movil:w-11 movil:h-11 movil:text-[17px] movil:rounded-[14px]">
                                         {emp.nombre_asociacion.charAt(0)}
                                     </div>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-base font-bold text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:leading-snug">{emp.nombre_asociacion}</p>
+                                        <p className="text-[17px] font-bold leading-snug text-simar-texto line-clamp-2 movil:text-[16px]">{emp.nombre_asociacion}</p>
                                         <p className="text-[15px] text-simar-texto-2 flex items-center gap-1 mt-1">
-                                            <MapPin className="w-3 h-3 flex-shrink-0" />
+                                            <MapPin className="w-4 h-4 flex-shrink-0" />
                                             <span className="truncate">{emp.ubicacion || emp.direccion || 'Sin ubicación'}</span>
                                         </p>
                                     </div>
                                     <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[15px] font-bold ${ESTADO_CLS[emp.estado]}`}>
-                                        {emp.estado}
+                                        {ESTADO_EMPRESA_LABEL[emp.estado]}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center gap-3 text-[15px] mb-4 pb-4 border-b border-simar-borde text-simar-texto-2 movil:mb-2.5 movil:pb-2.5">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[15px] text-simar-texto-2">
                                     <span className="inline-flex items-center gap-1">
-                                        <Truck className="w-3.5 h-3.5 text-simar-marea-tinta" />
-                                        <span className="font-semibold text-simar-texto">{m?.recolecciones ?? 0}</span> recolecciones
+                                        <Truck className="w-4 h-4 text-simar-marea-tinta" />
+                                        <span className="font-semibold text-simar-texto">{m?.recolecciones ?? 0}</span>{' '}
+                                        {m?.recolecciones === 1 ? 'recolección' : 'recolecciones'}
                                     </span>
-                                    {m?.porUnidad.kg ? (
-                                        <span className="inline-flex items-center gap-1">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-simar-arrecife-tinta" />
-                                            <span className="font-semibold text-simar-texto">{formatCantidad(m.porUnidad.kg)}</span> kg
-                                        </span>
-                                    ) : null}
+                                    {(['L', 'kg', 'pz'] as const).map((u) =>
+                                        m?.porUnidad[u] ? (
+                                            <span key={u} className="inline-flex items-center gap-1">
+                                                <CheckCircle2 className="w-4 h-4 text-simar-arrecife-tinta" />
+                                                <span className="font-semibold text-simar-texto">{formatCantidad(m.porUnidad[u])}</span> {unidadEscrita(u, m.porUnidad[u])}
+                                            </span>
+                                        ) : null
+                                    )}
                                 </div>
+                                <p className="mt-1 text-[15px] text-simar-texto-2 movil:text-[14px]">
+                                    {m?.ultima ? `Última recolección: ${haceDias(m.ultima)}` : 'Aún no ha recolectado'}
+                                </p>
+                                {(abiertas.get(emp.id)?.porRevisar || abiertas.get(emp.id)?.porRecolectar) ? (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {!!abiertas.get(emp.id)?.porRevisar && (
+                                            <span className="px-2.5 py-0.5 rounded-full bg-simar-coral-suave text-simar-coral text-[14px] font-bold">
+                                                {abiertas.get(emp.id)!.porRevisar} por revisar
+                                            </span>
+                                        )}
+                                        {!!abiertas.get(emp.id)?.porRecolectar && (
+                                            <span className="px-2.5 py-0.5 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-[14px] font-bold">
+                                                {abiertas.get(emp.id)!.porRecolectar} por recolectar
+                                            </span>
+                                        )}
+                                    </div>
+                                ) : null}
+                                <div className="mt-4 mb-4 border-t border-simar-borde movil:mt-2.5 movil:mb-2.5" />
 
                                 <div className="flex flex-wrap gap-1.5 mb-5 min-h-[28px] movil:mb-3 movil:min-h-0">
                                     {emp.tipos_residuo.slice(0, 3).map((t) => (
@@ -227,20 +272,20 @@ export function EmpresasTab({
                                         </span>
                                     )}
                                     {emp.tipos_residuo.length === 0 && (
-                                        <span className="text-[15px] text-simar-texto-2">Todos los residuos</span>
+                                        <span className="text-[15px] text-simar-texto-2">Recolecta todos los residuos</span>
                                     )}
                                 </div>
 
-                                <div className="flex gap-2">
+                                <div className="mt-auto flex gap-2">
                                     <button
                                         onClick={() => setSeleccionada(emp)}
-                                        className="flex-1 px-4 py-2.5 text-base font-bold text-simar-texto bg-simar-papel hover:bg-simar-papel rounded-xl transition-all min-h-[52px]"
+                                        className="simar-presiona flex-1 px-4 py-2.5 text-base font-bold text-simar-texto bg-simar-papel hover:bg-simar-borde-suave rounded-xl transition-colors min-h-[52px]"
                                     >
                                         Ver perfil
                                     </button>
                                     <button
                                         onClick={() => onAbrirChat?.(emp.id)}
-                                        className="px-4 py-2.5 text-base font-bold text-white bg-simar-marea hover:bg-simar-marea-hover rounded-xl shadow-simar transition-all inline-flex items-center gap-1.5 min-h-[52px]"
+                                        className="simar-presiona px-4 py-2.5 text-base font-bold text-white bg-simar-marea hover:bg-simar-marea-hover rounded-xl shadow-simar transition-colors inline-flex items-center gap-1.5 min-h-[52px]"
                                     >
                                         <MessageSquare className="w-4 h-4" />
                                         Chat
@@ -409,7 +454,7 @@ function PerfilModal({
         <Modal titulo={empresa.nombre_asociacion} subtitulo={empresa.rfc ? `RFC ${empresa.rfc}` : undefined} onClose={onClose} ancho="max-w-2xl">
             <div className="space-y-5">
                 <div className="flex flex-wrap items-center gap-2">
-                    <span className={`px-2.5 py-1 rounded-full text-[15px] font-bold ${ESTADO_CLS[empresa.estado]}`}>{empresa.estado}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-[15px] font-bold ${ESTADO_CLS[empresa.estado]}`}>{ESTADO_EMPRESA_LABEL[empresa.estado]}</span>
                     {empresa.tipo_asociacion && (
                         <span className="px-2.5 py-1 rounded-full text-[15px] font-semibold bg-simar-papel text-simar-texto-2">
                             {empresa.tipo_asociacion}
@@ -675,9 +720,9 @@ function FormularioModal({
                 {!inicial && (
                     <Campo label="Estado">
                         <select value={datos.estado} onChange={(e) => set('estado', e.target.value as Estado)} className={inputCls}>
-                            <option value="Activo">Activo</option>
-                            <option value="Inactivo">Inactivo</option>
-                            <option value="Suspendido">Suspendido</option>
+                            <option value="Activo">Activa</option>
+                            <option value="Inactivo">Inactiva</option>
+                            <option value="Suspendido">Suspendida</option>
                         </select>
                     </Campo>
                 )}

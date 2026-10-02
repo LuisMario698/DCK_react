@@ -10,6 +10,7 @@ import { abrirComprobante, getRecolecciones } from '@/lib/services/recolecciones
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { Cargando, ErrorCarga, ResiduoBadge, mensajeError } from '@/components/asociaciones/ui';
 import { EstadoVacio } from '@/components/ui/simar';
+import { ConstanciaAnual } from '@/components/recolector/ConstanciaAnual';
 
 export default function HistorialPage() {
     const [historial, setHistorial] = useState<RecoleccionConAsociacion[]>([]);
@@ -81,21 +82,27 @@ export default function HistorialPage() {
         <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            {/* En celular el conteo y la descarga comparten renglón */}
-            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 movil:flex-row movil:items-center movil:justify-between">
+            {/* El conteo y las descargas (en celular, los dos botones en una fila debajo del conteo) */}
+            <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 movil:gap-2">
                 <p className="text-lg text-simar-texto-2 movil:text-[15px] movil:leading-snug">
                     <strong className="text-simar-texto">{historial.length}</strong>{' '}
                     {historial.length === 1 ? 'recolección registrada' : 'recolecciones registradas'}
                 </p>
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
+                <ConstanciaAnual
+                    historial={historial}
+                    className="simar-presiona min-h-[56px] px-5 rounded-[18px] border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-50 text-simar-texto text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
+                />
                 <button
                     onClick={descargarCSV}
                     disabled={historial.length === 0}
-                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:flex-shrink-0 movil:min-h-[42px] movil:px-4 movil:rounded-[14px]"
+                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
                 >
                     <FileDown className="w-[22px] h-[22px]" />
                     <span className="movil:hidden">Descargar historial (CSV)</span>
                     <span className="hidden movil:inline">Descargar CSV</span>
                 </button>
+                </div>
             </div>
 
             <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden" style={{ animationDelay: '0.06s' }}>

@@ -4,9 +4,11 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { Mail, Phone, MapPin, Building2, FileText, Edit3, Save, Globe, User, X, Home, Check } from 'lucide-react';
 import { TIPOS_RESIDUO, TIPO_RESIDUO_LABEL, type TipoResiduo } from '@/lib/constants/residuos';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 import { actualizarMiAsociacion, type MiAsociacionInput } from '@/lib/services/asociaciones';
 import { cambiarContrasena } from '@/lib/services/perfil';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
+import { TarjetaSuscripcion } from '@/components/recolector/MiSuscripcion';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { BotonPrimario, Cargando, ResiduoBadge, inputCls, mensajeError } from '@/components/asociaciones/ui';
 import { claseChip } from '@/components/ui/simar';
@@ -80,7 +82,7 @@ export default function PerfilPage() {
                             <div className="min-w-0">
                                 <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate movil:whitespace-normal">{asociacion.nombre_asociacion}</h3>
                                 <p className="text-base text-simar-texto-2">
-                                    {asociacion.tipo_asociacion || 'Empresa recolectora'} · {asociacion.estado}
+                                    {asociacion.tipo_asociacion || 'Empresa recolectora'} · {ESTADO_EMPRESA_LABEL[asociacion.estado]}
                                 </p>
                             </div>
                         </div>
@@ -121,6 +123,9 @@ export default function PerfilPage() {
                 </div>
 
                 <div className="space-y-6 movil:space-y-3">
+                    {/* Suscripción: plan, estado y cuándo vence */}
+                    <TarjetaSuscripcion />
+
                     {/* Tipos de residuo */}
                     <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.06s' }}>
                         <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Tipos de residuo</h3>

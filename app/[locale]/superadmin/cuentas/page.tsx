@@ -55,6 +55,7 @@ import {
 import { cancelarInvitacion, getAsociaciones } from '@/lib/services/asociaciones';
 import { BotonFlotante } from '@/components/ui/BotonFlotante';
 import type { AsociacionRecolectora, CuentaUsuario, RolUsuario } from '@/types/database';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 
 type FiltroRol = 'todos' | RolUsuario | 'superadmin';
 type FiltroEstado = 'todas' | 'activas' | 'suspendidas' | 'sin_confirmar';
@@ -509,7 +510,7 @@ function SelectorAsociacion({
                 {asociaciones.map((a) => (
                     <option key={a.id} value={a.id}>
                         {a.nombre_asociacion}
-                        {a.estado !== 'Activo' ? ` (${a.estado.toLowerCase()})` : ''}
+                        {a.estado !== 'Activo' ? ` (${ESTADO_EMPRESA_LABEL[a.estado].toLowerCase()})` : ''}
                     </option>
                 ))}
             </select>

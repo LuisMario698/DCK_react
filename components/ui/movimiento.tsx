@@ -89,7 +89,8 @@ export function NumeroAnimado({
         const inicio = desde.current;
         const t0 = performance.now();
         let id = requestAnimationFrame(function paso(ahora: number) {
-            const p = Math.min((ahora - t0) / duracion, 1);
+            // La hora del cuadro puede ser un poco anterior a t0: sin el mínimo de 0 salía "-5"
+            const p = Math.max(0, Math.min((ahora - t0) / duracion, 1));
             const actual = inicio + (final - inicio) * (1 - Math.pow(1 - p, 3)); // frena al final
             desde.current = actual;
             setMostrado(actual);

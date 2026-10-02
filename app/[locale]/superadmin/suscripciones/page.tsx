@@ -75,6 +75,7 @@ import {
     type MetodoPago,
 } from '@/lib/constants/suscripciones';
 import type { Plan, Suscripcion } from '@/types/database';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 
 type FiltroEstado = 'todas' | 'sin' | EstadoSuscripcion;
 const DIAS_AVISO = 15;
@@ -265,7 +266,7 @@ export default function SuscripcionesPage() {
                                                         <p className="text-[15px] text-simar-texto-2">
                                                             {a.estado === 'Activo' ? a.rfc || 'Sin RFC' : (
                                                                 <span className="font-semibold text-simar-coral">
-                                                                    Empresa {a.estado.toLowerCase()}
+                                                                    Empresa {ESTADO_EMPRESA_LABEL[a.estado].toLowerCase()}
                                                                 </span>
                                                             )}
                                                         </p>

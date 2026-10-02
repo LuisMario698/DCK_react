@@ -12,6 +12,8 @@ import { RecolectorProvider, useRecolector } from '@/components/recolector/Recol
 import { AvisoGlobal } from '@/components/layout/AvisoGlobal';
 import { FondoSimar } from '@/components/layout/FondoSimar';
 import { ESTADO_SUSCRIPCION_LABEL } from '@/lib/constants/suscripciones';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
+import { AvisoVencimiento } from '@/components/recolector/MiSuscripcion';
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -38,6 +40,7 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                         <AvisoGlobal />
                         <AvisoSuperadmin />
                         <AvisoEstado />
+                        <AvisoVencimiento />
                         {/* Cada pantalla entra con un fundido corto (simar-pagina). overflow-x-clip y no hidden:
                             hidden lo vuelve contenedor de desplazamiento (DISEÑO_SIMAR.md → "Cuidado") */}
                         <div key={pathname} className="simar-pagina max-w-[100vw] overflow-x-clip">
@@ -123,7 +126,7 @@ function AvisoEstado() {
             <AlertTriangle className="w-6 h-6 flex-shrink-0 text-simar-coral movil:w-5 movil:h-5" />
             {motivoBloqueo === 'asociacion' ? (
                 <p>
-                    Tu empresa está <strong>{asociacion.estado.toLowerCase()}</strong>. Puedes consultar tu historial y
+                    Tu empresa está <strong>{ESTADO_EMPRESA_LABEL[asociacion.estado].toLowerCase()}</strong>. Puedes consultar tu historial y
                     escribir al centro de acopio, pero no crear nuevas solicitudes de recolección.
                 </p>
             ) : (

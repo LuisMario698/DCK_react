@@ -210,7 +210,7 @@ export interface SolicitudRecoleccion {
 export interface SolicitudConAsociacion extends SolicitudRecoleccion {
   asociacion: Pick<AsociacionRecolectora, 'id' | 'nombre_asociacion' | 'ubicacion' | 'email' | 'telefono' | 'rfc' | 'estado'> | null;
   /** Presente cuando la solicitud ya se completó. */
-  recoleccion?: Pick<Recoleccion, 'folio' | 'cantidad'> | null;
+  recoleccion?: Pick<Recoleccion, 'folio' | 'cantidad' | 'fecha'> | null;
 }
 
 export interface Recoleccion {

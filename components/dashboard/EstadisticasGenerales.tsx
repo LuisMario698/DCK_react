@@ -22,7 +22,6 @@ import {
     Download,
     Droplet,
     FileText,
-    Leaf,
     LineChart,
     Loader2,
     Minus,
@@ -35,14 +34,13 @@ import { NumeroAnimado } from '@/components/ui/movimiento';
 import type { EstadisticasPeriodo, Granularidad, PeriodoEstadisticas, SinEntregar, TotalesPeriodo, TramoSerie } from '@/lib/services/dashboard_stats';
 import { DestinoResiduos } from './DestinoResiduos';
 import { ReporteDelMes } from './ReporteDelMes';
+import { ImpactoEquivalencias, fmtCifra, type TarjetaImpacto } from '@/components/ui/ImpactoEquivalencias';
 import {
     aguaProtegidaL,
     co2EvitadoKg,
-    decimalesEquivalencia,
     equivalenciaAgua,
     equivalenciaBasura,
     equivalenciaCO2,
-    type Equivalencia,
 } from '@/lib/utils/equivalencias';
 import {
     KG_CAMION_RECOLECTOR,
@@ -808,17 +806,10 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
 
 // ── Impacto ambiental (estimado) ──────────────────────────────────────────────
 //
-// Lo principal es la equivalencia en algo conocido ("1.2 albercas olímpicas", "416 árboles"):
-// número grande y su nombre. La cifra técnica ("2.9 millones de litros") va debajo, como dato de
-// apoyo. La equivalencia cambia con el tamaño (albercas o tinacos, camiones o bolsas) para no
-// decir "0.1 albercas". Cómo se calcula se abre aparte.
-
-const fmtEntero = (n: number) => Math.round(n).toLocaleString('es-MX');
-const fmtCifra = (n: number, unidad: string) =>
-    n >= 1_000_000 ? `${(n / 1_000_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })} millones de ${unidad === 'L' ? 'litros' : unidad}` : `${fmtEntero(n)} ${unidad}`;
+// La tarjeta es la misma del Impacto del portal de empresas (components/ui/ImpactoEquivalencias.tsx):
+// aquí sólo se eligen las tres equivalencias del recinto (agua, CO₂ y basura) y cómo se calculan.
 
 function ImpactoAmbiental({ totales }: { totales: TotalesPeriodo }) {
-    const [verCalculo, setVerCalculo] = useState(false);
     const co2 = co2EvitadoKg(totales.aceiteL, totales.basuronKg);
     const agua = aguaProtegidaL(totales.aceiteL);
     const basura = totales.basuraKg;
@@ -827,101 +818,28 @@ function ImpactoAmbiental({ totales }: { totales: TotalesPeriodo }) {
         { eq: equivalenciaAgua(agua), dato: `${fmtCifra(agua, 'L')} de agua` },
         { eq: equivalenciaCO2(co2), dato: `${fmtCifra(co2, 'kg')} de CO₂` },
         { eq: equivalenciaBasura(basura), dato: `${fmtCifra(basura, 'kg')} de basura` },
-    ].filter((t): t is { eq: Equivalencia; dato: string } => t.eq !== null);
+    ].filter((t): t is TarjetaImpacto => t.eq !== null);
 
     return (
-        <section
-            className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 md:p-7 min-w-0 movil:p-4 movil:rounded-[22px]"
+        <ImpactoEquivalencias
+            subtitulo="Lo que el período ayudó a evitar, en cosas conocidas"
+            tarjetas={tarjetas}
+            vacio="Sin entregas en este período: todavía no hay impacto que calcular."
             style={{ animationDelay: '0.22s' }}
-        >
-            <div className="flex items-start gap-3">
-                <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center movil:w-9 movil:h-9">
-                    <Leaf className="w-6 h-6 movil:w-[18px] movil:h-[18px]" strokeWidth={2} aria-hidden="true" />
-                </span>
-                <div className="flex-1 min-w-0">
-                    <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">
-                        Impacto ambiental{' '}
-                        <span className="align-middle inline-flex px-2.5 py-0.5 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[14px] font-bold movil:text-[12px]">
-                            Estimado
-                        </span>
-                    </h3>
-                    <p className="text-[17px] text-simar-texto-2 movil:text-[14px]">Lo que el período ayudó a evitar, en cosas conocidas</p>
-                </div>
-            </div>
-
-            {tarjetas.length > 0 ? (
-                // En computadora, las tres lado a lado; en celular, una bajo otra con el ícono a la izquierda
-                <ul className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 movil:mt-3.5 movil:gap-2.5">
-                    {tarjetas.map(({ eq, dato }, i) => {
-                        const decimales = decimalesEquivalencia(eq.valor);
-                        const uno = Math.round(eq.valor * 10 ** decimales) / 10 ** decimales === 1;
-                        return (
-                            <li
-                                key={eq.nombre[1]}
-                                className="rounded-[22px] bg-simar-arrecife-suave p-5 flex flex-col movil:grid movil:grid-cols-[auto_1fr] movil:gap-x-3 movil:p-3.5 movil:rounded-[18px]"
-                            >
-                                <span className="w-14 h-14 rounded-full bg-simar-superficie text-simar-arrecife-tinta flex items-center justify-center movil:row-span-3 movil:w-11 movil:h-11">
-                                    <eq.icono className="w-7 h-7 movil:w-[22px] movil:h-[22px]" strokeWidth={2} aria-hidden="true" />
-                                </span>
-                                {/* La equivalencia es lo grande */}
-                                <p className="mt-4 text-[44px] font-extrabold leading-none text-simar-texto movil:mt-0 movil:text-[30px]">
-                                    <NumeroAnimado valor={eq.valor} decimales={decimales} duracion={1300 + i * 150} />
-                                </p>
-                                <p className="mt-1 text-[20px] font-extrabold leading-tight text-simar-arrecife-tinta movil:text-[16px]">{uno ? eq.nombre[0] : eq.nombre[1]}</p>
-                                <p className="mt-1 text-[15px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[13.5px]">{eq.descripcion}</p>
-                                {/* La cifra técnica, como dato de apoyo */}
-                                <p className="mt-auto pt-3 text-[14px] font-bold text-simar-texto-2 movil:col-start-2 movil:pt-1.5 movil:text-[12.5px]">
-                                    <span className="block border-t border-simar-arrecife-tinta/20 pt-2.5 movil:border-0 movil:pt-0">{dato}</span>
-                                </p>
-                            </li>
-                        );
-                    })}
-                </ul>
-            ) : (
-                <p className="mt-4 rounded-2xl bg-simar-papel px-5 py-8 text-center text-[17px] text-simar-texto-2 movil:text-[14px]">
-                    Sin entregas en este período: todavía no hay impacto que calcular.
-                </p>
-            )}
-
-            {/* Cómo se calcula: a la vista para quien lo busque, sin ocupar lugar */}
-            <div className="mt-4 pt-3 border-t border-simar-borde-suave movil:mt-3">
-                <button
-                    type="button"
-                    onClick={() => setVerCalculo((v) => !v)}
-                    aria-expanded={verCalculo}
-                    aria-controls="calculo-impacto"
-                    className="simar-presiona inline-flex items-center gap-1.5 min-h-[44px] -ml-1 px-1 rounded-xl text-[15px] font-bold text-simar-marea-tinta movil:text-[14px]"
-                >
-                    ¿Cómo se calcula?
-                    <ChevronDown className={`w-[18px] h-[18px] transition-transform duration-300 ${verCalculo ? 'rotate-180' : ''}`} aria-hidden="true" />
-                </button>
-                <div
-                    id="calculo-impacto"
-                    className={`grid transition-[grid-template-rows,opacity] duration-300 ${verCalculo ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
-                    style={{ transitionTimingFunction: 'var(--simar-frena)' }}
-                    inert={!verCalculo}
-                >
-                    <div className="overflow-hidden">
-                        <ul className="mt-1 space-y-1.5 text-[15px] leading-snug text-simar-texto-2 movil:text-[13.5px]">
-                            <li>
-                                Agua: cada litro de aceite recolectado evita contaminar {LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua. Una alberca
-                                olímpica tiene {(LITROS_ALBERCA_OLIMPICA / 1_000_000).toLocaleString('es-MX')} millones de litros.
-                            </li>
-                            <li>
-                                CO₂: litros de aceite × {RECINTO_CO2_POR_LITRO_ACEITE} + kg al basurón × {RECINTO_CO2_POR_KG_BASURON}. Un árbol absorbe unos{' '}
-                                {KG_CO2_POR_ARBOL_ANIO} kg de CO₂ al año.
-                            </li>
-                            <li>
-                                Basura: los kilos que las embarcaciones entregaron en el recinto en lugar de tirarlos al mar. Un camión recolector lleva unas{' '}
-                                {(KG_CAMION_RECOLECTOR / 1000).toLocaleString('es-MX')} toneladas.
-                            </li>
-                            <li className="font-bold text-simar-texto">
-                                Son factores provisionales, pendientes de validar con SEMARNAT y DCK: sirven para dar una idea, no para reportes oficiales.
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
+            calculo={[
+                <>
+                    Agua: cada litro de aceite recolectado evita contaminar {LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua. Una alberca olímpica tiene{' '}
+                    {(LITROS_ALBERCA_OLIMPICA / 1_000_000).toLocaleString('es-MX')} millones de litros.
+                </>,
+                <>
+                    CO₂: litros de aceite × {RECINTO_CO2_POR_LITRO_ACEITE} + kg al basurón × {RECINTO_CO2_POR_KG_BASURON}. Un árbol absorbe unos {KG_CO2_POR_ARBOL_ANIO} kg de
+                    CO₂ al año.
+                </>,
+                <>
+                    Basura: los kilos que las embarcaciones entregaron en el recinto en lugar de tirarlos al mar. Un camión recolector lleva unas{' '}
+                    {(KG_CAMION_RECOLECTOR / 1000).toLocaleString('es-MX')} toneladas.
+                </>,
+            ]}
+        />
     );
 }

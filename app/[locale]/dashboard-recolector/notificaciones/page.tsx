@@ -1,11 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { toast } from 'sonner';
 import { BellOff, CheckCheck } from 'lucide-react';
 import { tiempoRelativo } from '@/lib/constants/residuos';
 import { agruparPorDia } from '@/lib/utils/fechas';
-import { Notificacion } from '@/types/database';
+import { Notificacion, SolicitudRecoleccion } from '@/types/database';
+import { getSolicitudes } from '@/lib/services/solicitudes';
+import { destinoDelAviso } from '@/components/recolector/destinoAviso';
 import {
     getNotificaciones,
     marcarNotificacionesLeidas,
@@ -21,12 +25,20 @@ export default function NotificacionesPage() {
     const { recargarContadores, asociacion, esSuperadmin } = useRecolector();
     const asociacionId = asociacion?.id;
     const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
+    // Para saber qué solicitud abre cada aviso
+    const [solicitudes, setSolicitudes] = useState<SolicitudRecoleccion[]>([]);
     const [cargando, setCargando] = useState(true);
+    const base = `/${usePathname().split('/')[1] || 'es'}/dashboard-recolector`;
 
     const cargar = useCallback(async () => {
         if (!asociacionId) return;
         try {
-            setNotificaciones(await getNotificaciones(100, { destinatario: 'recolector', asociacionId }));
+            const [notif, sol] = await Promise.all([
+                getNotificaciones(100, { destinatario: 'recolector', asociacionId }),
+                getSolicitudes({ asociacionId }),
+            ]);
+            setNotificaciones(notif);
+            setSolicitudes(sol);
         } catch (err) {
             toast.error(mensajeError(err, 'No se pudieron cargar las notificaciones.'));
         } finally {
@@ -89,13 +101,15 @@ export default function NotificacionesPage() {
                             <h3 className="px-5 sm:px-6 pt-4 pb-1 text-[15px] font-bold text-simar-texto-2 movil:px-3.5 movil:pt-3 movil:text-[13px]">{grupo}</h3>
                             <ul className="divide-y divide-simar-borde-suave">
                                 {items.map((n) => (
-                                    <li
-                                        key={n.id}
+                                    <li key={n.id}>
+                                    {/* Tocar un aviso lo marca como leído y abre su solicitud (o Residuos, si es un residuo nuevo) */}
+                                    <Link
+                                        href={destinoDelAviso(n, solicitudes, base)}
                                         onClick={() => !n.leida && marcar([n.id])}
                                         className={`px-5 sm:px-6 py-4 transition-colors flex items-start gap-3.5 border-l-[5px] ${
                                             n.leida
                                                 ? 'border-l-transparent hover:bg-simar-papel'
-                                                : 'border-l-simar-marea-tinta bg-simar-marea-suave/50 cursor-pointer'
+                                                : 'border-l-simar-marea-tinta bg-simar-marea-suave/50 hover:bg-simar-marea-suave'
                                         }`}
                                     >
                                         <NotifIcon tipo={n.tipo} size="md" />
@@ -112,6 +126,7 @@ export default function NotificacionesPage() {
                                             {n.detalle && <p className="text-base text-simar-texto-2">{n.detalle}</p>}
                                             <p className="text-[15px] text-simar-texto-2 mt-1">{tiempoRelativo(n.created_at)}</p>
                                         </div>
+                                    </Link>
                                     </li>
                                 ))}
                             </ul>

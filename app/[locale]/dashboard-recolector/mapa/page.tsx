@@ -4,7 +4,6 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { toast } from 'sonner';
 import {
     CheckCircle2,
     MapPin,
@@ -27,28 +26,21 @@ import {
     tiempoRelativo,
     type TipoResiduo,
 } from '@/lib/constants/residuos';
-import { hoyLocal } from '@/lib/utils/fechas';
 import { InventarioResiduo } from '@/types/database';
 import { getInventario } from '@/lib/services/inventario';
-import { crearSolicitud } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
 import { MapaCentroAcopio } from '@/components/recolector/MapaCentroAcopio';
+import { SolicitarModal } from '@/components/recolector/SolicitarModal';
 import {
-    BotonPrimario,
-    BotonSecundario,
-    Campo,
     Cargando,
     ControlSegmentado,
     ErrorCarga,
     Modal,
-    ResiduoBadge,
-    inputCls,
     mensajeError,
 } from '@/components/asociaciones/ui';
 import { TarjetaDato, claseChip } from '@/components/ui/simar';
 import { useEsCelular } from '@/components/layout/useEsCelular';
-import { SelectorFecha } from '@/components/ui/SelectorFecha';
 
 export default function MapaPage() {
     const pathname = usePathname();
@@ -477,80 +469,3 @@ function ResiduosCelular({
     );
 }
 
-function SolicitarModal({
-    residuo,
-    onClose,
-    onCreada,
-    locale,
-    enfocar = true,
-}: {
-    residuo: InventarioResiduo;
-    onClose: () => void;
-    onCreada: () => void;
-    locale: string;
-    /** En celular no: el teclado taparía media hoja antes de ver qué se pide */
-    enfocar?: boolean;
-}) {
-    const hoy = hoyLocal();
-    const [cantidad, setCantidad] = useState(String(residuo.cantidad));
-    const [fecha, setFecha] = useState(hoy);
-    const [mensaje, setMensaje] = useState('');
-    const [enviando, setEnviando] = useState(false);
-
-    const valor = Number(cantidad);
-    const invalida = !cantidad || Number.isNaN(valor) || valor <= 0 || valor > residuo.cantidad || !fecha || fecha < hoy;
-
-    const enviar = async () => {
-        setEnviando(true);
-        try {
-            await crearSolicitud({ tipo: residuo.tipo as TipoResiduo, cantidad: valor, fechaPropuesta: fecha, mensaje });
-            toast.success('Solicitud enviada al centro de acopio', {
-                description: 'Te avisaremos cuando la aprueben.',
-                action: {
-                    label: 'Ver',
-                    onClick: () => (window.location.href = `/${locale}/dashboard-recolector/solicitudes`),
-                },
-            });
-            onCreada();
-        } catch (err) {
-            toast.error(mensajeError(err));
-            setEnviando(false);
-        }
-    };
-
-    return (
-        <Modal titulo="Solicitar recolección" subtitulo={`${PUERTO_PENASCO.nombre} · disponible: ${formatCantidad(residuo.cantidad)} ${residuo.unidad}`} onClose={onClose}>
-            <div className="space-y-4">
-                <ResiduoBadge tipo={residuo.tipo} size="md" />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <Campo label={`Cantidad (${residuo.unidad})`} ayuda={`Máximo ${formatCantidad(residuo.cantidad)} ${residuo.unidad}`}>
-                        <input
-                            type="number"
-                            inputMode="decimal"
-                            min={0}
-                            step="0.01"
-                            max={residuo.cantidad}
-                            value={cantidad}
-                            onChange={(e) => setCantidad(e.target.value)}
-                            className={inputCls}
-                            autoFocus={enfocar}
-                        />
-                    </Campo>
-                    <Campo label="Fecha propuesta de recolección">
-                        <SelectorFecha etiqueta="Fecha propuesta de recolección" valor={fecha} onCambiar={setFecha} min={hoy} />
-                    </Campo>
-                </div>
-                <Campo label="Mensaje (opcional)" ayuda="Horario, tipo de unidad que enviarás, persona que recoge…">
-                    <textarea rows={3} value={mensaje} onChange={(e) => setMensaje(e.target.value)} className={inputCls} />
-                </Campo>
-                {/* En celular la acción principal lleva el ancho sobrante: "Enviar solicitud" en una línea */}
-                <div className="grid grid-cols-2 gap-3 pt-1 movil:grid-cols-[auto_1fr]">
-                    <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
-                    <BotonPrimario onClick={enviar} cargando={enviando} disabled={invalida}>
-                        <Send className="w-4 h-4" /> Enviar solicitud
-                    </BotonPrimario>
-                </div>
-            </div>
-        </Modal>
-    );
-}

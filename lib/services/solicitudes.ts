@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/client'
 import { traerTodas } from '@/lib/supabase/paginar'
 import { Notificacion, Recoleccion, SolicitudConAsociacion, SolicitudRecoleccion } from '@/types/database'
-import type { EstadoSolicitud, TipoResiduo } from '@/lib/constants/residuos'
+import { TIPOS_RESIDUO, TIPO_RESIDUO_LABEL, type EstadoSolicitud, type TipoResiduo } from '@/lib/constants/residuos'
 
 const SELECT_CON_ASOCIACION =
-  '*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, ubicacion, email, telefono, rfc, estado), recoleccion:recolecciones(folio, cantidad)'
+  '*, asociacion:asociaciones_recolectoras(id, nombre_asociacion, ubicacion, email, telefono, rfc, estado), recoleccion:recolecciones(folio, cantidad, fecha)'
 
 function normalizar<T extends SolicitudRecoleccion>(s: T): T {
   const base = {
@@ -15,8 +15,8 @@ function normalizar<T extends SolicitudRecoleccion>(s: T): T {
   if (!('recoleccion' in s)) return base
   // Relación 1:1 (solicitud_id es único); según la versión de PostgREST llega como objeto o arreglo
   const r = (s as { recoleccion?: unknown }).recoleccion
-  const rec = (Array.isArray(r) ? r[0] : r) as { folio: string; cantidad: number } | null | undefined
-  return { ...base, recoleccion: rec ? { folio: rec.folio, cantidad: Number(rec.cantidad) } : null }
+  const rec = (Array.isArray(r) ? r[0] : r) as { folio: string; cantidad: number; fecha: string } | null | undefined
+  return { ...base, recoleccion: rec ? { folio: rec.folio, cantidad: Number(rec.cantidad), fecha: rec.fecha } : null }
 }
 
 /** Cantidad a mostrar: la recolectada si ya se completó, si no la aprobada o la solicitada. */
@@ -79,6 +79,43 @@ export async function buscarSolicitudDeAviso(aviso: Pick<Notificacion, 'tipo' | 
 
   if (error) throw error
   return (data?.[0]?.id as number | undefined) ?? null
+}
+
+// Estados en los que puede estar hoy una solicitud de la que habló un aviso
+const ESTADOS_DEL_AVISO: Partial<Record<Notificacion['tipo'], EstadoSolicitud[]>> = {
+  nueva_solicitud: ['pendiente', 'aprobada', 'completada', 'rechazada', 'cancelada'],
+  aprobada: ['aprobada', 'completada'],
+  rechazada: ['rechazada'],
+  completada: ['completada'],
+  cancelada: ['cancelada'],
+}
+
+/**
+ * La solicitud de la que habla un aviso del portal, buscada entre las que la empresa ya tiene
+ * cargadas (sin otra consulta). El aviso se crea en la misma transacción que el cambio, así que su
+ * hora es la del `updated_at` (y `resuelta_at`) de la solicitud en ese momento. Si después la
+ * solicitud cambió otra vez (aprobada y luego completada), esa hora ya no está: entonces se toma la
+ * más reciente del mismo residuo ("100 L de aceite usado") creada antes del aviso y en un estado
+ * compatible. null si el aviso no es de una solicitud o no se encuentra.
+ */
+export function solicitudDelAviso(
+  aviso: Pick<Notificacion, 'tipo' | 'detalle' | 'created_at'>,
+  solicitudes: SolicitudRecoleccion[]
+): number | null {
+  const estados = ESTADOS_DEL_AVISO[aviso.tipo]
+  if (!estados) return null
+  const hora = new Date(aviso.created_at).getTime()
+  const misma = (t: string | null) => t !== null && new Date(t).getTime() === hora
+
+  const exacta = solicitudes.find((s) => misma(s.updated_at) || misma(s.resuelta_at) || misma(s.created_at))
+  if (exacta) return exacta.id
+
+  const detalle = (aviso.detalle ?? '').toLowerCase()
+  const tipo = TIPOS_RESIDUO.find((t) => detalle.includes(' de ' + TIPO_RESIDUO_LABEL[t].toLowerCase()))
+  const candidatas = solicitudes
+    .filter((s) => (!tipo || s.tipo === tipo) && estados.includes(s.estado) && new Date(s.created_at).getTime() <= hora)
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+  return candidatas[0]?.id ?? null
 }
 
 // ── Acciones (todas pasan por funciones RPC que validan rol e inventario) ──

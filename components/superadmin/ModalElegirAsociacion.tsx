@@ -7,6 +7,7 @@ import { BotonPrimario, BotonSecundario, Cargando, Modal, inputCls, mensajeError
 import { getAsociaciones } from '@/lib/services/asociaciones';
 import { vincularMiAsociacion } from '@/lib/services/superadmin';
 import type { AsociacionRecolectora } from '@/types/database';
+import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 
 /** Evento que avisa a los sidebars que cambió la asociación del superadmin. */
 export const EVENTO_PERFIL_ACTUALIZADO = 'simar:perfil-actualizado';
@@ -102,7 +103,7 @@ export function ModalElegirAsociacion({
                                         <span className="min-w-0 flex-1">
                                             <span className="block text-base font-semibold text-simar-texto">{a.nombre_asociacion}</span>
                                             <span className="block text-[15px] text-simar-texto-2">
-                                                {a.estado !== 'Activo' ? `Empresa ${a.estado.toLowerCase()} · ` : ''}
+                                                {a.estado !== 'Activo' ? `Empresa ${ESTADO_EMPRESA_LABEL[a.estado].toLowerCase()} · ` : ''}
                                                 {a.rfc || 'Sin RFC'}
                                             </span>
                                         </span>
