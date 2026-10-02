@@ -613,6 +613,8 @@ No dibujes a mano lo que ya existe. Estas piezas ya siguen el lenguaje:
 | `components/ui/Button.tsx` | `variant`: `primary` (marea), `secondary` (borde 2 px), `danger` (coral sólido); `size`: `sm` 44 px, `md` 52 px, `lg` 60 px |
 | `components/ui/ConfirmationModal.tsx` | Confirmación de borrado |
 | `components/ui/Confirmar.tsx` | `confirmar()` (pregunta como función, devuelve `Promise<boolean>`) y `<Confirmador />`. Ver 10.11 |
+| `components/ui/ImpactoEquivalencias.tsx` | Tarjeta "Impacto ambiental · Estimado" con sus equivalencias y "¿Cómo se calcula?" (Estadísticas y portal). Ver 10.18 y 10.20 |
+| `components/asociaciones/LineaDeTiempo.tsx` | Seguimiento de una solicitud (Enviada → Aprobada → Recolectada). Ver 10.20 |
 | `components/ui/useVentanaAccesible.ts` | Foco adentro, Tab que no se sale y foco de regreso en cualquier ventana. Ver 10.11 |
 | `components/layout/useTituloPestana.ts` + `lib/constants/titulo.ts` | Título de la pestaña del navegador: `tituloPantalla('Personas')` → "Personas · SiMAR". Conserva el "(3) " de avisos sin leer y lo vuelve a poner si Next reescribe el `<title>` |
 | `components/ui/Table.tsx` | `Table`, `TableHeader`, `TableHead`, `TableRow`, `TableCell` |
@@ -778,6 +780,51 @@ basura marea, basurón arrecife.
 - **`LogoSimar` con visibilidad por tamaño:** si le pasas `hidden` / `lg:inline-flex` en
   `className`, el componente ya no agrega su propio `inline-flex` (chocaban y en celular salían
   dos logos con el menú colapsado).
+
+### 10.20 Portal de empresas
+
+Lo que la empresa recolectora ve (`app/[locale]/dashboard-recolector/`). Cada material siempre en su
+unidad: el aceite en litros, los reciclables en kilos y los filtros en piezas, nunca sumados.
+
+- **Inicio**: saludo con la hora y el día del puerto (`saludoPuerto`, `fechaHoyPuerto`) y una frase
+  con lo más importante ("Hoy tienes una recolección…", "Tu próxima recolección es el jueves 3 de
+  octubre.", lo que espera revisión o lo disponible); cuatro datos (solicitudes activas,
+  recolecciones, "Lo que has recolectado" por unidad —"100 L · 250 kg"— y el CO₂e); **Disponible
+  ahora** con "Solicitar" en cada renglón (abre `SolicitarModal`, la misma ventana que Residuos;
+  "Lo recolectas" en lo que la empresa eligió en su perfil); **Tus recolecciones** (la próxima
+  aprobada con su día grande, "Hoy / Mañana / En 5 días", "Ver solicitud" y "Cómo llegar"; lo que
+  espera revisión) y la **actividad reciente**. El mapa grande se quitó del Inicio: siempre era el
+  mismo punto; sigue en Residuos. En celular va primero "Tus recolecciones" si hay algo programado o
+  en revisión; si no, después de lo disponible.
+- **Solicitar**: si la cantidad o la fecha no sirven lo dice debajo del campo ("Sólo hay 400 litros
+  disponibles."), no sólo apaga el botón.
+- **Avisos que abren su solicitud**: en Notificaciones y en el Inicio cada aviso lleva a
+  `solicitudes?ver=ID` (la ventana de esa solicitud abierta) o a Residuos si es un residuo nuevo
+  (`destinoDelAviso`). Los avisos no guardan el id: `solicitudDelAviso` lo encuentra entre las
+  solicitudes ya cargadas por la hora del cambio y, si la solicitud cambió después, por el residuo
+  y el estado.
+- **Seguimiento** (`components/asociaciones/LineaDeTiempo.tsx`, también en el detalle del recinto):
+  Enviada → Aprobada → Recolectada (o Rechazada con su motivo / Cancelada), con fechas. Hecho =
+  palomita verde; lo que sigue = anillo azul y "· Ahora"; lo que falta = círculo vacío. El título de
+  la ventana dice qué es ("Aceite usado · 100 litros") y el número va abajo ("Solicitud n.º 5").
+- **Impacto**: la gráfica muestra un material a la vez (Aceite · Reciclables · Filtros, el mismo
+  selector que la tendencia de Estadísticas) y empieza por el que la empresa sí recolecta. El
+  impacto es la misma tarjeta de Estadísticas (`components/ui/ImpactoEquivalencias.tsx`) con las
+  mismas cuentas (`lib/utils/equivalencias.ts`): agua protegida por el aceite, CO₂e y los kilos
+  reciclados ("bolsas de basura que se reciclaron en vez de ir al relleno").
+- **Suscripción** (`components/recolector/MiSuscripcion.tsx`): "Tu suscripción" en Perfil (plan,
+  estado, cuándo vence y qué hacer) y, una semana antes de que venza, un aviso coral arriba de cada
+  pantalla con "Ver detalles". El cobro es manual: "comunícate con el equipo de SiMAR".
+- **Constancia del año** (Historial → `ConstanciaAnual` → `pdfConstancia.ts`): se elige un año con
+  recolecciones y sale un PDF con la frase "Se hace constar que…", el total por residuo, cada
+  recolección con su folio y firmas del centro de acopio y de la empresa. Usa los datos del
+  Historial (sin otra consulta).
+- **Estado de la empresa** en femenino en toda la interfaz (`ESTADO_EMPRESA_LABEL`: Activa, Inactiva,
+  Suspendida); en la base sigue "Activo / Inactivo / Suspendido".
+
+**Tarjetas de empresa del recinto** (Empresas recolectoras → Empresas): lo que se ha llevado en cada
+unidad, "Última recolección: hace 12 días" y lo que tiene abierto ("1 por revisar" en coral, "1 por
+recolectar" en azul). Sin giro del ícono ni barra al pasar el cursor (sección 8); nombre de 17 px.
 
 ---
 

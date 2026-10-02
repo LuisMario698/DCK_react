@@ -49,7 +49,11 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
   sale de `tituloPantalla()` / `useTituloPestana`. En un `catch`, `detalleDe(causa)` en vez de
   `any`. Ver DISEÑO_SIMAR.md §10.11, §10.12 y §11.
 - **Nombres en la interfaz:** "Basurón" (recibo del relleno), "Empresas recolectoras" (en código y
-  BD siguen siendo `asociacion*`) y "embarcación" (no "buque"). Fechas con `es-MX`.
+  BD siguen siendo `asociacion*`) y "embarcación" (no "buque"). Fechas con `es-MX`. El estado de una
+  empresa se muestra con `ESTADO_EMPRESA_LABEL` ("Activa"; en BD "Activo").
+- **Portal de empresas:** ver DISEÑO_SIMAR.md §10.20. La tarjeta de impacto
+  (`components/ui/ImpactoEquivalencias.tsx`) y la línea de tiempo de una solicitud
+  (`components/asociaciones/LineaDeTiempo.tsx`) son las mismas en el recinto y en el portal.
 - **La "hora de hoy" es la del puerto** (`hoyPuerto()` en `lib/utils/fechas.ts`,
   `America/Hermosillo`): el servidor de Vercel corre en UTC.
 - **i18n parcial:** sólo `Sidebar`, `personas`, `embarcaciones` y `manifiesto` usan
