@@ -7,16 +7,13 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import {
   BarChart3,
-  Building2,
   ChevronRight,
   FileText,
   Inbox,
   MessageSquare,
   Package,
   Scale,
-  Ship,
   Truck,
-  Users,
   type LucideIcon,
 } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
@@ -88,24 +85,6 @@ const ActionCard = ({
       className={`md:hidden w-7 h-7 flex-shrink-0 ${principal ? 'text-white/80' : 'text-simar-texto-2 movil:absolute movil:top-4 movil:right-3.5 movil:w-5 movil:h-5'}`}
       strokeWidth={2}
     />
-  </Link>
-);
-
-// Acceso a otra sección. En celular es un mosaico (ícono arriba y palabra), tres por fila.
-// `dato`: cuántos hay ("48", "3 activas"); en el mosaico va debajo de la palabra.
-const OtraSeccion = ({ href, Icon, label, dato }: { href: string; Icon: LucideIcon; label: string; dato?: string }) => (
-  <Link
-    href={href}
-    className="simar-presiona min-h-[60px] px-6 rounded-[18px] bg-simar-superficie border border-simar-borde shadow-simar text-simar-texto text-[19px] font-bold flex items-center gap-3 hover:bg-simar-superficie hover:border-simar-marea movil:flex-col movil:justify-center movil:gap-1 movil:min-h-[88px] movil:px-1.5 movil:text-[14px] movil:text-center movil:leading-tight"
-  >
-    <Icon className="w-6 h-6 text-simar-marea-tinta" strokeWidth={2} />
-    {label}
-    {dato && (
-      <span className="px-2.5 py-0.5 rounded-full bg-simar-papel text-[15px] font-semibold text-simar-texto-2 tabular-nums movil:px-0 movil:py-0 movil:bg-transparent movil:text-[12px]">
-        {dato}
-      </span>
-    )}
-    <ChevronRight aria-hidden="true" className="sm:hidden movil:hidden ml-auto w-6 h-6 text-simar-texto-2" strokeWidth={2} />
   </Link>
 );
 
@@ -469,10 +448,8 @@ export function PanelInicio({
   const base = `/${locale}/dashboard`;
   const pendientes = resumen ? pendientesDe(resumen, hoy, base) : [];
   const hayAgenda = (resumen?.proximas.total ?? 0) > 0;
-  const conteos = vistazo?.conteos;
 
   return (
-    // En columna para poder reacomodar en celular: ahí "Un vistazo" baja al final (movil:order-1)
     <div className="relative max-w-[1600px] flex flex-col">
       <PanelEnVivo />
 
@@ -545,29 +522,14 @@ export function PanelInicio({
         />
       </div>
 
-      {/* Un vistazo: lo último registrado y lo que hay en el acopio. En celular va al final, después
-          de "Otras secciones", para que lo de arriba siga cabiendo en una pantalla */}
+      {/* Un vistazo: lo último registrado y lo que hay en el acopio. Embarcaciones, Personas y Empresas
+          están en el menú (en celular, en "Más") */}
       {vistazo && (
-        <div className="mt-5 md:mt-7 grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-4 md:gap-6 movil:order-1 movil:mt-5 movil:gap-3">
+        <div className="mt-5 md:mt-7 grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-4 md:gap-6 movil:mt-3 movil:gap-3">
           <LoUltimo recientes={vistazo.recientes} base={base} />
           <Acopio acopio={vistazo.acopio} base={base} />
         </div>
       )}
-
-      {/* Accesos rápidos a otras secciones, con cuántos hay */}
-      <section className="simar-aparece mt-9 movil:mt-5" style={{ animationDelay: '0.36s' }}>
-        <h2 className="text-xl font-bold text-simar-texto-2 movil:text-[15px] movil:px-1">Otras secciones</h2>
-        <div className="mt-3.5 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-3.5 movil:grid-cols-3 movil:gap-2.5 movil:mt-2">
-          <OtraSeccion href={`${base}/embarcaciones`} Icon={Ship} label="Embarcaciones" dato={conteos && formatCantidad(conteos.embarcaciones)} />
-          <OtraSeccion href={`${base}/personas`} Icon={Users} label="Personas" dato={conteos && formatCantidad(conteos.personas)} />
-          <OtraSeccion
-            href={`${base}/asociaciones`}
-            Icon={Building2}
-            label="Empresas"
-            dato={conteos && `${conteos.asociacionesActivas} ${plural(conteos.asociacionesActivas, 'activa', 'activas')}`}
-          />
-        </div>
-      </section>
     </div>
   );
 }

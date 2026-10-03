@@ -24,7 +24,7 @@ export interface PasoRecorrido {
  * dice qué hacer y, cuando se hizo, cambia a "¡Listo!" con "Seguir".
  */
 export interface PruebaPaso {
-    /** Qué hacer, en una frase: "Toca «Firmar» y firma con tu dedo." */
+    /** Qué hacer, en una frase: "Toca «Firmar» y haz una firma de prueba." */
     texto: string;
     /** Lo único que se puede tocar (el primer selector que esté a la vista) */
     objetivo: string[];
@@ -88,9 +88,9 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 objetivo: ['[data-recorrido="manifiesto-firmas"]'],
                 icono: PenLine,
                 titulo: 'Se firma en la pantalla',
-                texto: 'La tripulación **firma con el dedo** y sale el **PDF oficial**, listo para entregarlo a SEMARNAT. Ya no hay papel.',
+                texto: 'La tripulación **firma digitalmente** en la pantalla y sale el **PDF oficial**, listo para entregarlo a SEMARNAT. Ya no hay papel.',
                 prueba: {
-                    texto: 'Toca «Firmar» y firma con tu dedo o con el mouse.',
+                    texto: 'Toca «Firmar» y haz una firma de prueba en el recuadro.',
                     objetivo: ['[data-recorrido="firma-oficial"]'],
                     listo: { tipo: 'texto', selector: '[data-recorrido="firma-oficial"]', texto: 'Firmado' },
                     hecho: 'Esa firma ya va en el PDF del manifiesto.',
@@ -170,10 +170,10 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
             },
             {
                 ruta: '/dashboard-recolector',
-                objetivo: ['section[aria-label="Lo importante"]', '[data-recorrido="portal-saludo"]'],
+                objetivo: ['[data-recorrido="portal-importante"]', '[data-recorrido="portal-saludo"]'],
                 icono: Bell,
                 titulo: 'El puerto te avisa',
-                texto: 'Cuando el puerto aprueba, en tu Inicio ves **el día de tu recolección** y sus **mensajes**.',
+                texto: 'Cuando el puerto aprueba, en tu Inicio ves **el día de tu recolección** y, a un lado, sus **avisos** y **mensajes**.',
             },
             {
                 ruta: '/dashboard-recolector/impacto',

@@ -381,8 +381,6 @@ angostan y "Estadísticas" se partía a media palabra; así se achica con su tar
 </Link>
 ```
 
-Los accesos secundarios van como pastillas (`OtraSeccion`): 60 px, ícono azul y texto de 19 px.
-
 **El Panel del recinto** (`components/dashboard/PanelInicio.tsx`; los datos, en
 `lib/services/panel_recinto.ts` → `getResumenPanel`) sigue siendo un menú, pero dice lo que va del
 día y lo que falta, sin gráficas:
@@ -421,11 +419,11 @@ día y lo que falta, sin gráficas:
   y **En el centro de acopio** (el inventario con cantidad, cada residuo con su color, la cantidad
   grande y su unidad escrita: litros, piezas, kg; "Sin publicar" si las empresas no lo ven; sin
   barras, porque kg, L y piezas no se comparan). Lado a lado sólo desde `xl` (columnas
-  `minmax(0,…)`, si no se desbordaban a 1100 px); más angosto, uno debajo del otro; en celular bajan
-  al final, después de "Otras secciones". Cada renglón de "Lo último registrado" **abre ese
-  registro**: `manifiesto?ver=ID` y `manifiesto-basuron?ver=ID` abren su ventana de detalle en
-  cuanto carga la lista.
-- **Otras secciones con cuántos hay:** "Embarcaciones 12", "Personas 18", "Empresas 3 activas".
+  `minmax(0,…)`, si no se desbordaban a 1100 px); más angosto, uno debajo del otro. Es lo último
+  del Panel. Cada renglón de "Lo último registrado" **abre ese registro**: `manifiesto?ver=ID` y
+  `manifiesto-basuron?ver=ID` abren su ventana de detalle en cuanto carga la lista.
+- **Sin "Otras secciones":** Embarcaciones, Personas y Empresas ya están en el menú (en celular, en
+  "Más"); repetirlas al pie del Panel sólo lo alargaba.
 - **Un dato vivo por tarjeta**, en una pastilla bajo la descripción (`clasePastilla` en
   `components/dashboard/pastilla.ts`): "Último: hace 2 h" (Manifiesto y Basurón) y "34 manifiestos en 30 días" (el mismo número que Estadísticas en "1 mes"). En una
   tarjeta angosta pasa a dos renglones; por eso sus esquinas son de 16 px y no de píldora. Si en
@@ -796,21 +794,31 @@ basura marea, basurón arrecife.
 Lo que la empresa recolectora ve (`app/[locale]/dashboard-recolector/`). Cada material siempre en su
 unidad: el aceite en litros, los reciclables en kilos y los filtros en piezas, nunca sumados.
 
-- **Inicio**: saludo con la hora y el día del puerto (`saludoPuerto`, `fechaHoyPuerto`) y una frase
-  con lo más importante ("Hoy tienes una recolección…", "Tu próxima recolección es el jueves 3 de
-  octubre.", lo que espera revisión o lo disponible); cuatro datos (solicitudes activas,
-  recolecciones, "Lo que has recolectado" por unidad —"100 L · 250 kg"— y el CO₂e); **Disponible
-  ahora** con "Solicitar" en cada renglón (abre `SolicitarModal`, la misma ventana que Residuos;
-  "Lo recolectas" en lo que la empresa eligió en su perfil) y la **actividad reciente**. El mapa
-  grande se quitó del Inicio: siempre era el mismo punto; sigue en Residuos.
-- **Lo importante** (`components/recolector/LoImportante.tsx`), justo debajo del saludo y sólo si
-  hay algo: la **recolección agendada** como la tarjeta principal del Panel (azul sólido, ícono en
-  círculo blanco, el día en grande, pastillas "Mañana" y "Recién aprobada", "Ver solicitud" en blanco
-  y "Cómo llegar"; las demás agendadas debajo); si ya pasó su fecha, tarjeta blanca con "Ya pasó su
-  fecha" en coral y "Escribir". Luego los **avisos sin leer** que cambian algo (aprobada, completada,
-  rechazada, cancelada) con el formato de `Aviso` (fondo suave verde o coral, ícono del tono, texto
-  oscuro), botón azul ("Ver motivo", "Ver solicitud") y "Entendido" (lo marca como leído); los
-  **mensajes nuevos** (aviso azul con el contador coral y "Abrir mensajes") y lo que espera revisión.
+- **Inicio**, de lo más importante a lo que acompaña (piezas en
+  `components/recolector/LoImportante.tsx`):
+  1. **Saludo** con la hora y el día del puerto (`saludoPuerto`, `fechaHoyPuerto`), una frase que
+     resume sin repetir la tarjeta de abajo ("Tienes una recolección agendada y 1 solicitud en
+     revisión.", o lo disponible) y "Ver residuos y solicitar".
+  2. **Lo importante**, lado a lado desde `xl` (`1.6fr` / `1fr`, la misma altura): la **próxima
+     recolección** como la tarjeta principal del Panel (azul sólido, ícono en círculo blanco, el día
+     en grande, pastillas "Mañana" y "Recién aprobada", "Ver solicitud" en blanco y "Cómo llegar"
+     abajo; las demás agendadas debajo; si ya pasó su fecha, tarjeta blanca con "Ya pasó su fecha"
+     en coral y "Escribir") y **Avisos**.
+  3. **Disponible ahora** con "Solicitar" en cada renglón (abre `SolicitarModal`, la misma ventana
+     que Residuos; "Lo recolectas" en lo que la empresa eligió en su perfil) y **Tu resumen** a un
+     lado: solicitudes activas, recolecciones, "Lo que has recolectado" por unidad ("100 L · 250
+     kg") y el CO₂e, uno por renglón, cada uno lleva a su pantalla.
+
+  Sin recolección agendada, "Disponible ahora" sube junto a Avisos y Tu resumen va a lo ancho (cuatro
+  columnas). En celular, uno debajo del otro en ese orden. El mapa grande se quitó del Inicio: siempre
+  era el mismo punto; sigue en Residuos.
+- **Avisos** (una sola tarjeta blanca): el contador coral junto al título, los **mensajes nuevos**
+  y los últimos avisos, primero los que no ha visto, **tres renglones** como máximo y "Ver todos los
+  avisos" abajo. Cada renglón: el ícono del aviso (`NotifIcon`), el título y "Nueva" si no lo ha
+  visto (fondo azul suave, como en Notificaciones), y la hora con el detalle en una línea. Tocarlo lo
+  marca como visto y abre su solicitud. Antes cada aviso era una tarjeta de color completo con "Ver"
+  y "Entendido", más el aviso azul de mensajes y el renglón de lo que espera revisión: con dos o
+  tres avisos se juntaba un bulto, y además se repetían abajo en "Actividad reciente" (ya no existe).
 - **Mis solicitudes**: las aprobadas en azul suave con franja azul y su día ("Sábado 3 de octubre ·
   Mañana"); las rechazadas con franja coral y el motivo a la vista. Es el patrón de "No leído"
   (§10.19).

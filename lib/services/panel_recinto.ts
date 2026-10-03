@@ -195,7 +195,6 @@ export interface VistazoPanel {
     recientes: MovimientoReciente[];
     /** Lo que hay hoy en el centro de acopio (sólo lo que tiene cantidad) */
     acopio: ResiduoEnAcopio[];
-    conteos: { embarcaciones: number; personas: number; asociacionesActivas: number };
 }
 
 type RelacionBuque = { nombre_buque: string | null } | { nombre_buque: string | null }[] | null;
@@ -206,7 +205,7 @@ const RECIENTES = 5;
 export async function getVistazoPanel(supabase: SupabaseClient): Promise<VistazoPanel> {
     const reciente = { ascending: false, nullsFirst: false };
 
-    const [man, bas, rec, inv, buques, personas, asociaciones] = await Promise.all([
+    const [man, bas, rec, inv] = await Promise.all([
         sinError(
             supabase
                 .from('manifiestos')
@@ -231,9 +230,6 @@ export async function getVistazoPanel(supabase: SupabaseClient): Promise<Vistazo
                 .limit(RECIENTES)
         ),
         sinError(supabase.from('inventario_residuos').select('tipo, cantidad, unidad, publicado').gt('cantidad', 0)),
-        sinError(supabase.from('buques').select('id', { count: 'exact', head: true })),
-        sinError(supabase.from('personas').select('id', { count: 'exact', head: true })),
-        sinError(supabase.from('asociaciones_recolectoras').select('id', { count: 'exact', head: true }).eq('estado', 'Activo')),
     ]);
 
     type FilaM = { id: number; numero_manifiesto: string | null; created_at: string; buque: RelacionBuque };
@@ -282,13 +278,5 @@ export async function getVistazoPanel(supabase: SupabaseClient): Promise<Vistazo
         .map((r) => ({ ...r, cantidad: Number(r.cantidad) || 0 }))
         .sort((a, b) => TIPOS_RESIDUO.indexOf(a.tipo) - TIPOS_RESIDUO.indexOf(b.tipo));
 
-    return {
-        recientes,
-        acopio,
-        conteos: {
-            embarcaciones: buques.count ?? 0,
-            personas: personas.count ?? 0,
-            asociacionesActivas: asociaciones.count ?? 0,
-        },
-    };
+    return { recientes, acopio };
 }
