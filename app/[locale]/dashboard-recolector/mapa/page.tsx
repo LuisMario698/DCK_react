@@ -152,7 +152,7 @@ export default function MapaPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Mapa enmarcado como tarjeta; ocupa toda la altura del panel de residuos */}
-                <section data-recorrido="residuos" className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
+                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
                     <div className="flex-1 min-h-[400px] rounded-[22px] overflow-hidden">
                         <MapaCentroAcopio alto="h-full" zoom={15} />
                     </div>
@@ -191,7 +191,7 @@ export default function MapaPage() {
                         />
                     </div>
 
-                    <div className="p-5 flex-1 overflow-y-auto">
+                    <div data-recorrido="residuos" className="p-5 flex-1 overflow-y-auto">
                         <div className="flex items-center justify-between gap-3 mb-3">
                             <p className="text-[17px] font-bold text-simar-texto">Residuos publicados</p>
                             {misTipos.length > 0 && (

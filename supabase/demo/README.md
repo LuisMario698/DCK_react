@@ -1,21 +1,24 @@
 # Demostración de SiMAR
 
 Una copia de SiMAR para el jurado y el público: **datos inventados** y **de sólo lectura**, con
-una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 6 pasos (el puerto) o 4 (una empresa
+una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 5 pasos (el puerto) o 4 (una empresa
 recolectora).
 
 ## El recorrido
 
-- **Cuenta una historia**, no un menú: el barco llega → manifiesto sin papel → firma en la pantalla →
-  lo que se junta en el acopio → las empresas lo reciclan → lo que gana el mar. El basurón (relleno
-  sanitario) no entra a propósito. Los textos están en `components/demo/recorridos.ts` (lo que va
+- **Cuenta una historia** en la que cada paso lleva al siguiente, para que cualquiera la siga sin saber
+  qué es SiMAR. Puerto: el barco entrega (manifiesto, explicado) → se firma → se junta en el acopio →
+  una empresa lo pide y el puerto aprueba → lo que gana el mar. Empresa: ve lo que hay → lo pide →
+  sigue su solicitud → el puerto le avisa el día → su aporte. El basurón (relleno sanitario) no entra
+  a propósito. Los textos están en `components/demo/recorridos.ts` (lo que va
   entre `**` sale en negritas).
 - **Bienvenida** con el camino completo en íconos; **final** con lo que la demo lleva registrado
   (manifiestos, litros de aceite y millones de litros de agua protegida, de `estadisticas_publicas`).
 - **"Pruébalo tú"** (pasos con `prueba`), guiado: se ilumina SÓLO lo que se va a probar (el campo de
-  aceite, «Firmar», «Solicitar», «Ver») y es lo único que responde; una burbuja con flecha dice qué
-  hacer y, cuando se hizo (un número escrito, "Firmado", una ventana que se abrió y se cerró), cambia
-  a "¡Listo!" con "Seguir". Si la pantalla abre una ventana, el recorrido se hace a un lado. Lo que se
+  aceite, «Firmar», «Aprobar», «Solicitar», «Ver») y es lo único que responde (el cursor no sale de ahí:
+  Enter o Tab no lo mandan a otro campo); una burbuja con flecha dice qué
+  hacer y, cuando se hizo (un número escrito, "Firmado", un envío que la demo detuvo —cancelar no cuenta—
+  o ver una solicitud), cambia a "¡Listo!" con "Seguir". Tras un envío, la ventana se cierra sola. Si la pantalla abre una ventana, el recorrido se hace a un lado. Lo que se
   intente guardar se detiene con el aviso de la demo.
 - Diseño: la pantalla queda detrás de un velo con desenfoque y lo que se explica, nítido, en un hueco
   que se desliza de un paso al siguiente; la tarjeta lleva una flechita hacia el hueco y el avance en

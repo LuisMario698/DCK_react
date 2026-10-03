@@ -203,7 +203,7 @@ export function SolicitudesTab({
         <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
+            <div data-recorrido="empresas-solicitudes" className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
                 {/* Tableta y computadora: el mismo control segmentado que en celular (canal gris y la opción
                     elegida en blanco), con las seis opciones. Antes eran pestañas subrayadas sobre una
                     franja beige que no coincidía con la de la tabla ni con su margen. Lo que hay que atender
@@ -327,7 +327,7 @@ export function SolicitudesTab({
                                             <div className="inline-flex items-center gap-1 movil:flex movil:flex-wrap movil:gap-1.5">
                                                 {s.estado === 'pendiente' && (
                                                     <>
-                                                        <AccionBtn color="emerald" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
+                                                        <AccionBtn color="emerald" recorrido="aprobar" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
                                                             Aprobar
                                                         </AccionBtn>
                                                         <AccionBtn color="red" onClick={() => setAccion({ tipo: 'rechazar', solicitud: s })} icon={<XCircle className="w-3.5 h-3.5" />}>
@@ -755,11 +755,14 @@ function AccionBtn({
     onClick,
     icon,
     children,
+    recorrido,
 }: {
     color: 'emerald' | 'red' | 'blue';
     onClick: () => void;
     icon: React.ReactNode;
     children: React.ReactNode;
+    /** Ancla del recorrido de la demostración (components/demo/recorridos.ts) */
+    recorrido?: string;
 }) {
     const cls = {
         emerald: 'text-simar-arrecife-tinta bg-simar-arrecife-suave hover:bg-simar-arrecife-suave',
@@ -769,6 +772,7 @@ function AccionBtn({
     return (
         // En celular lleva siempre su palabra (sólo el ícono no dice si aprueba o rechaza) y mide 40 px
         <button
+            data-recorrido={recorrido}
             onClick={onClick}
             className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[14px] movil:font-bold ${cls}`}
         >

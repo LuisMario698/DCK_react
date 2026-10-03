@@ -13,6 +13,7 @@ import { getLandingStats, type LandingStats } from '@/lib/services/landing_stats
 import { aguaProtegidaL } from '@/lib/utils/equivalencias';
 import type { VistaDemo } from '@/lib/demo/config';
 import { EVENTO_RECORRIDO, guardarRecorrido, leerRecorrido } from '@/lib/demo/estadoRecorrido';
+import { EVENTO_CAMBIO_DETENIDO } from '@/lib/demo/avisos';
 import { RECORRIDOS, type PruebaPaso, type TonoPaso } from './recorridos';
 
 /**
@@ -161,6 +162,8 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     const [hecho, setHecho] = useState(false);
     // Probando, la pantalla abrió una ventana (firmar, solicitar…): el recorrido se hace a un lado
     const [hayVentana, setHayVentana] = useState(false);
+    // Tocar fuera de lo que se prueba (o Enter sin número): el aro vuelve a latir (ahí es)
+    const [latido, setLatido] = useState(0);
     const datos = paso !== null && paso >= 1 && paso <= total ? recorrido.pasos[paso - 1] : null;
     const prueba: PruebaPaso | undefined = datos?.prueba;
     const enBienvenida = paso === 0;
@@ -261,6 +264,9 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
             if (el) {
                 setObjetivo(el);
                 const { celular: cel, altoTarjeta: alto, reducirMovimiento: quieto } = colocacion.current;
+                // Si está dentro de algo que se desplaza de lado (una tabla ancha), primero a la vista
+                // completa; lo de arriba y abajo lo acomoda la página en seguida
+                el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
                 const r = el.getBoundingClientRect();
                 const arriba = cel ? ARRIBA_CELULAR : 24;
                 let destino: number;
@@ -269,7 +275,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                     const centro = arriba + (window.innerHeight - arriba - 170) / 2;
                     destino = window.scrollY + r.top + r.height / 2 - centro;
                     // En computadora, el cursor ya en el campo (en celular abriría el teclado de golpe)
-                    if (!cel) el.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
+                    if (window.innerWidth >= 640) el.querySelector<HTMLInputElement>('input')?.focus({ preventScroll: true });
                 } else {
                     const disponible = window.innerHeight - arriba - (cel ? alto + 28 : 24);
                     // En computadora, si la parte y la tarjeta caben una debajo de la otra, se centran juntas
@@ -381,11 +387,17 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     }, [paso, conTarjeta]);
 
     // Probando: ¿la pantalla abrió una ventana? (el recorrido se hace a un lado) ¿ya se probó?
+    const objetivoRef = useRef<HTMLElement | null>(null);
+    useEffect(() => {
+        objetivoRef.current = objetivo;
+    }, [objetivo]);
     useEffect(() => {
         if (!probando || !prueba) return;
         let vioVentana = false;
         let ultimoValor = '';
         let desde = 0;
+        let envio = false;
+        let cierre: ReturnType<typeof setTimeout> | undefined;
         const revisar = () => {
             const ventana = !!document.querySelector(VENTANAS);
             setHayVentana(ventana);
@@ -394,6 +406,9 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
             if (listo.tipo === 'ventana') {
                 if (ventana) vioVentana = true;
                 else ya = vioVentana;
+            } else if (listo.tipo === 'envio') {
+                // Enviar (aunque la demo no lo guarde) es probar; cancelar no cuenta
+                ya = envio && !ventana;
             } else if (listo.tipo === 'texto') {
                 ya = !ventana && !!document.querySelector(listo.selector)?.textContent?.includes(listo.texto);
             } else {
@@ -408,9 +423,53 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
             }
             if (ya) setHecho(true);
         };
+
+        // Se intentó guardar: la demo ya avisó que no se guarda. Un momento después (para leer el aviso)
+        // se cierra la ventana como con Escape, y sale el "¡Listo!"
+        const alDetener = () => {
+            if (prueba.listo.tipo !== 'envio') return;
+            envio = true;
+            clearTimeout(cierre);
+            cierre = setTimeout(() => {
+                if (document.querySelector(VENTANAS)) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+                }
+            }, 1400);
+        };
+        window.addEventListener(EVENTO_CAMBIO_DETENIDO, alDetener);
+
+        // El cursor no sale de lo que se prueba: Enter o Tab no lo mandan a otro campo (en el manifiesto
+        // Enter pasa al siguiente). Con un número escrito, Enter es "listo"
+        const alTeclear = (e: KeyboardEvent) => {
+            const el = objetivoRef.current;
+            if (!el || !el.contains(e.target as Node) || document.querySelector(VENTANAS)) return;
+            if (e.key === 'Enter' && prueba.listo.tipo === 'valor' && (e.target as HTMLElement).tagName === 'INPUT') {
+                e.preventDefault();
+                e.stopPropagation();
+                if (Number((e.target as HTMLInputElement).value) > 0) setHecho(true);
+                else setLatido((n) => n + 1);
+            }
+        };
+        const alEnfocar = (e: FocusEvent) => {
+            const el = objetivoRef.current;
+            const destino = e.target as Node;
+            if (!el || document.querySelector(VENTANAS)) return;
+            if (el.contains(destino) || burbujaRef.current?.contains(destino)) return;
+            (el.querySelector<HTMLElement>('input, button, [tabindex]') ?? el).focus({ preventScroll: true });
+        };
+        // En captura: antes que los manejadores de la pantalla
+        window.addEventListener('keydown', alTeclear, true);
+        document.addEventListener('focusin', alEnfocar);
+
         revisar();
         const intervalo = setInterval(revisar, 250);
-        return () => clearInterval(intervalo);
+        return () => {
+            clearInterval(intervalo);
+            clearTimeout(cierre);
+            window.removeEventListener(EVENTO_CAMBIO_DETENIDO, alDetener);
+            window.removeEventListener('keydown', alTeclear, true);
+            document.removeEventListener('focusin', alEnfocar);
+        };
     }, [probando, prueba]);
 
     // Al terminar la prueba, "Seguir" queda listo para el teclado
@@ -419,8 +478,6 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
         if (probando && hecho) seguirRef.current?.focus({ preventScroll: true });
     }, [probando, hecho]);
 
-    // Tocar fuera de lo que se prueba: el aro vuelve a latir (ahí es)
-    const [latido, setLatido] = useState(0);
 
     // Lo que la demo lleva registrado, para el cierre
     const [cifras, setCifras] = useState<LandingStats | null>(null);
@@ -517,7 +574,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                                         onClick={() => setProbando(false)}
                                         className="min-h-[40px] px-2 rounded-xl text-[15px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:text-[14px]"
                                     >
-                                        Volver a la explicación
+                                        Volver
                                     </button>
                                     <button
                                         type="button"
