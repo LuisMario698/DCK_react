@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { Anchor, ArrowRight, Loader2, Recycle, type LucideIcon } from 'lucide-react';
+import { Anchor, ArrowRight, FileText, Loader2, Recycle, Ship, Waves, type LucideIcon } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { FondoSimar } from '@/components/layout/FondoSimar';
 import { createClient } from '@/lib/supabase/client';
@@ -18,7 +18,7 @@ const OPCIONES: { vista: VistaDemo; icono: LucideIcon; tono: string; titulo: str
         tono: 'bg-simar-marea-suave text-simar-marea-tinta',
         titulo: 'Como el puerto',
         quien: 'Centro de acopio de Puerto Peñasco',
-        texto: 'Registra lo que entregan los barcos, pesa la basura que va al basurón y ve el impacto en el mar.',
+        texto: 'Registra lo que entregan los barcos, sin papel, y ve cuánto se recicla y lo que gana el mar.',
     },
     {
         vista: 'empresa',
@@ -28,6 +28,13 @@ const OPCIONES: { vista: VistaDemo; icono: LucideIcon; tono: string; titulo: str
         quien: 'Recicladora Mar Bermejo',
         texto: 'Pide al puerto el aceite, el plástico o el cartón que recicla y sigue cada recolección.',
     },
+];
+
+// SiMAR en tres pasos, para entenderlo antes de elegir (el recorrido lo cuenta completo)
+const COMO_FUNCIONA: { icono: LucideIcon; tono: string; texto: string }[] = [
+    { icono: Ship, tono: 'bg-simar-marea-suave text-simar-marea-tinta', texto: 'El barco entrega su aceite y su basura' },
+    { icono: FileText, tono: 'bg-simar-marea-suave text-simar-marea-tinta', texto: 'Se registra y se firma, sin papel' },
+    { icono: Waves, tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta', texto: 'Se recicla y se mide lo que gana el mar' },
 ];
 
 export function EntradaDemo({ locale, vistaInicial }: { locale: string; vistaInicial: VistaDemo | null }) {
@@ -69,7 +76,8 @@ export function EntradaDemo({ locale, vistaInicial }: { locale: string; vistaIni
     }, [vistaInicial]);
 
     return (
-        <main className="simar-compacto relative min-h-[100svh] bg-simar-papel px-4 py-10 md:py-14 flex items-center justify-center">
+        // En celular, más aire arriba: el botón de tema flota en la esquina y se encimaba al logo
+        <main className="simar-compacto relative min-h-[100svh] bg-simar-papel px-4 py-10 md:py-14 flex items-center justify-center movil:pt-20">
             <FondoSimar />
             <div className="relative w-full max-w-[920px]">
                 <div className="simar-aparece flex flex-col items-center text-center">
@@ -78,12 +86,38 @@ export function EntradaDemo({ locale, vistaInicial }: { locale: string; vistaIni
                         Conoce SiMAR por dentro
                     </h1>
                     <p className="mt-3 max-w-[640px] text-lg md:text-xl leading-relaxed text-simar-texto-2 movil:text-[16px]">
-                        Elige cómo quieres verlo. Un recorrido corto te enseña lo principal y después exploras con
-                        calma. Son datos de ejemplo: puedes tocar todo y nada se guarda.
+                        La plataforma que lleva los residuos de los barcos de Puerto Peñasco, del muelle al reciclaje.
+                        Un recorrido de 2 minutos con datos de ejemplo: puedes tocar todo y nada se guarda.
                     </p>
                 </div>
 
-                <div className="mt-9 grid grid-cols-1 md:grid-cols-2 gap-5 movil:mt-6 movil:gap-3">
+                {/* Cómo funciona, en tres pasos */}
+                <ol
+                    aria-label="Cómo funciona SiMAR"
+                    className="simar-aparece mt-8 grid grid-cols-3 gap-3 max-w-[720px] mx-auto movil:mt-6 movil:gap-2"
+                    style={{ animationDelay: '0.05s' }}
+                >
+                    {COMO_FUNCIONA.map((p, i) => {
+                        const Icono = p.icono;
+                        return (
+                            <li key={p.texto} className="relative flex flex-col items-center text-center">
+                                {/* La línea que une un paso con el siguiente */}
+                                {i > 0 && (
+                                    <span aria-hidden="true" className="absolute top-6 right-[calc(50%+32px)] w-[calc(100%-52px)] h-0.5 bg-simar-borde movil:top-5 movil:right-[calc(50%+26px)] movil:w-[calc(100%-44px)]" />
+                                )}
+                                <span className={`relative w-12 h-12 rounded-full flex items-center justify-center ${p.tono} movil:w-10 movil:h-10`}>
+                                    <Icono className="w-6 h-6 movil:w-5 movil:h-5" />
+                                </span>
+                                <span className="mt-2.5 text-[15px] font-bold leading-snug text-simar-texto-2 movil:mt-1.5 movil:text-[13px]">
+                                    {p.texto}
+                                </span>
+                            </li>
+                        );
+                    })}
+                </ol>
+
+                <p className="mt-9 text-center text-[17px] font-bold text-simar-texto movil:mt-6 movil:text-[15px]">¿Cómo quieres verlo?</p>
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5 movil:mt-3 movil:gap-3">
                     {OPCIONES.map((o, i) => {
                         const Icono = o.icono;
                         const esta = entrando === o.vista;

@@ -1,8 +1,24 @@
 # Demostración de SiMAR
 
 Una copia de SiMAR para el jurado y el público: **datos inventados** y **de sólo lectura**, con
-una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 7 pasos (el puerto) o 4 (una empresa
+una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 6 pasos (el puerto) o 4 (una empresa
 recolectora).
+
+## El recorrido
+
+- **Cuenta una historia**, no un menú: el barco llega → manifiesto sin papel → firma en la pantalla →
+  lo que se junta en el acopio → las empresas lo reciclan → lo que gana el mar. El basurón (relleno
+  sanitario) no entra a propósito. Los textos están en `components/demo/recorridos.ts` (lo que va
+  entre `**` sale en negritas).
+- **Bienvenida** con el camino completo en íconos; **final** con lo que la demo lleva registrado
+  (manifiestos, litros de aceite y millones de litros de agua protegida, de `estadisticas_publicas`).
+- **"Pruébalo tú"** (pasos con `prueba`): la pantalla se libera para tocarla de verdad (escribir en
+  el manifiesto, firmar con el dedo, solicitar un residuo) y el recorrido espera en una pastilla
+  arriba con "Seguir"; si la pantalla abre una ventana, la pastilla se esconde. Lo que se intente
+  guardar se detiene con el aviso de la demo.
+- Se avanza con botones, con las flechas del teclado, deslizando la tarjeta en celular o tocando los
+  puntos de arriba. Cada paso ilumina un `data-recorrido` de la pantalla; si una vista cambia y ya no
+  lo tiene, el paso sale igual, con la tarjeta al centro.
 
 ## Cómo está armada
 

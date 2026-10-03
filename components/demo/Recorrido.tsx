@@ -1,22 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type TouchEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Droplets, FileText, Hand, Waves, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { LogoSimar } from '@/components/layout/LogoSimar';
-import { PalomitaAnimada, usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
+import { NumeroAnimado, PalomitaAnimada, usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
+import { createClient } from '@/lib/supabase/client';
+import { getLandingStats, type LandingStats } from '@/lib/services/landing_stats';
+import { aguaProtegidaL } from '@/lib/utils/equivalencias';
 import type { VistaDemo } from '@/lib/demo/config';
 import { EVENTO_RECORRIDO, guardarRecorrido, leerRecorrido } from '@/lib/demo/estadoRecorrido';
 import { RECORRIDOS, type TonoPaso } from './recorridos';
 
 /**
  * Recorrido guiado de la demostración: una tarjeta con una idea por paso y, detrás, la pantalla real
- * oscurecida con la parte de la que se habla iluminada. Cambia de pantalla solo, se maneja con el
- * teclado (flechas, Escape) y con "reducir movimiento" no se desliza. Lo monta el layout de cada
- * área sólo en modo demostración (ver supabase/demo/README.md).
+ * oscurecida con la parte de la que se habla iluminada. Cambia de pantalla solo y se maneja con
+ * botones, con las flechas del teclado o deslizando la tarjeta (celular). En los pasos con
+ * "Pruébalo tú" la pantalla se libera para tocarla de verdad y el recorrido queda en una pastilla
+ * con "Seguir". Termina con lo que la demo lleva registrado (agua protegida incluida). Con "reducir
+ * movimiento" nada se desliza. Lo monta el layout de cada área sólo en modo demostración.
  */
 
 const TONO: Record<TonoPaso, string> = {
@@ -31,6 +36,9 @@ const MARGEN = 16;
 const ANCHO_TARJETA = 440;
 // Lo que tapa arriba la píldora del encabezado en celular y tableta
 const ARRIBA_CELULAR = 84;
+// Deslizar la tarjeta: cuánto hay que mover el dedo de lado (y no tanto hacia arriba o abajo)
+const DESLIZ_MIN = 60;
+const DESLIZ_MAX_VERTICAL = 50;
 
 interface Caja {
     top: number;
@@ -59,6 +67,25 @@ function rutaSinIdioma(pathname: string) {
     return ('/' + pathname.split('/').filter(Boolean).slice(1).join('/')).replace(/\/$/, '') || '/';
 }
 
+/** "Lo que va entre **dobles asteriscos** sale en negritas" */
+function conNegritas(texto: string): ReactNode[] {
+    return texto.split('**').map((parte, i) =>
+        i % 2 ? (
+            <strong key={i} className="font-bold text-simar-texto">
+                {parte}
+            </strong>
+        ) : (
+            parte
+        )
+    );
+}
+
+/** ¿El teclado está escribiendo en un campo? (ahí las flechas mueven el cursor, no el recorrido) */
+function escribiendo(e: KeyboardEvent) {
+    const el = e.target as HTMLElement | null;
+    return !!el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName));
+}
+
 export function Recorrido({ vista }: { vista: VistaDemo }) {
     const recorrido = RECORRIDOS[vista];
     const total = recorrido.pasos.length;
@@ -70,6 +97,8 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
 
     // null = cerrado; 0 = bienvenida; 1…total = pasos; total + 1 = final
     const [paso, setPaso] = useState<number | null>(null);
+    // "Pruébalo tú": la pantalla queda libre y el recorrido espera en una pastilla
+    const [probando, setProbando] = useState(false);
     const datos = paso !== null && paso >= 1 && paso <= total ? recorrido.pasos[paso - 1] : null;
     const enBienvenida = paso === 0;
     const enFinal = paso === total + 1;
@@ -78,7 +107,10 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     useEffect(() => {
         const abrir = () => {
             const estado = leerRecorrido();
-            if (estado && estado.vista === vista) setPaso(Math.min(Math.max(estado.paso, 0), total + 1));
+            if (estado && estado.vista === vista) {
+                setProbando(false);
+                setPaso(Math.min(Math.max(estado.paso, 0), total + 1));
+            }
         };
         abrir();
         window.addEventListener(EVENTO_RECORRIDO, abrir);
@@ -91,10 +123,24 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
 
     const cerrar = useCallback(() => {
         guardarRecorrido(null);
+        setProbando(false);
         setPaso(null);
     }, []);
-    const siguiente = useCallback(() => setPaso((p) => (p === null ? p : Math.min(p + 1, total + 1))), [total]);
-    const anterior = useCallback(() => setPaso((p) => (p === null ? p : Math.max(p - 1, 0))), []);
+    const irA = useCallback(
+        (n: number) => {
+            setProbando(false);
+            setPaso(Math.min(Math.max(n, 0), total + 1));
+        },
+        [total]
+    );
+    const siguiente = useCallback(() => {
+        setProbando(false);
+        setPaso((p) => (p === null ? p : Math.min(p + 1, total + 1)));
+    }, [total]);
+    const anterior = useCallback(() => {
+        setProbando(false);
+        setPaso((p) => (p === null ? p : Math.max(p - 1, 0)));
+    }, []);
 
     // Tamaño de la ventana del navegador
     const [vp, setVp] = useState({ w: 1280, h: 800 });
@@ -110,13 +156,14 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     const tarjetaRef = useRef<HTMLDivElement>(null);
     const [altoTarjeta, setAltoTarjeta] = useState(280);
     const abierto = paso !== null;
+    const conTarjeta = abierto && !probando;
     useLayoutEffect(() => {
         const el = tarjetaRef.current;
         if (!el) return;
         const ro = new ResizeObserver(() => setAltoTarjeta(el.offsetHeight));
         ro.observe(el);
         return () => ro.disconnect();
-    }, [abierto]);
+    }, [conTarjeta]);
 
     // Lo que el paso necesita para colocar la página sin volver a correr la búsqueda
     const colocacion = useRef({ celular, altoTarjeta, reducirMovimiento });
@@ -124,10 +171,10 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
         colocacion.current = { celular, altoTarjeta, reducirMovimiento };
     });
 
-    // Ir a la pantalla del paso
+    // Ir a la pantalla del paso (mientras se prueba, la persona va a donde quiera)
     useEffect(() => {
-        if (datos && rutaActual !== datos.ruta) router.push(`/${locale}${datos.ruta}`, { scroll: false });
-    }, [datos, rutaActual, locale, router]);
+        if (datos && !probando && rutaActual !== datos.ruta) router.push(`/${locale}${datos.ruta}`, { scroll: false });
+    }, [datos, probando, rutaActual, locale, router]);
 
     // Buscar la parte de la que habla el paso y traerla a la vista (las pantallas cargan sus datos a su
     // ritmo: se reintenta un rato; si no aparece, la tarjeta queda al centro)
@@ -135,7 +182,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     useEffect(() => {
         // eslint-disable-next-line react-hooks/set-state-in-effect -- el elemento sólo existe en la página ya pintada
         setObjetivo(null);
-        if (!datos || rutaActual !== datos.ruta) return;
+        if (!datos || probando || rutaActual !== datos.ruta) return;
         let vigente = true;
         let reintento: ReturnType<typeof setTimeout>;
         const inicio = Date.now();
@@ -167,7 +214,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
             vigente = false;
             clearTimeout(reintento);
         };
-    }, [datos, rutaActual]);
+    }, [datos, probando, rutaActual]);
 
     // Seguir al objetivo mientras la página se desplaza o se acomoda
     const [caja, setCaja] = useState<Caja | null>(null);
@@ -202,10 +249,12 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
         return () => clearTimeout(t);
     }, [paso, objetivo]);
 
-    // Teclado: flechas para avanzar y regresar (Escape lo maneja la ventana)
+    // Teclado: flechas para avanzar y regresar (Escape lo maneja la ventana). Nunca mientras se escribe
+    // en un campo ni mientras se prueba la pantalla
     useEffect(() => {
-        if (paso === null) return;
+        if (paso === null || probando) return;
         const tecla = (e: KeyboardEvent) => {
+            if (escribiendo(e)) return;
             if (e.key === 'ArrowRight' && paso <= total) {
                 e.preventDefault();
                 siguiente();
@@ -216,16 +265,94 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
         };
         window.addEventListener('keydown', tecla);
         return () => window.removeEventListener('keydown', tecla);
-    }, [paso, total, siguiente, anterior]);
+    }, [paso, probando, total, siguiente, anterior]);
 
-    useVentanaAccesible(tarjetaRef, abierto, { alEscape: cerrar });
+    // Deslizar la tarjeta en celular: a la izquierda avanza, a la derecha regresa
+    const toque = useRef<{ x: number; y: number } | null>(null);
+    const alTocar = (e: TouchEvent) => {
+        const t = e.touches[0];
+        toque.current = { x: t.clientX, y: t.clientY };
+    };
+    const alSoltar = (e: TouchEvent) => {
+        const inicio = toque.current;
+        toque.current = null;
+        if (!inicio || paso === null) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - inicio.x;
+        const dy = t.clientY - inicio.y;
+        if (Math.abs(dx) < DESLIZ_MIN || Math.abs(dy) > DESLIZ_MAX_VERTICAL) return;
+        if (dx < 0 && paso <= total) siguiente();
+        else if (dx > 0 && paso > 0) anterior();
+    };
+
+    useVentanaAccesible(tarjetaRef, conTarjeta, { alEscape: cerrar });
     // En cada paso el foco va al botón principal (sin mover la página)
     const principalRef = useRef<HTMLButtonElement>(null);
     useEffect(() => {
-        if (paso !== null) principalRef.current?.focus({ preventScroll: true });
-    }, [paso]);
+        if (conTarjeta) principalRef.current?.focus({ preventScroll: true });
+    }, [paso, conTarjeta]);
+
+    // Mientras se prueba, si la pantalla abre una ventana (firmar, solicitar…) la pastilla se esconde
+    // para no tapar sus botones
+    const [hayVentana, setHayVentana] = useState(false);
+    useEffect(() => {
+        if (!probando) return;
+        const revisar = () => setHayVentana(!!document.querySelector('[aria-modal="true"], .simar-ventana, .simar-hoja'));
+        revisar();
+        const intervalo = setInterval(revisar, 400);
+        return () => clearInterval(intervalo);
+    }, [probando]);
+
+    // Lo que la demo lleva registrado, para el cierre
+    const [cifras, setCifras] = useState<LandingStats | null>(null);
+    useEffect(() => {
+        if (!enFinal || cifras) return;
+        let vigente = true;
+        getLandingStats(createClient())
+            .then((c) => vigente && setCifras(c))
+            .catch(() => {});
+        return () => {
+            vigente = false;
+        };
+    }, [enFinal, cifras]);
 
     if (paso === null) return null;
+
+    // ── Probando: sólo la pastilla, arriba y al centro (debajo del encabezado en celular). Abajo taparía
+    //    las barras de guardar (manifiesto) y la barra inferior ──
+    if (probando && datos) {
+        if (hayVentana) return null;
+        return createPortal(
+            <div className="simar-compacto fixed inset-x-0 z-[60] flex justify-center px-3 pointer-events-none top-[calc(env(safe-area-inset-top)+72px)] lg:top-5">
+                <div
+                    role="region"
+                    aria-label="Recorrido en pausa"
+                    className="simar-vidrio-fuerte simar-aparece pointer-events-auto relative w-full max-w-[600px] rounded-[24px] p-2.5 pl-4 flex items-center gap-3 movil:p-2 movil:pl-3 movil:gap-2"
+                >
+                    <span className="w-10 h-10 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center movil:w-8 movil:h-8">
+                        <Hand className="w-5 h-5 movil:w-4 movil:h-4" />
+                    </span>
+                    <p className="flex-1 min-w-0 text-[15px] leading-snug text-simar-texto movil:text-[13px]">
+                        <strong className="font-bold">Pruébalo:</strong> {datos.prueba}
+                    </p>
+                    <Button onClick={siguiente} className="flex-shrink-0 movil:px-3.5">
+                        Seguir
+                        <ArrowRight className="w-5 h-5" />
+                    </Button>
+                    <button
+                        type="button"
+                        onClick={cerrar}
+                        aria-label="Salir del recorrido"
+                        title="Salir del recorrido"
+                        className="w-10 h-10 flex-shrink-0 rounded-xl text-simar-texto-2 hover:bg-white/60 dark:hover:bg-white/10 flex items-center justify-center transition-colors movil:w-8 movil:h-8"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>,
+            document.body
+        );
+    }
 
     // Recuadro iluminado: la parte de la pantalla con su holgura, recortada a lo que se ve (en celular,
     // a lo que queda arriba de la tarjeta). Sin objetivo, un punto al centro: todo queda oscurecido y
@@ -242,7 +369,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     const hayFoco = foco.width > 0;
 
     // Tarjeta: en celular, abajo a todo lo ancho; en computadora, junto al recuadro (abajo, arriba, a un
-    // lado o, si el recuadro llena la pantalla, en la esquina de abajo)
+    // lado o, si el recuadro llena la pantalla, en la esquina del lado con más espacio)
     let posicion: CSSProperties;
     if (celular) {
         posicion = { left: 12, right: 12, bottom: 'max(12px, env(safe-area-inset-bottom))' };
@@ -261,7 +388,6 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
             if (vp.w - (foco.left + foco.width) >= ancho + 2 * MARGEN) left = foco.left + foco.width + MARGEN;
             else if (foco.left >= ancho + 2 * MARGEN) left = foco.left - MARGEN - ancho;
             else {
-                // No cabe en ningún lado: en la esquina del lado con más espacio libre, para tapar lo menos
                 const libreArriba = foco.top;
                 const libreAbajo = vp.h - (foco.top + foco.height);
                 top = libreArriba > libreAbajo ? MARGEN : vp.h - altoTarjeta - MARGEN;
@@ -298,6 +424,8 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                 aria-describedby="recorrido-texto"
                 tabIndex={-1}
                 data-moviendo={(moviendo && !celular) || undefined}
+                onTouchStart={alTocar}
+                onTouchEnd={alSoltar}
                 className="simar-recorrido-tarjeta simar-ventana fixed outline-none bg-simar-superficie border border-simar-borde rounded-[28px] shadow-2xl p-6 md:p-7 movil:p-4 movil:rounded-[22px]"
                 style={posicion}
             >
@@ -305,16 +433,25 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                 <div key={paso} className="simar-aparece">
                     <div className="flex items-start justify-between gap-3">
                         {datos ? (
-                            <div className="flex items-center gap-3 pt-1.5 movil:pt-1">
-                                <p className="text-[15px] font-bold text-simar-texto-2">
+                            <div className="flex items-center gap-2.5 pt-1.5 movil:pt-1">
+                                <p className="text-[15px] font-bold text-simar-texto-2 whitespace-nowrap">
                                     Paso {paso} de {total}
                                 </p>
-                                <div aria-hidden="true" className="flex items-center gap-1.5">
-                                    {recorrido.pasos.map((_, i) => (
-                                        <span
+                                {/* Los puntos también llevan a cada paso */}
+                                <div className="flex items-center">
+                                    {recorrido.pasos.map((p, i) => (
+                                        <button
                                             key={i}
-                                            className={`h-2 rounded-full transition-colors ${i + 1 === paso ? 'w-5 bg-simar-marea' : i + 1 < paso ? 'w-2 bg-simar-marea-tinta/50' : 'w-2 bg-simar-borde'}`}
-                                        />
+                                            type="button"
+                                            onClick={() => irA(i + 1)}
+                                            aria-label={`Ir al paso ${i + 1}: ${p.titulo}`}
+                                            aria-current={i + 1 === paso ? 'step' : undefined}
+                                            className="h-6 px-[3px] flex items-center"
+                                        >
+                                            <span
+                                                className={`h-2 rounded-full transition-colors ${i + 1 === paso ? 'w-5 bg-simar-marea' : i + 1 < paso ? 'w-2 bg-simar-marea-tinta/50' : 'w-2 bg-simar-borde'}`}
+                                            />
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -350,8 +487,70 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                     )}
 
                     <p id="recorrido-texto" className="mt-3 text-lg leading-relaxed text-simar-texto-2 movil:mt-2">
-                        {datos ? datos.texto : enBienvenida ? recorrido.bienvenida.texto : recorrido.final.texto}
+                        {conNegritas(datos ? datos.texto : enBienvenida ? recorrido.bienvenida.texto : recorrido.final.texto)}
                     </p>
+
+                    {/* Bienvenida: el camino completo de un vistazo, con el ícono de cada paso */}
+                    {enBienvenida && (
+                        <>
+                            <div aria-hidden="true" className="mt-5 flex items-center movil:mt-4">
+                                {recorrido.pasos.map((p, i) => {
+                                    const IconoPaso = p.icono;
+                                    return (
+                                        <Fragment key={i}>
+                                            {i > 0 && <span className="h-0.5 flex-1 min-w-2 bg-simar-borde" />}
+                                            <span className={`w-10 h-10 flex-shrink-0 rounded-full flex items-center justify-center movil:w-9 movil:h-9 ${TONO[p.tono ?? 'marea']}`}>
+                                                <IconoPaso className="w-5 h-5 movil:w-[18px] movil:h-[18px]" />
+                                            </span>
+                                        </Fragment>
+                                    );
+                                })}
+                            </div>
+                            <p className="mt-3 text-[15px] font-bold text-simar-texto-2">
+                                {total} pasos · unos 2 minutos · puedes probar en el camino
+                            </p>
+                        </>
+                    )}
+
+                    {/* Final: lo que la demo lleva registrado (datos de ejemplo), con su agua protegida */}
+                    {enFinal && cifras && cifras.totalManifiestos > 0 && (
+                        <div className="mt-5 movil:mt-4">
+                            <p className="text-[15px] font-bold text-simar-texto-2">En esta demostración, SiMAR lleva:</p>
+                            <div className="mt-2.5 grid grid-cols-3 gap-2.5 movil:gap-2">
+                                {[
+                                    { icono: FileText, valor: cifras.totalManifiestos, decimales: 0, texto: 'manifiestos sin papel', tono: TONO.marea },
+                                    { icono: Droplets, valor: cifras.totalAceiteUsado, decimales: 0, texto: 'litros de aceite recuperados', tono: TONO.arrecife },
+                                    { icono: Waves, valor: aguaProtegidaL(cifras.totalAceiteUsado) / 1_000_000, decimales: 1, texto: 'millones de litros de agua protegida', tono: TONO.violeta },
+                                ].map((c) => {
+                                    const IconoCifra = c.icono;
+                                    return (
+                                        <div key={c.texto} className="rounded-2xl bg-simar-papel px-3 py-3 movil:px-2.5 movil:py-2.5">
+                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center ${c.tono} movil:w-7 movil:h-7`}>
+                                                <IconoCifra className="w-[18px] h-[18px] movil:w-4 movil:h-4" />
+                                            </span>
+                                            <p className="mt-2 text-[24px] font-extrabold leading-none text-simar-texto tabular-nums movil:text-[19px]">
+                                                <NumeroAnimado valor={c.valor} decimales={c.decimales} />
+                                            </p>
+                                            <p className="mt-1 text-[14px] leading-snug text-simar-texto-2 movil:text-[12px]">{c.texto}</p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Pruébalo tú: libera la pantalla para tocarla de verdad */}
+                    {datos?.prueba && (
+                        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-simar-marea-suave px-4 py-3 movil:mt-3 movil:px-3 movil:py-2.5 movil:gap-2.5">
+                            <Hand aria-hidden="true" className="w-6 h-6 flex-shrink-0 text-simar-marea-tinta movil:w-5 movil:h-5" />
+                            <p className="flex-1 min-w-0 text-[15px] leading-snug text-simar-texto movil:text-[13px]">
+                                <strong className="font-bold">Pruébalo tú.</strong> {datos.prueba}
+                            </p>
+                            <Button variant="secondary" size="sm" onClick={() => setProbando(true)} className="flex-shrink-0">
+                                Probar
+                            </Button>
+                        </div>
+                    )}
 
                     {/* En celular, en la bienvenida y el final, un botón debajo del otro (lado a lado se parten en dos renglones) */}
                     <div className={`mt-6 flex flex-wrap items-center gap-3 movil:mt-4 movil:gap-2 ${datos ? '' : 'movil:flex-col movil:items-stretch'}`}>
@@ -397,8 +596,10 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                             </>
                         )}
                     </div>
-                    {paso === 1 && !celular && (
-                        <p className="mt-4 text-[15px] text-simar-texto-2">También puedes avanzar con las flechas del teclado.</p>
+                    {paso === 1 && (
+                        <p className="mt-4 text-[15px] text-simar-texto-2 movil:mt-3 movil:text-[13px]">
+                            {celular ? 'También puedes deslizar la tarjeta para avanzar.' : 'También puedes avanzar con las flechas del teclado.'}
+                        </p>
                     )}
                 </div>
             </div>

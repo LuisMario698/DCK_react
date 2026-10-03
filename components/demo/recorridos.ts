@@ -1,12 +1,11 @@
 import {
     Building2,
     ClipboardList,
-    FileText,
     LayoutGrid,
     Leaf,
     MapPin,
     PenLine,
-    Scale,
+    Recycle,
     Ship,
     Waves,
     type LucideIcon,
@@ -23,7 +22,10 @@ export interface PasoRecorrido {
     icono: LucideIcon;
     tono?: TonoPaso;
     titulo: string;
+    /** Una o dos frases cortas; lo que va entre **dobles asteriscos** sale en negritas */
     texto: string;
+    /** Si aquí se puede probar con la pantalla de verdad: qué hacer ("Toca «Firmar»…") */
+    prueba?: string;
 }
 
 export interface Recorrido {
@@ -33,17 +35,18 @@ export interface Recorrido {
 }
 
 /**
- * Los dos recorridos de la demostración. Cuentan una historia (el barco llega, se registra, la basura
- * se va al basurón, el aceite se recicla y se ve el impacto), no un menú de pantallas. Cada paso: una
- * idea, una o dos frases cortas, de tú (DISEÑO_SIMAR.md §11). Los objetivos son `data-recorrido` en
- * las pantallas; si uno no aparece, el paso sale igual, al centro.
+ * Los dos recorridos de la demostración. Cuentan una historia (el barco llega, se registra y se firma,
+ * lo que entregó se junta en el acopio, una empresa lo recicla y se ve lo que gana el mar), no un menú
+ * de pantallas. Cada paso: una idea, una o dos frases cortas, de tú (DISEÑO_SIMAR.md §11). Los
+ * objetivos son `data-recorrido` en las pantallas; si uno no aparece, el paso sale igual, al centro.
+ * El basurón (relleno sanitario) no entra en el recorrido a propósito.
  */
 export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
     puerto: {
         bienvenida: {
             titulo: 'Te damos la bienvenida a SiMAR',
             texto:
-                'En 7 pasos verás cómo el centro de acopio de Puerto Peñasco registra los residuos de los barcos, desde que llegan al muelle hasta que se reciclan. Todo son datos de ejemplo.',
+                'Así lleva el centro de acopio de Puerto Peñasco los residuos de los barcos, desde el muelle hasta el reciclaje. Son datos de ejemplo.',
         },
         pasos: [
             {
@@ -51,43 +54,38 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 objetivo: ['[data-recorrido="panel-importante"]', '[data-recorrido="panel-saludo"]'],
                 icono: LayoutGrid,
                 titulo: 'Así empieza el día',
-                texto: 'El Panel dice lo que llegó hoy y lo que falta por atender: solicitudes por revisar y recolecciones por venir.',
-            },
-            {
-                ruta: '/dashboard',
-                objetivo: ['[data-recorrido="panel-acciones"]'],
-                icono: Ship,
-                titulo: 'Llega un barco al muelle',
-                texto: 'Entrega su aceite usado, sus filtros y su basura. Todo eso se anota en un manifiesto. Vamos a verlo.',
+                texto: 'El **Panel** dice lo que llegó hoy y lo que falta por atender, sin buscar entre papeles.',
             },
             {
                 ruta: '/dashboard/manifiesto',
                 objetivo: ['[data-recorrido="manifiesto-datos"]'],
-                icono: FileText,
-                titulo: 'El manifiesto, sin papel',
-                texto: 'Se elige la embarcación y se anotan los litros de aceite, los filtros y los kilos de basura. Letra grande y pocos pasos.',
+                icono: Ship,
+                titulo: 'Llega un barco al muelle',
+                texto: 'Lo que entrega (**aceite usado**, **filtros** y **basura**) se anota en un manifiesto digital. Letra grande y pocos pasos.',
+                prueba: 'Escribe los litros de aceite o busca un barco, como «Don Chuy».',
             },
             {
                 ruta: '/dashboard/manifiesto',
                 objetivo: ['[data-recorrido="manifiesto-firmas"]'],
                 icono: PenLine,
                 titulo: 'Se firma en la pantalla',
-                texto: 'La tripulación firma con el dedo y sale el PDF oficial, en formato MARPOL, listo para SEMARNAT.',
+                texto: 'La tripulación **firma con el dedo** y sale el **PDF oficial MARPOL**, listo para SEMARNAT. Ya no hay papel.',
+                prueba: 'Toca «Firmar» y firma con tu dedo o con el mouse.',
             },
             {
-                ruta: '/dashboard/manifiesto-basuron',
-                objetivo: ['[data-recorrido="basuron-pesaje"]', '[data-recorrido="basuron"]'],
-                icono: Scale,
+                ruta: '/dashboard',
+                objetivo: ['[data-recorrido="panel-acopio"]', '[data-recorrido="panel-saludo"]'],
+                icono: Recycle,
                 tono: 'arrecife',
-                titulo: 'La basura llega al basurón',
-                texto: 'El camión se pesa al entrar y al salir del relleno sanitario. Así se sabe cuántos kilos se dejaron de verdad.',
+                titulo: 'Todo se junta en el acopio',
+                texto: 'SiMAR lleva la cuenta de lo que hay: **aceite**, **plástico**, **chatarra**… Listo para que alguien lo recicle.',
             },
             {
                 ruta: '/dashboard/asociaciones',
                 objetivo: ['[data-recorrido="empresas-conteos"]', '[data-recorrido="empresas-secciones"]'],
                 icono: Building2,
                 titulo: 'El aceite no se tira: se recicla',
-                texto: 'Las empresas recolectoras piden lo que reciclan. El puerto aprueba, registra la recolección y entrega un comprobante.',
+                texto: 'Las **empresas recolectoras** piden lo que reciclan. El puerto aprueba, registra la entrega y da un **comprobante**.',
             },
             {
                 ruta: '/dashboard/estadisticas',
@@ -95,12 +93,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: Waves,
                 tono: 'violeta',
                 titulo: 'Lo que gana el mar',
-                texto: 'Cada litro de aceite que no llega al mar protege mil litros de agua. Aquí se ve el impacto de todo lo registrado.',
+                texto: 'Cada litro de aceite que no llega al mar protege **mil litros de agua**. Aquí se ve todo el impacto.',
             },
         ],
         final: {
             titulo: 'Ya conoces SiMAR',
-            texto: 'Ahora recórrelo a tu ritmo. Puedes tocar todo: en la demostración nada se guarda.',
+            texto: 'Ahora recórrelo a tu ritmo: puedes tocar todo, aquí nada se guarda.',
             otraVista: { vista: 'empresa', texto: 'Verlo como empresa recolectora' },
         },
     },
@@ -108,7 +106,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
         bienvenida: {
             titulo: 'Así ve SiMAR una empresa recolectora',
             texto:
-                'En 4 pasos verás cómo una empresa le pide residuos al puerto para reciclarlos y cómo sigue cada recolección. Todo son datos de ejemplo.',
+                'Así pide una empresa los residuos del puerto para reciclarlos y sigue cada recolección. Son datos de ejemplo.',
         },
         pasos: [
             {
@@ -116,21 +114,23 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 objetivo: ['section[aria-label="Lo importante"]', '[data-recorrido="portal-saludo"]'],
                 icono: LayoutGrid,
                 titulo: 'Tu empresa, de un vistazo',
-                texto: 'Lo importante va primero: la próxima recolección y los avisos que te manda el puerto.',
+                texto: 'Lo importante va primero: **tu próxima recolección** y los avisos que te manda el puerto.',
             },
             {
                 ruta: '/dashboard-recolector/mapa',
                 objetivo: ['[data-recorrido="residuos"]'],
                 icono: MapPin,
                 titulo: 'Lo que hay en el puerto',
-                texto: 'El centro de acopio publica cuánto aceite, plástico o chatarra tiene. Tú pides la cantidad que puedes reciclar.',
+                texto: 'El centro de acopio publica cuánto **aceite**, **plástico** o **chatarra** tiene. Tú pides lo que puedes reciclar.',
+                prueba: 'Toca «Solicitar» en un residuo y elige la cantidad.',
             },
             {
                 ruta: '/dashboard-recolector/solicitudes',
                 objetivo: ['[data-recorrido="solicitudes"]'],
                 icono: ClipboardList,
                 titulo: 'Sigue cada solicitud',
-                texto: 'Ves en qué va cada una (enviada, aprobada o recolectada) y el día en que pasas por los residuos.',
+                texto: 'Ves en qué va cada una (**enviada**, **aprobada** o **recolectada**) y el día en que pasas por ella.',
+                prueba: 'Toca el ojo de una solicitud para ver su línea de tiempo.',
             },
             {
                 ruta: '/dashboard-recolector/impacto',
@@ -138,12 +138,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: Leaf,
                 tono: 'arrecife',
                 titulo: 'Tu aporte al mar',
-                texto: 'Lo que tu empresa ha reciclado, convertido en agua protegida y CO₂ evitado. Te sirve para tus reportes y tu constancia anual.',
+                texto: 'Lo que reciclaste, convertido en **agua protegida** y **CO₂ evitado**. Te sirve para tus reportes y tu constancia anual.',
             },
         ],
         final: {
             titulo: 'Ya conoces el portal de empresas',
-            texto: 'Ahora recórrelo a tu ritmo. Puedes tocar todo: en la demostración nada se guarda.',
+            texto: 'Ahora recórrelo a tu ritmo: puedes tocar todo, aquí nada se guarda.',
             otraVista: { vista: 'puerto', texto: 'Verlo como el puerto' },
         },
     },

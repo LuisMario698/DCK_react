@@ -417,7 +417,7 @@ function LoUltimo({ recientes, base }: { recientes: MovimientoReciente[]; base: 
  */
 function Acopio({ acopio, base }: { acopio: ResiduoEnAcopio[]; base: string }) {
   return (
-    <section aria-labelledby="acopio" className={tarjetaVistazo} style={{ animationDelay: '0.3s' }}>
+    <section data-recorrido="panel-acopio" aria-labelledby="acopio" className={tarjetaVistazo} style={{ animationDelay: '0.3s' }}>
       <div className="flex items-center justify-between gap-3">
         <h2 id="acopio" className="text-[21px] font-extrabold text-simar-texto movil:text-[16px]">En el centro de acopio</h2>
         <Link
