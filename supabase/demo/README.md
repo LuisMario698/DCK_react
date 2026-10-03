@@ -12,10 +12,14 @@ recolectora).
   entre `**` sale en negritas).
 - **Bienvenida** con el camino completo en íconos; **final** con lo que la demo lleva registrado
   (manifiestos, litros de aceite y millones de litros de agua protegida, de `estadisticas_publicas`).
-- **"Pruébalo tú"** (pasos con `prueba`): la pantalla se libera para tocarla de verdad (escribir en
-  el manifiesto, firmar con el dedo, solicitar un residuo) y el recorrido espera en una pastilla
-  arriba con "Seguir"; si la pantalla abre una ventana, la pastilla se esconde. Lo que se intente
-  guardar se detiene con el aviso de la demo.
+- **"Pruébalo tú"** (pasos con `prueba`), guiado: se ilumina SÓLO lo que se va a probar (el campo de
+  aceite, «Firmar», «Solicitar», «Ver») y es lo único que responde; una burbuja con flecha dice qué
+  hacer y, cuando se hizo (un número escrito, "Firmado", una ventana que se abrió y se cerró), cambia
+  a "¡Listo!" con "Seguir". Si la pantalla abre una ventana, el recorrido se hace a un lado. Lo que se
+  intente guardar se detiene con el aviso de la demo.
+- Diseño: la pantalla queda detrás de un velo con desenfoque y lo que se explica, nítido, en un hueco
+  que se desliza de un paso al siguiente; la tarjeta lleva una flechita hacia el hueco y el avance en
+  segmentos arriba.
 - Se avanza con botones, con las flechas del teclado, deslizando la tarjeta en celular o tocando los
   puntos de arriba. Cada paso ilumina un `data-recorrido` de la pantalla; si una vista cambia y ya no
   lo tiene, el paso sale igual, con la tarjeta al centro.

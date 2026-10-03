@@ -777,19 +777,40 @@ body {
   }
 }
 
-/* Recorrido guiado de la demostración (components/demo/Recorrido.tsx): el recuadro iluminado se
-   desliza de una parte de la pantalla a la siguiente y la tarjeta lo acompaña. Sólo al cambiar de
-   paso (data-moviendo); al desplazarse la página lo sigue sin retraso */
-.simar-recorrido-foco[data-moviendo],
-.simar-recorrido-tarjeta[data-moviendo] {
-  transition-property: top, left, width, height;
-  transition-duration: 0.42s;
-  transition-timing-function: var(--simar-frena);
+/* Recorrido guiado de la demostración (components/demo/Recorrido.tsx). El velo oscurece poco y
+   desenfoca la pantalla; lo que se explica queda nítido en un hueco (máscara SVG que dibuja el
+   componente). Con "reducir transparencia", sin desenfoque y un poco más oscuro */
+.simar-recorrido-velo {
+  background: rgba(11, 34, 54, 0.4);
+  -webkit-backdrop-filter: blur(5px) saturate(115%);
+  backdrop-filter: blur(5px) saturate(115%);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.dark .simar-recorrido-velo {
+  background: rgba(2, 10, 18, 0.52);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .simar-recorrido-velo {
+    background: rgba(11, 34, 54, 0.62);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* "Pruébalo tú": el aro de lo que se puede tocar late dos veces al llegar (y otra vez si se toca fuera).
+   No se repite solo */
+@keyframes simar-recorrido-late {
+  from { box-shadow: 0 0 0 0 rgba(32, 178, 196, 0.6); }
+  to { box-shadow: 0 0 0 18px rgba(32, 178, 196, 0); }
+}
+.simar-recorrido-late {
+  animation: simar-recorrido-late 1.1s var(--simar-frena) 2;
 }
 @media (prefers-reduced-motion: reduce) {
-  .simar-recorrido-foco[data-moviendo],
-  .simar-recorrido-tarjeta[data-moviendo] {
-    transition: none;
+  .simar-recorrido-late {
+    animation: none;
   }
 }
 

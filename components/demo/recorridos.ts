@@ -24,8 +24,26 @@ export interface PasoRecorrido {
     titulo: string;
     /** Una o dos frases cortas; lo que va entre **dobles asteriscos** sale en negritas */
     texto: string;
-    /** Si aquí se puede probar con la pantalla de verdad: qué hacer ("Toca «Firmar»…") */
-    prueba?: string;
+    /** Si aquí se puede probar con la pantalla de verdad (ver PruebaPaso) */
+    prueba?: PruebaPaso;
+}
+
+/**
+ * "Pruébalo tú": se ilumina SÓLO lo que se va a probar (lo demás no responde), una burbuja con flecha
+ * dice qué hacer y, cuando se hizo, cambia a "¡Listo!" con "Seguir".
+ */
+export interface PruebaPaso {
+    /** Qué hacer, en una frase: "Toca «Firmar» y firma con tu dedo." */
+    texto: string;
+    /** Lo único que se puede tocar (el primer selector que esté a la vista) */
+    objetivo: string[];
+    /**
+     * Cómo se sabe que ya se probó: un campo con un número mayor que cero, un texto que aparece en la
+     * pantalla ("Firmado") o una ventana que se abrió y se cerró (solicitar, ver una solicitud)
+     */
+    listo: { tipo: 'valor'; selector: string } | { tipo: 'texto'; selector: string; texto: string } | { tipo: 'ventana' };
+    /** Lo que se dice al terminar: "Así se anota lo que entrega cada barco." */
+    hecho: string;
 }
 
 export interface Recorrido {
@@ -62,7 +80,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: Ship,
                 titulo: 'Llega un barco al muelle',
                 texto: 'Lo que entrega (**aceite usado**, **filtros** y **basura**) se anota en un manifiesto digital. Letra grande y pocos pasos.',
-                prueba: 'Escribe los litros de aceite o busca un barco, como «Don Chuy».',
+                prueba: {
+                    texto: 'Escribe cuántos litros de aceite entregó el barco.',
+                    objetivo: ['[data-recorrido="manifiesto-aceite"]'],
+                    listo: { tipo: 'valor', selector: '#manifiesto-aceite' },
+                    hecho: 'Así se anota lo que entrega cada barco.',
+                },
             },
             {
                 ruta: '/dashboard/manifiesto',
@@ -70,7 +93,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: PenLine,
                 titulo: 'Se firma en la pantalla',
                 texto: 'La tripulación **firma con el dedo** y sale el **PDF oficial MARPOL**, listo para SEMARNAT. Ya no hay papel.',
-                prueba: 'Toca «Firmar» y firma con tu dedo o con el mouse.',
+                prueba: {
+                    texto: 'Toca «Firmar» y firma con tu dedo o con el mouse.',
+                    objetivo: ['[data-recorrido="firma-oficial"]'],
+                    listo: { tipo: 'texto', selector: '[data-recorrido="firma-oficial"]', texto: 'Firmado' },
+                    hecho: 'Esa firma ya va en el PDF oficial del manifiesto.',
+                },
             },
             {
                 ruta: '/dashboard',
@@ -122,7 +150,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: MapPin,
                 titulo: 'Lo que hay en el puerto',
                 texto: 'El centro de acopio publica cuánto **aceite**, **plástico** o **chatarra** tiene. Tú pides lo que puedes reciclar.',
-                prueba: 'Toca «Solicitar» en un residuo y elige la cantidad.',
+                prueba: {
+                    texto: 'Toca «Solicitar» y elige cuánto quieres llevarte.',
+                    objetivo: ['[data-recorrido="solicitar"]'],
+                    listo: { tipo: 'ventana' },
+                    hecho: 'Así se pide. El puerto la revisa y te avisa.',
+                },
             },
             {
                 ruta: '/dashboard-recolector/solicitudes',
@@ -130,7 +163,12 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: ClipboardList,
                 titulo: 'Sigue cada solicitud',
                 texto: 'Ves en qué va cada una (**enviada**, **aprobada** o **recolectada**) y el día en que pasas por ella.',
-                prueba: 'Toca el ojo de una solicitud para ver su línea de tiempo.',
+                prueba: {
+                    texto: 'Toca «Ver» para ver en qué va esta solicitud.',
+                    objetivo: ['[data-recorrido="ver-solicitud"]'],
+                    listo: { tipo: 'ventana' },
+                    hecho: 'Así sigues cada solicitud, paso a paso.',
+                },
             },
             {
                 ruta: '/dashboard-recolector/impacto',

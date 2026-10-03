@@ -1217,7 +1217,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
             {/* RESIDUOS (en celular, dos por fila: son números cortos con su unidad) */}
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4 movil:mt-3 movil:grid-cols-2 movil:gap-x-2.5 movil:gap-y-3">
               {/* ACEITE USADO */}
-              <div>
+              <div data-recorrido="manifiesto-aceite">
                 <label htmlFor="manifiesto-aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
                 <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-aceite"
@@ -1343,7 +1343,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               <div className="py-4 border-b border-simar-borde-suave">
                 <p className="text-lg font-extrabold text-simar-texto">Recibe: Oficial comisionado</p>
                 <p className="text-[15px] text-simar-texto-2">Recolección de basura y residuos aceitosos (MARPOL Anexo V)</p>
-                <div className="mt-3">
+                <div data-recorrido="firma-oficial" className="mt-3">
                   {!oficialSignature ? (
                     <button
                       type="button"

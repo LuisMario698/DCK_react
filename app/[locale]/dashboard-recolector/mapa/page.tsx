@@ -233,6 +233,7 @@ export default function MapaPage() {
                                             </div>
                                             {r.notas && <p className="text-[15px] text-simar-texto-2 mt-1">{r.notas}</p>}
                                             <button
+                                                data-recorrido="solicitar"
                                                 onClick={() => setSolicitar(r)}
                                                 disabled={agotado || bloqueada}
                                                 className="simar-presiona mt-3 w-full min-h-[52px] inline-flex items-center justify-center gap-2 text-[17px] font-bold rounded-2xl text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-40 disabled:cursor-not-allowed"
@@ -423,6 +424,7 @@ function ResiduosCelular({
                                     ) : (
                                         <button
                                             type="button"
+                                            data-recorrido="solicitar"
                                             onClick={() => onSolicitar(r)}
                                             disabled={bloqueada}
                                             aria-label={`Solicitar recolección de ${TIPO_RESIDUO_LABEL[r.tipo].toLowerCase()}`}
