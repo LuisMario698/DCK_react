@@ -151,7 +151,7 @@ export function CreateManifiestoBasuronModal({
   const soloEnNuevo = ocultarFormularioMovil ? 'movil:hidden' : '';
 
   return (
-    <div className={inline ? '' : 'simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
+    <div data-recorrido={inline ? 'basuron' : undefined} className={inline ? '' : 'simar-velo fixed inset-0 bg-[rgba(11,34,54,0.55)] flex items-center justify-center z-50 p-4'}>
       <div className={inline ? 'w-full' : 'simar-ventana bg-simar-papel rounded-[28px] shadow-2xl max-w-7xl w-full h-full overflow-y-auto p-6'}>
         {/* Recibo del relleno sanitario — lenguaje de diseño SiMAR (ver DISEÑO_SIMAR.md) */}
         <form onSubmit={handleSubmit} className="space-y-6 movil:space-y-4">
@@ -281,7 +281,7 @@ export function CreateManifiestoBasuronModal({
             </section>
 
             {/* COLUMNA DERECHA - Pesaje */}
-            <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.12s' }}>
+            <section data-recorrido={inline ? 'basuron-pesaje' : undefined} className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.12s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Pesaje</h2>
 
               {/* flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors DE ENTRADA */}

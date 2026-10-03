@@ -20,8 +20,11 @@ npm run build
 npm run lint      # ESLint (eslint-config-next); no hay tests
 ```
 
-Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`
-(son las **únicas** variables que lee el código).
+Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`. Las demás son del
+**modo demostración** (`NEXT_PUBLIC_MODO_DEMO`, `NEXT_PUBLIC_URL_DEMO`, `NEXT_PUBLIC_DEMO_*`):
+su despliegue apunta a otro proyecto Supabase con datos inventados y de sólo lectura, con entrada
+sin cuenta (`/[locale]/demo`) y recorrido guiado. Ver [`supabase/demo/README.md`](./supabase/demo/README.md);
+nunca pongas `NEXT_PUBLIC_MODO_DEMO=1` apuntando al Supabase de producción.
 
 ## Convenciones del repositorio
 

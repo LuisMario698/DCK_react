@@ -777,6 +777,22 @@ body {
   }
 }
 
+/* Recorrido guiado de la demostración (components/demo/Recorrido.tsx): el recuadro iluminado se
+   desliza de una parte de la pantalla a la siguiente y la tarjeta lo acompaña. Sólo al cambiar de
+   paso (data-moviendo); al desplazarse la página lo sigue sin retraso */
+.simar-recorrido-foco[data-moviendo],
+.simar-recorrido-tarjeta[data-moviendo] {
+  transition-property: top, left, width, height;
+  transition-duration: 0.42s;
+  transition-timing-function: var(--simar-frena);
+}
+@media (prefers-reduced-motion: reduce) {
+  .simar-recorrido-foco[data-moviendo],
+  .simar-recorrido-tarjeta[data-moviendo] {
+    transition: none;
+  }
+}
+
 /* Gráficas: la barra crece desde su base al aparecer. Escalonar con animationDelay */
 @keyframes simar-crece-y {
   from { transform: scaleY(0); }

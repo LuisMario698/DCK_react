@@ -477,7 +477,7 @@ export function PanelInicio({
       <PanelEnVivo />
 
       {/* Encabezado: marca SiMAR + saludo del momento y lo que va del día */}
-      <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9 movil:p-4 movil:gap-2.5">
+      <section data-recorrido="panel-saludo" className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9 movil:p-4 movil:gap-2.5">
         {/* La marca grande sólo con espacio (≥ 1280 px): en pantallas menores ya está en el menú o en la
             píldora de arriba, y le quitaba lugar al saludo ("Buenas / noches" en dos renglones) */}
         <div className="hidden xl:flex items-center gap-4 flex-shrink-0">
@@ -507,14 +507,14 @@ export function PanelInicio({
       {/* Lo importante, a la vista: Por atender (tarjetas de color, cada una lleva a donde se resuelve) y
           las próximas recolecciones aprobadas. Lado a lado si están las dos; cada una sólo si hay algo */}
       {(pendientes.length > 0 || hayAgenda) && (
-        <div className={`mt-5 md:mt-7 grid gap-5 movil:mt-3 movil:gap-3 ${pendientes.length > 0 && hayAgenda ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]' : ''}`}>
+        <div data-recorrido="panel-importante" className={`mt-5 md:mt-7 grid gap-5 movil:mt-3 movil:gap-3 ${pendientes.length > 0 && hayAgenda ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]' : ''}`}>
           {pendientes.length > 0 && <PorAtender pendientes={pendientes} angosto={hayAgenda} />}
           {hayAgenda && resumen && <ProximasRecolecciones proximas={resumen.proximas} hoy={hoy} base={base} />}
         </div>
       )}
 
       {/* Acciones principales */}
-      <div className="mt-5 md:mt-7 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 movil:grid-cols-2 movil:gap-3 movil:mt-3">
+      <div data-recorrido="panel-acciones" className="mt-5 md:mt-7 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 movil:grid-cols-2 movil:gap-3 movil:mt-3">
         <ActionCard
           title="Manifiesto"
           Icon={FileText}

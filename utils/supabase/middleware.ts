@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { locales, defaultLocale } from '@/i18n'
+import { MODO_DEMO } from '@/lib/demo/config'
 
 type Rol = 'admin' | 'recolector' | 'pendiente'
 
@@ -77,6 +78,8 @@ export async function updateSession(request: NextRequest) {
     // Sin sesión, devolvemos al inicio con ?login=1 para que el modal se abra solo
     // y ?siguiente para volver a la página pedida después de iniciar sesión.
     if (!user && isProtegida) {
+        // En la demostración no hay cuentas propias: se entra eligiendo una vista
+        if (MODO_DEMO) return redirigir(`/${locale}/demo`)
         return redirigir('/', { login: '1', siguiente: pathname })
     }
 

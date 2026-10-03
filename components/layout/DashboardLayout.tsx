@@ -14,6 +14,9 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { BarChart3, Ellipsis, FileText, LayoutGrid, Recycle } from 'lucide-react';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { FranjaDemo } from '@/components/demo/FranjaDemo';
+import { Recorrido } from '@/components/demo/Recorrido';
 
 /** Nombre de cada pantalla del recinto en la pestaña del navegador */
 const TITULOS_RECINTO: Record<string, string> = {
@@ -68,6 +71,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
         <Header />
         {/* Abajo deja lugar a la barra inferior flotante (y a la zona segura del teléfono) */}
         <main className="flex-1 px-3.5 pt-3 pb-[calc(100px+env(safe-area-inset-bottom))] sm:px-4 sm:pt-4 md:px-6 md:pt-6 lg:py-10 lg:pr-10 lg:pl-8">
+          {MODO_DEMO && <FranjaDemo vista="puerto" />}
           <AvisoGlobal className="max-w-[1600px]" />
           {/* Cada pantalla entra con un fundido corto (simar-pagina); la clave la reinicia al navegar.
               overflow-x-clip y no hidden: hidden lo vuelve contenedor de desplazamiento y las barras
@@ -87,6 +91,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <HojaMas />
       <PanelAvisos colapsado={isCollapsed} />
       <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />
+      {MODO_DEMO && <Recorrido vista="puerto" />}
     </div>
   );
 }

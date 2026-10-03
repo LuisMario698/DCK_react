@@ -96,7 +96,7 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
             />
 
             {/* Conteos. En celular se ocultan: cada número va en su pestaña (pendientes, sin leer, activas) */}
-            <div className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:hidden" style={{ animationDelay: '0.06s' }}>
+            <div data-recorrido="empresas-conteos" className="simar-aparece grid grid-cols-3 gap-2.5 sm:gap-4 movil:hidden" style={{ animationDelay: '0.06s' }}>
                 <TarjetaDato apilada etiqueta="Empresas activas" valor={stats.empresas} icono={Building2} tono="arrecife" />
                 <TarjetaDato apilada etiqueta="Solicitudes pendientes" valor={stats.pendientes} icono={Inbox} tono={stats.pendientes > 0 ? 'coral' : 'neutro'} />
                 <TarjetaDato apilada etiqueta="Mensajes sin leer" valor={stats.noLeidos} icono={MessageSquare} tono={stats.noLeidos > 0 ? 'coral' : 'neutro'} />
@@ -105,7 +105,7 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
             {/* Secciones (primer nivel de la pantalla: el único con la pastilla azul rellena; los filtros
                 de cada sección van más discretos). En celular, las cuatro en una fila con el ícono arriba y
                 la palabra abajo; el aviso va en la esquina del ícono, como en las apps del teléfono */}
-            <div className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar movil:p-1 movil:rounded-[20px]">
+            <div data-recorrido="empresas-secciones" className="bg-simar-superficie border border-simar-borde rounded-2xl p-1.5 shadow-simar movil:p-1 movil:rounded-[20px]">
                 <nav aria-label="Secciones de empresas" className="grid grid-cols-2 sm:flex gap-1 movil:grid-cols-4 movil:gap-0.5">
                     {tabs.map((t) => {
                         const active = tab === t.value;

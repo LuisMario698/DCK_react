@@ -129,7 +129,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
         <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
+            <div data-recorrido="solicitudes" className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] shadow-simar overflow-hidden">
                 {/* Filtros (fichas de 48 px con su conteo) y la acción principal en la misma franja */}
                 <div className="px-4 sm:px-6 py-5 border-b border-simar-borde flex flex-col xl:flex-row xl:items-center gap-4 movil:p-2 movil:gap-2">
                     {/* Celular: control segmentado (discreto: las secciones están en la barra de abajo) */}

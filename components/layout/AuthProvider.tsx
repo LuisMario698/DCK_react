@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { User, Session } from '@supabase/supabase-js';
+import { MODO_DEMO } from '@/lib/demo/config';
 
 interface AuthContextType {
     user: User | null;
@@ -34,7 +35,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // un temporizador de 30 min: con la pantalla del teléfono apagada los temporizadores se detienen,
     // y al volver la sesión seguía abierta o se cerraba de golpe sin explicación.
     useEffect(() => {
-        if (!user) return;
+        // En la demostración no: el equipo del stand se queda quieto entre una visita y otra
+        if (!user || MODO_DEMO) return;
 
         const LIMITE_MS = 30 * 60 * 1000;
         const AVISO_MS = 60 * 1000;

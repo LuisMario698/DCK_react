@@ -152,7 +152,7 @@ export default function MapaPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Mapa enmarcado como tarjeta; ocupa toda la altura del panel de residuos */}
-                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
+                <section data-recorrido="residuos" className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
                     <div className="flex-1 min-h-[400px] rounded-[22px] overflow-hidden">
                         <MapaCentroAcopio alto="h-full" zoom={15} />
                     </div>
@@ -345,7 +345,7 @@ function ResiduosCelular({
             </section>
 
             {/* Residuos publicados */}
-            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] overflow-hidden" style={{ animationDelay: '0.06s' }}>
+            <section data-recorrido="residuos" className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] overflow-hidden" style={{ animationDelay: '0.06s' }}>
                 <div className="px-3.5 pt-3 pb-2.5 border-b border-simar-borde space-y-2.5">
                     <div className="flex items-baseline justify-between gap-2">
                         <h3 className="text-[16px] font-extrabold text-simar-texto">Residuos publicados</h3>

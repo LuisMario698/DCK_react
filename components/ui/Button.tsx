@@ -1,6 +1,7 @@
 import React from 'react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// ComponentProps (y no ButtonHTMLAttributes) para aceptar `ref`, que en React 19 llega como prop
+interface ButtonProps extends React.ComponentProps<'button'> {
   variant?: 'primary' | 'secondary' | 'danger';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;

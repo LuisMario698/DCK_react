@@ -168,7 +168,7 @@ export default function DashboardRecolectorPage() {
     return (
         <div className="space-y-5 max-w-[1600px] movil:space-y-3">
             {/* Saludo: la hora y el día del puerto, y la frase con lo más importante */}
-            <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 sm:p-8 flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-8 movil:p-4 movil:gap-3.5 movil:rounded-[22px]">
+            <section data-recorrido="portal-saludo" className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 sm:p-8 flex flex-col xl:flex-row xl:items-center gap-5 xl:gap-8 movil:p-4 movil:gap-3.5 movil:rounded-[22px]">
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                     <LogoSimar variante="simbolo" tamano={84} className="hidden sm:inline-flex flex-shrink-0" />
                     <div className="min-w-0">

@@ -14,6 +14,9 @@ import { FondoSimar } from '@/components/layout/FondoSimar';
 import { ESTADO_SUSCRIPCION_LABEL } from '@/lib/constants/suscripciones';
 import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 import { AvisoVencimiento } from '@/components/recolector/MiSuscripcion';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { FranjaDemo } from '@/components/demo/FranjaDemo';
+import { Recorrido } from '@/components/demo/Recorrido';
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -37,6 +40,7 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                     <HeaderRecolector />
                     {/* Abajo deja lugar a la barra inferior flotante (y a la zona segura del teléfono) */}
                     <main className="flex-1 px-3.5 pt-3 pb-[calc(100px+env(safe-area-inset-bottom))] sm:px-4 sm:pt-4 md:px-6 md:pt-6 lg:py-8 lg:pr-10 lg:pl-8">
+                        {MODO_DEMO && <FranjaDemo vista="empresa" />}
                         <AvisoGlobal />
                         <AvisoSuperadmin />
                         <AvisoEstado />
@@ -51,6 +55,7 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                 </div>
                 <BarraPortal hojaAbierta={hojaAbierta} onAbrirHoja={() => setHojaAbierta(true)} />
                 <HojaMasRecolector abierta={hojaAbierta} onCerrar={() => setHojaAbierta(false)} />
+                {MODO_DEMO && <Recorrido vista="empresa" />}
             </div>
         </RecolectorProvider>
     );

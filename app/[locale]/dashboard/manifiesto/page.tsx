@@ -1101,7 +1101,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
 
         <div className={`grid grid-cols-1 lg:grid-cols-[1.08fr_1fr] gap-6 movil:gap-4 ${soloEnNuevo}`}>
           {/* COLUMNA IZQUIERDA - Datos del formulario */}
-          <section className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.06s' }}>
+          <section data-recorrido="manifiesto-datos" className="simar-aparece flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-6 md:p-7 movil:p-4" style={{ animationDelay: '0.06s' }}>
             <h2 className="text-[23px] font-extrabold text-simar-texto">Datos del manifiesto</h2>
 
             <div className="mt-5 grid grid-cols-1 sm:grid-cols-[210px_1fr] gap-4 movil:mt-3 movil:gap-3">
@@ -1336,7 +1336,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
 
           {/* COLUMNA DERECHA - Firmas */}
           <div className="flex flex-col">
-            <section className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] px-6 md:px-7 pt-6 pb-2 movil:px-4 movil:pt-4 movil:pb-0" style={{ animationDelay: '0.12s' }}>
+            <section data-recorrido="manifiesto-firmas" className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] px-6 md:px-7 pt-6 pb-2 movil:px-4 movil:pt-4 movil:pb-0" style={{ animationDelay: '0.12s' }}>
               <h2 className="text-[23px] font-extrabold text-simar-texto">Firmas</h2>
 
               {/* FIRMA OFICIAL COMISIONADO */}

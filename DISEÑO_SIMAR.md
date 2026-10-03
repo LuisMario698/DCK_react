@@ -221,6 +221,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
 | `simar-desplegable` | Baja 6 px desde el campo y aparece (0.2 s); si se abrió arriba del campo, sube | Panel flotante del selector de fecha y hora en computadora (`Desplegable`) |
 | `simar-resalta` | La fila se ilumina en azul suave y se apaga sola (2.6 s, empieza a los 0.3 s). Con "reducir movimiento" se queda iluminada un momento, sin transición | La fila a la que se llega desde un aviso o el Panel (Solicitudes, `?solicitud=ID`), para que la vista la encuentre |
+| `simar-recorrido-foco` / `simar-recorrido-tarjeta` | Con `data-moviendo`, el recuadro iluminado y su tarjeta se deslizan 0.42 s a la parte siguiente; al desplazarse la página lo siguen sin retraso. Con "reducir movimiento" saltan directo | Sólo el recorrido guiado de la demostración (`components/demo/Recorrido.tsx`) |
 | `simar-encabezado-movil` | Con `data-oculto="true"` sube y se desvanece | Encabezado móvil del recinto: se esconde al bajar y vuelve al subir (`useOcultarAlBajar`) |
 | `simar-trazo` | Trazo con `stroke-dasharray: 420` | Heredada; para trazos nuevos usa `simar-dibuja` |
 

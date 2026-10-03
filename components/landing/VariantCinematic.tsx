@@ -38,6 +38,8 @@ import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 import { NumeroAnimado, usePrefiereMenosMovimiento, usePresencia } from '@/components/ui/movimiento';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
+import { useParams } from 'next/navigation';
+import { MODO_DEMO, URL_DEMO } from '@/lib/demo/config';
 import {
     aguaProtegidaL,
     co2EvitadoKg,
@@ -414,7 +416,16 @@ export function VariantCinematic({
     const enlacesRef = useRef<HTMLDivElement>(null);
     const [marcaMenu, setMarcaMenu] = useState<{ x: number; visible: boolean }>({ x: 0, visible: false });
 
+    // La demostración (supabase/demo/README.md): en su despliegue, los botones de acceso llevan a ella;
+    // en producción, si existe, un enlace discreto bajo los botones del inicio
+    const { locale } = useParams<{ locale: string }>();
+    const rutaDemo = MODO_DEMO ? `/${locale}/demo` : URL_DEMO ? `${URL_DEMO}/${locale}/demo` : null;
+
     const openLoginModal = () => {
+        if (MODO_DEMO && rutaDemo) {
+            window.location.assign(rutaDemo);
+            return;
+        }
         setModalRole(readSavedRole()); // null si no hay guardado → selector
         setShowLoginModal(true);
     };
@@ -611,7 +622,7 @@ export function VariantCinematic({
                             onClick={openLoginModal}
                             className="simar-presiona min-h-[54px] md:min-h-[58px] px-4 sm:px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer whitespace-nowrap movil:min-h-[46px] movil:px-3.5 movil:rounded-[15px] movil:text-[15px]"
                         >
-                            Iniciar sesión
+                            {MODO_DEMO ? 'Probar la demo' : 'Iniciar sesión'}
                             <ArrowRight className="hidden sm:block w-5 h-5" strokeWidth={2.4} />
                         </button>
                     </div>
@@ -729,7 +740,7 @@ export function VariantCinematic({
                             onClick={openLoginModal}
                             className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold flex items-center justify-center gap-2.5 cursor-pointer group shadow-[0_18px_40px_-18px_rgba(27,95,201,0.9)] movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
                         >
-                            Acceder a la plataforma
+                            {MODO_DEMO ? 'Probar la demostración' : 'Acceder a la plataforma'}
                             <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                         </button>
                         <a
@@ -739,6 +750,16 @@ export function VariantCinematic({
                             Conocer el proyecto
                         </a>
                     </div>
+                    {!MODO_DEMO && rutaDemo && (
+                        <a
+                            href={rutaDemo}
+                            className="simar-enfoca group mt-5 inline-flex min-h-[48px] items-center gap-2 px-3 text-[17px] md:text-lg font-bold text-simar-espuma underline-offset-4 hover:underline movil:mt-3 movil:text-[15px]"
+                            style={{ animationDelay: '1.6s' }}
+                        >
+                            ¿Sin cuenta? Prueba la demostración
+                            <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
+                        </a>
+                    )}
                 </div>
 
                 {/* Controles de las fotografías. Se pausan con el botón o al pasar el cursor / enfocar los controles
@@ -1202,7 +1223,7 @@ export function VariantCinematic({
                             onClick={openLoginModal}
                             className="simar-presiona group mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold inline-flex items-center gap-2.5 cursor-pointer movil:mt-6 movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
                         >
-                            Iniciar sesión
+                            {MODO_DEMO ? 'Probar la demostración' : 'Iniciar sesión'}
                             <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                         </button>
                     </div>

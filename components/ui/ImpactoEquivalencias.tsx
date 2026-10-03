@@ -45,7 +45,7 @@ export function ImpactoEquivalencias({
     const idCalculo = useId();
 
     return (
-        <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 md:p-7 min-w-0 movil:p-4 movil:rounded-[22px]" style={style}>
+        <section data-recorrido="impacto" className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 md:p-7 min-w-0 movil:p-4 movil:rounded-[22px]" style={style}>
             <div className="flex items-start gap-3">
                 <span className="w-12 h-12 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center movil:w-9 movil:h-9">
                     <Leaf className="w-6 h-6 movil:w-[18px] movil:h-[18px]" strokeWidth={2} aria-hidden="true" />

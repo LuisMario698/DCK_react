@@ -531,7 +531,9 @@ npm install
 
 ### Variables de entorno
 
-Crear `.env.local` en la raíz (el repo ignora `.env*`). El código **sólo lee** dos variables:
+Crear `.env.local` en la raíz (el repo ignora `.env*`). Para la app basta con dos variables (las
+`NEXT_PUBLIC_MODO_DEMO`, `NEXT_PUBLIC_URL_DEMO` y `NEXT_PUBLIC_DEMO_*` son sólo de la
+demostración para el jurado: ver `supabase/demo/README.md`):
 
 ```env
 NEXT_PUBLIC_SB_URL=https://<tu-proyecto>.supabase.co
