@@ -30,4 +30,10 @@ export function callarErroresDeLaDemo() {
     const original = toast.error;
     t.error = ((mensaje, datos) =>
         Date.now() - ultimoBloqueo < 4000 ? ID_AVISO : original(mensaje, datos)) as typeof toast.error;
+
+    // En la demo los PDF no se descargan: se abren en una vista previa (components/demo/VistaPreviaPdf.tsx),
+    // así que "PDF descargado" no sería cierto
+    const exito = toast.success;
+    t.success = ((mensaje, datos) =>
+        typeof mensaje === 'string' && /descargad[oa]/i.test(mensaje) ? ID_AVISO : exito(mensaje, datos)) as typeof toast.success;
 }

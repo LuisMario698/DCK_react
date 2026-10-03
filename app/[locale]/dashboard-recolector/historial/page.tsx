@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfComprobanteDe } from '@/lib/demo/documentos';
 import { Download, FileDown, Loader2, Truck } from 'lucide-react';
 import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad } from '@/lib/constants/residuos';
 import { formatearFecha, hoyLocal } from '@/lib/utils/fechas';
@@ -61,6 +64,11 @@ export default function HistorialPage() {
     };
 
     const verComprobante = async (h: RecoleccionConAsociacion) => {
+        // En la demostración, se genera y se ve (no hay comprobantes guardados)
+        if (MODO_DEMO) {
+            abrirVistaPrevia(`Comprobante ${h.folio}`, () => pdfComprobanteDe(h, h.asociacion));
+            return;
+        }
         if (!h.comprobante_pdf_path) {
             return toast.info('El comprobante aún no está disponible', {
                 description: 'El centro de acopio lo generará en breve. Si lo necesitas, escríbeles desde Mensajes.',

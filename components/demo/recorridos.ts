@@ -15,6 +15,8 @@ export interface PasoRecorrido {
     texto: string;
     /** Si aquí se puede probar con la pantalla de verdad (ver PruebaPaso) */
     prueba?: PruebaPaso;
+    /** Un documento de ejemplo que se puede ver (sólo vista previa: no se descarga) */
+    documento?: { texto: string; tipo: 'manifiesto' | 'comprobante' };
 }
 
 /**
@@ -93,6 +95,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                     listo: { tipo: 'texto', selector: '[data-recorrido="firma-oficial"]', texto: 'Firmado' },
                     hecho: 'Esa firma ya va en el PDF del manifiesto.',
                 },
+                documento: { texto: 'Ver cómo queda el PDF del manifiesto', tipo: 'manifiesto' },
             },
             {
                 ruta: '/dashboard',
@@ -114,6 +117,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                     listo: { tipo: 'envio' },
                     hecho: 'Así se aprueba. La empresa recibe el aviso al momento.',
                 },
+                documento: { texto: 'Ver un comprobante de recolección', tipo: 'comprobante' },
             },
             {
                 ruta: '/dashboard/estadisticas',
@@ -126,7 +130,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
         ],
         final: {
             titulo: 'Ya conoces SiMAR',
-            texto: 'Ahora recórrelo a tu ritmo: puedes tocar todo, aquí nada se guarda.',
+            texto: 'Ya viste cómo funciona de principio a fin. Ahora recórrelo a tu ritmo: puedes tocar todo y nada se guarda.',
             otraVista: { vista: 'empresa', texto: 'Verlo como empresa recolectora' },
         },
     },
@@ -162,6 +166,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                     listo: { tipo: 'ventana' },
                     hecho: 'Así sigues cada solicitud, paso a paso.',
                 },
+                documento: { texto: 'Ver un comprobante de recolección', tipo: 'comprobante' },
             },
             {
                 ruta: '/dashboard-recolector',
@@ -181,7 +186,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
         ],
         final: {
             titulo: 'Ya conoces el portal de empresas',
-            texto: 'Ahora recórrelo a tu ritmo: puedes tocar todo, aquí nada se guarda.',
+            texto: 'Ya viste cómo funciona de principio a fin. Ahora recórrelo a tu ritmo: puedes tocar todo y nada se guarda.',
             otraVista: { vista: 'puerto', texto: 'Verlo como el puerto' },
         },
     },

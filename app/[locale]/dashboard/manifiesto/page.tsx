@@ -5,6 +5,9 @@ import { detalleDe } from '@/lib/utils/errores';
 import { useTranslations } from 'next-intl';
 import { CalendarDays, Check, Download, FilePlus2, FileText, List, PenLine, Search, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfManifiestoFirmado } from '@/lib/demo/documentos';
 import { useAuth } from '@/components/layout/AuthProvider';
 import { confirmar } from '@/components/ui/Confirmar';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
@@ -907,6 +910,11 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
   };
 
   const handleDescargarPDF = async (manifiesto: ManifiestoConRelaciones) => {
+    // En la demostración sólo se ve, con firmas de ejemplo: no se descarga
+    if (MODO_DEMO) {
+      abrirVistaPrevia(`Manifiesto ${manifiesto.numero_manifiesto}`, () => pdfManifiestoFirmado(manifiesto));
+      return;
+    }
     try {
       setGenerandoPDF(manifiesto.id.toString());
       const nombreArchivo = generarNombreArchivoPDF(manifiesto.numero_manifiesto);
@@ -974,6 +982,11 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
   };
 
   const handleImprimirManifiesto = async (manifiesto: ManifiestoConRelaciones) => {
+    // En la demostración sólo se ve (imprimir dejaría guardarlo como PDF)
+    if (MODO_DEMO) {
+      abrirVistaPrevia(`Manifiesto ${manifiesto.numero_manifiesto}`, () => pdfManifiestoFirmado(manifiesto));
+      return;
+    }
     try {
       setGenerandoPDF(manifiesto.id.toString());
 

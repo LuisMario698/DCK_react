@@ -3,17 +3,16 @@
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type TouchEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useRouter } from 'next/navigation';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Droplets, FileText, Hand, Waves, X } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, FileText, Hand, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { LogoSimar } from '@/components/layout/LogoSimar';
-import { NumeroAnimado, PalomitaAnimada, usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
+import { PalomitaAnimada, usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
-import { createClient } from '@/lib/supabase/client';
-import { getLandingStats, type LandingStats } from '@/lib/services/landing_stats';
-import { aguaProtegidaL } from '@/lib/utils/equivalencias';
 import type { VistaDemo } from '@/lib/demo/config';
 import { EVENTO_RECORRIDO, guardarRecorrido, leerRecorrido } from '@/lib/demo/estadoRecorrido';
 import { EVENTO_CAMBIO_DETENIDO } from '@/lib/demo/avisos';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfComprobanteDeEjemplo, pdfManifiestoDeEjemplo } from '@/lib/demo/documentos';
 import { RECORRIDOS, type PruebaPaso, type TonoPaso } from './recorridos';
 
 /**
@@ -479,19 +478,6 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
     }, [probando, hecho]);
 
 
-    // Lo que la demo lleva registrado, para el cierre
-    const [cifras, setCifras] = useState<LandingStats | null>(null);
-    useEffect(() => {
-        if (!enFinal || cifras) return;
-        let vigente = true;
-        getLandingStats(createClient())
-            .then((c) => vigente && setCifras(c))
-            .catch(() => {});
-        return () => {
-            vigente = false;
-        };
-    }, [enFinal, cifras]);
-
     if (paso === null) return null;
     // Probando con una ventana de la pantalla abierta: que se use la ventana
     if (probando && hayVentana) return null;
@@ -727,6 +713,22 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                         {conNegritas(datos ? datos.texto : enBienvenida ? recorrido.bienvenida.texto : recorrido.final.texto)}
                     </p>
 
+                    {/* Un documento de ejemplo, sólo para verlo (no se descarga) */}
+                    {datos?.documento && (
+                        <button
+                            type="button"
+                            onClick={() =>
+                                datos.documento?.tipo === 'manifiesto'
+                                    ? abrirVistaPrevia('Manifiesto de ejemplo', pdfManifiestoDeEjemplo)
+                                    : abrirVistaPrevia('Comprobante de recolección', pdfComprobanteDeEjemplo)
+                            }
+                            className="mt-2 -ml-2 min-h-[44px] px-2 rounded-xl inline-flex items-center gap-2 text-[17px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:mt-1.5 movil:text-[15px]"
+                        >
+                            <FileText className="w-5 h-5 flex-shrink-0" />
+                            {datos.documento.texto}
+                        </button>
+                    )}
+
                     {/* Bienvenida: el camino completo de un vistazo, con el ícono de cada paso */}
                     {enBienvenida && (
                         <>
@@ -749,30 +751,26 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                         </>
                     )}
 
-                    {/* Final: lo que la demo lleva registrado (datos de ejemplo), con su agua protegida */}
-                    {enFinal && cifras && cifras.totalManifiestos > 0 && (
-                        <div className="mt-5 movil:mt-4">
-                            <p className="text-[15px] font-bold text-simar-texto-2">En esta demostración, SiMAR lleva:</p>
-                            <div className="mt-2.5 grid grid-cols-3 gap-2.5 movil:gap-2">
-                                {[
-                                    { icono: FileText, valor: cifras.totalManifiestos, decimales: 0, texto: 'manifiestos sin papel', tono: TONO.marea },
-                                    { icono: Droplets, valor: cifras.totalAceiteUsado, decimales: 0, texto: 'litros de aceite recuperados', tono: TONO.arrecife },
-                                    { icono: Waves, valor: aguaProtegidaL(cifras.totalAceiteUsado) / 1_000_000, decimales: 1, texto: 'millones de litros de agua protegida', tono: TONO.violeta },
-                                ].map((c) => {
-                                    const IconoCifra = c.icono;
-                                    return (
-                                        <div key={c.texto} className="rounded-2xl bg-simar-papel px-3 py-3 movil:px-2.5 movil:py-2.5">
-                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center ${c.tono} movil:w-7 movil:h-7`}>
-                                                <IconoCifra className="w-[18px] h-[18px] movil:w-4 movil:h-4" />
+                    {/* Final: el mismo camino de la bienvenida, ya recorrido (verde = listo) */}
+                    {enFinal && (
+                        <div aria-hidden="true" className="mt-5 flex items-center movil:mt-4">
+                            {recorrido.pasos.map((p, i) => {
+                                const IconoPaso = p.icono;
+                                return (
+                                    <Fragment key={i}>
+                                        {i > 0 && <span className="h-0.5 flex-1 min-w-2 bg-simar-arrecife/40" />}
+                                        <span
+                                            className="simar-aparece relative w-10 h-10 flex-shrink-0 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center movil:w-9 movil:h-9"
+                                            style={{ animationDelay: `${0.1 + i * 0.07}s` }}
+                                        >
+                                            <IconoPaso className="w-5 h-5 movil:w-[18px] movil:h-[18px]" />
+                                            <span className="absolute -right-1 -bottom-1 w-[18px] h-[18px] rounded-full bg-simar-arrecife text-white flex items-center justify-center ring-2 ring-simar-superficie">
+                                                <Check className="w-3 h-3" strokeWidth={3} />
                                             </span>
-                                            <p className="mt-2 text-[24px] font-extrabold leading-none text-simar-texto tabular-nums movil:text-[19px]">
-                                                <NumeroAnimado valor={c.valor} decimales={c.decimales} />
-                                            </p>
-                                            <p className="mt-1 text-[14px] leading-snug text-simar-texto-2 movil:text-[12px]">{c.texto}</p>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                        </span>
+                                    </Fragment>
+                                );
+                            })}
                         </div>
                     )}
 

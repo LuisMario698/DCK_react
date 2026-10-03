@@ -17,6 +17,7 @@ import { BarChart3, Ellipsis, FileText, LayoutGrid, Recycle } from 'lucide-react
 import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
 import { Recorrido } from '@/components/demo/Recorrido';
+import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
 
 /** Nombre de cada pantalla del recinto en la pestaña del navegador */
 const TITULOS_RECINTO: Record<string, string> = {
@@ -92,6 +93,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <PanelAvisos colapsado={isCollapsed} />
       <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />
       {MODO_DEMO && <Recorrido vista="puerto" />}
+      {MODO_DEMO && <VistaPreviaPdf />}
     </div>
   );
 }

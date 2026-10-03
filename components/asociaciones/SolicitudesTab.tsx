@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfComprobanteDe } from '@/lib/demo/documentos';
 import { confirmar } from '@/components/ui/Confirmar';
 import { CheckCircle2, XCircle, Truck, Eye, MessageSquare, Inbox, Ban, FileDown, Loader2 } from 'lucide-react';
 import { TIPO_RESIDUO_LABEL, formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
@@ -183,6 +186,11 @@ export function SolicitudesTab({
         try {
             const rec = await getRecoleccionPorSolicitud(s.id);
             if (!rec) throw new Error('No se encontró la recolección de esta solicitud.');
+            // En la demostración, se genera y se ve (no hay comprobantes guardados ni se sube nada)
+            if (MODO_DEMO) {
+                abrirVistaPrevia(`Comprobante ${rec.folio}`, () => pdfComprobanteDe(rec, rec.asociacion, s));
+                return;
+            }
             let ruta = rec.comprobante_pdf_path;
             if (!ruta) {
                 // El comprobante no se subió al completar (p. ej. falló la red): se regenera sin firmas

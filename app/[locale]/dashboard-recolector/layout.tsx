@@ -17,6 +17,7 @@ import { AvisoVencimiento } from '@/components/recolector/MiSuscripcion';
 import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
 import { Recorrido } from '@/components/demo/Recorrido';
+import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -56,6 +57,7 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                 <BarraPortal hojaAbierta={hojaAbierta} onAbrirHoja={() => setHojaAbierta(true)} />
                 <HojaMasRecolector abierta={hojaAbierta} onCerrar={() => setHojaAbierta(false)} />
                 {MODO_DEMO && <Recorrido vista="empresa" />}
+                {MODO_DEMO && <VistaPreviaPdf />}
             </div>
         </RecolectorProvider>
     );
