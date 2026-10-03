@@ -6,15 +6,16 @@
  *   qué está esperando revisión o qué hay disponible) y el botón para pedir;
  * - cuatro datos (solicitudes activas, recolecciones, lo recolectado en cada unidad y el CO₂e);
  * - "Disponible ahora": lo que publicó el centro de acopio, con "Solicitar" ahí mismo;
- * - "Tus recolecciones": la próxima aprobada con su día, y lo que espera revisión;
+ * - "Lo importante" (LoImportante.tsx), justo debajo del saludo: la recolección agendada en azul
+ *   sólido, los avisos sin leer de aprobada / rechazada / completada en tarjetas de color con
+ *   "Entendido", los mensajes nuevos y lo que espera revisión;
  * - la actividad reciente, donde cada aviso abre su solicitud.
- * En celular primero va la próxima recolección (si hay algo programado), luego lo disponible, los datos y
- * la actividad.
+ * En celular, después de lo importante va lo disponible, luego los datos y la actividad.
  */
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowRight, CalendarCheck, ClipboardCheck, Clock, Droplets, Inbox, Leaf, Navigation, Package, PackageCheck, Send, Truck } from 'lucide-react';
+import { ArrowRight, ClipboardCheck, Droplets, Inbox, Leaf, Package, PackageCheck, Send, Truck } from 'lucide-react';
 import {
     PUERTO_PENASCO,
     TIPO_RESIDUO_COLOR,
@@ -25,41 +26,23 @@ import {
     type UnidadResiduo,
 } from '@/lib/constants/residuos';
 import { co2eEvitadoKg } from '@/lib/constants/impacto';
-import { fechaHoyPuerto, hoyPuerto, parseFechaLocal, saludoPuerto } from '@/lib/utils/fechas';
+import { fechaHoyPuerto, hoyPuerto, saludoPuerto } from '@/lib/utils/fechas';
 import { InventarioResiduo, Notificacion, Recoleccion, SolicitudConAsociacion } from '@/types/database';
 import { getInventario } from '@/lib/services/inventario';
-import { cantidadVigente, getSolicitudes } from '@/lib/services/solicitudes';
+import { getSolicitudes, solicitudDelAviso } from '@/lib/services/solicitudes';
 import { getRecolecciones } from '@/lib/services/recolecciones';
-import { getNotificaciones, suscribirCambios } from '@/lib/services/notificaciones';
+import { getNotificaciones, marcarNotificacionesLeidas, suscribirCambios } from '@/lib/services/notificaciones';
 import { useRecolector } from '@/components/recolector/RecolectorContext';
-import { Cargando, ResiduoBadge } from '@/components/asociaciones/ui';
+import { Cargando } from '@/components/asociaciones/ui';
 import { NotifIcon } from '@/components/recolector/NotifIcon';
 import { SolicitarModal } from '@/components/recolector/SolicitarModal';
 import { destinoDelAviso } from '@/components/recolector/destinoAviso';
+import { LoImportante, avisoImportante, diaLargo, diasHasta } from '@/components/recolector/LoImportante';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { useEsCelular } from '@/components/layout/useEsCelular';
 import { TarjetaDato } from '@/components/ui/simar';
 
-const COMO_LLEGAR = `https://www.google.com/maps/dir/?api=1&destination=${PUERTO_PENASCO.lat},${PUERTO_PENASCO.lng}`;
 const UNIDADES: UnidadResiduo[] = ['L', 'kg', 'pz'];
-
-/** "Jueves 3 de octubre" */
-function diaLargo(fecha: string) {
-    const t = parseFechaLocal(fecha).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
-    return t.charAt(0).toUpperCase() + t.slice(1);
-}
-
-/** Días de hoy a esa fecha (las dos en texto YYYY-MM-DD) */
-function diasHasta(fecha: string, hoy: string) {
-    return Math.round((parseFechaLocal(fecha).getTime() - parseFechaLocal(hoy).getTime()) / 86400000);
-}
-
-function cuandoEs(dias: number) {
-    if (dias < 0) return 'Ya pasó la fecha';
-    if (dias === 0) return 'Hoy';
-    if (dias === 1) return 'Mañana';
-    return `En ${dias} días`;
-}
 
 const plural = (n: number, uno: string, varios: string) => `${n.toLocaleString('es-MX')} ${n === 1 ? uno : varios}`;
 
@@ -67,7 +50,7 @@ export default function DashboardRecolectorPage() {
     const pathname = usePathname();
     const locale = pathname.split('/')[1] || 'es';
     const base = `/${locale}/dashboard-recolector`;
-    const { asociacion, cargando: cargandoPerfil, bloqueada } = useRecolector();
+    const { asociacion, cargando: cargandoPerfil, bloqueada, mensajesNoLeidos, esSuperadmin, recargarContadores } = useRecolector();
     const esCelular = useEsCelular();
 
     const [inventario, setInventario] = useState<InventarioResiduo[]>([]);
@@ -86,7 +69,8 @@ export default function DashboardRecolectorPage() {
                 getInventario(true),
                 getSolicitudes({ asociacionId }),
                 getRecolecciones(asociacionId),
-                getNotificaciones(5, { destinatario: 'recolector', asociacionId }),
+                // 20: además de la actividad (5) se buscan los avisos sin leer que van en "Lo importante"
+                getNotificaciones(20, { destinatario: 'recolector', asociacionId }),
             ]);
             setInventario(inv);
             setSolicitudes(sol);
@@ -144,6 +128,22 @@ export default function DashboardRecolectorPage() {
             ? `El centro de acopio de ${PUERTO_PENASCO.nombre} tiene ${plural(disponibles.length, 'residuo disponible', 'residuos disponibles')}.`
             : 'Por ahora el centro de acopio no tiene residuos disponibles. Te avisaremos cuando publique uno.';
 
+    // Avisos sin leer que cambian algo. El de la próxima recolección no va aparte: la tarjeta azul lleva
+    // "Recién aprobada"
+    const sinLeer = notificaciones.filter(avisoImportante);
+    const avisoDeLaProxima = proxima ? sinLeer.find((n) => n.tipo === 'aprobada' && solicitudDelAviso(n, solicitudes) === proxima.id) : undefined;
+    const importantes = sinLeer.filter((n) => n !== avisoDeLaProxima);
+    const entendido = async (id: number) => {
+        // Se quita de la pantalla en seguida; si falla, vuelve con la siguiente carga
+        setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, leida: true } : n)));
+        try {
+            await marcarNotificacionesLeidas([id], esSuperadmin);
+            recargarContadores();
+        } catch (err) {
+            console.error('Error marcando el aviso como leído:', err);
+        }
+    };
+
     const datos = [
         { etiqueta: 'Solicitudes activas', valor: activas, icono: ClipboardCheck, tono: 'marea' as const, href: `${base}/solicitudes` },
         { etiqueta: 'Recolecciones completadas', valor: recolecciones.length, icono: Truck, tono: 'arrecife' as const, href: `${base}/historial` },
@@ -188,6 +188,20 @@ export default function DashboardRecolectorPage() {
                     Ver residuos y solicitar <ArrowRight className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
                 </Link>
             </section>
+
+            {/* Lo importante: la recolección agendada, los avisos sin leer, los mensajes y lo que espera revisión */}
+            <LoImportante
+                proxima={proxima}
+                otras={aprobadas.slice(1)}
+                recienAprobada={!!avisoDeLaProxima}
+                avisos={importantes.slice(0, 3).map((n) => ({ aviso: n, href: destinoDelAviso(n, solicitudes, base) }))}
+                masAvisos={Math.max(0, importantes.length - 3)}
+                mensajes={mensajesNoLeidos}
+                pendientes={pendientes.length}
+                hoy={hoy}
+                base={base}
+                onEntendido={entendido}
+            />
 
             {/* En computadora los datos van arriba; en celular, después de lo disponible (order) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 movil:gap-3">
@@ -277,10 +291,8 @@ export default function DashboardRecolectorPage() {
                     )}
                 </section>
 
-                {/* Columna derecha: en celular sus dos tarjetas se reparten (contents) */}
+                {/* Columna derecha: la actividad reciente */}
                 <div className="flex flex-col gap-5 movil:contents">
-                    <TusRecolecciones proxima={proxima} masAprobadas={aprobadas.length - 1} pendientes={pendientes.length} hoy={hoy} base={base} />
-
                     <section
                         className="simar-aparece flex-1 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6 movil:order-5 movil:rounded-[22px] movil:p-3.5"
                         style={{ animationDelay: '0.32s' }}
@@ -298,7 +310,7 @@ export default function DashboardRecolectorPage() {
                             </div>
                         ) : (
                             <ul className="-mx-2">
-                                {notificaciones.map((n) => (
+                                {notificaciones.slice(0, 5).map((n) => (
                                     <li key={n.id}>
                                         {/* Cada aviso abre su solicitud (o Residuos, si es un residuo nuevo) */}
                                         <Link
@@ -333,95 +345,5 @@ export default function DashboardRecolectorPage() {
                 />
             )}
         </div>
-    );
-}
-
-/** La próxima recolección aprobada (con su día) y lo que espera revisión */
-function TusRecolecciones({
-    proxima,
-    masAprobadas,
-    pendientes,
-    hoy,
-    base,
-}: {
-    proxima: SolicitudConAsociacion | null;
-    masAprobadas: number;
-    pendientes: number;
-    hoy: string;
-    base: string;
-}) {
-    const dias = proxima ? diasHasta(proxima.fecha_propuesta, hoy) : 0;
-    return (
-        <section
-            // En celular va primero si hay algo programado o en revisión; si no, después de lo disponible
-            className={`simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 sm:p-6 movil:rounded-[22px] movil:p-3.5 ${proxima || pendientes > 0 ? 'movil:order-1' : 'movil:order-3'}`}
-            style={{ animationDelay: '0.26s' }}
-        >
-            <h3 className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">{proxima ? 'Tu próxima recolección' : 'Tus recolecciones'}</h3>
-            {proxima ? (
-                <div className="mt-3 movil:mt-2">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                        <p className="text-[26px] font-extrabold leading-tight text-simar-texto movil:text-[20px]">{diaLargo(proxima.fecha_propuesta)}</p>
-                        <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-bold movil:text-[13px] ${
-                                dias < 0 ? 'bg-simar-coral-suave text-simar-coral' : 'bg-simar-arrecife-suave text-simar-arrecife-tinta'
-                            }`}
-                        >
-                            <CalendarCheck className="w-4 h-4" />
-                            {cuandoEs(dias)}
-                        </span>
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-2 movil:mt-2">
-                        <ResiduoBadge tipo={proxima.tipo} size="md" />
-                        <span className="text-[17px] font-bold text-simar-texto movil:text-[15px]">
-                            {formatCantidad(cantidadVigente(proxima))} {unidadEscrita(proxima.unidad, cantidadVigente(proxima))} aprobados
-                        </span>
-                    </div>
-                    <p className="mt-2 text-base text-simar-texto-2 movil:text-[14px]">
-                        {dias < 0
-                            ? 'La fecha ya pasó y aún no se registra. Escribe al centro de acopio para acordar otro día.'
-                            : `Preséntate en el centro de acopio de ${PUERTO_PENASCO.nombre}. Al recoger te darán tu comprobante.`}
-                    </p>
-                    <div className="mt-4 grid grid-cols-2 gap-2.5 movil:mt-3">
-                        <Link
-                            href={`${base}/solicitudes?ver=${proxima.id}`}
-                            className="simar-presiona min-h-[52px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-[16px] font-bold text-simar-texto hover:border-simar-marea-tinta inline-flex items-center justify-center gap-2 movil:min-h-[44px] movil:text-[14px]"
-                        >
-                            Ver solicitud
-                        </Link>
-                        <a
-                            href={COMO_LLEGAR}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="simar-presiona min-h-[52px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-[16px] font-bold text-simar-texto hover:border-simar-marea-tinta inline-flex items-center justify-center gap-2 movil:min-h-[44px] movil:text-[14px]"
-                        >
-                            <Navigation className="w-[18px] h-[18px] text-simar-marea-tinta" />
-                            Cómo llegar
-                        </a>
-                    </div>
-                    {masAprobadas > 0 && (
-                        <Link href={`${base}/solicitudes`} className="mt-3 inline-flex min-h-[44px] items-center text-base font-bold text-simar-marea-tinta hover:underline movil:text-[14px]">
-                            Y {plural(masAprobadas, 'recolección más programada', 'recolecciones más programadas')}
-                        </Link>
-                    )}
-                </div>
-            ) : (
-                <p className="mt-2 text-base text-simar-texto-2 movil:text-[14px]">
-                    No tienes recolecciones programadas. Cuando el centro de acopio apruebe una solicitud, aquí verás el día.
-                </p>
-            )}
-            {pendientes > 0 && (
-                <Link
-                    href={`${base}/solicitudes`}
-                    className="mt-3 flex items-center gap-3 rounded-2xl bg-simar-marea-suave px-4 py-3 text-[16px] text-simar-texto hover:bg-simar-marea-suave/70 transition-colors movil:text-[14px] movil:px-3 movil:py-2.5"
-                >
-                    <Clock className="w-5 h-5 flex-shrink-0 text-simar-marea-tinta" />
-                    <span className="flex-1">
-                        <strong>{plural(pendientes, 'solicitud', 'solicitudes')}</strong> esperando que el centro de acopio {pendientes === 1 ? 'la revise' : 'las revise'}
-                    </span>
-                    <ArrowRight className="w-4 h-4 flex-shrink-0 text-simar-marea-tinta" />
-                </Link>
-            )}
-        </section>
     );
 }

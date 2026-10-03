@@ -147,12 +147,17 @@ function LineaDeHoy({ hoy }: { hoy: ResumenPanel['hoy'] }) {
 interface Pendiente {
   clave: string;
   total: number;
+  /** Ya con el número: "1 solicitud por revisar" */
   titulo: string;
   detalle: ReactNode;
   href: string;
   Icon: LucideIcon;
-  /** Coral si ya se pasó o espera respuesta; azul si sólo hay que tenerlo presente */
-  urgente: boolean;
+  /** Coral: ya se pasó o espera una decisión; azul: hay que tenerlo presente hoy */
+  tono: 'coral' | 'marea';
+  /** Lo que pide, escrito en su tono arriba del título (DISEÑO_SIMAR.md §10.6): "Requiere tu respuesta" */
+  insignia: string;
+  /** La palabra del botón: "Revisar", "Ver", "Abrir chat" */
+  accion: string;
 }
 
 /** Lo que hay por atender, en el orden en que conviene hacerlo. Vacío si no hay nada. */
@@ -161,29 +166,38 @@ function pendientesDe(r: ResumenPanel, hoy: string, base: string): Pendiente[] {
 
   const { porRecolectar: rec, porRevisar: rev, mensajes: men } = r;
   if (rec.total > 0) {
-    const cuando = (s: SolicitudBreve) =>
-      s.fechaPropuesta < hoy ? `era para el ${formatearFecha(s.fechaPropuesta, 'es-MX', { day: 'numeric', month: 'long' })}` : 'hoy';
+    const fecha = (s: SolicitudBreve) => formatearFecha(s.fechaPropuesta, 'es-MX', { day: 'numeric', month: 'long' });
+    const todasHoy = rec.atrasadas === 0;
+    const todasAtrasadas = rec.atrasadas === rec.total;
     lista.push({
       clave: 'recolectar',
       total: rec.total,
-      titulo: plural(rec.total, 'solicitud por recolectar', 'solicitudes por recolectar'),
+      titulo: todasHoy
+        ? `${rec.total} ${plural(rec.total, 'recolección para hoy', 'recolecciones para hoy')}`
+        : todasAtrasadas
+          ? `${rec.total} ${plural(rec.total, 'recolección atrasada', 'recolecciones atrasadas')}`
+          : `${rec.total} recolecciones por recibir`,
       detalle: rec.unica
-        ? `${rec.unica.empresa} · ${residuo(rec.unica)} · ${cuando(rec.unica)}`
-        : rec.atrasadas === 0
+        ? todasHoy
+          ? `${rec.unica.empresa} viene por ${residuo(rec.unica)}`
+          : `${rec.unica.empresa} · ${residuo(rec.unica)} · era para el ${fecha(rec.unica)}`
+        : todasHoy
           ? 'Las empresas vienen hoy'
-          : rec.atrasadas === rec.total
-            ? 'Ya pasó su fecha'
+          : todasAtrasadas
+            ? 'Ya pasó su fecha y no se han registrado'
             : `${rec.atrasadas} ${plural(rec.atrasadas, 'ya pasó su fecha', 'ya pasaron su fecha')}`,
       href: rec.unica ? `${base}/asociaciones?solicitud=${rec.unica.id}` : `${base}/asociaciones?ver=por-recolectar`,
       Icon: Truck,
-      urgente: rec.atrasadas > 0,
+      tono: todasHoy ? 'marea' : 'coral',
+      insignia: todasHoy ? 'Hoy' : 'Ya pasó su fecha',
+      accion: 'Ver',
     });
   }
   if (rev.total > 0) {
     lista.push({
       clave: 'revisar',
       total: rev.total,
-      titulo: plural(rev.total, 'solicitud por revisar', 'solicitudes por revisar'),
+      titulo: `${rev.total} ${plural(rev.total, 'solicitud por revisar', 'solicitudes por revisar')}`,
       detalle: rev.unica
         ? `${rev.unica.empresa} pide ${residuo(rev.unica)}`
         : rev.masAntigua
@@ -191,7 +205,9 @@ function pendientesDe(r: ResumenPanel, hoy: string, base: string): Pendiente[] {
           : 'Apruébalas o recházalas',
       href: rev.unica ? `${base}/asociaciones?solicitud=${rev.unica.id}` : `${base}/asociaciones`,
       Icon: Inbox,
-      urgente: true,
+      tono: 'coral',
+      insignia: 'Requiere tu respuesta',
+      accion: 'Revisar',
     });
   }
   if (men.total > 0) {
@@ -199,14 +215,123 @@ function pendientesDe(r: ResumenPanel, hoy: string, base: string): Pendiente[] {
     lista.push({
       clave: 'mensajes',
       total: men.total,
-      titulo: plural(men.total, 'mensaje sin leer', 'mensajes sin leer'),
+      titulo: `${men.total} ${plural(men.total, 'mensaje sin leer', 'mensajes sin leer')}`,
       detalle: una ? `De ${una.nombre}` : `De ${men.empresas.length} empresas`,
       href: `${base}/asociaciones?ver=mensajes${una ? `&empresa=${una.id}` : ''}`,
       Icon: MessageSquare,
-      urgente: false,
+      tono: 'marea',
+      insignia: 'Nuevos',
+      accion: 'Abrir chat',
     });
   }
   return lista;
+}
+
+// El tono va en el círculo del ícono (suave) y en la insignia escrita; la tarjeta es blanca como todas
+const TONO_PENDIENTE = {
+  coral: { circulo: 'bg-simar-coral-suave text-simar-coral', insignia: 'text-simar-coral' },
+  marea: { circulo: 'bg-simar-marea-suave text-simar-marea-tinta', insignia: 'text-simar-marea-tinta' },
+};
+
+/**
+ * Por atender: una tarjeta por tarea (como las del Panel: blanca, ícono en círculo suave), con lo que
+ * pide escrito en su tono, el número en el título y el botón azul de lo que hay que hacer.
+ */
+function PorAtender({ pendientes, angosto }: { pendientes: Pendiente[]; angosto: boolean }) {
+  return (
+    <section aria-labelledby="por-atender" className="simar-aparece min-w-0" style={{ animationDelay: '0.05s' }}>
+      <h2 id="por-atender" className="flex items-center gap-2.5 text-xl font-bold text-simar-texto-2 movil:text-[15px] movil:px-1">
+        Por atender
+        {/* Contador de SiMAR (DISEÑO_SIMAR.md §10.6) */}
+        <span className="min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold inline-flex items-center justify-center">
+          {pendientes.length}
+        </span>
+      </h2>
+      <ul className={`mt-3.5 grid gap-3 movil:mt-2 movil:gap-2 ${!angosto && pendientes.length > 1 ? 'xl:grid-cols-2' : ''}`}>
+        {pendientes.map((p) => {
+          const t = TONO_PENDIENTE[p.tono];
+          return (
+            <li key={p.clave}>
+              <Link
+                href={p.href}
+                className="simar-tarjeta-accion flex items-center gap-4 h-full min-h-[104px] p-5 rounded-[22px] bg-simar-superficie border border-simar-borde shadow-simar movil:min-h-[84px] movil:gap-3 movil:p-3.5 movil:rounded-[20px]"
+              >
+                <span className={`w-14 h-14 flex-shrink-0 rounded-full flex items-center justify-center ${t.circulo} movil:w-11 movil:h-11`}>
+                  <p.Icon aria-hidden="true" className="w-7 h-7 movil:w-[22px] movil:h-[22px]" strokeWidth={2} />
+                </span>
+                <span className="flex-1 min-w-0">
+                  <span className={`block text-[15px] font-bold leading-snug ${t.insignia} movil:text-[13px]`}>{p.insignia}</span>
+                  <span className="block text-[21px] font-extrabold leading-snug text-simar-texto movil:text-[16px]">
+                    {/* Si el número cambia en vivo, el título entra de nuevo con un pulso */}
+                    <span key={p.total} className="simar-confirma inline-block">{p.titulo}</span>
+                  </span>
+                  <span className="block mt-0.5 text-[17px] leading-snug text-simar-texto-2 movil:text-[13.5px] movil:line-clamp-2">{p.detalle}</span>
+                </span>
+                <span className="flex-shrink-0 inline-flex items-center gap-1 min-h-[52px] px-5 rounded-2xl bg-simar-marea text-white text-[17px] font-bold movil:hidden">
+                  {p.accion}
+                  <ChevronRight aria-hidden="true" className="w-5 h-5" strokeWidth={2.4} />
+                </span>
+                <ChevronRight aria-hidden="true" className="hidden movil:block w-5 h-5 flex-shrink-0 text-simar-texto-2" strokeWidth={2} />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/** "Jue" y "8" de una fecha YYYY-MM-DD */
+function diaCorto(fecha: string) {
+  const d = new Date(`${fecha}T12:00:00`);
+  const dia = d.toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '');
+  return { dia: dia.charAt(0).toUpperCase() + dia.slice(1), numero: d.getDate(), mes: d.toLocaleDateString('es-MX', { month: 'short' }).replace('.', '') };
+}
+
+/** Próximas recolecciones: las aprobadas de los próximos días, como una agenda (tarjeta blanca) */
+function ProximasRecolecciones({ proximas, hoy, base }: { proximas: ResumenPanel['proximas']; hoy: string; base: string }) {
+  const dias = (f: string) => Math.round((new Date(`${f}T12:00:00`).getTime() - new Date(`${hoy}T12:00:00`).getTime()) / 86400000);
+  return (
+    <section aria-labelledby="agenda" className="simar-aparece min-w-0 flex flex-col" style={{ animationDelay: '0.08s' }}>
+      <h2 id="agenda" className="flex items-center gap-2 text-xl font-bold text-simar-texto-2 movil:text-[15px] movil:px-1">
+        Próximas recolecciones
+      </h2>
+      <div className="mt-3.5 flex-1 flex flex-col bg-simar-superficie border border-simar-borde shadow-simar rounded-[22px] overflow-hidden movil:mt-2 movil:rounded-[20px]">
+        <ul className="flex-1 divide-y divide-simar-borde-suave">
+          {proximas.lista.map((s) => {
+            const d = diaCorto(s.fechaPropuesta);
+            const n = dias(s.fechaPropuesta);
+            return (
+              <li key={s.id}>
+                <Link href={`${base}/asociaciones?solicitud=${s.id}`} className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-simar-papel/60 movil:gap-3 movil:px-3 movil:py-2.5">
+                  {/* El día como en un calendario */}
+                  <span className="w-[58px] flex-shrink-0 rounded-2xl bg-simar-marea-suave text-center py-1.5 movil:w-[50px] movil:py-1">
+                    <span className="block text-[14px] font-bold leading-tight text-simar-marea-tinta movil:text-[12px]">{d.dia}</span>
+                    <span className="block text-[24px] font-extrabold leading-none text-simar-texto movil:text-[20px]">{d.numero}</span>
+                    <span className="block text-[13px] leading-tight text-simar-texto-2 movil:text-[11px]">{d.mes}</span>
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[18px] font-bold leading-snug text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:text-[15px]">{s.empresa}</span>
+                    <span className="block text-[16px] leading-snug text-simar-texto-2 movil:text-[13px]">{residuo(s)}</span>
+                  </span>
+                  <span className={`flex-shrink-0 text-[15px] font-bold text-simar-marea-tinta movil:text-[13px]`}>
+                    {n === 1 ? 'Mañana' : `En ${n} días`}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        <Link
+          href={`${base}/asociaciones?ver=por-recolectar`}
+          className="flex items-center justify-center gap-1 min-h-[48px] border-t border-simar-borde-suave text-[16px] font-bold text-simar-marea-tinta hover:bg-simar-papel/60 movil:min-h-[42px] movil:text-[14px]"
+        >
+          {proximas.total > proximas.lista.length ? `Ver las ${proximas.total}` : 'Ver en Solicitudes'}
+          <ChevronRight aria-hidden="true" className="w-4 h-4" strokeWidth={2.4} />
+        </Link>
+      </div>
+    </section>
+  );
 }
 
 // ── Un vistazo: debajo de las tarjetas grandes ───────────────────────────────
@@ -343,6 +468,7 @@ export function PanelInicio({
 }) {
   const base = `/${locale}/dashboard`;
   const pendientes = resumen ? pendientesDe(resumen, hoy, base) : [];
+  const hayAgenda = (resumen?.proximas.total ?? 0) > 0;
   const conteos = vistazo?.conteos;
 
   return (
@@ -378,37 +504,13 @@ export function PanelInicio({
         {resumen && pendientes.length === 0 && <InsigniaCalma avisosIniciales={resumen.avisosSinLeer} />}
       </section>
 
-      {/* Por atender: sólo aparece si hay algo. Cada renglón lleva a donde se resuelve */}
-      {pendientes.length > 0 && (
-        <section aria-labelledby="por-atender" className="simar-aparece mt-5 md:mt-7 movil:mt-3" style={{ animationDelay: '0.05s' }}>
-          <h2 id="por-atender" className="text-xl font-bold text-simar-texto-2 movil:text-[15px] movil:px-1">Por atender</h2>
-          <ul className="mt-3.5 bg-simar-superficie border border-simar-borde shadow-simar rounded-[24px] overflow-hidden divide-y divide-simar-borde-suave movil:mt-2 movil:rounded-[20px]">
-            {pendientes.map((p) => (
-              <li key={p.clave}>
-                <Link
-                  href={p.href}
-                  className="flex items-center gap-4 min-h-[76px] px-5 py-3 transition-colors hover:bg-simar-papel/60 movil:min-h-[60px] movil:gap-3 movil:px-3.5 movil:py-2.5"
-                >
-                  <span
-                    className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center movil:w-10 movil:h-10 ${
-                      p.urgente ? 'bg-simar-coral-suave text-simar-coral' : 'bg-simar-marea-suave text-simar-marea-tinta'
-                    }`}
-                  >
-                    <p.Icon className="w-6 h-6 movil:w-5 movil:h-5" strokeWidth={2} />
-                  </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-[19px] font-bold leading-snug text-simar-texto movil:text-[15px]">
-                      {/* Si el número cambia en vivo, entra de nuevo con un pulso */}
-                      <span key={p.total} className="simar-confirma inline-block tabular-nums">{p.total}</span> {p.titulo}
-                    </span>
-                    <span className="block text-[17px] leading-snug text-simar-texto-2 movil:text-[13px] movil:line-clamp-2">{p.detalle}</span>
-                  </span>
-                  <ChevronRight aria-hidden="true" className="w-6 h-6 flex-shrink-0 text-simar-texto-2 movil:w-5 movil:h-5" strokeWidth={2} />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {/* Lo importante, a la vista: Por atender (tarjetas de color, cada una lleva a donde se resuelve) y
+          las próximas recolecciones aprobadas. Lado a lado si están las dos; cada una sólo si hay algo */}
+      {(pendientes.length > 0 || hayAgenda) && (
+        <div className={`mt-5 md:mt-7 grid gap-5 movil:mt-3 movil:gap-3 ${pendientes.length > 0 && hayAgenda ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]' : ''}`}>
+          {pendientes.length > 0 && <PorAtender pendientes={pendientes} angosto={hayAgenda} />}
+          {hayAgenda && resumen && <ProximasRecolecciones proximas={resumen.proximas} hoy={hoy} base={base} />}
+        </div>
       )}
 
       {/* Acciones principales */}

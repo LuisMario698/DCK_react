@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { confirmar } from '@/components/ui/Confirmar';
 import { Eye, Ban, Plus, Inbox, FileText } from 'lucide-react';
 import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
-import { formatearFecha } from '@/lib/utils/fechas';
+import { formatearFecha, hoyPuerto } from '@/lib/utils/fechas';
+import { diaLargo, diasHasta } from '@/components/recolector/LoImportante';
 import { SolicitudConAsociacion } from '@/types/database';
 import { cancelarSolicitud, cantidadVigente, getSolicitudes } from '@/lib/services/solicitudes';
 import { suscribirCambios } from '@/lib/services/notificaciones';
@@ -209,7 +210,13 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                             {filtradas.map((s) => (
                                 <tr
                                     key={s.id}
-                                    className="hover:bg-simar-papel transition-colors movil:grid movil:grid-cols-[1fr_auto] movil:items-start movil:gap-x-3 movil:gap-y-2.5 movil:px-3.5 movil:py-3"
+                                    className={`transition-colors movil:grid movil:grid-cols-[1fr_auto] movil:items-start movil:gap-x-3 movil:gap-y-2.5 movil:px-3.5 movil:py-3 ${
+                                        s.estado === 'aprobada'
+                                            ? 'bg-simar-marea-suave/60 shadow-[inset_6px_0_0_0_var(--simar-marea)] hover:bg-simar-marea-suave'
+                                            : s.estado === 'rechazada'
+                                              ? 'shadow-[inset_6px_0_0_0_#A63F0E] hover:bg-simar-papel'
+                                              : 'hover:bg-simar-papel'
+                                    }`}
                                 >
                                     <td className="px-4 sm:px-6 py-4 movil:p-0 movil:min-w-0">
                                         <ResiduoBadge tipo={s.tipo} />
@@ -227,8 +234,19 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                                     )
                                                 )}
                                             </p>
-                                            <p className="text-[13px] text-simar-texto-2">Recolección {formatearFecha(s.fecha_propuesta)}</p>
+                                            {s.estado === 'aprobada' ? (
+                                                <p className="text-[14px] font-bold text-simar-marea-tinta">
+                                                    Recolección: {diaLargo(s.fecha_propuesta)} · {cuando(s.fecha_propuesta)}
+                                                </p>
+                                            ) : (
+                                                <p className="text-[13px] text-simar-texto-2">Recolección {formatearFecha(s.fecha_propuesta)}</p>
+                                            )}
                                         </div>
+                                        {s.estado === 'rechazada' && s.motivo_rechazo && (
+                                            <p className="mt-1.5 text-[15px] leading-snug text-simar-coral movil:text-[13px]">
+                                                <strong>Motivo:</strong> {s.motivo_rechazo}
+                                            </p>
+                                        )}
                                     </td>
                                     <td className="hidden sm:table-cell px-4 sm:px-6 py-4 text-[17px] font-bold text-simar-texto whitespace-nowrap">
                                         {formatCantidad(cantidadVigente(s))} {s.unidad}
@@ -244,7 +262,14 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                         )}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-base text-simar-texto hidden md:table-cell whitespace-nowrap">
-                                        {formatearFecha(s.fecha_propuesta)}
+                                        {s.estado === 'aprobada' ? (
+                                            <>
+                                                <span className="block font-bold text-simar-texto">{diaLargo(s.fecha_propuesta)}</span>
+                                                <span className="inline-flex mt-1 px-2.5 py-0.5 rounded-full bg-simar-marea text-white text-[14px] font-bold">{cuando(s.fecha_propuesta)}</span>
+                                            </>
+                                        ) : (
+                                            formatearFecha(s.fecha_propuesta)
+                                        )}
                                     </td>
                                     <td className="px-4 sm:px-6 py-4 text-base text-simar-texto-2 hidden lg:table-cell whitespace-nowrap">
                                         {formatearFecha(s.created_at)}
@@ -336,6 +361,12 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
             )}
         </div>
     );
+}
+
+/** "Hoy", "Mañana", "En 3 días" o "Ya pasó la fecha" */
+function cuando(fecha: string) {
+    const d = diasHasta(fecha, hoyPuerto());
+    return d < 0 ? 'Ya pasó la fecha' : d === 0 ? 'Hoy' : d === 1 ? 'Mañana' : `En ${d} días`;
 }
 
 function Nota({ titulo, children }: { titulo: string; children: React.ReactNode }) {

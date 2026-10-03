@@ -31,6 +31,8 @@ export interface ResumenPanel {
     porRevisar: { total: number; masAntigua: string | null; unica: SolicitudBreve | null };
     /** Aprobadas cuya fecha ya llegó: la empresa viene hoy o ya debió venir */
     porRecolectar: { total: number; atrasadas: number; unica: SolicitudBreve | null };
+    /** Aprobadas de los próximos días (después de hoy), la más cercana primero: la agenda del recinto */
+    proximas: { total: number; lista: SolicitudBreve[] };
     /** Mensajes de las empresas que el recinto no ha leído */
     mensajes: { total: number; empresas: { id: number; nombre: string }[] };
     /** Avisos de la campana sin leer (el Panel dice "Nada pendiente" en vez de "Todo al día") */
@@ -112,8 +114,9 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
                 .from('solicitudes_recoleccion')
                 .select(SELECT_SOLICITUD)
                 .eq('estado', 'aprobada')
-                .lte('fecha_propuesta', hoy)
                 .order('fecha_propuesta', { ascending: true })
+                .order('id', { ascending: true })
+                .limit(200)
         ),
         sinError(
             supabase
@@ -134,7 +137,10 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
     ]);
 
     const pendientes = (revisar.data ?? []) as unknown as FilaSolicitud[];
-    const aprobadas = (recolectar.data ?? []) as unknown as FilaSolicitud[];
+    // Las de hoy o ya vencidas son "por recolectar"; las de después, la agenda
+    const todasAprobadas = (recolectar.data ?? []) as unknown as FilaSolicitud[];
+    const aprobadas = todasAprobadas.filter((f) => f.fecha_propuesta <= hoy);
+    const proximas = todasAprobadas.filter((f) => f.fecha_propuesta > hoy);
     const empresas = new Map<number, string>();
     for (const m of (mensajes.data ?? []) as unknown as FilaMensaje[]) {
         if (!empresas.has(m.asociacion_id)) empresas.set(m.asociacion_id, nombreDe(m.asociacion));
@@ -157,6 +163,7 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
             atrasadas: aprobadas.filter((f) => f.fecha_propuesta < hoy).length,
             unica: aprobadas.length === 1 ? breve(aprobadas[0]) : null,
         },
+        proximas: { total: proximas.length, lista: proximas.slice(0, 6).map(breve) },
         mensajes: {
             total: mensajes.count ?? empresas.size,
             empresas: [...empresas].map(([id, nombre]) => ({ id, nombre })),

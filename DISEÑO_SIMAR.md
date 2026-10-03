@@ -391,14 +391,23 @@ día y lo que falta, sin gráficas:
   Buenas noches" según la hora de Puerto Peñasco (el servidor corre en UTC: `saludoPuerto` y
   `fechaHoyPuerto` en `lib/utils/fechas.ts`) y una línea: "Hoy van **3 manifiestos** y **1 recibo
   del basurón**." Los números cuentan (`NumeroAnimado`). Sin registros: "Aún no hay registros de hoy."
-- **Por atender:** sólo aparece si hay algo. Un renglón por tarea, en este orden: solicitudes
-  **por recolectar** con fecha de hoy o anterior (coral si alguna ya pasó su fecha), solicitudes
-  **por revisar** (coral) y **mensajes sin leer** de las empresas. Cada renglón lleva a donde se
-  resuelve: Empresas recolectoras (ruta `asociaciones`) con `?ver=por-recolectar` (Solicitudes en "Por recolectar"),
+- **Por atender:** sólo aparece si hay algo, con el contador coral junto al título. Una tarjeta por
+  tarea, con las piezas de siempre (blanca, ícono de 56 px en círculo suave del tono): arriba, lo que
+  pide escrito en su tono (`text-[15px] font-bold`, §10.6: "Hoy" en azul, "Requiere tu respuesta" o
+  "Ya pasó su fecha" en coral); el título con el número ("1 solicitud por revisar"); el detalle; y el
+  botón **azul** de lo que hay que hacer ("Ver", "Revisar", "Abrir chat"). Nada de fondos de color
+  completos, franjas gruesas ni botones coral o verdes: se probó y se salía del lenguaje (la acción
+  siempre es azul; el tono va en el ícono y en la palabra). En este orden: **recolecciones para hoy**
+  (azul) o **atrasadas** (coral), solicitudes **por revisar** (coral) y **mensajes sin leer**
+  (azul). Cada tarjeta lleva a donde se resuelve: Empresas recolectoras (ruta `asociaciones`) con `?ver=por-recolectar` (Solicitudes en "Por recolectar"),
   `?solicitud=ID` si es una sola (abre en su filtro y la fila se ilumina con `simar-resalta`) o
   `?ver=mensajes&empresa=ID` (esa conversación). Si es una sola, el detalle la dice completa
   ("Reciclados del Golfo · 200 L de aceite usado · hoy"). El número entra con `simar-confirma`
   cada vez que cambia.
+- **Próximas recolecciones:** las aprobadas de los próximos días (después de hoy; las de hoy van en
+  Por atender), como una agenda: el día en un cuadro azul suave ("Sáb 3 oct"), la empresa, el
+  residuo y "Mañana / En 4 días". Tarjeta blanca; con Por atender, lado a lado desde `lg`.
+  `getResumenPanel` → `proximas`.
 - **Todo al día / Nada pendiente:** sin pendientes, una insignia verde con `PalomitaAnimada` (como
   "Firmado") en el saludo. Si la campana tiene avisos sin leer dice "Nada pendiente" (los avisos
   son historial, no tareas; "Todo al día" junto a una campana con número se leía como
@@ -791,11 +800,19 @@ unidad: el aceite en litros, los reciclables en kilos y los filtros en piezas, n
   octubre.", lo que espera revisión o lo disponible); cuatro datos (solicitudes activas,
   recolecciones, "Lo que has recolectado" por unidad —"100 L · 250 kg"— y el CO₂e); **Disponible
   ahora** con "Solicitar" en cada renglón (abre `SolicitarModal`, la misma ventana que Residuos;
-  "Lo recolectas" en lo que la empresa eligió en su perfil); **Tus recolecciones** (la próxima
-  aprobada con su día grande, "Hoy / Mañana / En 5 días", "Ver solicitud" y "Cómo llegar"; lo que
-  espera revisión) y la **actividad reciente**. El mapa grande se quitó del Inicio: siempre era el
-  mismo punto; sigue en Residuos. En celular va primero "Tus recolecciones" si hay algo programado o
-  en revisión; si no, después de lo disponible.
+  "Lo recolectas" en lo que la empresa eligió en su perfil) y la **actividad reciente**. El mapa
+  grande se quitó del Inicio: siempre era el mismo punto; sigue en Residuos.
+- **Lo importante** (`components/recolector/LoImportante.tsx`), justo debajo del saludo y sólo si
+  hay algo: la **recolección agendada** como la tarjeta principal del Panel (azul sólido, ícono en
+  círculo blanco, el día en grande, pastillas "Mañana" y "Recién aprobada", "Ver solicitud" en blanco
+  y "Cómo llegar"; las demás agendadas debajo); si ya pasó su fecha, tarjeta blanca con "Ya pasó su
+  fecha" en coral y "Escribir". Luego los **avisos sin leer** que cambian algo (aprobada, completada,
+  rechazada, cancelada) con el formato de `Aviso` (fondo suave verde o coral, ícono del tono, texto
+  oscuro), botón azul ("Ver motivo", "Ver solicitud") y "Entendido" (lo marca como leído); los
+  **mensajes nuevos** (aviso azul con el contador coral y "Abrir mensajes") y lo que espera revisión.
+- **Mis solicitudes**: las aprobadas en azul suave con franja azul y su día ("Sábado 3 de octubre ·
+  Mañana"); las rechazadas con franja coral y el motivo a la vista. Es el patrón de "No leído"
+  (§10.19).
 - **Solicitar**: si la cantidad o la fecha no sirven lo dice debajo del campo ("Sólo hay 400 litros
   disponibles."), no sólo apaga el botón.
 - **Avisos que abren su solicitud**: en Notificaciones y en el Inicio cada aviso lleva a
