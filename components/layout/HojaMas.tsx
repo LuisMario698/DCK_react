@@ -7,6 +7,7 @@ import { Building2, ChevronRight, LogOut, Ship, Users, type LucideIcon } from 'l
 import { useAuth } from './AuthProvider';
 import { useSidebar } from './SidebarContext';
 import { HojaInferior } from './HojaInferior';
+import { useSoloConsulta } from './BaseDatos';
 import { BotonTema } from './ThemeToggle';
 import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 
@@ -25,10 +26,14 @@ export function HojaMas() {
     const nombre = user?.user_metadata?.full_name || 'Usuario';
     const inicial = user?.user_metadata?.full_name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase();
 
+    const soloConsulta = useSoloConsulta();
     const secciones: { label: string; href: string; icon: LucideIcon; tono: string }[] = [
         { label: t('menu.personas'), href: `/${locale}/dashboard/personas`, icon: Users, tono: 'bg-simar-marea-suave text-simar-marea-tinta' },
         { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: Ship, tono: 'bg-simar-marea-suave text-simar-marea-tinta' },
-        { label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: Building2, tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta' },
+        // Con la base de DCK (sólo consulta) no hay empresas recolectoras
+        ...(soloConsulta
+            ? []
+            : [{ label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: Building2, tono: 'bg-simar-arrecife-suave text-simar-arrecife-tinta' }]),
     ];
 
     return (

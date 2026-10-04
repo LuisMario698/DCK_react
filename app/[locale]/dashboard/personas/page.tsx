@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { ChefHat, Plus, Users, Wrench } from 'lucide-react';
 import { Aviso, CampoBusqueda, CargandoPantalla, claseChip, EncabezadoPantalla, Tarjeta, TarjetaDato } from '@/components/ui/simar';
 import { BotonFlotante } from '@/components/ui/BotonFlotante';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { getPersonas, deletePersona } from '@/lib/services/personas';
 import { PersonaConTipo } from '@/types/database';
 
@@ -18,6 +19,8 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function PersonasPage() {
   const t = useTranslations('Personas');
+  // Base de DCK (sólo consulta): se ve la lista, sin agregar, editar ni borrar
+  const soloConsulta = useSoloConsulta();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -136,7 +139,7 @@ export default function PersonasPage() {
         // En celular la acción va en la burbuja flotante (al final)
         accionesClassName="movil:hidden"
         acciones={
-          <Button size="lg" onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
+          !soloConsulta && <Button size="lg" onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
             <Plus className="w-[22px] h-[22px]" strokeWidth={2.4} />
             <span>{t('nuevaPersona')}</span>
           </Button>
@@ -151,7 +154,7 @@ export default function PersonasPage() {
       </div>
 
       {/* Alerta de registros incompletos */}
-      {estadisticas.incompletos > 0 && (
+      {estadisticas.incompletos > 0 && !soloConsulta && (
         <Aviso
           tono="advertencia"
           titulo={<>{estadisticas.incompletos} persona{estadisticas.incompletos > 1 ? 's' : ''} con registro incompleto</>}
@@ -189,8 +192,8 @@ export default function PersonasPage() {
         <div>
           <PersonasTable
             personas={paginatedPersonas}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={soloConsulta ? undefined : handleEdit}
+            onDelete={soloConsulta ? undefined : handleDelete}
           />
 
           <Pagination
@@ -205,7 +208,7 @@ export default function PersonasPage() {
       )}
 
       {/* Celular: "Nueva persona" flota encima de la barra de navegación, a la mano */}
-      <BotonFlotante icono={Plus} etiqueta={t('nuevaPersona')} onClick={() => setIsModalOpen(true)} />
+      {!soloConsulta && <BotonFlotante icono={Plus} etiqueta={t('nuevaPersona')} onClick={() => setIsModalOpen(true)} />}
 
       <CreatePersonaModal
         isOpen={isModalOpen}

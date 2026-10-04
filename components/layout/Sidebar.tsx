@@ -22,6 +22,7 @@ import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
 import { CampanaMenu } from '@/components/layout/AvisosRecinto';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { LineaMarea } from '@/components/layout/LineaMarea';
 
 export function Sidebar() {
@@ -41,7 +42,9 @@ export function Sidebar() {
     { label: t('menu.embarcaciones'), href: `/${locale}/dashboard/embarcaciones`, icon: Ship },
   ];
 
-  const externosItems: { label: string; href: string; icon: LucideIcon }[] = [
+  // Con la base de DCK (sólo consulta) no hay empresas recolectoras: esa base no las tiene
+  const soloConsulta = useSoloConsulta();
+  const externosItems: { label: string; href: string; icon: LucideIcon }[] = soloConsulta ? [] : [
     { label: t('externos.asociaciones'), href: `/${locale}/dashboard/asociaciones`, icon: Building2 },
   ];
 
@@ -119,8 +122,12 @@ export function Sidebar() {
           <nav aria-label={t('menu.titulo')} className="flex flex-col gap-1">
             {menuItems.map(renderItem)}
 
-            <p className={`mt-3 mb-1 px-4 text-[15px] font-bold text-simar-texto-2 ${isCollapsed ? 'lg:hidden' : ''}`}>Externos</p>
-            {externosItems.map(renderItem)}
+            {externosItems.length > 0 && (
+              <>
+                <p className={`mt-3 mb-1 px-4 text-[15px] font-bold text-simar-texto-2 ${isCollapsed ? 'lg:hidden' : ''}`}>Externos</p>
+                {externosItems.map(renderItem)}
+              </>
+            )}
 
             <div className="mt-3">
               <EnlacesPaneles actual="recinto" colapsado={isCollapsed} />

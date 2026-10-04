@@ -1,5 +1,6 @@
 import { VariantCinematic } from '@/components/landing/VariantCinematic';
-import { createServerClient } from '@/lib/supabase/server';
+import { baseElegida, createServerClient } from '@/lib/supabase/server';
+import { AvisoBaseDck } from '@/components/landing/AvisoBaseDck';
 import { getLandingStats } from '@/lib/services/landing_stats';
 import {
     VARIANTES_MAPA,
@@ -21,13 +22,21 @@ export default async function LandingPage({
         ? (mapa as VarianteMapa)
         : VARIANTE_MAPA_PREDETERMINADA;
 
+    // Si el superadmin eligió la base de DCK (sólo consulta) en su navegador, las cifras salen de ahí
+    const conDck = (await baseElegida()) === 'dck';
+
     let stats = null;
     try {
-        const supabase = await createServerClient();
+        const supabase = await createServerClient({ conBaseElegida: true });
         stats = await getLandingStats(supabase);
     } catch {
         // Si falla el fetch, la página sigue funcionando con datos nulos
     }
 
-    return <VariantCinematic stats={stats} varianteMapa={varianteMapa} compararMapas={mapa !== undefined} />;
+    return (
+        <>
+            <VariantCinematic stats={stats} varianteMapa={varianteMapa} compararMapas={mapa !== undefined} />
+            {conDck && <AvisoBaseDck />}
+        </>
+    );
 }

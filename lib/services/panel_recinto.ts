@@ -73,6 +73,17 @@ function breve(f: FilaSolicitud): SolicitudBreve {
     };
 }
 
+/**
+ * Con la base de DCK (sólo consulta) el Panel cuenta sólo los registros: solicitudes, mensajes,
+ * avisos, recolecciones, inventario y empresas no existen en esa base, y no se mezclan con SiMAR.
+ */
+export interface OpcionesPanel {
+    soloRegistros?: boolean;
+}
+
+/** Lo que vale una consulta que no se hace (modo de sólo registros) */
+const SIN_CONSULTA = Promise.resolve({ data: [] as unknown[], count: 0, error: null });
+
 /** Espera la consulta y, si falló, lanza su error */
 async function sinError<T extends { error: unknown }>(consulta: PromiseLike<T>): Promise<T> {
     const r = await consulta;
@@ -84,7 +95,7 @@ async function sinError<T extends { error: unknown }>(consulta: PromiseLike<T>):
  * Resumen del Panel. `hoy` es la fecha de Puerto Peñasco (YYYY-MM-DD): los manifiestos y recibos
  * se guardan con la fecha local del teléfono o la computadora del recinto.
  */
-export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Promise<ResumenPanel> {
+export async function getResumenPanel(supabase: SupabaseClient, hoy: string, { soloRegistros = false }: OpcionesPanel = {}): Promise<ResumenPanel> {
     const mes = rangoEstadisticas('mes');
     const reciente = { ascending: false, nullsFirst: false };
 
@@ -101,7 +112,7 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
                 .lte('fecha_emision', mes.fin)
         ),
         // Sólo la más antigua (la que lleva más tiempo esperando) y cuántas son
-        sinError(
+        soloRegistros ? SIN_CONSULTA : sinError(
             supabase
                 .from('solicitudes_recoleccion')
                 .select(SELECT_SOLICITUD, { count: 'exact' })
@@ -109,7 +120,7 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
                 .order('created_at', { ascending: true })
                 .limit(1)
         ),
-        sinError(
+        soloRegistros ? SIN_CONSULTA : sinError(
             supabase
                 .from('solicitudes_recoleccion')
                 .select(SELECT_SOLICITUD)
@@ -118,7 +129,7 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
                 .order('id', { ascending: true })
                 .limit(200)
         ),
-        sinError(
+        soloRegistros ? SIN_CONSULTA : sinError(
             supabase
                 .from('mensajes')
                 .select('asociacion_id, asociacion:asociaciones_recolectoras(nombre_asociacion)', { count: 'exact' })
@@ -127,7 +138,7 @@ export async function getResumenPanel(supabase: SupabaseClient, hoy: string): Pr
                 .limit(200)
         ),
         // Igual que la campana (contarNotificacionesNoLeidas con destinatario admin)
-        sinError(
+        soloRegistros ? SIN_CONSULTA : sinError(
             supabase
                 .from('notificaciones')
                 .select('id', { count: 'exact', head: true })
@@ -203,7 +214,7 @@ const buqueDe = (b: RelacionBuque) => (Array.isArray(b) ? b[0] : b)?.nombre_buqu
 
 const RECIENTES = 5;
 
-export async function getVistazoPanel(supabase: SupabaseClient): Promise<VistazoPanel> {
+export async function getVistazoPanel(supabase: SupabaseClient, { soloRegistros = false }: OpcionesPanel = {}): Promise<VistazoPanel> {
     const reciente = { ascending: false, nullsFirst: false };
 
     const [man, bas, rec, inv, buques, personas, asociaciones] = await Promise.all([
@@ -223,17 +234,17 @@ export async function getVistazoPanel(supabase: SupabaseClient): Promise<Vistazo
                 .order('created_at', reciente)
                 .limit(RECIENTES)
         ),
-        sinError(
+        soloRegistros ? SIN_CONSULTA : sinError(
             supabase
                 .from('recolecciones')
                 .select('id, solicitud_id, tipo, cantidad, unidad, created_at, asociacion:asociaciones_recolectoras(nombre_asociacion)')
                 .order('created_at', reciente)
                 .limit(RECIENTES)
         ),
-        sinError(supabase.from('inventario_residuos').select('tipo, cantidad, unidad, publicado').gt('cantidad', 0)),
+        soloRegistros ? SIN_CONSULTA : sinError(supabase.from('inventario_residuos').select('tipo, cantidad, unidad, publicado').gt('cantidad', 0)),
         sinError(supabase.from('buques').select('id', { count: 'exact', head: true })),
         sinError(supabase.from('personas').select('id', { count: 'exact', head: true })),
-        sinError(supabase.from('asociaciones_recolectoras').select('id', { count: 'exact', head: true }).eq('estado', 'Activo')),
+        soloRegistros ? SIN_CONSULTA : sinError(supabase.from('asociaciones_recolectoras').select('id', { count: 'exact', head: true }).eq('estado', 'Activo')),
     ]);
 
     type FilaM = { id: number; numero_manifiesto: string | null; created_at: string; buque: RelacionBuque };

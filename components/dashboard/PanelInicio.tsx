@@ -460,11 +460,14 @@ export function PanelInicio({
   hoy,
   resumen,
   vistazo,
+  soloConsulta = false,
 }: {
   locale: string;
   hoy: string;
   resumen: ResumenPanel | null;
   vistazo: VistazoPanel | null;
+  /** Base de DCK: sólo se consultan los registros (sin avisos, acopio ni empresas, que esa base no tiene) */
+  soloConsulta?: boolean;
 }) {
   const base = `/${locale}/dashboard`;
   const pendientes = resumen ? pendientesDe(resumen, hoy, base) : [];
@@ -474,7 +477,7 @@ export function PanelInicio({
   return (
     // En columna para poder reacomodar en celular: ahí "Un vistazo" baja al final (movil:order-1)
     <div className="relative max-w-[1600px] flex flex-col">
-      <PanelEnVivo />
+      {!soloConsulta && <PanelEnVivo />}
 
       {/* Encabezado: marca SiMAR + saludo del momento y lo que va del día */}
       <section data-recorrido="panel-saludo" className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[30px] p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-9 movil:p-4 movil:gap-2.5">
@@ -501,7 +504,7 @@ export function PanelInicio({
         </div>
         {/* Sin pendientes, la calma también se dice (con la misma insignia que "Firmado"): "Todo al
             día", o "Nada pendiente" si la campana tiene avisos sin leer */}
-        {resumen && pendientes.length === 0 && <InsigniaCalma avisosIniciales={resumen.avisosSinLeer} />}
+        {resumen && pendientes.length === 0 && !soloConsulta && <InsigniaCalma avisosIniciales={resumen.avisosSinLeer} />}
       </section>
 
       {/* Lo importante, a la vista: Por atender (tarjetas de color, cada una lleva a donde se resuelve) y
@@ -518,8 +521,8 @@ export function PanelInicio({
         <ActionCard
           title="Manifiesto"
           Icon={FileText}
-          description="Recolección de barco"
-          dato={<PastillaManifiesto ultimo={ultimo(resumen?.ultimoManifiesto ?? null)} />}
+          description={soloConsulta ? 'Consultar registros' : 'Recolección de barco'}
+          dato={soloConsulta ? ultimo(resumen?.ultimoManifiesto ?? null) : <PastillaManifiesto ultimo={ultimo(resumen?.ultimoManifiesto ?? null)} />}
           href={`${base}/manifiesto`}
           principal
           tono=""
@@ -528,7 +531,7 @@ export function PanelInicio({
         <ActionCard
           title="Basurón"
           Icon={Scale}
-          description="Pesar en relleno"
+          description={soloConsulta ? 'Consultar recibos' : 'Pesar en relleno'}
           dato={ultimo(resumen?.ultimoRecibo ?? null)}
           href={`${base}/manifiesto-basuron`}
           tono="bg-simar-arrecife-suave text-simar-arrecife-tinta"
@@ -548,9 +551,9 @@ export function PanelInicio({
       {/* Un vistazo: lo último registrado y lo que hay en el acopio. En celular va al final, después
           de "Otras secciones", para que lo de arriba siga cabiendo en una pantalla */}
       {vistazo && (
-        <div className="mt-5 md:mt-7 grid grid-cols-1 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] gap-4 md:gap-6 movil:order-1 movil:mt-5 movil:gap-3">
+        <div className={`mt-5 md:mt-7 grid grid-cols-1 gap-4 md:gap-6 movil:order-1 movil:mt-5 movil:gap-3 ${soloConsulta ? '' : 'xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]'}`}>
           <LoUltimo recientes={vistazo.recientes} base={base} />
-          <Acopio acopio={vistazo.acopio} base={base} />
+          {!soloConsulta && <Acopio acopio={vistazo.acopio} base={base} />}
         </div>
       )}
 
@@ -560,12 +563,14 @@ export function PanelInicio({
         <div className="mt-3.5 grid grid-cols-1 gap-3 sm:flex sm:flex-wrap sm:gap-3.5 movil:grid-cols-3 movil:gap-2.5 movil:mt-2">
           <OtraSeccion href={`${base}/embarcaciones`} Icon={Ship} label="Embarcaciones" dato={conteos && formatCantidad(conteos.embarcaciones)} />
           <OtraSeccion href={`${base}/personas`} Icon={Users} label="Personas" dato={conteos && formatCantidad(conteos.personas)} />
-          <OtraSeccion
-            href={`${base}/asociaciones`}
-            Icon={Building2}
-            label="Empresas"
-            dato={conteos && `${conteos.asociacionesActivas} ${plural(conteos.asociacionesActivas, 'activa', 'activas')}`}
-          />
+          {!soloConsulta && (
+            <OtraSeccion
+              href={`${base}/asociaciones`}
+              Icon={Building2}
+              label="Empresas"
+              dato={conteos && `${conteos.asociacionesActivas} ${plural(conteos.asociacionesActivas, 'activa', 'activas')}`}
+            />
+          )}
         </div>
       </section>
     </div>

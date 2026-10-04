@@ -15,6 +15,7 @@ import {
 import { getMetricas, type MetricasSistema } from '@/lib/services/superadmin';
 import { getAsociacionesConSuscripcion, type AsociacionConSuscripcion } from '@/lib/services/suscripciones';
 import { estadoEfectivo } from '@/lib/constants/suscripciones';
+import { TarjetaBaseDatos } from '@/components/superadmin/TarjetaBaseDatos';
 
 const TIPO_AVISO_LABEL: Record<TipoAviso, string> = {
     info: 'Informativo',
@@ -77,6 +78,9 @@ export default function SistemaPage() {
                     onGuardar={(v) => guardar('suscripciones', v, 'Reglas de suscripción guardadas')}
                 />
             </div>
+
+            {/* La base de DCK (sólo consulta) en la landing y el recinto, sólo en este navegador */}
+            <TarjetaBaseDatos />
 
             <Recursos metricas={metricas} />
         </div>

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Ban, CheckCircle2, Plus, Ship } from 'lucide-react';
 import { Aviso, CampoBusqueda, CargandoPantalla, claseChip, EncabezadoPantalla, Tarjeta, TarjetaDato } from '@/components/ui/simar';
 import { BotonFlotante } from '@/components/ui/BotonFlotante';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { getBuques, deleteBuque } from '@/lib/services/buques';
 import { CreateEmbarcacionModal } from '@/components/embarcaciones/CreateEmbarcacionModal';
 import { Buque } from '@/types/database';
@@ -17,6 +18,8 @@ import { ConfirmationModal } from '@/components/ui/ConfirmationModal';
 
 export default function EmbarcacionesPage() {
   const t = useTranslations('Embarcaciones');
+  // Base de DCK (sólo consulta): se ve la lista, sin agregar, editar ni borrar
+  const soloConsulta = useSoloConsulta();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -135,7 +138,7 @@ export default function EmbarcacionesPage() {
         // En celular la acción va en la burbuja flotante (al final)
         accionesClassName="movil:hidden"
         acciones={
-          <Button size="lg" onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
+          !soloConsulta && <Button size="lg" onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
             <Plus className="w-[22px] h-[22px]" strokeWidth={2.4} />
             <span>{t('nuevaEmbarcacion')}</span>
           </Button>
@@ -150,7 +153,7 @@ export default function EmbarcacionesPage() {
       </div>
 
       {/* Alerta de registros incompletos */}
-      {estadisticas.incompletos > 0 && (
+      {estadisticas.incompletos > 0 && !soloConsulta && (
         <Aviso
           tono="advertencia"
           titulo={<>{estadisticas.incompletos} embarcación{estadisticas.incompletos > 1 ? 'es' : ''} con registro incompleto</>}
@@ -185,8 +188,8 @@ export default function EmbarcacionesPage() {
       <div>
         <EmbarcacionesTable
           embarcaciones={paginatedBuques}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
+          onEdit={soloConsulta ? undefined : handleEdit}
+          onDelete={soloConsulta ? undefined : handleDelete}
         />
 
         <Pagination
@@ -200,7 +203,7 @@ export default function EmbarcacionesPage() {
       </div>
 
       {/* Celular: "Nueva embarcación" flota encima de la barra de navegación, a la mano */}
-      <BotonFlotante icono={Plus} etiqueta={t('nuevaEmbarcacion')} onClick={() => setIsModalOpen(true)} />
+      {!soloConsulta && <BotonFlotante icono={Plus} etiqueta={t('nuevaEmbarcacion')} onClick={() => setIsModalOpen(true)} />}
 
       {isModalOpen && (
         <CreateEmbarcacionModal

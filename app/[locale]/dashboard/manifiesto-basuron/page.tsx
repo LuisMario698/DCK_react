@@ -15,6 +15,7 @@ import { getBuques } from '@/lib/services/buques';
 import { Pagination } from '@/components/embarcaciones/Pagination';
 import { parseFechaLocal } from '@/lib/utils/fechas';
 import { PestanasMovil } from '@/components/ui/simar';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { FilePlus2, List } from 'lucide-react';
 
 /** `?ver=ID` abre ese recibo en su ventana de detalle (así llega "Lo último registrado" del Panel) */
@@ -39,6 +40,8 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
   const [itemsPerPage, setItemsPerPage] = useState(10);
   // Sólo en celular: el recibo y la lista van en pestañas (en pantallas grandes se ven los dos)
   const [vistaMovil, setVistaMovil] = useState<'nuevo' | 'registros'>('nuevo');
+  // Base de DCK (sólo consulta): se ven los recibos, sin capturar ni borrar
+  const soloConsulta = useSoloConsulta();
 
   useEffect(() => {
     loadData();
@@ -130,8 +133,8 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
   return (
     // <DashboardLayout>
     <div className="max-w-[1600px] space-y-6">
-      {/* Wizard inline siempre visible */}
-      <CreateManifiestoBasuronModal
+      {/* Wizard inline siempre visible (salvo con la base de DCK, que sólo se consulta) */}
+      {!soloConsulta && <><CreateManifiestoBasuronModal
         inline
         isOpen={false}
         onClose={() => { }}
@@ -162,13 +165,13 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
-      </div>
+      </div></>}
 
-      <div id="lista-registros" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6 movil:p-4 movil:space-y-3 ${vistaMovil === 'nuevo' ? 'movil:hidden' : ''}`}>
+      <div id="lista-registros" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 space-y-6 movil:p-4 movil:space-y-3 ${vistaMovil === 'nuevo' && !soloConsulta ? 'movil:hidden' : ''}`}>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto">Recibos del basurón</h2>
-            <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">Lista de todos los recibos de pesaje registrados</p>
+            <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">{soloConsulta ? 'Recibos de pesaje de la base de DCK' : 'Lista de todos los recibos de pesaje registrados'}</p>
           </div>
         </div>
 
@@ -326,7 +329,7 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                   </svg>
                                 </button>
-                                <button
+                                {!soloConsulta && <button
                                   onClick={() => handleDelete(m.id)}
                                   className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-[#A63F0E] hover:text-white transition-colors flex-shrink-0"
                                   title="Eliminar"
@@ -335,7 +338,7 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
                                   <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
-                                </button>
+                                </button>}
                               </div>
                             </td>
                           </tr>

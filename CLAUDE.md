@@ -25,11 +25,14 @@ Requiere `.env.local` con `NEXT_PUBLIC_SB_URL` y `NEXT_PUBLIC_SB_ANON_KEY`. Las 
 su despliegue apunta a otro proyecto Supabase con datos inventados y de sólo lectura, con entrada
 sin cuenta (`/[locale]/demo`) y recorrido guiado. Ver [`supabase/demo/README.md`](./supabase/demo/README.md);
 nunca pongas `NEXT_PUBLIC_MODO_DEMO=1` apuntando al Supabase de producción.
+`NEXT_PUBLIC_SB_DCK_URL` y `SB_DCK_ANON_KEY` (**sin** `NEXT_PUBLIC_`: sólo el servidor) apuntan a la
+**base anterior de DCK** (proyecto Supabase "CIAD", `tggvwdjdioyzoftzwneb`), que se puede ver sólo
+para consultar (abajo).
 
 ## Convenciones del repositorio
 
 - **Idioma: español** — código, comentarios, UI y documentación. Escribe en español.
-- **No hay API routes.** Todo el acceso a datos pasa por `lib/services/*` (wrappers finos sobre
+- **No hay API routes** (salvo `app/api/dck`, el intermediario de la base de DCK). Todo el acceso a datos pasa por `lib/services/*` (wrappers finos sobre
   Supabase). Reutiliza los servicios existentes; no metas queries sueltas en componentes.
 - **Listas completas:** Supabase corta cada respuesta en 1,000 filas. Si una lista puede pasar de
   ahí, léela con `traerTodas` (`lib/supabase/paginar.ts`) y un `.order('id')` de desempate.
@@ -85,6 +88,19 @@ nunca pongas `NEXT_PUBLIC_MODO_DEMO=1` apuntando al Supabase de producción.
 - **Migraciones nuevas** van en `supabase/migrations/` (idempotentes). Los `.sql` de la raíz son
   históricos. El catálogo de residuos está duplicado a propósito: dominio `tipo_residuo` en SQL y
   `lib/constants/residuos.ts`; si cambias uno, cambia el otro.
+- **Base de DCK (sólo consulta):** CIAD tiene los registros reales de DCK (742 manifiestos,
+  abr–may 2026) con el esquema viejo (sin roles, empresas, inventario ni solicitudes) y RLS
+  apagado. **No se toca** (ni migraciones ni ajustes). Un superadmin la elige para *su navegador*
+  en Superadmin → Sistema (cookie `simar_base=dck`); sólo cambia la landing y el recinto
+  (`rutaConBaseElegible`). `lib/supabase/dck.ts` enruta tabla por tabla: la sesión, `profiles` y
+  `configuracion_*` siguen en SiMAR; los registros, sus RPC de lectura y Storage salen de CIAD, y
+  su `fetch` detiene cualquier escritura. **La llave de CIAD nunca va al navegador** (con RLS
+  apagado da acceso a todo): el navegador pasa por `app/api/dck` (la única ruta API: sólo
+  lecturas, sólo superadmins, pone la llave) y el servidor usa `lib/supabase/dckServidor.ts`, que
+  no se importa desde código del navegador. Las pantallas usan `useSoloConsulta()`
+  (`components/layout/BaseDatos.tsx`) para ocultar lo que guarda o lo que CIAD no tiene; en el
+  servidor, `createServerClient({ conBaseElegida: true })` y `baseElegida()`. Una tabla nueva
+  que no exista en CIAD falla en modo DCK en vez de mezclar datos: ocúltala ahí.
 - **Recharts** se usa en un solo archivo (`dashboard-recolector/impacto/page.tsx`); el resto de
   "gráficas" son divs/SVG a mano. El mapa del portal recolector usa **MapLibre GL JS +
   react-map-gl** con teselas de OpenFreeMap, sin API key (`components/recolector/MapaMapLibre.tsx`).

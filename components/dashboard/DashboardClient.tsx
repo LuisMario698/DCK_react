@@ -9,6 +9,7 @@ import { Icons } from '@/components/ui/Icons';
 import { Aviso } from '@/components/ui/simar';
 import { Droplet, Recycle, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { parseFechaLocal } from '@/lib/utils/fechas';
 import { EstadisticasGenerales } from './EstadisticasGenerales';
 
@@ -44,6 +45,8 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
     const [reportData, setReportData] = useState<ReporteDetalladoItem[]>([]);
     const [loadingReport, setLoadingReport] = useState(false);
     const supabase = createClient();
+    // Base de DCK: sin recolecciones ni inventario (ver getEstadisticasPeriodo)
+    const soloConsulta = useSoloConsulta();
 
     // Estadísticas: el período se consulta al elegirlo. Si se piden dos seguidos, sólo cuenta la
     // respuesta del último (una respuesta lenta no pisa a la más nueva).
@@ -59,7 +62,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
         const id = ++pedido.current;
         setActualizando(true);
         try {
-            const d = await getEstadisticasPeriodo(supabase, nuevo);
+            const d = await getEstadisticasPeriodo(supabase, nuevo, { soloRegistros: soloConsulta });
             if (id !== pedido.current) return;
             setDatos(d);
             setErrorEstadisticas(false);

@@ -111,8 +111,8 @@ export function PersonasTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center justify-end gap-2">
-                  <button
-                    onClick={() => onEdit?.(persona.id)}
+                  {onEdit && <button
+                    onClick={() => onEdit(persona.id)}
                     aria-label={t('acciones.editar')}
                     className="min-h-[44px] flex items-center gap-1.5 px-3.5 text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde rounded-xl bg-simar-superficie hover:border-simar-marea-tinta transition-colors whitespace-nowrap"
                   >
@@ -120,9 +120,9 @@ export function PersonasTable({
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     <span className="hidden sm:inline">{t('acciones.editar')}</span>
-                  </button>
-                  <button
-                    onClick={() => onDelete?.(persona.id)}
+                  </button>}
+                  {onDelete && <button
+                    onClick={() => onDelete(persona.id)}
                     className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-[#A63F0E] hover:text-white transition-colors flex-shrink-0"
                     title={t('acciones.eliminar')}
                     aria-label={t('acciones.eliminar')}
@@ -130,7 +130,7 @@ export function PersonasTable({
                     <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                  </button>
+                  </button>}
                 </div>
               </TableCell>
             </TableRow>

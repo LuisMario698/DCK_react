@@ -297,6 +297,13 @@ Todas cuelgan de `app/[locale]/` y **siempre** llevan prefijo de locale (`/es/..
   impide entrar (`banned_until`). El middleware las manda a `/acceso-pendiente?motivo=suspendida`.
 - **Modo mantenimiento** (`configuracion_sistema`): el middleware manda a `/mantenimiento` a todo
   el que entra a un panel, salvo superadmins.
+- **Base de DCK (sólo consulta):** en Sistema, el superadmin puede ver en *su navegador* la base
+  anterior de DCK (proyecto Supabase "CIAD"). Cambian la landing y el recinto portuario: los
+  registros (manifiestos, basurón, personas, embarcaciones, estadísticas) salen de CIAD, sin
+  capturar, editar ni borrar; lo que CIAD no tiene (empresas recolectoras, solicitudes,
+  inventario, avisos, reporte del mes, "a dónde se fue") se oculta. CIAD no se modifica. Su llave
+  sólo vive en el servidor: el navegador pide los datos a `app/api/dck`, que deja pasar sólo
+  lecturas y sólo a superadmins. Ver `lib/supabase/baseDatos.ts` y `lib/supabase/dck.ts`.
 - Detalle y decisiones en [`Contexto-DCK/panel-superadmin.md`](./Contexto-DCK/panel-superadmin.md).
 
 ### RLS
@@ -538,6 +545,10 @@ demostración para el jurado: ver `supabase/demo/README.md`):
 ```env
 NEXT_PUBLIC_SB_URL=https://<tu-proyecto>.supabase.co
 NEXT_PUBLIC_SB_ANON_KEY=<tu-anon-key>
+# Opcionales: la base anterior de DCK (proyecto "CIAD"), para consultarla desde el superadmin.
+# La llave va SIN NEXT_PUBLIC_: en CIAD RLS está apagado y no puede llegar al navegador
+NEXT_PUBLIC_SB_DCK_URL=https://tggvwdjdioyzoftzwneb.supabase.co
+SB_DCK_ANON_KEY=<anon-key-de-CIAD>
 ```
 
 > El `.env` que hay en la raíz también define `DATABASE_URL` y `SESSION_SECRET`, pero **ningún

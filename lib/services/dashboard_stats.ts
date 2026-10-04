@@ -224,7 +224,9 @@ function tramosVacios(inicio: string, fin: string, g: Granularidad): TramoSerie[
  */
 export async function getEstadisticasPeriodo(
     supabase: SupabaseClient,
-    periodo: PeriodoEstadisticas
+    periodo: PeriodoEstadisticas,
+    // Base de DCK (sólo consulta): no tiene recolecciones ni inventario; "a dónde se fue" queda vacío
+    { soloRegistros = false }: { soloRegistros?: boolean } = {}
 ): Promise<EstadisticasPeriodo> {
     const rango = rangoEstadisticas(periodo);
     const desde = rango.anterior?.inicio ?? rango.inicio;
@@ -257,9 +259,9 @@ export async function getEstadisticasPeriodo(
         traerTodas(basuronQ) as Promise<FilaBasuron[]>,
         supabase.from('buques').select('id', { count: 'exact', head: true }),
         supabase.from('buques').select('id', { count: 'exact', head: true }).eq('estado', 'Activo'),
-        traerTodas(recoleccionesQ) as Promise<FilaRecoleccion[]>,
+        soloRegistros ? Promise.resolve([] as FilaRecoleccion[]) : (traerTodas(recoleccionesQ) as Promise<FilaRecoleccion[]>),
         // Una fila por tipo de residuo: son pocas
-        supabase.from('inventario_residuos').select('tipo, cantidad'),
+        soloRegistros ? Promise.resolve({ data: [] as FilaInventario[] }) : supabase.from('inventario_residuos').select('tipo, cantidad'),
     ]);
 
     const enRango = (f: string | null, r: { inicio: string; fin: string }) => !!f && f >= r.inicio && f <= r.fin;

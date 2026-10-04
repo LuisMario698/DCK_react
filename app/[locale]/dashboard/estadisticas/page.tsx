@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { baseElegida, createServerClient } from '@/lib/supabase/server';
 import { getEmbarcacionesSinEntregar, getEstadisticasPeriodo } from '@/lib/services/dashboard_stats';
 import { getBuques } from '@/lib/services/buques';
 import { DashboardClient } from '@/components/dashboard/DashboardClient';
@@ -8,12 +8,14 @@ import { EncabezadoPantalla } from '@/components/ui/simar';
 export const dynamic = 'force-dynamic';
 
 export default async function StatisticsPage() {
-    const supabase = await createServerClient();
+    // Con la base de DCK (sólo consulta) se ve todo su histórico: sus registros son de meses atrás
+    const soloConsulta = (await baseElegida()) === 'dck';
+    const supabase = await createServerClient({ conBaseElegida: true });
 
     // El período inicial ("1 mes") llega ya calculado; los demás se piden al elegirlos.
     // "Sin entregar" no depende del período: se pide una vez (si falla, la pantalla sigue sin él).
     const [estadisticas, buques, sinEntregar] = await Promise.all([
-        getEstadisticasPeriodo(supabase, 'mes'),
+        getEstadisticasPeriodo(supabase, soloConsulta ? 'todo' : 'mes', { soloRegistros: soloConsulta }),
         getBuques(supabase),
         getEmbarcacionesSinEntregar(supabase).catch((e) => {
             console.error('Error cargando embarcaciones sin entregar:', e);

@@ -34,6 +34,7 @@ import { NumeroAnimado } from '@/components/ui/movimiento';
 import type { EstadisticasPeriodo, Granularidad, PeriodoEstadisticas, SinEntregar, TotalesPeriodo, TramoSerie } from '@/lib/services/dashboard_stats';
 import { DestinoResiduos } from './DestinoResiduos';
 import { ReporteDelMes } from './ReporteDelMes';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { ImpactoEquivalencias, fmtCifra, type TarjetaImpacto } from '@/components/ui/ImpactoEquivalencias';
 import {
     aguaProtegidaL,
@@ -100,6 +101,8 @@ export function EstadisticasGenerales({
 }) {
     const { actual, anterior } = datos;
     const contra = TEXTO_PERIODO[periodo].contra;
+    // Base de DCK: el reporte del mes y "a dónde se fue" piden recolecciones e inventario, que no tiene
+    const soloConsulta = useSoloConsulta();
 
     // El PDF (y jsPDF) se cargan al tocar el botón: no pesan en la pantalla
     const [generandoPdf, setGenerandoPdf] = useState(false);
@@ -125,7 +128,7 @@ export function EstadisticasGenerales({
                 onCambiar={onCambiarPeriodo}
                 actualizando={actualizando}
                 accion={
-                    <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center movil:gap-1.5">
+                    <div className={`grid gap-2 sm:flex sm:items-center movil:gap-1.5 ${soloConsulta ? 'grid-cols-1' : 'grid-cols-2'}`}>
                         <button
                             type="button"
                             onClick={descargarPdf}
@@ -137,7 +140,7 @@ export function EstadisticasGenerales({
                             {generandoPdf ? <Loader2 className="w-5 h-5 animate-spin movil:w-4 movil:h-4" aria-hidden="true" /> : <Download className="w-5 h-5 movil:w-4 movil:h-4" aria-hidden="true" />}
                             {generandoPdf ? 'Generando…' : 'PDF del período'}
                         </button>
-                        <ReporteDelMes className={claseBoton} />
+                        {!soloConsulta && <ReporteDelMes className={claseBoton} />}
                     </div>
                 }
             />
@@ -198,7 +201,7 @@ export function EstadisticasGenerales({
                 </div>
 
                 {/* A dónde se fue lo recibido (los filtros van aquí, con su desglose) y, como cierre, el impacto */}
-                <DestinoResiduos destino={datos.destino} recibidos={actual} />
+                {!soloConsulta && <DestinoResiduos destino={datos.destino} recibidos={actual} />}
                 <ImpactoAmbiental totales={actual} />
             </div>
         </div>

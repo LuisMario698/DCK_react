@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 import { locales, defaultLocale } from '@/i18n'
 import { MODO_DEMO } from '@/lib/demo/config'
+import { COOKIE_BASE, baseDeCookie } from '@/lib/supabase/baseDatos'
 
 type Rol = 'admin' | 'recolector' | 'pendiente'
 
@@ -94,6 +95,19 @@ export async function updateSession(request: NextRequest) {
         // En mantenimiento sólo entran los superadmins
         if (acceso.mantenimiento && !acceso.es_superadmin) {
             return redirigir(`/${locale}/mantenimiento`)
+        }
+
+        // La base de DCK (sólo consulta) es cosa del superadmin: si otra cuenta trae la cookie, se le
+        // quita. Con esa base no hay empresas recolectoras: esa pantalla regresa al Panel.
+        if (baseDeCookie(request.cookies.get(COOKIE_BASE)?.value) === 'dck') {
+            if (!acceso.es_superadmin) {
+                const respuesta = redirigir(pathname)
+                respuesta.cookies.set(COOKIE_BASE, '', { path: '/', maxAge: 0 })
+                return respuesta
+            }
+            if (/\/dashboard\/asociaciones(\/|$)/.test(pathname)) {
+                return redirigir(`/${locale}/dashboard`)
+            }
         }
         if (isSuperadminArea) {
             if (!acceso.es_superadmin) {

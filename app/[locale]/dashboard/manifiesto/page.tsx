@@ -27,6 +27,7 @@ import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
 import { PestanasMovil } from '@/components/ui/simar';
+import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
 
 
@@ -35,6 +36,8 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
   const { ver } = use(searchParams);
   const t = useTranslations('Manifiestos');
   const tm = useTranslations('Manifiestos.mensajes');
+  // Base de DCK (sólo consulta): se ven los registros, sin capturar ni borrar
+  const soloConsulta = useSoloConsulta();
   const [manifiestos, setManifiestos] = useState<ManifiestoConRelaciones[]>([]);
   const [loading, setLoading] = useState(true);
   // El manifiesto a abrir con ?ver=ID: se abre en cuanto carga la lista (ajuste durante el render)
@@ -1037,7 +1040,8 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
   // Sólo para el texto de la barra de guardar
   const firmasListas = [oficialSignature, motoristaSignature, cocineroSignature, liquidosSignature].filter(Boolean).length;
   // En celular, con la pestaña "Registros" el formulario se oculta (y al revés)
-  const soloEnNuevo = vistaMovil === 'registros' ? 'movil:hidden' : '';
+  // Con la base de DCK no hay formulario: sólo la lista
+  const soloEnNuevo = soloConsulta ? 'hidden' : vistaMovil === 'registros' ? 'movil:hidden' : '';
 
   return (
     <div className="max-w-[1600px] space-y-6 movil:space-y-4">
@@ -1050,7 +1054,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
           </span>
           <div className="flex-1 min-w-[240px] movil:min-w-0">
             <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Manifiesto de entrega-recepción</h1>
-            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">{soloConsulta ? 'Registros de la base de DCK' : <>Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</>}</p>
           </div>
           {formData.numero_manifiesto && (
             <div className={`px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:w-full movil:flex movil:items-center movil:justify-between movil:px-4 movil:py-2 ${soloEnNuevo}`}>
@@ -1060,7 +1064,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
           )}
         </header>
 
-        <PestanasMovil
+        {!soloConsulta && <PestanasMovil
           etiqueta="Vista del manifiesto"
           valor={vistaMovil}
           onCambiar={setVistaMovil}
@@ -1068,7 +1072,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
             { valor: 'nuevo', texto: 'Nuevo', icono: FilePlus2 },
             { valor: 'registros', texto: 'Registros', icono: List, conteo: manifiestos.length },
           ]}
-        />
+        />}
 
         {/* Manifiesto sin terminar (guardado solo en este equipo): se ofrece continuarlo */}
         {sinTerminar && (
@@ -1696,7 +1700,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
       </div>
 
       {/* Tabla de Manifiestos */}
-      <div id="registros-list" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 movil:p-4 ${vistaMovil === 'nuevo' ? 'movil:hidden' : ''}`}>
+      <div id="registros-list" className={`bg-simar-superficie rounded-[28px] border border-simar-borde shadow-simar p-5 sm:p-7 movil:p-4 ${vistaMovil === 'nuevo' && !soloConsulta ? 'movil:hidden' : ''}`}>
         <div className="mb-4 sm:mb-6 movil:mb-3">
           <h2 className="text-2xl sm:text-[26px] font-extrabold text-simar-texto break-words">Manifiestos registrados</h2>
           <p className="text-simar-texto-2 mt-1 text-base sm:text-lg movil:hidden">Lista de todos los manifiestos creados en el sistema</p>
@@ -2045,7 +2049,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                                     </svg>
                                   )}
                                 </button>
-                                <button
+                                {!soloConsulta && <button
                                   onClick={() => handleDelete(manifiesto.id)}
                                   className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-simar-coral hover:text-white transition-colors"
                                   title="Eliminar"
@@ -2054,7 +2058,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                                   <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                   </svg>
-                                </button>
+                                </button>}
                               </div>
                             </td>
                           </tr>

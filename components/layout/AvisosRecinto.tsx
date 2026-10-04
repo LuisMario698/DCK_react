@@ -33,6 +33,7 @@ import { agruparPorDia } from '@/lib/utils/fechas';
 import { Esqueleto, usePresencia } from '@/components/ui/movimiento';
 import { HojaInferior } from './HojaInferior';
 import { useInsigniaAvisos } from './useInsigniaAvisos';
+import { useSoloConsulta } from './BaseDatos';
 
 const ALCANCE: AlcanceNotificaciones = { destinatario: 'admin' };
 
@@ -66,6 +67,8 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
     const [contado, setContado] = useState(false);
     const [error, setError] = useState(false);
     const [abierto, setAbierto] = useState(false);
+    // Con la base de DCK no hay avisos: son de las solicitudes de SiMAR
+    const soloConsulta = useSoloConsulta();
     const destino = `/${locale}/dashboard/asociaciones`;
     const destinoRef = useRef(destino);
     useEffect(() => {
@@ -103,6 +106,7 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
 
     // Al entrar: sólo el número (la lista se pide al abrirla). Después, lo nuevo llega en vivo.
     useEffect(() => {
+        if (soloConsulta) return;
         let vigente = true;
         contarNotificacionesNoLeidas(ALCANCE)
             .then((n) => {
@@ -124,7 +128,7 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
             vigente = false;
             quitar();
         };
-    }, [irAlAviso]);
+    }, [irAlAviso, soloConsulta]);
 
     const alternar = () => {
         // Cada vez que se abre, la lista se pide de nuevo (por si algo cambió desde otra pestaña)
@@ -177,6 +181,7 @@ const etiquetaCampana = (n: number) => `Avisos${n ? ` (${n} sin leer)` : ''}`;
 /** Campana de la píldora de arriba (celular y tableta) */
 export function CampanaMovil() {
     const { noLeidos, abierto, alternar } = useAvisosRecinto();
+    if (useSoloConsulta()) return null;
     return (
         <button
             type="button"
@@ -195,6 +200,7 @@ export function CampanaMovil() {
 /** Renglón "Avisos" del menú lateral (computadora); colapsado queda sólo la campana */
 export function CampanaMenu({ colapsado }: { colapsado: boolean }) {
     const { noLeidos, abierto, alternar } = useAvisosRecinto();
+    if (useSoloConsulta()) return null;
     return (
         <button
             type="button"
