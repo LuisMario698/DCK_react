@@ -746,7 +746,7 @@ basura marea, basurón arrecife.
   (`lib/constants/impacto.ts`); la etiqueta "Estimado" va junto al título.
 - **Una sola forma de calcular el impacto** (`lib/utils/equivalencias.ts`: `aguaProtegidaL`,
   `co2EvitadoKg`, `equivalenciaAgua/CO2/Basura`): la usan Estadísticas, su PDF y la landing, así
-  que la misma cifra dice lo mismo en todos lados. 1 L de aceite contamina **1,000 L** de agua; el
+  que la misma cifra dice lo mismo en todos lados. 1 L de aceite contamina **1,000,000 L** de agua; el
   aceite evita **1.0 kg de CO₂e por litro** (el mismo factor que el portal de empresas). La basura
   que se cuenta es la de los **manifiestos**: el basurón es esa misma basura camino al relleno y
   sumarlas la contaba dos veces. En celular cada cuadro

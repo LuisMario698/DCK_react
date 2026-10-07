@@ -14,11 +14,14 @@ import { ChevronDown, Leaf } from 'lucide-react';
 import { NumeroAnimado } from '@/components/ui/movimiento';
 import { decimalesEquivalencia, type Equivalencia } from '@/lib/utils/equivalencias';
 
-/** "2.9 millones de litros", "1,250 kg" */
-export const fmtCifra = (n: number, unidad: string) =>
-    n >= 1_000_000
-        ? `${(n / 1_000_000).toLocaleString('es-MX', { maximumFractionDigits: 1 })} millones de ${unidad === 'L' ? 'litros' : unidad}`
-        : `${Math.round(n).toLocaleString('es-MX')} ${unidad}`;
+/** "10.3 mil millones de litros", "2.9 millones de litros", "1,250 kg" */
+export const fmtCifra = (n: number, unidad: string) => {
+    const nombre = unidad === 'L' ? 'litros' : unidad;
+    const corto = (x: number) => x.toLocaleString('es-MX', { maximumFractionDigits: 1 });
+    if (n >= 1_000_000_000) return `${corto(n / 1_000_000_000)} mil millones de ${nombre}`;
+    if (n >= 1_000_000) return `${corto(n / 1_000_000)} ${n < 2_000_000 ? 'millón' : 'millones'} de ${nombre}`;
+    return `${Math.round(n).toLocaleString('es-MX')} ${unidad}`;
+};
 
 export interface TarjetaImpacto {
     eq: Equivalencia;

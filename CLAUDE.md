@@ -92,7 +92,7 @@ nunca pongas `NEXT_PUBLIC_MODO_DEMO=1` apuntando al Supabase de producción.
   SVG puro.
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar). Las
   cifras de impacto (agua, CO₂, basura) salen **sólo** de `lib/utils/equivalencias.ts`, que usan
-  Estadísticas, su PDF y la landing: 1 L de aceite = 1,000 L de agua; 1.0 kg CO₂e por litro. La
+  Estadísticas, su PDF y la landing: 1 L de aceite = 1,000,000 L de agua; 1.0 kg CO₂e por litro. La
   basura del basurón es la misma de los manifiestos: **nunca sumes basura + basurón**.
 - Las fechas y horas usan `components/ui/SelectorFecha` y `SelectorHora`, propios (sin librería;
   ver DISEÑO_SIMAR.md).

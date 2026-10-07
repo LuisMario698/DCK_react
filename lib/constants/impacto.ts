@@ -30,11 +30,11 @@ export const RECINTO_CO2_POR_LITRO_ACEITE = CO2E_EVITADO_POR_UNIDAD.aceite;
 /** kg de CO₂ evitados por kg llevado al relleno sanitario (basurón). */
 export const RECINTO_CO2_POR_KG_BASURON = 0.5;
 /**
- * Litros de agua que no se contaminan por cada litro de aceite recolectado. 1,000 L es la cifra
- * conservadora y la más citada en México; la landing decía 1,000,000 (un caso extremo) y se
- * unificó con ésta (decisión del 2026-09-30).
+ * Litros de agua que puede contaminar un litro de aceite (los que se protegen al recolectarlo):
+ * 1,000,000 L, decisión del equipo del 2026-10-07. Antes era 1,000 L (desde el 2026-09-30).
+ * Se cambia sólo aquí: la landing, Estadísticas, su PDF, el portal y la demo lo toman de esta constante.
  */
-export const LITROS_AGUA_POR_LITRO_ACEITE = 1000;
+export const LITROS_AGUA_POR_LITRO_ACEITE = 1_000_000;
 
 // Tamaños para las equivalencias ("esto equivale a…"): cosas conocidas, no factores de impacto.
 /** Alberca olímpica: 50 × 25 × 2 m (la landing usa el mismo). */
