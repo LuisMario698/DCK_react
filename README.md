@@ -609,9 +609,9 @@ Según `BITACORA_PRUEBAS.md` (2026-05-01): **77 procesos probados** (67 backend 
 - **`saveFirmaDigital`** (firma del Responsable de Líquidos guardada en el PDF) — pendiente en
   BD y en el módulo de PDF; el servicio es un *stub*.
 - **Factores de CO₂e** de `lib/constants/impacto.ts` son provisionales; validarlos con el asesor
-  externo antes de usarlos en reportes oficiales. Decidido el 2026-09-30 mientras tanto: 1 L de
-  aceite contamina 1,000 L de agua y evita 1.0 kg de CO₂e (el mismo factor en el recinto, el
-  portal y la landing, todos vía `lib/utils/equivalencias.ts`).
+  externo antes de usarlos en reportes oficiales. Mientras tanto: 1 L de aceite contamina
+  1,000,000 L de agua (corregido el 2026-10-07; antes 1,000) y evita 1.0 kg de CO₂e (el mismo
+  factor en el recinto, el portal y la landing, todos vía `lib/utils/equivalencias.ts`).
 
 ### Deuda técnica / cosas a saber antes de tocar el código
 

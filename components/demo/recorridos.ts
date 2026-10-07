@@ -95,7 +95,7 @@ export const RECORRIDOS: Record<VistaDemo, Recorrido> = {
                 icono: Waves,
                 tono: 'violeta',
                 titulo: 'Lo que gana el mar',
-                texto: 'Cada litro de aceite que no llega al mar protege mil litros de agua. Aquí se ve el impacto de todo lo registrado.',
+                texto: 'Cada litro de aceite que no llega al mar protege un millón de litros de agua. Aquí se ve el impacto de todo lo registrado.',
             },
         ],
         final: {

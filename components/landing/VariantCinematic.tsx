@@ -167,7 +167,7 @@ const AWARENESS_PANELS: {
         title: 'Aceites y combustibles',
         stat: '1 L',
         // Mismo factor que las equivalencias y Estadísticas (LITROS_AGUA_POR_LITRO_ACEITE)
-        statLabel: 'puede contaminar 1,000 L de agua',
+        statLabel: 'puede contaminar 1,000,000 L de agua',
         desc: 'Los aceites usados y residuos de diésel derramados en el mar forman películas que impiden el intercambio de oxígeno y afectan toda la cadena alimentaria marina.',
         color: 'bg-[rgba(242,193,78,0.16)] text-[#F2C14E]',
         accent: 'text-[#F2C14E]',
@@ -266,9 +266,9 @@ const MINUTOS_POR_MANIFIESTO = 25;
 /**
  * Las equivalencias de "¿Cuánto es cuánto?". Las cuentas son las mismas de Estadísticas
  * (lib/utils/equivalencias.ts): mismos factores y misma forma de decirlo (albercas, árboles,
- * camiones). Antes la landing usaba otras (1 L de aceite = 1,000,000 L de agua, bolsas de
- * plástico a partir de toda la basura, 0.02 árboles por hojas de papel, 40 L de tierra por filtro)
- * y sumaba la basura de los barcos con la del basurón, que es la misma basura camino al relleno.
+ * camiones). Antes la landing usaba otras (bolsas de plástico a partir de toda la basura, 0.02
+ * árboles por hojas de papel, 40 L de tierra por filtro) y sumaba la basura de los barcos con la
+ * del basurón, que es la misma basura camino al relleno.
  */
 function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
     const aceite       = stats?.totalAceiteUsado ?? 0;
@@ -1110,7 +1110,7 @@ export function VariantCinematic({
                         })}
                         <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[13px]" data-delay="200">
                             Estimaciones con los registros reales del sistema y factores aproximados: 1 L de aceite
-                            contamina unos 1,000 L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
+                            contamina hasta 1,000,000 L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
                             papeleo. Cada registro que se captura hace crecer estos números.
                         </p>
                     </div>
