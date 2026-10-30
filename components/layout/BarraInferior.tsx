@@ -126,7 +126,8 @@ export function BarraInferior({
             if (!muestra) return;
             const estilo = getComputedStyle(muestra);
             lienzo.font = `${estilo.fontWeight} 12px ${estilo.fontFamily}`;
-            const mayor = Math.max(...palabras.map((p) => lienzo.measureText(p).width));
+            // Con su interletrado (+0.01 em, letra chica): 0.12 px por letra a 12 px
+            const mayor = Math.max(...palabras.map((p) => lienzo.measureText(p).width + p.length * 0.12));
             const anchoBoton = (Math.min(576, nav.clientWidth) - BARRA_LADO * 2) / palabras.length;
             const cabe = (LETRA_MAX * (anchoBoton - HOLGURA_PALABRA)) / mayor;
             barra.style.setProperty('--barra-letra', `${Math.min(LETRA_MAX, Math.max(LETRA_MIN, cabe)).toFixed(2)}px`);
@@ -223,60 +224,65 @@ export function BarraInferior({
     };
 
     return (
-        <nav
-            ref={navRef}
-            aria-label="Navegación principal"
-            className="simar-barra-inferior lg:hidden fixed z-30 inset-x-2 bottom-[max(10px,env(safe-area-inset-bottom))] sm:inset-x-4 pointer-events-none"
-        >
-            {cristal.filtro}
-            <div
-                ref={refCristal}
-                data-refraccion={cristal.activo || undefined}
-                data-mini={minimizada || undefined}
-                style={{ ...cristal.estilo, maxWidth: anchoMaximo }}
-                onPointerDown={alPresionar}
-                onPointerMove={alMover}
-                onPointerUp={alSoltar}
-                onPointerCancel={alSoltar}
-                onClickCapture={alClicCaptura}
-                className="simar-cristal simar-barra-cristal pointer-events-auto mx-auto rounded-full flex items-stretch touch-pan-y select-none"
+        <>
+            {/* Borde de desplazamiento: lo que pasa bajo la barra se desenfoca y se funde con el papel */}
+            <div aria-hidden="true" className="simar-borde-barra" />
+            <nav
+                ref={navRef}
+                aria-label="Navegación principal"
+                className="simar-barra-inferior lg:hidden fixed z-30 inset-x-2 bottom-[max(10px,env(safe-area-inset-bottom))] sm:inset-x-4 pointer-events-none"
             >
-                {/* La gota: decorativa, detrás de los íconos */}
-                <span
-                    ref={refGota}
-                    aria-hidden="true"
-                    data-levantada={arrastrando || undefined}
-                    className="simar-gota"
-                />
-                {items.map((item, i) => (
-                    <Link
-                        key={item.href}
+                {cristal.filtro}
+                <div
+                    ref={refCristal}
+                    data-refraccion={cristal.activo || undefined}
+                    data-mini={minimizada || undefined}
+                    data-arrastrando={arrastrando || undefined}
+                    style={{ ...cristal.estilo, maxWidth: anchoMaximo }}
+                    onPointerDown={alPresionar}
+                    onPointerMove={alMover}
+                    onPointerUp={alSoltar}
+                    onPointerCancel={alSoltar}
+                    onClickCapture={alClicCaptura}
+                    className="simar-cristal simar-barra-cristal pointer-events-auto mx-auto rounded-full flex items-stretch touch-pan-y select-none"
+                >
+                    {/* La gota: decorativa, detrás de los íconos */}
+                    <span
+                        ref={refGota}
+                        aria-hidden="true"
+                        data-levantada={arrastrando || undefined}
+                        className="simar-gota"
+                    />
+                    {items.map((item, i) => (
+                        <Link
+                            key={item.href}
+                            ref={(el) => {
+                                botones.current[i] = el;
+                            }}
+                            href={item.href}
+                            onClick={() => setPendiente(i)}
+                            aria-current={item.activo ? 'page' : undefined}
+                            draggable={false}
+                            className="simar-barra-boton group flex-1 basis-0 min-w-0 rounded-full px-px flex flex-col items-center justify-center"
+                        >
+                            <Contenido Icono={item.icon} label={item.label} activo={indiceVisible === i} contador={item.contador} />
+                        </Link>
+                    ))}
+                    <button
                         ref={(el) => {
-                            botones.current[i] = el;
+                            botones.current[items.length] = el;
                         }}
-                        href={item.href}
-                        onClick={() => setPendiente(i)}
-                        aria-current={item.activo ? 'page' : undefined}
-                        draggable={false}
+                        type="button"
+                        onClick={onAbrirMenu}
+                        aria-expanded={menuAbierto}
+                        aria-label={contadorMenu > 0 ? `${etiquetaMenu} (${contadorMenu} pendientes)` : etiquetaMenu}
                         className="simar-barra-boton group flex-1 basis-0 min-w-0 rounded-full px-px flex flex-col items-center justify-center"
                     >
-                        <Contenido Icono={item.icon} label={item.label} activo={indiceVisible === i} contador={item.contador} />
-                    </Link>
-                ))}
-                <button
-                    ref={(el) => {
-                        botones.current[items.length] = el;
-                    }}
-                    type="button"
-                    onClick={onAbrirMenu}
-                    aria-expanded={menuAbierto}
-                    aria-label={contadorMenu > 0 ? `${etiquetaMenu} (${contadorMenu} pendientes)` : etiquetaMenu}
-                    className="simar-barra-boton group flex-1 basis-0 min-w-0 rounded-full px-px flex flex-col items-center justify-center"
-                >
-                    <Contenido Icono={IconoMenu} label={etiquetaMenu} activo={indiceVisible === items.length} contador={contadorMenu} />
-                </button>
-            </div>
-        </nav>
+                        <Contenido Icono={IconoMenu} label={etiquetaMenu} activo={indiceVisible === items.length} contador={contadorMenu} />
+                    </button>
+                </div>
+            </nav>
+        </>
     );
 }
 

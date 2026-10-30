@@ -17,6 +17,7 @@ import { EnlacesPaneles } from './EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
+import { useBordeDesplazamiento } from '@/components/layout/useBordeDesplazamiento';
 
 interface SidebarSuperadminProps {
     isCollapsed: boolean;
@@ -31,6 +32,8 @@ interface SidebarSuperadminProps {
 export function SidebarSuperadmin({ isCollapsed, onToggleCollapse }: SidebarSuperadminProps) {
     const pathname = usePathname();
     const { signOut, user } = useAuth();
+    // En laptops bajas la lista no cabe: su orilla se desvanece para avisar que hay más
+    const listaRef = useBordeDesplazamiento<HTMLDivElement>();
     const locale = pathname.split('/')[1] || 'es';
     const base = `/${locale}/superadmin`;
 
@@ -64,7 +67,7 @@ export function SidebarSuperadmin({ isCollapsed, onToggleCollapse }: SidebarSupe
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
+                <div ref={listaRef} className="simar-borde-lista flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
                     <nav aria-label="Menú de superadmin" className="flex flex-col gap-1">
                         {items.map((item) => {
                             const Icon = item.icon;

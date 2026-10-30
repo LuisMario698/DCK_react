@@ -402,9 +402,7 @@ export function VariantCinematic({
     const [menuMovil, setMenuMovil] = useState(false);
     // La ventana de acceso se queda montada mientras hace su salida
     const ventanaAcceso = usePresencia(showLoginModal, 200);
-    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón "Iniciar sesión"
     const accesoRef = useRef<HTMLDivElement>(null);
-    useVentanaAccesible(accesoRef, showLoginModal);
 
     // Carrusel: se puede pausar (botón, o al pasar el cursor / enfocar la foto).
     // Con "reducir movimiento" no avanza solo.
@@ -465,19 +463,13 @@ export function VariantCinematic({
         }
     };
 
-    // Escape cierra la ventana de acceso, como todas las ventanas de SiMAR
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón "Iniciar sesión". Escape la
+    // cierra, como todas las ventanas de SiMAR, y en celular (donde sube como hoja) también jalarla
     const cerrarLoginRef = useRef(cerrarLoginModal);
     useEffect(() => {
         cerrarLoginRef.current = cerrarLoginModal;
     });
-    useEffect(() => {
-        if (!showLoginModal) return;
-        const alTeclear = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') cerrarLoginRef.current();
-        };
-        document.addEventListener('keydown', alTeclear);
-        return () => document.removeEventListener('keydown', alTeclear);
-    }, [showLoginModal]);
+    useVentanaAccesible(accesoRef, showLoginModal, { alEscape: () => cerrarLoginRef.current() });
 
     const selectModalRole = (r: RolGuardado) => {
         saveRole(r);
@@ -574,9 +566,12 @@ export function VariantCinematic({
                         {/* En celular sólo el símbolo: el nombre ya está grande en el hero */}
                         <LogoSimar variante="simbolo" tamano={42} className="sm:hidden" />
                         <LogoSimar tamano={46} className="hidden sm:inline-flex" />
-                        <span aria-hidden="true" className="hidden md:block h-9 w-px bg-simar-texto/20" />
-                        {/* Logos institucionales: en oscuro van sobre una pastilla clara (tienen letras negras) */}
-                        <span className="hidden md:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
+                        <span aria-hidden="true" className="hidden min-[768px]:block min-[1280px]:hidden min-[1440px]:block h-9 w-px bg-simar-texto/20" />
+                        {/* Logos institucionales: en oscuro van sobre una pastilla clara (tienen letras negras).
+                            De 1280 a 1439 px no van: ahí aparecen los enlaces de las secciones y con los logos
+                            ya no caben en un renglón (laptops de 1366 px y proyectores). Los cortes van todos
+                            como min-[…]: Tailwind pone los arbitrarios antes que md/xl y xl:hidden les ganaría */}
+                        <span className="hidden min-[768px]:flex min-[1280px]:hidden min-[1440px]:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
                             <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
                             <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
                         </span>
@@ -588,7 +583,7 @@ export function VariantCinematic({
                                 key={link.href}
                                 href={link.href}
                                 aria-current={seccionActiva === link.href ? 'location' : undefined}
-                                className="min-h-[48px] flex items-center text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
+                                className="min-h-[48px] flex items-center whitespace-nowrap text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
                             >
                                 {link.label}
                             </a>

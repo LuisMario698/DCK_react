@@ -11,9 +11,12 @@
  */
 import { useEffect, useState } from 'react';
 import { RotateCw } from 'lucide-react';
+import { resistir } from '@/components/ui/arrastreHoja';
 
-/** Tirón (ya con resistencia) que hay que pasar para recargar */
+/** Tirón (ya con resistencia) que hay que pasar para recargar: el dedo baja ~130 px */
 const UMBRAL = 64;
+/** Escala de la resistencia: el círculo se acerca a ella sin llegar nunca (no hay tope en seco) */
+const ALCANCE = 600;
 
 function esAppInstalada() {
     return window.matchMedia('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
@@ -46,8 +49,12 @@ export function DeslizarParaActualizar() {
                 }
                 return;
             }
-            // Resistencia: el círculo avanza la mitad que el dedo y se detiene en 110 px
-            actual = Math.min(110, dy * 0.5);
+            // Resistencia progresiva (la de iOS): al principio sigue casi a la mitad del dedo y cada vez
+            // menos, sin frenarse en seco
+            const antes = actual;
+            actual = resistir(dy, ALCANCE);
+            // Al pasar el umbral, una vibración corta (sólo Android; en iPhone no existe): se siente que ya cuenta
+            if (antes < UMBRAL && actual >= UMBRAL) navigator.vibrate?.(10);
             setTiron(actual);
         };
         const alSoltar = () => {

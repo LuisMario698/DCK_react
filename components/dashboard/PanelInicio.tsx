@@ -76,7 +76,7 @@ const ActionCard = ({
     </span>
     <span className="flex-1 min-w-0 flex flex-col md:mt-auto md:pt-6">
       {/* En tarjetas angostas (laptop con el menú abierto) el título se achica con la tarjeta: 32 px se salía ("Estadísticas") */}
-      <span className={`text-[26px] md:text-[length:min(32px,calc(100cqi/7.2))] font-extrabold leading-tight ${principal ? 'movil:text-[22px]' : 'movil:text-[19px]'}`}>{title}</span>
+      <span className={`text-[26px] md:text-[length:min(32px,calc(100cqi/7.2))] font-extrabold leading-tight tracking-[-0.015em]${principal ? 'movil:text-[22px]' : 'movil:text-[19px]'}`}>{title}</span>
       <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2 movil:text-[14px] movil:leading-snug'}`}>{description}</span>
       {typeof dato === 'string' ? <span className={clasePastilla(principal)}>{dato}</span> : dato}
     </span>
@@ -469,7 +469,7 @@ export function PanelInicio({
         <div aria-hidden="true" className="hidden xl:block w-px self-stretch bg-simar-borde" />
         <div className="min-w-0">
           <p className="text-[17px] md:text-[19px] font-semibold text-simar-texto-2 movil:text-[14px]">{fechaHoyPuerto()}</p>
-          <h1 className="mt-0.5 text-3xl md:text-[38px] font-extrabold leading-tight tracking-tight text-simar-texto">
+          <h1 className="mt-0.5 text-3xl md:text-[38px] font-extrabold leading-tight text-simar-texto">
             {saludoPuerto()}
           </h1>
           <p className="mt-2 text-lg md:text-xl text-simar-texto-2 movil:mt-1">

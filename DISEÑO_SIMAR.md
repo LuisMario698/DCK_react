@@ -120,6 +120,19 @@ No agregues otras familias.
   Encabezados de tabla incluidos (`text-[15px] font-bold text-simar-texto-2`).
 - Mayúscula sólo al inicio: "Manifiestos registrados", "Guardar firma".
 - Interlineado: `leading-tight` en títulos, el normal en párrafos.
+- **Interletrado según el tamaño**, como en la tipografía de Apple: el texto grande se cierra un
+  poco (las letras se ven separadas al crecer) y el muy chico se abre. Atkinson ya es una letra
+  abierta, así que nunca más cerrado que −0.02 em. Los `h1` y `h2` ya lo traen (capa base de
+  `app/globals.css`; una utilidad `tracking-*` le gana); un título grande que no sea encabezado
+  lleva su `tracking-[…]` (como el de las tarjetas de acción del Panel).
+
+  | Tamaño | Interletrado | Dónde |
+  |---|---|---|
+  | 36–52 px | −0.02 em | Títulos `h2` de la landing |
+  | 26–38 px | −0.015 em | `h1` (títulos de pantalla, saludo), títulos de tarjeta de acción |
+  | 20–28 px | −0.01 em | `h2` (títulos de tarjeta y de sección) |
+  | 15–19 px | 0 | Texto, botones, campos |
+  | 13 px o menos | +0.01 em | Palabras de la barra inferior |
 
 ---
 
@@ -188,6 +201,24 @@ Requisitos:
   luz es un `::after` absoluto.
 - Si el sistema pide menos transparencia (`prefers-reduced-transparency`), el vidrio se vuelve
   sólido solo. No lo desactives a mano.
+- Con **"aumentar contraste"** (`prefers-contrast: more`, en Accesibilidad del iPhone y la Mac),
+  como pide Apple: vidrio y cristal sólidos con borde de 2 px `simar-campo-borde` (sin refracción),
+  los bordes de tarjeta pasan a `simar-campo-borde` (3:1), los placeholders a `simar-texto-2` y
+  la gota de la barra se marca más.
+
+**Bordes de desplazamiento.** Donde el contenido pasa por debajo de algo que flota, o una lista se
+corta, la orilla se desvanece en vez de cortar en seco (como iOS 26):
+
+- `simar-borde-barra` (lo pone `BarraInferior`, sólo bajo 1024 px): franja fija al pie de la
+  pantalla que desenfoca y funde con el papel lo que pasa bajo la barra inferior y la barra de
+  guardar, así sus palabras no compiten con las de la página. Va encima del contenido y debajo de
+  las barras pegadas abajo (`z-20`) y de la barra (`z-30`); baja con la barra minimizada. Con
+  "reducir transparencia", sin desenfoque. Un elemento de la página con `z-index` de 20 o más
+  quedaría encima de ella.
+- `simar-borde-lista` + `useBordeDesplazamiento()` (`components/layout/`): en una lista con
+  desplazamiento propio (la del menú lateral de los tres paneles), la orilla de arriba o de abajo
+  se desvanece mientras haya renglones escondidos de ese lado. En una laptop de 768 px de alto
+  el menú no cabe completo y así avisa que hay más.
 
 ```tsx
 <div className="simar-vidrio sticky bottom-4 z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3">
@@ -210,7 +241,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 |---|---|---|
 | `simar-aparece` | Entra 8 px desde abajo con opacidad, 0.4 s, sin rebote | Encabezados y tarjetas al abrir una pantalla. Escalonar con `style={{ animationDelay: '0.06s' }}` (pasos de 0.04–0.06 s) |
 | `simar-pagina` | Fundido de 0.28 s | Ya lo ponen `DashboardLayout` y los layouts del portal y del superadmin en cada cambio de ruta; no lo repitas |
-| `simar-velo` / `simar-ventana` | El fondo se funde y el panel sube 14 px (0.34 s) | Toda ventana modal: `simar-velo` en el fondo oscuro, `simar-ventana` en el panel |
+| `simar-velo` / `simar-ventana` | El fondo se funde y el panel sube 14 px (0.34 s). **Se pueden interrumpir:** donde hay `@starting-style` (Chrome 117, Safari 17.5, Firefox 129) son transiciones, que parten de lo que está en pantalla: si se cierra mientras entra, se regresa desde donde iba (antes brincaba a completa y luego se iba). En navegadores más viejos quedan las animaciones. Lo mismo `simar-hoja` | Toda ventana modal: `simar-velo` en el fondo oscuro, `simar-ventana` en el panel |
 | `simar-velo-sale` / `simar-ventana-sale` | La salida, más rápida (0.18 s) | Con `usePresencia` (ver 8.2) |
 | `simar-crece-y` / `simar-crece-x` | La barra crece desde su base / desde la izquierda | Barras de gráficas hechas a mano. Escalonar con `animationDelay` |
 | `simar-dibuja` | Dibuja un trazo SVG. El `<path>` lleva `pathLength={1}`, así sirve para cualquier largo. Duración con la variable `--simar-trazo-dur` | La línea de marea, la palomita, las curvas de profundidad del hero |
@@ -218,7 +249,7 @@ poco más expresiva, con las mismas prohibiciones. Clases en `app/globals.css` (
 | `simar-presiona` | El botón se hunde 1 px al presionarlo | Ya lo lleva `Button`; úsalo en botones principales hechos a mano |
 | `simar-tarjeta-accion` | Sube 3 px con sombra al pasar el cursor y baja al presionarla | Sólo tarjetas que llevan a otra pantalla (Panel, KPIs del portal) |
 | `simar-esqueleto` | Bloque con un brillo lento | Sólo esqueletos de carga (es un indicador de carga, por eso puede repetirse) |
-| `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
+| `simar-hoja` / `simar-hoja-sale` | Sube desde abajo (0.36 s) / baja (0.2 s). Si se jala la hoja, la animación se detiene donde va y la mueve el dedo (y al soltar, un resorte; ver 16.2) | Hojas inferiores de celular (`HojaInferior`); las ventanas de la zona móvil la usan solas (ver 16) |
 | `simar-desplegable` | Baja 6 px desde el campo y aparece (0.2 s); si se abrió arriba del campo, sube | Panel flotante del selector de fecha y hora en computadora (`Desplegable`) |
 | `simar-resalta` | La fila se ilumina en azul suave y se apaga sola (2.6 s, empieza a los 0.3 s). Con "reducir movimiento" se queda iluminada un momento, sin transición | La fila a la que se llega desde un aviso o el Panel (Solicitudes, `?solicitud=ID`), para que la vista la encuentre |
 | `simar-recorrido-velo` / `simar-recorrido-late` | El velo oscurece poco y desenfoca la pantalla, con un hueco nítido (máscara SVG) que se desliza al cambiar de paso y frena al llegar; con "reducir transparencia", sin desenfoque. El aro de lo que se puede tocar en "Pruébalo tú" late dos veces al llegar (y otra vez si se toca fuera), nunca en bucle. Con "reducir movimiento" nada se desliza ni late | Sólo el recorrido guiado de la demostración (`components/demo/Recorrido.tsx`) |
@@ -239,7 +270,7 @@ de profundidad.
 | `Esqueleto`, `EsqueletoPantalla` | Esqueletos para los `loading.tsx` (esperan 0.15 s antes de verse, para no parpadear) |
 | `usePrefiereMenosMovimiento()` | Si el sistema pide reducir movimiento (p. ej. el carrusel no avanza solo) |
 | `LineaMarea` (`components/layout/LineaMarea.tsx`) | La ola bajo la sección activa; se dibuja al llegar |
-| `DeslizarParaActualizar` (`components/layout/`) | Sólo con SiMAR instalada como app: arriba del todo, al jalar hacia abajo baja un círculo de vidrio cuya flecha gira con el tirón; pasado el umbral (se pone azul) y al soltar, la página se recarga. No se activa con una hoja o ventana abierta ni en filas que se deslizan de lado. En una pestaña normal no hace nada |
+| `DeslizarParaActualizar` (`components/layout/`) | Sólo con SiMAR instalada como app: arriba del todo, al jalar hacia abajo baja un círculo de vidrio cuya flecha gira con el tirón, con resistencia progresiva (la de iOS: cada vez sigue menos al dedo, sin tope en seco); pasado el umbral (se pone azul y, en Android, vibra 10 ms) y al soltar, la página se recarga. No se activa con una hoja o ventana abierta ni en filas que se deslizan de lado. En una pestaña normal no hace nada |
 
 **Cambiar un dato en pantalla** (otro período, otro residuo): lo de antes se queda a la vista
 atenuado con "Actualizando…" (no un círculo que gira ni la pantalla en blanco) y, al llegar lo
@@ -261,9 +292,10 @@ es su posición, así React la conserva y la transición de `height` hace el res
   sobre todo el hero casi nunca avanzarían).
 - Con `prefers-reduced-motion` todo se vuelve instantáneo solo (regla al final del bloque de
   movimiento). No hace falta escribir `motion-safe:`.
-- El cambio de tema abre el tema nuevo en círculo desde el botón (View Transitions). En
-  navegadores sin soporte, con "reducir movimiento" o en WebKit (Safari y todos los navegadores
-  de iPhone/iPad) cambia al instante: WebKit toma mal la "foto" de la transición, el vidrio
+- El cambio de tema abre el tema nuevo en círculo desde el botón (View Transitions). Con "reducir
+  movimiento" nada se mueve, pero el tema nuevo aparece con un fundido de 200 ms: de papel a azul
+  noche en un solo cuadro sería un salto de brillo. En navegadores sin soporte o en WebKit (Safari
+  y todos los navegadores de iPhone/iPad) cambia al instante: WebKit toma mal la "foto" de la transición, el vidrio
   (`backdrop-filter`) sale sin desenfoque y lo fijo se pierde con la página desplazada, y se ve
   un parpadeo en el encabezado y la barra inferior (`esWebKit()` en `ThemeContext`).
 
@@ -498,7 +530,8 @@ derecha).
 
 Cuando un formulario es largo, las acciones finales viven en una barra de vidrio pegada abajo
 (`simar-vidrio sticky bottom-4`). A la izquierda, una frase con el estado ("2 firmas listas."); a
-la derecha, el botón secundario y el principal.
+la derecha, el botón secundario y el principal. Entra con `simar-aparece` después de las tarjetas
+(retraso de 0.24 s en Manifiesto): sin entrada se veía sola sobre la pantalla vacía.
 
 **Manifiesto sin terminar** (`lib/utils/manifiestoSinTerminar.ts`): mientras se captura un
 manifiesto, lo escrito (datos, residuos, nombres y firmas) se guarda solo en ese equipo, un momento
@@ -550,6 +583,13 @@ etiqueta de 17 px y `select` de 56 px.
   `UserProfileModal`, `CreatePersonaModal`, el `Modal` de `components/asociaciones/ui.tsx` y la
   ventana de acceso de la landing).
 - Botón de cerrar de 52 px arriba a la derecha con `aria-label="Cerrar"`. Escape también cierra.
+- **En celular también se cierra jalándola hacia abajo**, como `HojaInferior`, si se cierra con
+  Escape (`alEscape`): `useVentanaAccesible` le pone `arrastrarVentana`
+  (`components/ui/arrastreHoja.ts`, misma física que la hoja). Sólo desde la franja de arriba
+  (44 px, donde dibuja la agarradera con `data-jalable`) y con la ventana hasta arriba: así, al
+  desplazar un formulario, un jalón de más no lo cierra. Si al soltar no se cierra (p. ej. está
+  guardando y su `alEscape` no hace nada), regresa a su lugar. Las que son `fixed` ellas mismas
+  (la tarjeta del recorrido) no se jalan.
 - **Teclado y lector de pantalla:** `role="dialog"` y `aria-modal="true"` van en el **panel** (no en
   el velo), con `tabIndex={-1}` y `outline-none`. `useVentanaAccesible(ref, abierto)`
   (`components/ui/useVentanaAccesible.ts`) pone el foco adentro al abrir (respeta el `autoFocus`
@@ -998,8 +1038,10 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
   cada botón en ese teléfono, y elige el mayor tamaño con el que todas caben dentro de la gota
   (variable `--barra-letra`; se recalcula al cambiar el ancho o al cargar la fuente). Si ni a
   9.5 px cabe (teléfonos de ~330 px o menos), la barra queda sólo con íconos, como minimizada. **Todos los botones miden lo mismo** (`flex-1`, sin huecos
-  entre ellos) y la gota también; así "Estadísticas" cabe en 360 px. La palabra activa no cambia de
-  peso (sólo de color) para que no salte cuando llega la gota.
+  entre ellos) y la gota también. La palabra activa no cambia de peso (sólo de color) para que no
+  salte cuando llega la gota. **Nombres cortos:** la palabra más larga fija el tamaño de todas, así
+  que la barra usa nombres cortos y la pantalla conserva su título: en el recinto "Reportes" lleva a
+  Estadísticas (con "Estadísticas" todas quedaban en 10 px; con "Reportes", en 12 px a 375 px).
   - **Se minimiza al bajar** (`data-mini`): las palabras se cierran, baja de 70 a 56 px y se
     angosta a sólo íconos; al subir, al volver arriba o al abrir "Más" regresa. Lo que va pegado
     abajo (`simar-pegada-abajo`) baja con ella (`html[data-barra-mini]`).
@@ -1012,12 +1054,22 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
     asienta con un vaivén corto). Se va a la sección en cuanto se toca, sin esperar a que cargue.
   - **Arrastrar**: deslizar el dedo de lado sobre la barra levanta la gota, que sigue al dedo; al
     soltar abre la sección que quedó debajo. Un toque normal sigue funcionando igual.
+  - **Al presionar** un botón, su ícono y su palabra se hunden (90 %) en cuanto el dedo toca; la
+    sección se abre al soltar. Arrastrando la gota no se hunden.
   - La sección activa, además de la gota, lleva ícono y palabra en `simar-marea-tinta` y negritas
     (el color nunca va solo).
 - **Hoja "Más"** (`HojaMas` sobre `HojaInferior`): en el recinto el último botón abre una hoja
   desde abajo con el perfil, las otras secciones en mosaico de tres, los accesos de superadmin,
-  el tema y cerrar sesión. Se cierra con el fondo, con Escape, arrastrando la agarradera o al
-  elegir una sección; bloquea el desplazamiento de atrás y devuelve el foco al botón. El portal
+  el tema y cerrar sesión. Se cierra con el fondo, con Escape, jalándola hacia abajo o al
+  elegir una sección; bloquea el desplazamiento de atrás y devuelve el foco al botón. **Cómo se
+  jala** (`HojaInferior`, igual en avisos y en el selector de fecha y hora): desde la agarradera
+  (zona de 44 px) o desde el contenido cuando está hasta arriba; sigue al dedo 1:1, aunque todavía
+  vaya entrando (se toma desde donde va); el velo se aclara conforme baja; hacia arriba resiste en
+  vez de frenarse en seco. Al soltarla decide con la velocidad del dedo, como iOS: se proyecta a
+  dónde llegaría con ese impulso (frenado de 0.998) y se cierra si eso pasa de 100 px (o de media
+  hoja, si es más baja); así un tirón corto y rápido la cierra y uno lento de 60 px no. Después la
+  lleva un resorte sin rebote que arranca a la velocidad del dedo, sin costura. Con "reducir
+  movimiento" va directo a su lugar o se cierra. El portal
   tiene la suya (`HojaMasRecolector`): la empresa arriba (lleva a su perfil), Historial, Impacto y
   Notificaciones (con su aviso) en mosaico, accesos de superadmin, tema y cerrar sesión; su barra es
   Inicio · Residuos · Solicitudes · Mensajes (con los sin leer) + "Más", y su menú lateral sólo existe
@@ -1045,7 +1097,7 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
 | KPI compacto | Estadísticas; indicadores del superadmin (`Kpi`: Resumen, Suscripciones, Sistema) | Ícono y título en una línea, número debajo; dos por fila. Si el detalle es largo, en celular una versión corta ("1 por vencer · 0 pendiente(s)") |
 | Lo que se usa, primero | Portal: Inicio | En celular el mapa (sólo muestra dónde está el centro de acopio) baja con `movil:order-2`: primero la actividad reciente |
 | Pantalla para pedir | Portal: Residuos disponibles | Vista propia en celular (`ResiduosCelular`). Arriba, el centro de acopio en una tarjeta corta: foto de 68 px, nombre y cuántos residuos hay, con **Ver mapa** (el mapa sube en una hoja con "Cómo llegar", que abre Google Maps) y **Escribir** (Mensajes). Debajo, los residuos en renglones de una sola tarjeta: círculo con el color y el ícono del material, nombre, cantidad en texto oscuro, notas y **Solicitar** a la derecha ("Agotado" si no hay). Si la empresa eligió sus materiales, `ControlSegmentado` "Todos · Los que recolecto". Las cuatro tarjetas de datos de escritorio no están: el número de residuos va en la tarjeta del centro y "Actualizado hace…" en la de la lista. La hoja de solicitar no abre el teclado sola y su botón principal lleva el ancho sobrante |
-| Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y del portal, y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto |
+| Ventanas como hoja inferior | Todas las ventanas `fixed › simar-ventana` del recinto y del portal, y el acceso de la landing | Automático (CSS): a todo lo ancho, esquinas sólo arriba, sube con `simar-hoja`, máximo 92 % del alto. Si se cierra con Escape, lleva agarradera y se cierra jalándola desde arriba (10.11) |
 | Burbuja flotante | Personas, Embarcaciones, Asociaciones (Nueva asociación), Inventario (Agregar residuo), Mis solicitudes del portal (Nueva solicitud, lleva a Residuos) y el superadmin (Invitar cuenta, Nuevo plan) | `BotonFlotante`: la acción principal de la lista flota a la derecha, encima de la barra inferior. Extendida (ícono + palabra) arriba de la página; al bajar se encoge a un círculo de 56 px y baja con la barra minimizada. En la pantalla, la acción del encabezado lleva `accionesClassName="movil:hidden"` (en tableta y escritorio sigue ahí) |
 | Pestañas con su aviso | Asociaciones | En celular las tarjetas de conteo se ocultan. Las cuatro secciones en una fila (ícono arriba, palabra abajo) y **sólo los avisos** van en la esquina del ícono, en coral con un aro del color de fondo (pendientes, sin leer), como en las apps del teléfono. Un número que no pide nada (asociaciones activas) no va en la pestaña: va dentro de su sección ("3 activas de 4 registradas") |
 | Jerarquía de navegación | Asociaciones | Tres niveles que no se parecen: la **barra inferior** (cristal), las **secciones** de la pantalla (pastilla azul rellena, el único azul) y los **filtros** de cada sección (`ControlSegmentado`: canal gris y la opción elegida en blanco). Dos niveles con el mismo azul relleno se leen como uno solo |

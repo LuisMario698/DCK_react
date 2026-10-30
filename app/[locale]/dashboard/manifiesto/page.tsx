@@ -1674,8 +1674,9 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
         </section>
 
         {/* Barra de guardar (vidrio, flota sobre el formulario) */}
-        {/* En celular va en una sola fila: estado corto a la izquierda y el botón a la derecha */}
-        <div className={`simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`}>
+        {/* En celular va en una sola fila: estado corto a la izquierda y el botón a la derecha. Entra
+            después de las tarjetas (simar-aparece): sin eso se veía sola sobre la pantalla vacía */}
+        <div className={`simar-aparece simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`} style={{ animationDelay: '0.24s' }}>
           <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[14px] movil:leading-snug">
             {firmasListas === 0
               ? <><span className="movil:hidden">Aún no hay firmas. También puedes adjuntar el documento firmado.</span><span className="hidden movil:inline">Aún no hay firmas.</span></>

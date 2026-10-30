@@ -181,6 +181,27 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Interletrado según el tamaño (DISEÑO_SIMAR.md → Tipografía): el texto grande se cierra un poco y
+   el muy chico se abre, como en la tipografía de Apple. Atkinson ya es una letra abierta, así que
+   nunca más cerrado que -0.02em. En la capa base para que una utilidad tracking-* le gane */
+@layer base {
+  /* Títulos de pantalla y saludo (28–38 px) */
+  h1 {
+    letter-spacing: -0.015em;
+  }
+  /* Títulos de tarjeta y de sección (20–28 px) */
+  h2 {
+    letter-spacing: -0.01em;
+  }
+  /* Landing: títulos de sección (36–52 px). Su h1 es el logo con una línea de 16 px */
+  .simar-landing h2 {
+    letter-spacing: -0.02em;
+  }
+  .simar-landing h1 {
+    letter-spacing: normal;
+  }
+}
+
 /* Animación suave para transiciones de página */
 @keyframes fadeIn {
   from {
@@ -739,6 +760,44 @@ body {
 .simar-ventana-sale {
   animation: simar-ventana-sale 0.18s var(--simar-acelera) both;
 }
+/* Se pueden interrumpir: donde el navegador anima la entrada con @starting-style (Chrome 117,
+   Safari 17.5, Firefox 129) entran y salen con transiciones, que siempre parten de lo que está en
+   pantalla. Si se cierra mientras entra, se regresa desde donde iba (antes brincaba a completa y
+   luego se iba); si se vuelve a abrir mientras sale, regresa desde ahí. En los demás navegadores
+   quedan las animaciones de arriba. El velo y la ventana que se jalan con el dedo apagan su
+   transición mientras tanto (arrastreHoja.ts). */
+@supports (transition-behavior: allow-discrete) {
+  .simar-velo,
+  .simar-velo-sale,
+  .simar-ventana,
+  .simar-ventana-sale {
+    animation: none;
+  }
+  .simar-velo {
+    transition: opacity 0.24s ease-out;
+  }
+  .simar-velo-sale {
+    opacity: 0;
+    transition: opacity 0.18s var(--simar-acelera);
+  }
+  .simar-ventana {
+    transition: opacity 0.34s var(--simar-frena), transform 0.34s var(--simar-frena);
+  }
+  .simar-ventana-sale {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    transition: opacity 0.18s var(--simar-acelera), transform 0.18s var(--simar-acelera);
+  }
+  @starting-style {
+    .simar-velo {
+      opacity: 0;
+    }
+    .simar-ventana {
+      opacity: 0;
+      transform: translateY(14px) scale(0.98);
+    }
+  }
+}
 
 /* Selector de fecha y hora (Desplegable, en computadora): baja 6 px desde el campo; si se abrió
    arriba del campo, sube. En celular es una hoja (simar-hoja) */
@@ -965,6 +1024,25 @@ body.simar [data-sonner-toast] [data-close-button] {
 .simar-hoja-sale {
   animation: simar-hoja-sale 0.2s var(--simar-acelera) both;
 }
+/* Interrumpibles, como las ventanas (ver simar-ventana) */
+@supports (transition-behavior: allow-discrete) {
+  .simar-hoja,
+  .simar-hoja-sale {
+    animation: none;
+  }
+  .simar-hoja {
+    transition: transform 0.36s var(--simar-frena);
+  }
+  .simar-hoja-sale {
+    transform: translateY(100%);
+    transition: transform 0.2s var(--simar-acelera);
+  }
+  @starting-style {
+    .simar-hoja {
+      transform: translateY(100%);
+    }
+  }
+}
 
 /* ---------- Cristal líquido (barra inferior y encabezado móvil) ----------
    Como la barra de pestañas de iOS 26: plano. Vidrio translúcido parejo, una línea fina de
@@ -1045,7 +1123,61 @@ body.simar [data-sonner-toast] [data-close-button] {
   max-width: min(96px, 100%);
   max-height: 16px;
   overflow: hidden;
-  transition: max-width 0.34s var(--simar-frena), max-height 0.3s var(--simar-frena), opacity 0.18s ease, color 0.2s ease;
+  /* Letra chica: un poco más abierta se lee mejor (BarraInferior lo cuenta al medir) */
+  letter-spacing: 0.01em;
+  transition: max-width 0.34s var(--simar-frena), max-height 0.3s var(--simar-frena), opacity 0.18s ease, color 0.2s ease,
+    transform 0.2s var(--simar-frena);
+}
+/* Al presionar un botón de la barra, su ícono y su palabra se hunden en cuanto el dedo toca (la
+   sección se abre al soltar). Arrastrando la gota no: ahí manda la gota */
+.simar-barra-boton > :first-child {
+  transition: transform 0.2s var(--simar-frena), color 0.2s ease;
+}
+.simar-barra-cristal:not([data-arrastrando]) .simar-barra-boton:active > * {
+  transform: scale(0.9);
+  transition-duration: 0.08s;
+}
+
+/* Borde de desplazamiento bajo la barra inferior (como iOS 26): lo que pasa por debajo de lo que
+   flota se desenfoca y se funde con el papel, así las palabras de la barra y de la barra de guardar
+   no compiten con las de la página. Lo pone BarraInferior. Queda encima del contenido y debajo de
+   las barras pegadas abajo (z-20) y de la barra (z-30). Baja con la barra minimizada. */
+.simar-borde-barra {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 19;
+  height: calc(124px + env(safe-area-inset-bottom));
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--simar-papel) 80%, transparent));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 55%);
+  mask-image: linear-gradient(to bottom, transparent, #000 55%);
+  transition: transform 0.4s var(--simar-frena);
+}
+html[data-barra-mini] .simar-borde-barra {
+  transform: translateY(14px);
+}
+@media (min-width: 1024px) {
+  .simar-borde-barra {
+    display: none;
+  }
+}
+
+/* Lista con desplazamiento propio (menú lateral): la orilla donde hay más renglones se desvanece en
+   vez de cortar uno a la mitad. Los data-* los pone useBordeDesplazamiento */
+.simar-borde-lista[data-mas-abajo] {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 48px), transparent);
+}
+.simar-borde-lista[data-mas-arriba] {
+  -webkit-mask-image: linear-gradient(to top, #000 calc(100% - 32px), transparent);
+  mask-image: linear-gradient(to top, #000 calc(100% - 32px), transparent);
+}
+.simar-borde-lista[data-mas-arriba][data-mas-abajo] {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 32px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 32px, #000 calc(100% - 48px), transparent);
 }
 .simar-barra-cristal[data-mini] {
   padding: 4px;
@@ -1113,12 +1245,53 @@ html[data-barra-mini] .simar-flotante {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+  /* Sin desenfoque: sólo se funde con el papel */
+  .simar-borde-barra {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* Aumentar contraste (iPhone y Mac: Accesibilidad → Pantalla): como pide Apple, lo que flota se
+   vuelve sólido con un borde definido, los bordes de tarjeta llegan a 3:1 (el de los campos), los
+   placeholders se oscurecen y la gota de la barra se marca más. vidrioLiquido apaga su refracción */
+@media (prefers-contrast: more) {
+  :root,
+  .dark,
+  .simar-claro {
+    --simar-borde: var(--simar-campo-borde);
+    --simar-texto-3: var(--simar-texto-2);
+  }
+  .simar-vidrio,
+  .simar-vidrio-fuerte,
+  .simar-cristal,
+  .dark .simar-cristal {
+    background: var(--simar-superficie);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 2px solid var(--simar-campo-borde);
+  }
+  .simar-vidrio::after,
+  .simar-vidrio-fuerte::after {
+    display: none;
+  }
+  .simar-gota {
+    background: rgba(11, 34, 54, 0.16);
+  }
+  .dark .simar-gota {
+    background: rgba(255, 255, 255, 0.24);
+  }
+  .simar-borde-barra {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .simar-barra-cristal,
   .simar-barra-boton,
+  .simar-barra-boton > *,
   .simar-barra-etiqueta,
-  .simar-pegada-abajo {
+  .simar-pegada-abajo,
+  .simar-borde-barra {
     transition: none;
   }
 }
@@ -1247,8 +1420,47 @@ html[data-barra-mini] .simar-flotante {
   :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana {
     animation: simar-hoja-entra 0.36s var(--simar-frena) backwards;
   }
+  /* Agarradera: la ventana se cierra jalándola hacia abajo desde arriba (arrastrarVentana, en
+     components/ui/arrastreHoja.ts, la marca con data-jalable). Sólo en las que tienen fondo propio:
+     los visores de detalles son transparentes (llevan tarjetas adentro) */
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana:not(.fixed):is([data-jalable], [data-jalable] > *):is(.bg-simar-superficie, .simar-vidrio-fuerte) {
+    position: relative;
+  }
+  :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana:not(.fixed):is([data-jalable], [data-jalable] > *):is(.bg-simar-superficie, .simar-vidrio-fuerte)::before {
+    content: "";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 44px;
+    height: 5px;
+    margin-left: -22px;
+    border-radius: 9999px;
+    background: var(--simar-borde);
+    pointer-events: none;
+  }
   :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
     animation: simar-hoja-sale 0.2s var(--simar-acelera) both;
+  }
+  /* Interrumpibles (ver simar-ventana): como hoja, sólo se desliza; la opacidad no cambia */
+  @supports (transition-behavior: allow-discrete) {
+    :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana,
+    :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
+      animation: none;
+    }
+    :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana {
+      transition: transform 0.36s var(--simar-frena);
+    }
+    :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana-sale {
+      opacity: 1;
+      transform: translateY(100%);
+      transition: transform 0.2s var(--simar-acelera);
+    }
+    @starting-style {
+      :is(.simar-compacto, .simar-landing) .fixed > .simar-ventana {
+        opacity: 1;
+        transform: translateY(100%);
+      }
+    }
   }
 
   /* Landing: tarjetas en carrusel que se desliza de lado (Conciencia Azul) */
