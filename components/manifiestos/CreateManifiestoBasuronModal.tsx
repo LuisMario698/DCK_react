@@ -318,7 +318,7 @@ export function CreateManifiestoBasuronModal({
                       onClick={() => setFormData({ ...formData, peso_entrada: String(peso) })}
                       className="min-h-[44px] px-3.5 rounded-xl text-base font-bold text-simar-texto bg-simar-superficie border-2 border-simar-campo-borde hover:border-simar-marea-tinta transition-colors flex-shrink-0 whitespace-nowrap"
                     >
-                      {peso >= 1000 ? `${peso / 1000}T` : `${peso}kg`}
+                      {peso >= 1000 ? `${(peso / 1000).toLocaleString('es-MX')} t` : `${peso} kg`}
                     </button>
                   ))}
                 </div>
