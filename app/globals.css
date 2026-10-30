@@ -16,14 +16,6 @@
   }
 }
 
-/* Computadora con poca altura (laptops de 768–800 px): el menú lateral se aprieta para que sus
-   secciones quepan sin desplazarse. Ej.: bajo:hidden, bajo:gap-3. Ver DISEÑO_SIMAR.md §10.2. */
-@custom-variant bajo {
-  @media (min-width: 1024px) and (max-height: 820px) {
-    @slot;
-  }
-}
-
 /* ============================================
    LENGUAJE DE DISEÑO SiMAR — tokens
    Guía completa: DISEÑO_SIMAR.md (raíz del repo).
