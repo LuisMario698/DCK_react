@@ -2001,11 +2001,14 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               <div className="flex items-center gap-1">
                 {/* Anterior */}
                 <button
+                  type="button"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
+                  aria-label="Página anterior"
+                  title="Página anterior"
                   className="w-11 h-11 flex items-center justify-center rounded-xl border-2 border-simar-campo-borde text-simar-texto hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
@@ -2020,11 +2023,14 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   }, [])
                   .map((p, i) =>
                     p === '...' ? (
-                      <span key={`ellipsis-${i}`} className="w-11 h-11 flex items-center justify-center text-base text-simar-texto-3">…</span>
+                      <span key={`ellipsis-${i}`} aria-hidden="true" className="w-11 h-11 flex items-center justify-center text-base text-simar-texto-3">…</span>
                     ) : (
                       <button
                         key={p}
+                        type="button"
                         onClick={() => setCurrentPage(p as number)}
+                        aria-label={`Página ${p}`}
+                        aria-current={currentPage === p ? 'page' : undefined}
                         className={`w-11 h-11 flex items-center justify-center rounded-xl text-base font-bold transition-colors ${
                           currentPage === p
                             ? 'bg-simar-marea text-white'
@@ -2038,11 +2044,14 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
 
                 {/* Siguiente */}
                 <button
+                  type="button"
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
+                  aria-label="Página siguiente"
+                  title="Página siguiente"
                   className="w-11 h-11 flex items-center justify-center rounded-xl border-2 border-simar-campo-borde text-simar-texto hover:border-simar-marea-tinta disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg aria-hidden="true" className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
