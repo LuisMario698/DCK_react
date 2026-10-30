@@ -166,7 +166,7 @@ export default function PersonasPage() {
           className="flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar por nombre o contacto..."
+          placeholder="Buscar por nombre o contacto…"
           aria-label="Buscar persona"
         />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por rol">

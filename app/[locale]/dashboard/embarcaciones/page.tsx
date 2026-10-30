@@ -114,7 +114,7 @@ export default function EmbarcacionesPage() {
   };
 
   if (loading) {
-    return <CargandoPantalla texto="Cargando buques…" />;
+    return <CargandoPantalla texto="Cargando embarcaciones…" />;
   }
 
   const estadisticas = {
@@ -165,7 +165,7 @@ export default function EmbarcacionesPage() {
           className="flex-1"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar por nombre o matrícula..."
+          placeholder="Buscar por nombre o matrícula…"
           aria-label="Buscar embarcación"
         />
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">

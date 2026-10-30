@@ -397,7 +397,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                     <svg className="w-4 h-4 text-simar-marea-tinta" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
-                                    Buque
+                                    Embarcación
                                 </label>
                                 <div className="relative">
                                     <select
@@ -405,7 +405,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                         value={filters.buqueId}
                                         onChange={e => setFilters({ ...filters, buqueId: e.target.value })}
                                     >
-                                        <option value="">Todos los buques</option>
+                                        <option value="">Todas las embarcaciones</option>
                                         {buques.map(b => (
                                             <option key={b.id} value={b.id}>{b.nombre_buque}</option>
                                         ))}
@@ -429,7 +429,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                     {loadingReport ? (
                                         <>
                                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                            Generando...
+                                            Generando…
                                         </>
                                     ) : (
                                         <>
@@ -514,7 +514,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                 </p>
                             </div>
                             <div className="bg-simar-superficie p-5 rounded-2xl border border-simar-borde shadow-simar movil:p-3.5">
-                                <p className="text-simar-texto-2 text-base mb-1">Buques Únicos</p>
+                                <p className="text-simar-texto-2 text-base mb-1">Embarcaciones</p>
                                 <p className="text-3xl font-extrabold text-simar-arrecife-tinta">
                                     {new Set(reportData.map(item => item.buque)).size}
                                 </p>
@@ -572,7 +572,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                     <tr className="bg-simar-papel border-b border-simar-borde">
                                         <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Fecha</th>
                                         <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Folio</th>
-                                        <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Buque</th>
+                                        <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2">Embarcación</th>
                                         <th className="px-4 md:px-5 py-3 text-left text-[15px] font-semibold text-simar-texto-2 hidden sm:table-cell">Tipo</th>
                                         <th className="px-4 md:px-5 py-3 text-right text-[15px] font-semibold text-simar-texto-2">Cantidad</th>
                                     </tr>
@@ -587,7 +587,7 @@ export function DashboardClient({ inicial, buques, sinEntregar }: DashboardClien
                                                     </svg>
                                                     <div className="text-center">
                                                         <p className="text-base font-medium text-simar-texto-2">
-                                                            {loadingReport ? 'Procesando datos...' : 'No hay datos para mostrar'}
+                                                            {loadingReport ? 'Procesando datos…' : 'No hay datos para mostrar'}
                                                         </p>
                                                         <p className="text-[15px] text-simar-texto-2 mt-1">
                                                             {!loadingReport && 'Selecciona las fechas y haz clic en "Generar Reporte"'}

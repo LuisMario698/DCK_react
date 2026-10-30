@@ -228,7 +228,7 @@ export function CreateManifiestoBasuronModal({
                   }}
                   onFocus={() => setActiveField('recibimos')}
                   onBlur={() => setActiveField(null)}
-                  placeholder="Nombre de quien entrega..."
+                  placeholder="Nombre de quien entrega…"
                   className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${showValidation && !formData.recibimos_de ? 'border-simar-coral' : activeField === 'recibimos' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'
                     }`}
                 />
@@ -244,7 +244,7 @@ export function CreateManifiestoBasuronModal({
                   onChange={(e) => setFormData({ ...formData, direccion: e.target.value })}
                   onFocus={() => setActiveField('direccion')}
                   onBlur={() => setActiveField(null)}
-                  placeholder="Dirección..."
+                  placeholder="Dirección…"
                   className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'direccion' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'
                     }`}
                 />
@@ -274,7 +274,7 @@ export function CreateManifiestoBasuronModal({
                   onFocus={() => setActiveField('observaciones')}
                   onBlur={() => setActiveField(null)}
                   rows={3}
-                  placeholder="Notas adicionales..."
+                  placeholder="Notas adicionales…"
                   className={`w-full flex-1 min-h-[110px] movil:min-h-[80px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
                 />
               </div>
@@ -425,7 +425,7 @@ export function CreateManifiestoBasuronModal({
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Guardando...</span>
+                  <span>Guardando…</span>
                 </>
               ) : (
                 <>

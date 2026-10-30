@@ -197,9 +197,9 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
-                  searchCriteria === 'ticket' ? 'Buscar ticket o buque...' :
-                    searchCriteria === 'fecha' ? 'Buscar por fecha...' :
-                      'Buscar por peso total...'
+                  searchCriteria === 'ticket' ? 'Buscar ticket o embarcación…' :
+                    searchCriteria === 'fecha' ? 'Buscar por fecha…' :
+                      'Buscar por peso total…'
                 }
                 className="block w-full pl-12 pr-4 movil:pl-10 movil:pr-3 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
               />

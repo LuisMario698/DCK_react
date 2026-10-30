@@ -1322,7 +1322,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                 onFocus={() => setActiveField('observaciones')}
                 onBlur={() => setActiveField(null)}
                 rows={3}
-                placeholder="Notas adicionales..."
+                placeholder="Notas adicionales…"
                 className={`w-full flex-1 min-h-[120px] movil:min-h-[80px] px-4 py-3 rounded-[14px] border-2 bg-simar-superficie outline-none resize-none text-lg text-simar-texto placeholder:text-simar-texto-3 transition-colors ${activeField === 'observaciones' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
               />
             </div>
@@ -1607,7 +1607,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
             {saving ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Guardando...</span>
+                <span>Guardando…</span>
               </>
             ) : (
               <>

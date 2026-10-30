@@ -38,7 +38,7 @@
   "Personas": {
     "titulo": "People Management",
     "subtitulo": "Manage people registered in the system",
-    "buscar": "Search person...",
+    "buscar": "Search person…",
     "filtrarTipo": "Filter by type",
     "todosTipos": "All types",
     "nuevaPersona": "New Person",
@@ -96,7 +96,7 @@
   "Embarcaciones": {
     "titulo": "Vessel Management",
     "subtitulo": "Manage vessels registered in the system",
-    "buscar": "Search vessel...",
+    "buscar": "Search vessel…",
     "nuevaEmbarcacion": "New Vessel",
     "tabla": {
       "nombre": "Vessel Name",
@@ -161,10 +161,10 @@
       "eliminar": "Delete"
     },
     "mensajes": {
-      "generandoPDF": "Generating PDF...",
+      "generandoPDF": "Generating PDF…",
       "pdfGenerado": "PDF generated successfully",
       "errorGenerarPDF": "Error generating PDF",
-      "descargando": "Downloading...",
+      "descargando": "Downloading…",
       "descargaExitosa": "Download completed",
       "errorDescarga": "Error downloading PDF"
     }
