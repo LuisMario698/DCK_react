@@ -41,7 +41,7 @@ export default function MensajesPage() {
                 </span>
                 <div className="min-w-0">
                     <p className="text-[21px] font-extrabold leading-tight text-simar-texto">Centro de acopio · {PUERTO_PENASCO.nombre}</p>
-                    <p className="text-base text-simar-texto-2 movil:text-[13px] movil:leading-snug">Coordina horarios, cantidades y documentación.</p>
+                    <p className="text-base text-simar-texto-2 movil:text-[15px] movil:leading-snug">Coordina horarios, cantidades y documentación.</p>
                 </div>
             </header>
             <Conversacion

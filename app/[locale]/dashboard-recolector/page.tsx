@@ -174,14 +174,14 @@ export default function DashboardRecolectorPage() {
             <div className="flex items-start justify-between gap-3 px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-simar-borde-suave movil:px-3.5 movil:pt-3.5 movil:pb-3">
                 <div className="min-w-0">
                     <h3 className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">Disponible ahora</h3>
-                    <p className="text-base text-simar-texto-2 movil:text-[13px]">
+                    <p className="text-base text-simar-texto-2 movil:text-[15px]">
                         Centro de acopio de {PUERTO_PENASCO.nombre}
                         {ultimaActualizacion && ` · actualizado ${tiempoRelativo(ultimaActualizacion).toLowerCase()}`}
                     </p>
                 </div>
                 <Link
                     href={`${base}/mapa`}
-                    className="flex-shrink-0 min-h-[44px] text-base font-bold text-simar-marea-tinta hover:underline inline-flex items-center gap-1 movil:text-[14px] movil:min-h-[36px]"
+                    className="flex-shrink-0 min-h-[44px] text-base font-bold text-simar-marea-tinta hover:underline inline-flex items-center gap-1 movil:text-[15px] movil:min-h-[36px]"
                 >
                     <span className="movil:hidden">Ver todo y el mapa</span>
                     <span className="hidden movil:inline">Ver todo</span>
@@ -192,7 +192,7 @@ export default function DashboardRecolectorPage() {
                 <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6 py-12 text-center text-simar-texto-2 movil:py-8">
                     <Package className="w-9 h-9 opacity-40" />
                     <p className="text-[17px] font-bold text-simar-texto movil:text-[15px]">Por ahora no hay residuos disponibles</p>
-                    <p className="text-base movil:text-[14px]">Te avisaremos en Notificaciones cuando el centro de acopio publique uno.</p>
+                    <p className="text-base movil:text-[15px]">Te avisaremos en Notificaciones cuando el centro de acopio publique uno.</p>
                 </div>
             ) : (
                 <ul className="divide-y divide-simar-borde-suave">
@@ -212,18 +212,18 @@ export default function DashboardRecolectorPage() {
                                             </span>
                                         )}
                                     </p>
-                                    <p className="text-base text-simar-texto-2 mt-0.5 movil:text-[14px]">
+                                    <p className="text-base text-simar-texto-2 mt-0.5 movil:text-[15px]">
                                         <strong className="text-[18px] font-extrabold tabular-nums text-simar-texto movil:text-[16px]">{formatCantidad(r.cantidad)}</strong>{' '}
                                         {unidadEscrita(r.unidad, r.cantidad)} disponibles
                                     </p>
-                                    {r.notas && <p className="text-[15px] leading-snug text-simar-texto-2 mt-0.5 line-clamp-2 movil:text-[13px]">{r.notas}</p>}
+                                    {r.notas && <p className="text-[15px] leading-snug text-simar-texto-2 mt-0.5 line-clamp-2 movil:text-[15px]">{r.notas}</p>}
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setSolicitar(r)}
                                     disabled={bloqueada}
                                     aria-label={`Solicitar recolección de ${TIPO_RESIDUO_LABEL[r.tipo].toLowerCase()}`}
-                                    className="simar-presiona flex-shrink-0 min-h-[52px] px-5 rounded-2xl bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-bold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed movil:min-h-[42px] movil:px-3.5 movil:rounded-[14px] movil:text-[14px] movil:gap-1.5"
+                                    className="simar-presiona flex-shrink-0 min-h-[52px] px-5 rounded-2xl bg-simar-marea hover:bg-simar-marea-hover text-white text-[17px] font-bold inline-flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed movil:min-h-[42px] movil:px-3.5 movil:rounded-[14px] movil:text-[15px] movil:gap-1.5"
                                 >
                                     <Send className="w-5 h-5 movil:w-4 movil:h-4" />
                                     Solicitar
@@ -243,7 +243,7 @@ export default function DashboardRecolectorPage() {
                 <div className="flex items-center gap-6 flex-1 min-w-0">
                     <LogoSimar variante="simbolo" tamano={84} className="hidden sm:inline-flex flex-shrink-0" />
                     <div className="min-w-0">
-                        <p className="text-base text-simar-texto-2 movil:text-[14px]">
+                        <p className="text-base text-simar-texto-2 movil:text-[15px]">
                             {saludoPuerto()} · {fechaHoyPuerto()}
                         </p>
                         <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5 movil:text-[21px]">

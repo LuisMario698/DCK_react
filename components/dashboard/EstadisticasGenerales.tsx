@@ -104,7 +104,7 @@ export function EstadisticasGenerales({
     // El PDF (y jsPDF) se cargan al tocar el botón: no pesan en la pantalla
     const [generandoPdf, setGenerandoPdf] = useState(false);
     const claseBoton =
-        'simar-presiona inline-flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto shadow-simar hover:bg-simar-papel disabled:opacity-60 movil:min-h-[38px] movil:gap-1.5 movil:px-3 movil:rounded-full movil:text-[13.5px] movil:shadow-none';
+        'simar-presiona inline-flex items-center justify-center gap-2 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto shadow-simar hover:bg-simar-papel disabled:opacity-60 movil:min-h-[38px] movil:gap-1.5 movil:px-3 movil:rounded-full movil:text-[15px] movil:shadow-none';
     const descargarPdf = async () => {
         setGenerandoPdf(true);
         try {
@@ -236,7 +236,7 @@ function SelectorPeriodo({
                         type="button"
                         onClick={() => onCambiar(p.valor)}
                         aria-pressed={periodo === p.valor}
-                        className={`simar-presiona min-h-[48px] sm:min-h-[44px] px-1 sm:px-4 text-[15px] sm:text-base leading-tight font-bold rounded-lg whitespace-nowrap movil:rounded-full movil:text-[13.5px] ${
+                        className={`simar-presiona min-h-[48px] sm:min-h-[44px] px-1 sm:px-4 text-[15px] sm:text-base leading-tight font-bold rounded-lg whitespace-nowrap movil:rounded-full movil:text-[15px] ${
                             periodo === p.valor ? 'bg-simar-marea text-white shadow-simar' : 'text-simar-texto-2 hover:bg-simar-papel'
                         }`}
                     >
@@ -328,7 +328,7 @@ function ResumenPeriodo({ datos }: { datos: EstadisticasPeriodo }) {
             onClick={alternar}
             aria-expanded={abierto}
             aria-controls="resumen-completo"
-            className={`simar-presiona flex-shrink-0 items-center gap-1.5 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto hover:bg-simar-papel movil:min-h-[40px] movil:px-3 movil:rounded-[12px] movil:text-[14px] ${clases}`}
+            className={`simar-presiona flex-shrink-0 items-center gap-1.5 min-h-[48px] px-4 rounded-[14px] border border-simar-borde bg-simar-superficie text-base font-bold text-simar-texto hover:bg-simar-papel movil:min-h-[40px] movil:px-3 movil:rounded-[12px] movil:text-[15px] ${clases}`}
         >
             {abierto ? 'Ocultar' : 'Leer resumen'}
             <ChevronDown className={`w-5 h-5 transition-transform duration-300 movil:w-[18px] movil:h-[18px] ${abierto ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -369,7 +369,7 @@ function ResumenPeriodo({ datos }: { datos: EstadisticasPeriodo }) {
                                 {actual.manifiestos.toLocaleString('es-MX')} {actual.manifiestos === 1 ? 'manifiesto' : 'manifiestos'} de{' '}
                                 {actual.embarcaciones.toLocaleString('es-MX')} {actual.embarcaciones === 1 ? 'embarcación' : 'embarcaciones'}.
                             </p>
-                            <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[14px]">
+                            <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[15px]">
                                 {periodo === 'todo'
                                     ? 'Es todo el histórico registrado en SiMAR.'
                                     : anteriorVacio
@@ -426,16 +426,16 @@ function Cifra({
                 <span className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center movil:w-8 movil:h-8 ${TONO_CIRCULO[tono]}`}>
                     <Icono className="w-6 h-6 movil:w-[17px] movil:h-[17px]" strokeWidth={2} />
                 </span>
-                <span className="text-[17px] font-bold text-simar-texto-2 leading-tight movil:text-[14px]">{etiqueta}</span>
+                <span className="text-[17px] font-bold text-simar-texto-2 leading-tight movil:text-[15px]">{etiqueta}</span>
             </div>
             <p className="mt-3 text-[34px] font-extrabold leading-none text-simar-texto whitespace-nowrap movil:mt-2.5 movil:text-[23px]">
                 <NumeroAnimado valor={valor} decimales={decimalesDe(valor)} />
                 {unidad && <span className="ml-1.5 text-[20px] font-bold text-simar-texto-2 movil:ml-1 movil:text-[15px]">{unidad}</span>}
             </p>
-            <p className="mt-2 text-[15px] text-simar-texto-2 leading-snug movil:mt-1.5 movil:text-[13px]">{detalle}</p>
+            <p className="mt-2 text-[15px] text-simar-texto-2 leading-snug movil:mt-1.5 movil:text-[15px]">{detalle}</p>
             {/* Comparación neutra: más o menos no es bueno ni malo por sí solo, sólo informa */}
             {c && (
-                <p className="mt-1.5 flex items-center gap-1 text-[15px] font-bold text-simar-texto movil:text-[13px] movil:mt-1">
+                <p className="mt-1.5 flex items-center gap-1 text-[15px] font-bold text-simar-texto movil:text-[15px] movil:mt-1">
                     <Flecha className="w-[18px] h-[18px] flex-shrink-0 movil:w-4 movil:h-4" strokeWidth={2.4} aria-hidden="true" />
                     <span>
                         {c.direccion === 'nuevo' ? 'Nuevo' : c.direccion === 'igual' ? 'Igual' : `${c.porcentaje} %`}{' '}
@@ -501,7 +501,7 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
             <div className="flex flex-wrap items-start justify-between gap-3 movil:gap-2.5">
                 <div className="min-w-0">
                     <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">Tendencia</h3>
-                    <p className="text-[17px] text-simar-texto-2 movil:text-[14px]">
+                    <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">
                         {m.texto} {POR_TRAMO[granularidad]}, en {m.unidad === 'L' ? 'litros' : 'kilos'}
                     </p>
                 </div>
@@ -516,7 +516,7 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
                                 setFijada(null);
                             }}
                             aria-pressed={metrica === x.valor}
-                            className={`simar-presiona min-h-[46px] px-3.5 rounded-[12px] inline-flex items-center justify-center gap-2 text-base font-bold transition-colors movil:min-h-[40px] movil:px-2 movil:gap-1.5 movil:text-[14px] movil:rounded-[11px] ${
+                            className={`simar-presiona min-h-[46px] px-3.5 rounded-[12px] inline-flex items-center justify-center gap-2 text-base font-bold transition-colors movil:min-h-[40px] movil:px-2 movil:gap-1.5 movil:text-[15px] movil:rounded-[11px] ${
                                 metrica === x.valor ? 'bg-simar-superficie text-simar-texto shadow-simar' : 'text-simar-texto-2 hover:text-simar-texto'
                             }`}
                         >
@@ -532,9 +532,9 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
                 {activa !== null ? (
                     <>
                         <p className="text-[28px] font-extrabold leading-none text-simar-texto movil:text-[22px]">
-                            {formato(serie[activa][metrica])} <span className="text-[18px] font-bold text-simar-texto-2 movil:text-[14px]">{m.unidad}</span>
+                            {formato(serie[activa][metrica])} <span className="text-[18px] font-bold text-simar-texto-2 movil:text-[15px]">{m.unidad}</span>
                         </p>
-                        <p className="mt-1 text-[15px] text-simar-texto-2 first-letter:uppercase movil:text-[13px]">
+                        <p className="mt-1 text-[15px] text-simar-texto-2 first-letter:uppercase movil:text-[15px]">
                             {m.texto} en {etiquetaTramo(serie[activa].inicio, granularidad).larga}
                         </p>
                     </>
@@ -542,9 +542,9 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
                     <>
                         <p className="text-[28px] font-extrabold leading-none text-simar-texto movil:text-[22px]">
                             <NumeroAnimado valor={promedio} decimales={decimalesDe(promedio)} />{' '}
-                            <span className="text-[18px] font-bold text-simar-texto-2 movil:text-[14px]">{m.unidad}</span>
+                            <span className="text-[18px] font-bold text-simar-texto-2 movil:text-[15px]">{m.unidad}</span>
                         </p>
-                        <p className="mt-1 text-[15px] text-simar-texto-2 movil:text-[13px]">
+                        <p className="mt-1 text-[15px] text-simar-texto-2 movil:text-[15px]">
                             Promedio {POR_TRAMO[granularidad]} · total {formato(total)} {m.unidad}
                         </p>
                     </>
@@ -552,7 +552,7 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
             </div>
 
             {n === 0 || total === 0 ? (
-                <div className="mt-4 h-56 md:h-64 rounded-2xl bg-simar-papel flex items-center justify-center text-center px-6 text-[17px] text-simar-texto-2 movil:h-40 movil:text-[14px]">
+                <div className="mt-4 h-56 md:h-64 rounded-2xl bg-simar-papel flex items-center justify-center text-center px-6 text-[17px] text-simar-texto-2 movil:h-40 movil:text-[15px]">
                     Sin {m.nombre} registrada en este período
                 </div>
             ) : (
@@ -623,7 +623,7 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
                 </div>
             )}
 
-            <p className="mt-4 flex items-center gap-2 text-[15px] text-simar-texto-2 movil:mt-3 movil:text-[13px]">
+            <p className="mt-4 flex items-center gap-2 text-[15px] text-simar-texto-2 movil:mt-3 movil:text-[15px]">
                 <span aria-hidden="true" className="w-6 border-t-2 border-dashed border-simar-texto-3" />
                 Promedio. <span className="md:hidden">Toca una barra para ver su valor.</span>
                 <span className="hidden md:inline">Pasa el cursor o toca una barra para ver su valor.</span>
@@ -668,7 +668,7 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                             type="button"
                             onClick={() => setVista(o.valor)}
                             aria-pressed={vista === o.valor}
-                            className={`simar-presiona min-h-[46px] px-2 rounded-[12px] inline-flex items-center justify-center gap-1.5 text-base font-bold transition-colors movil:min-h-[40px] movil:text-[14px] movil:rounded-[11px] ${
+                            className={`simar-presiona min-h-[46px] px-2 rounded-[12px] inline-flex items-center justify-center gap-1.5 text-base font-bold transition-colors movil:min-h-[40px] movil:text-[15px] movil:rounded-[11px] ${
                                 vista === o.valor ? 'bg-simar-superficie text-simar-texto shadow-simar' : 'text-simar-texto-2 hover:text-simar-texto'
                             }`}
                         >
@@ -689,9 +689,9 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
 
             {vista === 'entregan' || !sinEntregar ? (
                 <>
-                    <p className="mt-3 text-[17px] text-simar-texto-2 movil:mt-2 movil:text-[14px]">Las que más manifiestos entregaron en el período</p>
+                    <p className="mt-3 text-[17px] text-simar-texto-2 movil:mt-2 movil:text-[15px]">Las que más manifiestos entregaron en el período</p>
                     {lista.length === 0 ? (
-                        <p className="flex-1 flex items-center justify-center py-10 text-center text-[17px] text-simar-texto-2 movil:py-6 movil:text-[14px]">
+                        <p className="flex-1 flex items-center justify-center py-10 text-center text-[17px] text-simar-texto-2 movil:py-6 movil:text-[15px]">
                             Ninguna entrega en este período
                         </p>
                     ) : (
@@ -699,13 +699,13 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                             {lista.map((e, i) => {
                                 const contenido = (
                                     <>
-                                        <span className="w-9 h-9 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta font-extrabold text-base flex items-center justify-center movil:w-7 movil:h-7 movil:text-[13px]">
+                                        <span className="w-9 h-9 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta font-extrabold text-base flex items-center justify-center movil:w-7 movil:h-7 movil:text-[15px]">
                                             {i + 1}
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="flex items-baseline justify-between gap-2">
                                                 <span className="font-bold text-[17px] text-simar-texto truncate movil:text-[15px]">{e.nombre}</span>
-                                                <span className="flex-shrink-0 text-[15px] font-bold text-simar-texto movil:text-[13px]">
+                                                <span className="flex-shrink-0 text-[15px] font-bold text-simar-texto movil:text-[15px]">
                                                     {e.entregas} {e.entregas === 1 ? 'entrega' : 'entregas'}
                                                 </span>
                                             </span>
@@ -715,7 +715,7 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                                                     style={{ width: `${(e.entregas / maxEntregas) * 100}%`, animationDelay: `${0.25 + i * 0.06}s`, transitionTimingFunction: 'var(--simar-frena)' }}
                                                 />
                                             </span>
-                                            <span className="mt-1 block text-[15px] text-simar-texto-2 movil:text-[13px]">
+                                            <span className="mt-1 block text-[15px] text-simar-texto-2 movil:text-[15px]">
                                                 {formato(e.basuraKg)} kg de basura · {formato(e.aceiteL)} L de aceite
                                             </span>
                                         </span>
@@ -744,11 +744,11 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                 </>
             ) : (
                 <>
-                    <p className="mt-3 text-[17px] text-simar-texto-2 movil:mt-2 movil:text-[14px]">
+                    <p className="mt-3 text-[17px] text-simar-texto-2 movil:mt-2 movil:text-[15px]">
                         Activas que no entregan residuos desde hace más de {sinEntregar.dias} días. No depende del período.
                     </p>
                     {nSin === 0 ? (
-                        <p className="flex-1 flex flex-col items-center justify-center gap-2 py-8 text-center text-[17px] text-simar-texto-2 movil:py-6 movil:text-[14px]">
+                        <p className="flex-1 flex flex-col items-center justify-center gap-2 py-8 text-center text-[17px] text-simar-texto-2 movil:py-6 movil:text-[15px]">
                             <span className="w-12 h-12 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta flex items-center justify-center">
                                 <Check className="w-6 h-6" strokeWidth={2.6} aria-hidden="true" />
                             </span>
@@ -764,18 +764,18 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                                     <span className="flex-1 min-w-0">
                                         <span className="flex items-baseline justify-between gap-2">
                                             <span className="font-bold text-[17px] text-simar-texto truncate movil:text-[15px]">{e.nombre}</span>
-                                            <span className="flex-shrink-0 text-[15px] font-bold text-simar-coral movil:text-[13px]">
+                                            <span className="flex-shrink-0 text-[15px] font-bold text-simar-coral movil:text-[15px]">
                                                 {e.dias === null ? 'Nunca' : `${e.dias.toLocaleString('es-MX')} días`}
                                             </span>
                                         </span>
-                                        <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">
+                                        <span className="block text-[15px] text-simar-texto-2 movil:text-[15px]">
                                             {e.ultimaEntrega ? `Última entrega: ${fechaLarga(e.ultimaEntrega)}` : 'No tiene manifiestos registrados'}
                                         </span>
                                     </span>
                                 </li>
                             ))}
                             {nSin > VISIBLES && (
-                                <li className="px-2 pt-1 text-[15px] font-bold text-simar-texto-2 movil:text-[13px]">
+                                <li className="px-2 pt-1 text-[15px] font-bold text-simar-texto-2 movil:text-[15px]">
                                     y {nSin - VISIBLES} {nSin - VISIBLES === 1 ? 'embarcación más' : 'embarcaciones más'}
                                 </li>
                             )}
@@ -784,7 +784,7 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                 </>
             )}
 
-            <div className="mt-4 pt-4 border-t border-simar-borde-suave flex flex-wrap items-center justify-between gap-2 text-[15px] text-simar-texto-2 movil:mt-3 movil:pt-3 movil:text-[13px]">
+            <div className="mt-4 pt-4 border-t border-simar-borde-suave flex flex-wrap items-center justify-between gap-2 text-[15px] text-simar-texto-2 movil:mt-3 movil:pt-3 movil:text-[15px]">
                 <span className="flex items-center gap-2">
                     <Ship aria-hidden="true" className="w-[18px] h-[18px] flex-shrink-0" />
                     <span>

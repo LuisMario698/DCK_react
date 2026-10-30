@@ -56,11 +56,11 @@ export function ImpactoEquivalencias({
                 <div className="flex-1 min-w-0">
                     <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">
                         Impacto ambiental{' '}
-                        <span className="align-middle inline-flex px-2.5 py-0.5 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[14px] font-bold movil:text-[12px]">
+                        <span className="align-middle inline-flex px-2.5 py-0.5 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[14px] font-bold movil:text-[15px]">
                             Estimado
                         </span>
                     </h3>
-                    <p className="text-[17px] text-simar-texto-2 movil:text-[14px]">{subtitulo}</p>
+                    <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">{subtitulo}</p>
                 </div>
             </div>
 
@@ -83,9 +83,9 @@ export function ImpactoEquivalencias({
                                     <NumeroAnimado valor={eq.valor} decimales={decimales} duracion={1300 + i * 150} />
                                 </p>
                                 <p className="mt-1 text-[20px] font-extrabold leading-tight text-simar-arrecife-tinta movil:text-[16px]">{uno ? eq.nombre[0] : eq.nombre[1]}</p>
-                                <p className="mt-1 text-[15px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[13.5px]">{eq.descripcion}</p>
+                                <p className="mt-1 text-[15px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[15px]">{eq.descripcion}</p>
                                 {/* La cifra técnica, como dato de apoyo */}
-                                <p className="mt-auto pt-3 text-[14px] font-bold text-simar-texto-2 movil:col-start-2 movil:pt-1.5 movil:text-[12.5px]">
+                                <p className="mt-auto pt-3 text-[14px] font-bold text-simar-texto-2 movil:col-start-2 movil:pt-1.5 movil:text-[15px]">
                                     <span className="block border-t border-simar-arrecife-tinta/20 pt-2.5 movil:border-0 movil:pt-0">{dato}</span>
                                 </p>
                             </li>
@@ -93,7 +93,7 @@ export function ImpactoEquivalencias({
                     })}
                 </ul>
             ) : (
-                <p className="mt-4 rounded-2xl bg-simar-papel px-5 py-8 text-center text-[17px] text-simar-texto-2 movil:text-[14px]">{vacio}</p>
+                <p className="mt-4 rounded-2xl bg-simar-papel px-5 py-8 text-center text-[17px] text-simar-texto-2 movil:text-[15px]">{vacio}</p>
             )}
 
             {/* Cómo se calcula: a la vista para quien lo busque, sin ocupar lugar */}
@@ -103,7 +103,7 @@ export function ImpactoEquivalencias({
                     onClick={() => setVerCalculo((v) => !v)}
                     aria-expanded={verCalculo}
                     aria-controls={idCalculo}
-                    className="simar-presiona inline-flex items-center gap-1.5 min-h-[44px] -ml-1 px-1 rounded-xl text-[15px] font-bold text-simar-marea-tinta movil:text-[14px]"
+                    className="simar-presiona inline-flex items-center gap-1.5 min-h-[44px] -ml-1 px-1 rounded-xl text-[15px] font-bold text-simar-marea-tinta movil:text-[15px]"
                 >
                     ¿Cómo se calcula?
                     <ChevronDown className={`w-[18px] h-[18px] transition-transform duration-300 ${verCalculo ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -115,7 +115,7 @@ export function ImpactoEquivalencias({
                     inert={!verCalculo}
                 >
                     <div className="overflow-hidden">
-                        <ul className="mt-1 space-y-1.5 text-[15px] leading-snug text-simar-texto-2 movil:text-[13.5px]">
+                        <ul className="mt-1 space-y-1.5 text-[15px] leading-snug text-simar-texto-2 movil:text-[15px]">
                             {calculo.map((c, i) => (
                                 <li key={i}>{c}</li>
                             ))}

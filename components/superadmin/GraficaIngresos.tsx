@@ -57,7 +57,7 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
     return (
         <div className="flex gap-2">
             {/* Eje Y: 0, mitad y máximo */}
-            <div className="relative w-10 h-48 flex-shrink-0 text-[15px] tabular-nums text-simar-texto-2 movil:w-8 movil:text-[13px]">
+            <div className="relative w-10 h-48 flex-shrink-0 text-[15px] tabular-nums text-simar-texto-2 movil:w-8 movil:text-[15px]">
                 {[max, max / 2, 0].map((v, i) => (
                     <span key={v} className="absolute right-0 -translate-y-1/2" style={{ top: `${i * 50}%` }}>
                         {compacto.format(v)}
@@ -122,7 +122,7 @@ export function GraficaIngresos({ datos, verTabla }: { datos: IngresoMes[]; verT
                             <span
                                 key={d.mes}
                                 aria-hidden="true"
-                                className={`flex-1 text-center text-[15px] capitalize movil:text-[13px] ${
+                                className={`flex-1 text-center text-[15px] capitalize movil:text-[15px] ${
                                     i === datos.length - 1 ? 'font-bold text-simar-texto' : 'text-simar-texto-2'
                                 }`}
                             >

@@ -135,9 +135,11 @@ export function Conversacion({
                             }
                         }}
                         placeholder="Escribe un mensaje…"
+                        aria-label="Mensaje"
+                        enterKeyHint="send"
                         rows={1}
                         maxLength={2000}
-                        className="flex-1 resize-none px-2 py-2.5 max-h-32 text-lg bg-transparent text-simar-texto placeholder:text-simar-texto-3 focus:outline-none"
+                        className="flex-1 resize-none px-2 py-2.5 min-h-[44px] max-h-32 text-lg bg-transparent text-simar-texto placeholder:text-simar-texto-3 focus:outline-none"
                     />
                     <button
                         onClick={enviar}

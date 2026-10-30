@@ -243,7 +243,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                             )}
                                         </div>
                                         {s.estado === 'rechazada' && s.motivo_rechazo && (
-                                            <p className="mt-1.5 text-[15px] leading-snug text-simar-coral movil:text-[13px]">
+                                            <p className="mt-1.5 text-[15px] leading-snug text-simar-coral movil:text-[15px]">
                                                 <strong>Motivo:</strong> {s.motivo_rechazo}
                                             </p>
                                         )}

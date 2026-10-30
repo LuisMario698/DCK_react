@@ -44,7 +44,7 @@ export function EncabezadoPantalla({
             </span>
             <div className="flex-1 min-w-[240px] movil:min-w-0">
                 <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">{titulo}</h1>
-                {subtitulo && <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px] movil:leading-snug">{subtitulo}</p>}
+                {subtitulo && <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[15px] movil:leading-snug">{subtitulo}</p>}
             </div>
             {acciones && <div className={`flex flex-wrap gap-3 w-full sm:w-auto movil:gap-2 ${accionesClassName}`}>{acciones}</div>}
         </header>
@@ -97,7 +97,7 @@ export function TarjetaDato({
                 <Icono className={apilada ? 'w-[22px] h-[22px] sm:w-7 sm:h-7 movil:w-[17px] movil:h-[17px]' : 'w-7 h-7 movil:w-[22px] movil:h-[22px]'} strokeWidth={2} />
             </span>
             <div className={`min-w-0 flex-1 ${apilada ? 'movil:contents' : ''}`}>
-                <p className={`${apilada ? 'text-[15px] sm:text-[17px] movil:order-3 movil:col-span-2 movil:text-[13px] movil:leading-tight' : 'text-[17px]'} text-simar-texto-2 leading-snug`}>{etiqueta}</p>
+                <p className={`${apilada ? 'text-[15px] sm:text-[17px] movil:order-3 movil:col-span-2 movil:text-[15px] movil:leading-tight' : 'text-[17px]'} text-simar-texto-2 leading-snug`}>{etiqueta}</p>
                 <p className={`${compacto ? 'text-[24px]' : apilada ? 'text-[26px] sm:text-[30px] movil:order-2 movil:text-[21px]' : 'text-[30px]'} font-extrabold leading-tight text-simar-texto ${compacto ? '' : 'whitespace-nowrap'}`}>
                     {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
                 </p>
@@ -150,7 +150,7 @@ export function Aviso({
             <Icono className={`w-6 h-6 flex-shrink-0 ${tono === 'info' ? 'text-simar-marea-tinta' : 'text-simar-coral'}`} />
             <div className="min-w-0">
                 {titulo && <p className="text-lg font-bold leading-snug movil:text-[15px]">{titulo}</p>}
-                {children && <div className="text-base text-simar-texto-2 mt-0.5 movil:text-[14px] movil:leading-snug">{children}</div>}
+                {children && <div className="text-base text-simar-texto-2 mt-0.5 movil:text-[15px] movil:leading-snug">{children}</div>}
             </div>
         </div>
     );

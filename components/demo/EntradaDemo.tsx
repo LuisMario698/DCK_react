@@ -111,7 +111,7 @@ export function EntradaDemo({ locale, vistaInicial }: { locale: string; vistaIni
                     })}
                 </div>
 
-                <p className="simar-aparece mt-7 flex items-center justify-center gap-2 text-[15px] text-simar-texto-2 movil:mt-6 movil:text-[14px]" style={{ animationDelay: '0.2s' }}>
+                <p className="simar-aparece mt-7 flex items-center justify-center gap-2 text-[15px] text-simar-texto-2 movil:mt-6 movil:text-[15px]" style={{ animationDelay: '0.2s' }}>
                     <Clock aria-hidden="true" className="w-[18px] h-[18px] flex-shrink-0" />
                     Unos 2 minutos · datos de ejemplo · nada se guarda
                 </p>

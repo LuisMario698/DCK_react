@@ -1058,7 +1058,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
           </span>
           <div className="flex-1 min-w-[240px] movil:min-w-0">
             <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Manifiesto de entrega-recepción</h1>
-            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+            <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[15px]">Puerto Peñasco, Sonora a {formData.fecha_emision ? parseFechaLocal(formData.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
           </div>
           {formData.numero_manifiesto && (
             <div className={`px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:w-full movil:flex movil:items-center movil:justify-between movil:px-4 movil:py-2 ${soloEnNuevo}`}>
@@ -1084,7 +1084,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
             <PenLine className="w-6 h-6 flex-shrink-0 text-simar-marea-tinta movil:w-5 movil:h-5" strokeWidth={2} />
             <div className="flex-1 min-w-[220px] movil:min-w-0">
               <p className="text-lg font-bold text-simar-texto movil:text-[15px]">Tienes un manifiesto sin terminar</p>
-              <p className="text-base text-simar-texto-2 movil:text-[13px]">
+              <p className="text-base text-simar-texto-2 movil:text-[15px]">
                 {describirSinTerminar(sinTerminar)} · {tiempoRelativo(new Date(sinTerminar.guardadoEn).toISOString()).toLowerCase()}
               </p>
             </div>
@@ -1170,7 +1170,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   {showValidation && !formData.buque_id && !buqueNombre.trim() && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Escribe o elige la embarcación</p>}
                   {ofrecerRepetir && ultimoDelBarco && (
                     <div className="simar-aparece mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] bg-simar-marea-suave px-3.5 py-2.5 movil:px-3 movil:py-2">
-                      <p className="flex-1 min-w-[190px] text-[15px] leading-snug text-simar-texto movil:min-w-0 movil:text-[13px]">
+                      <p className="flex-1 min-w-[190px] text-[15px] leading-snug text-simar-texto movil:min-w-0 movil:text-[15px]">
                         <span className="font-bold">La vez pasada</span>
                         {ultimoDelBarco.fecha_emision ? ` (${parseFechaLocal(ultimoDelBarco.fecha_emision).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })})` : ''}:{' '}
                         {anteriores.map((r) => `${r.persona!.nombre} (${r.rol})`).join(' · ')}
@@ -1178,7 +1178,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                       <button
                         type="button"
                         onClick={usarResponsablesAnteriores}
-                        className="simar-presiona min-h-[44px] px-4 rounded-xl bg-simar-marea hover:bg-simar-marea-hover text-white text-[15px] font-bold transition-colors movil:min-h-[40px] movil:w-full movil:text-[14px]"
+                        className="simar-presiona min-h-[44px] px-4 rounded-xl bg-simar-marea hover:bg-simar-marea-hover text-white text-[15px] font-bold transition-colors movil:min-h-[40px] movil:w-full movil:text-[15px]"
                       >
                         Usar los mismos
                       </button>
@@ -1577,7 +1577,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               <Download className="w-5 h-5 flex-shrink-0" />
               <span>
                 <span className="block text-[17px] font-bold leading-tight">Descargar borrador</span>
-                <span className="block text-[15px] text-simar-texto-2 leading-tight movil:text-[13px]">Imprimir y firmar a mano</span>
+                <span className="block text-[15px] text-simar-texto-2 leading-tight movil:text-[15px]">Imprimir y firmar a mano</span>
               </span>
             </button>
           </div>
@@ -1587,7 +1587,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
         {/* En celular va en una sola fila: estado corto a la izquierda y el botón a la derecha. Entra
             después de las tarjetas (simar-aparece): sin eso se veía sola sobre la pantalla vacía */}
         <div className={`simar-aparece simar-vidrio simar-pegada-abajo sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`} style={{ animationDelay: '0.24s' }}>
-          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[14px] movil:leading-snug">
+          <span className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base sm:text-lg text-simar-texto movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[15px] movil:leading-snug">
             {firmasListas === 0
               ? <><span className="movil:hidden">Aún no hay firmas. También puedes adjuntar el documento firmado.</span><span className="hidden movil:inline">Aún no hay firmas.</span></>
               : firmasListas === 1 ? '1 firma lista.' : `${firmasListas} firmas listas.`}
@@ -1904,7 +1904,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                           >
                             <td className="block sm:table-cell px-4 pt-4 sm:pt-3.5 pb-0 sm:pb-3.5 md:px-5 movil:px-3.5 movil:pt-3 movil:pb-3">
                               {/* En celular las acciones van a la derecha de esta primera línea (ver la última celda) */}
-                              <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap movil:mt-[5px] movil:inline-block movil:align-top movil:truncate movil:max-w-[calc(100%-148px)] movil:text-[13px] movil:px-2">
+                              <span className="inline-flex items-center gap-1.5 font-mono text-[15px] font-bold text-simar-marea-tinta bg-simar-marea-suave px-2.5 py-1 rounded-lg whitespace-nowrap movil:mt-[5px] movil:inline-block movil:align-top movil:truncate movil:max-w-[calc(100%-148px)] movil:text-[15px] movil:px-2">
                                 {manifiesto.numero_manifiesto}
                               </span>
                               {/* En celular: barco y fecha debajo del folio (sin columnas que se corten) */}
@@ -1915,7 +1915,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                                   {parseFechaLocal(manifiesto.fecha_emision).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </span>
                               </p>
-                              <p className="sm:hidden text-[15px] text-simar-texto-2 movil:text-[14px] movil:truncate">Motorista: {respPrincipal}</p>
+                              <p className="sm:hidden text-[15px] text-simar-texto-2 movil:text-[15px] movil:truncate">Motorista: {respPrincipal}</p>
                             </td>
                             <td className="hidden sm:table-cell px-4 md:px-5 py-3.5">
                               <div className="flex items-center gap-2">

@@ -162,7 +162,7 @@ export function CreateManifiestoBasuronModal({
             </span>
             <div className="flex-1 min-w-[240px] movil:min-w-0">
               <h1 className="text-[28px] md:text-[34px] font-extrabold leading-tight text-simar-texto movil:text-[19px]">Recibo del basurón</h1>
-              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
+              <p className="mt-1 text-lg md:text-[19px] text-simar-texto-2 movil:mt-0 movil:text-[15px]">Puerto Peñasco, Sonora a {formData.fecha ? parseFechaLocal(formData.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</p>
             </div>
             {/* En celular el total ya se ve al final de Pesaje */}
             <div className="px-5 py-2.5 rounded-2xl bg-simar-superficie border border-simar-borde shadow-simar text-right movil:hidden">
@@ -288,18 +288,21 @@ export function CreateManifiestoBasuronModal({
               <div className="mt-5 movil:mt-3">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de entrada</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Vehículo con carga</p>
-                <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_entrada ? 'border-simar-coral' : activeField === 'pesoEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_entrada ? 'border-simar-coral' : activeField === 'pesoEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     type="number"
                     min="0"
                     step="1"
+                    inputMode="numeric"
+                    enterKeyHint="next"
                     value={formData.peso_entrada}
                     onChange={(e) => setFormData({ ...formData, peso_entrada: e.target.value })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     onFocus={() => setActiveField('pesoEntrada')}
                     onBlur={() => setActiveField(null)}
                     placeholder="0"
                     aria-label="Peso de entrada en kilos"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
                 </div>
@@ -325,18 +328,21 @@ export function CreateManifiestoBasuronModal({
               <div className="mt-6 pt-5 border-t border-simar-borde-suave movil:mt-4 movil:pt-4">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Peso de salida</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Vehículo sin carga</p>
-                <div className={`mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_salida ? 'border-simar-coral' : activeField === 'pesoSalida' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja mt-2 flex items-center gap-2.5 min-h-[64px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.peso_salida ? 'border-simar-coral' : activeField === 'pesoSalida' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input
                     type="number"
                     min="0"
                     step="1"
+                    inputMode="numeric"
+                    enterKeyHint="done"
                     value={formData.peso_salida}
                     onChange={(e) => setFormData({ ...formData, peso_salida: e.target.value })}
+                    onWheel={(e) => e.currentTarget.blur()}
                     onFocus={() => setActiveField('pesoSalida')}
                     onBlur={() => setActiveField(null)}
                     placeholder="0"
                     aria-label="Peso de salida en kilos"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[26px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
                 </div>
@@ -414,7 +420,7 @@ export function CreateManifiestoBasuronModal({
           {/* Barra de guardar (vidrio, flota sobre el formulario) */}
           {/* En celular va en una sola fila: la leyenda corta a la izquierda y el botón a la derecha */}
           <div className={`simar-vidrio ${inline ? 'simar-pegada-abajo' : 'bottom-4'} sticky z-20 rounded-[28px] p-3 md:pl-7 flex flex-wrap items-center gap-3 movil:flex-nowrap movil:gap-2 movil:p-2 movil:pl-4 ${soloEnNuevo}`}>
-            <p className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base text-simar-texto-2 movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[14px] movil:leading-snug">
+            <p className="w-full sm:w-auto sm:flex-1 sm:min-w-[220px] px-2 sm:px-0 text-base text-simar-texto-2 movil:w-auto movil:flex-1 movil:min-w-0 movil:px-0 movil:text-[15px] movil:leading-snug">
               <span className="hidden sm:inline">Por una ciudad más limpia y digna para todos · </span><span className="font-bold text-simar-texto">No es comprobante fiscal</span>
             </p>
             <button

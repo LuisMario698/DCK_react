@@ -99,12 +99,12 @@ export default function HistorialPage() {
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
                 <ConstanciaAnual
                     historial={historial}
-                    className="simar-presiona min-h-[56px] px-5 rounded-[18px] border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-50 text-simar-texto text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
+                    className="simar-presiona min-h-[56px] px-5 rounded-[18px] border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-50 text-simar-texto text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[15px]"
                 />
                 <button
                     onClick={descargarCSV}
                     disabled={historial.length === 0}
-                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
+                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[15px]"
                 >
                     <FileDown className="w-[22px] h-[22px]" />
                     <span className="movil:hidden">Descargar historial (CSV)</span>

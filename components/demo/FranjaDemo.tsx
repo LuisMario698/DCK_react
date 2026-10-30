@@ -20,7 +20,7 @@ export function FranjaDemo({ vista }: { vista: VistaDemo }) {
             <span className="w-10 h-10 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta flex items-center justify-center movil:w-8 movil:h-8">
                 <Presentation className="w-5 h-5 movil:w-[18px] movil:h-[18px]" />
             </span>
-            <p className="flex-1 min-w-[200px] text-[17px] text-simar-texto leading-snug movil:min-w-0 movil:text-[14px]">
+            <p className="flex-1 min-w-[200px] text-[17px] text-simar-texto leading-snug movil:min-w-0 movil:text-[15px]">
                 <strong className="font-bold text-simar-marea-tinta">Demostración</strong>
                 <span className="text-simar-texto-2"> · Datos de ejemplo. Puedes tocar todo: nada se guarda.</span>
             </p>
@@ -31,14 +31,14 @@ export function FranjaDemo({ vista }: { vista: VistaDemo }) {
                         window.scrollTo({ top: 0 });
                         iniciarRecorrido(vista);
                     }}
-                    className="min-h-[44px] px-3 rounded-xl inline-flex items-center gap-2 whitespace-nowrap text-[17px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:min-h-[38px] movil:px-2 movil:text-[14px]"
+                    className="min-h-[44px] px-3 rounded-xl inline-flex items-center gap-2 whitespace-nowrap text-[17px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:min-h-[38px] movil:px-2 movil:text-[15px]"
                 >
                     <RotateCcw className="w-5 h-5 movil:w-4 movil:h-4" />
                     Repetir recorrido
                 </button>
                 <Link
                     href={`/${locale}/demo?vista=${otra.vista}`}
-                    className="min-h-[44px] px-3 rounded-xl inline-flex items-center whitespace-nowrap text-[17px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:min-h-[38px] movil:px-2 movil:text-[14px]"
+                    className="min-h-[44px] px-3 rounded-xl inline-flex items-center whitespace-nowrap text-[17px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:min-h-[38px] movil:px-2 movil:text-[15px]"
                 >
                     {otra.texto}
                 </Link>

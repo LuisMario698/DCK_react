@@ -180,7 +180,7 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
               value={searchCriteria}
               onChange={(e) => setSearchCriteria(e.target.value as 'ticket' | 'fecha' | 'total')}
               aria-label="Buscar por"
-              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[14px]"
+              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[15px]"
             >
               <option value="ticket">Ticket o embarcación</option>
               <option value="fecha">Fecha</option>

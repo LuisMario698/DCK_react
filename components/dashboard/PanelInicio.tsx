@@ -77,7 +77,7 @@ const ActionCard = ({
     <span className="flex-1 min-w-0 flex flex-col md:mt-auto md:pt-6">
       {/* En tarjetas angostas (laptop con el menú abierto) el título se achica con la tarjeta: 32 px se salía ("Estadísticas") */}
       <span className={`text-[26px] md:text-[length:min(32px,calc(100cqi/7.2))] font-extrabold leading-tight tracking-[-0.015em]${principal ? 'movil:text-[22px]' : 'movil:text-[19px]'}`}>{title}</span>
-      <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2 movil:text-[14px] movil:leading-snug'}`}>{description}</span>
+      <span className={`mt-0.5 md:mt-1 text-[17px] md:text-[19px] ${principal ? 'text-[#E6EEFB]' : 'text-simar-texto-2 movil:text-[15px] movil:leading-snug'}`}>{description}</span>
       {typeof dato === 'string' ? <span className={clasePastilla(principal)}>{dato}</span> : dato}
     </span>
     <ChevronRight
@@ -239,12 +239,12 @@ function PorAtender({ pendientes, angosto }: { pendientes: Pendiente[]; angosto:
                   <p.Icon aria-hidden="true" className="w-7 h-7 movil:w-[22px] movil:h-[22px]" strokeWidth={2} />
                 </span>
                 <span className="flex-1 min-w-0">
-                  <span className={`block text-[15px] font-bold leading-snug ${t.insignia} movil:text-[13px]`}>{p.insignia}</span>
+                  <span className={`block text-[15px] font-bold leading-snug ${t.insignia} movil:text-[15px]`}>{p.insignia}</span>
                   <span className="block text-[21px] font-extrabold leading-snug text-simar-texto movil:text-[16px]">
                     {/* Si el número cambia en vivo, el título entra de nuevo con un pulso */}
                     <span key={p.total} className="simar-confirma inline-block">{p.titulo}</span>
                   </span>
-                  <span className="block mt-0.5 text-[17px] leading-snug text-simar-texto-2 movil:text-[13.5px] movil:line-clamp-2">{p.detalle}</span>
+                  <span className="block mt-0.5 text-[17px] leading-snug text-simar-texto-2 movil:text-[15px] movil:line-clamp-2">{p.detalle}</span>
                 </span>
                 <span className="flex-shrink-0 inline-flex items-center gap-1 min-h-[52px] px-5 rounded-2xl bg-simar-marea text-white text-[17px] font-bold movil:hidden">
                   {p.accion}
@@ -285,15 +285,15 @@ function ProximasRecolecciones({ proximas, hoy, base }: { proximas: ResumenPanel
                 <Link href={`${base}/asociaciones?solicitud=${s.id}`} className="flex items-center gap-3.5 px-4 py-3 transition-colors hover:bg-simar-papel/60 movil:gap-3 movil:px-3 movil:py-2.5">
                   {/* El día como en un calendario */}
                   <span className="w-[58px] flex-shrink-0 rounded-2xl bg-simar-marea-suave text-center py-1.5 movil:w-[50px] movil:py-1">
-                    <span className="block text-[14px] font-bold leading-tight text-simar-marea-tinta movil:text-[12px]">{d.dia}</span>
+                    <span className="block text-[14px] font-bold leading-tight text-simar-marea-tinta movil:text-[15px]">{d.dia}</span>
                     <span className="block text-[24px] font-extrabold leading-none text-simar-texto movil:text-[20px]">{d.numero}</span>
                     <span className="block text-[13px] leading-tight text-simar-texto-2 movil:text-[11px]">{d.mes}</span>
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block text-[18px] font-bold leading-snug text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:text-[15px]">{s.empresa}</span>
-                    <span className="block text-[16px] leading-snug text-simar-texto-2 movil:text-[13px]">{residuo(s)}</span>
+                    <span className="block text-[16px] leading-snug text-simar-texto-2 movil:text-[15px]">{residuo(s)}</span>
                   </span>
-                  <span className={`flex-shrink-0 text-[15px] font-bold text-simar-marea-tinta movil:text-[13px]`}>
+                  <span className={`flex-shrink-0 text-[15px] font-bold text-simar-marea-tinta movil:text-[15px]`}>
                     {n === 1 ? 'Mañana' : `En ${n} días`}
                   </span>
                 </Link>
@@ -303,7 +303,7 @@ function ProximasRecolecciones({ proximas, hoy, base }: { proximas: ResumenPanel
         </ul>
         <Link
           href={`${base}/asociaciones?ver=por-recolectar`}
-          className="flex items-center justify-center gap-1 min-h-[48px] border-t border-simar-borde-suave text-[16px] font-bold text-simar-marea-tinta hover:bg-simar-papel/60 movil:min-h-[42px] movil:text-[14px]"
+          className="flex items-center justify-center gap-1 min-h-[48px] border-t border-simar-borde-suave text-[16px] font-bold text-simar-marea-tinta hover:bg-simar-papel/60 movil:min-h-[42px] movil:text-[15px]"
         >
           {proximas.total > proximas.lista.length ? `Ver las ${proximas.total}` : 'Ver en Solicitudes'}
           <ChevronRight aria-hidden="true" className="w-4 h-4" strokeWidth={2.4} />
@@ -359,7 +359,7 @@ function LoUltimo({ recientes, base }: { recientes: MovimientoReciente[]; base: 
     <section aria-labelledby="lo-ultimo" className={tarjetaVistazo} style={{ animationDelay: '0.24s' }}>
       <h2 id="lo-ultimo" className="text-[21px] font-extrabold text-simar-texto movil:text-[16px]">Lo último registrado</h2>
       {recientes.length === 0 ? (
-        <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[14px]">
+        <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[15px]">
           Aquí verás los últimos manifiestos, recibos del basurón y recolecciones.
         </p>
       ) : (
@@ -376,10 +376,10 @@ function LoUltimo({ recientes, base }: { recientes: MovimientoReciente[]; base: 
                     <d.Icon className="w-[22px] h-[22px] movil:w-[18px] movil:h-[18px]" strokeWidth={2} />
                   </span>
                   <span className="flex-1 min-w-0">
-                    <span className="block truncate text-[17px] font-bold text-simar-texto movil:text-[14px]">{d.titulo}</span>
-                    <span className="block truncate text-[15px] text-simar-texto-2 movil:text-[12.5px]">{d.detalle}</span>
+                    <span className="block truncate text-[17px] font-bold text-simar-texto movil:text-[15px]">{d.titulo}</span>
+                    <span className="block truncate text-[15px] text-simar-texto-2 movil:text-[15px]">{d.detalle}</span>
                   </span>
-                  <span className="flex-shrink-0 text-[15px] text-simar-texto-2 movil:text-[12px]">{tiempoRelativo(m.fecha).toLowerCase()}</span>
+                  <span className="flex-shrink-0 text-[15px] text-simar-texto-2 movil:text-[15px]">{tiempoRelativo(m.fecha).toLowerCase()}</span>
                 </Link>
               </li>
             );
@@ -401,14 +401,14 @@ function Acopio({ acopio, base }: { acopio: ResiduoEnAcopio[]; base: string }) {
         <h2 id="acopio" className="text-[21px] font-extrabold text-simar-texto movil:text-[16px]">En el centro de acopio</h2>
         <Link
           href={`${base}/asociaciones?ver=inventario`}
-          className="flex-shrink-0 -mr-2 inline-flex items-center gap-1 min-h-[44px] px-2.5 rounded-xl text-[15px] font-bold text-simar-marea-tinta transition-colors hover:bg-simar-marea-suave movil:min-h-[36px] movil:text-[13px]"
+          className="flex-shrink-0 -mr-2 inline-flex items-center gap-1 min-h-[44px] px-2.5 rounded-xl text-[15px] font-bold text-simar-marea-tinta transition-colors hover:bg-simar-marea-suave movil:min-h-[36px] movil:text-[15px]"
         >
           Inventario
           <ChevronRight aria-hidden="true" className="w-4 h-4" strokeWidth={2.4} />
         </Link>
       </div>
       {acopio.length === 0 ? (
-        <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[14px]">
+        <p className="mt-2 text-[17px] text-simar-texto-2 movil:text-[15px]">
           Está vacío. Cuando agregues residuos al inventario, aparecerán aquí.
         </p>
       ) : (
@@ -419,12 +419,12 @@ function Acopio({ acopio, base }: { acopio: ResiduoEnAcopio[]; base: string }) {
                 <Package className="w-[22px] h-[22px] movil:w-[18px] movil:h-[18px]" strokeWidth={2} />
               </span>
               <span className="flex-1 min-w-0">
-                <span className="block truncate text-[17px] font-bold text-simar-texto movil:text-[14px]">{nombreResiduo(r.tipo)}</span>
-                {!r.publicado && <span className="block text-[14px] text-simar-texto-2 movil:text-[12px]">Sin publicar</span>}
+                <span className="block truncate text-[17px] font-bold text-simar-texto movil:text-[15px]">{nombreResiduo(r.tipo)}</span>
+                {!r.publicado && <span className="block text-[14px] text-simar-texto-2 movil:text-[15px]">Sin publicar</span>}
               </span>
               <span className="flex-shrink-0 whitespace-nowrap">
                 <span className="text-[22px] font-extrabold tabular-nums text-simar-texto movil:text-[17px]">{formatCantidad(r.cantidad)}</span>{' '}
-                <span className="text-[15px] text-simar-texto-2 movil:text-[12.5px]">{unidadEscrita(r.unidad, r.cantidad)}</span>
+                <span className="text-[15px] text-simar-texto-2 movil:text-[15px]">{unidadEscrita(r.unidad, r.cantidad)}</span>
               </span>
             </li>
           ))}
@@ -468,7 +468,7 @@ export function PanelInicio({
         </div>
         <div aria-hidden="true" className="hidden xl:block w-px self-stretch bg-simar-borde" />
         <div className="min-w-0">
-          <p className="text-[17px] md:text-[19px] font-semibold text-simar-texto-2 movil:text-[14px]">{fechaHoyPuerto()}</p>
+          <p className="text-[17px] md:text-[19px] font-semibold text-simar-texto-2 movil:text-[15px]">{fechaHoyPuerto()}</p>
           <h1 className="mt-0.5 text-3xl md:text-[38px] font-extrabold leading-tight text-simar-texto">
             {saludoPuerto()}
           </h1>

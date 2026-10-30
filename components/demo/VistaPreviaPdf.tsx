@@ -182,7 +182,7 @@ export function VistaPreviaPdf() {
                             <h2 id="vista-previa-titulo" className="text-[20px] font-extrabold leading-tight text-simar-texto truncate movil:text-[17px]">
                                 {titulo}
                             </h2>
-                            <p className="text-[15px] text-simar-texto-2 movil:text-[13px]">Vista previa · en la demostración no se descarga</p>
+                            <p className="text-[15px] text-simar-texto-2 movil:text-[15px]">Vista previa · en la demostración no se descarga</p>
                         </div>
                         <button
                             type="button"

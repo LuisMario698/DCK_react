@@ -1010,7 +1010,8 @@ El modo simple (`/dashboard/simple`) se borró: nadie lo usaba y duplicaba el Pa
 
 En celular (menos de 640 px) SiMAR es **compacto**: se ve más en cada pantalla y se baja menos.
 Es una decisión del proyecto (sep-2026): en teléfono el espacio manda, pero nada baja de los
-mínimos de tacto y lectura (botones ≥ 38–46 px, texto ≥ 13–14 px). **Tableta y escritorio
+mínimos de tacto y lectura. **Desde oct-2026 esos mínimos son 15 px de letra y 44 px para todo lo
+que se toca** (antes 13–14 px y 38–42 px; los subió la auditoría de pantallas). **Tableta y escritorio
 conservan la escala grande de las secciones 4 y 5.** Hoy lo tienen los tres paneles con las mismas
 reglas —el recinto (`DashboardLayout`), el portal de empresas (`dashboard-recolector/layout.tsx`) y
 el superadmin (`superadmin/layout.tsx`)— y la landing.
@@ -1019,8 +1020,17 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
 
 | Qué | Cómo | Para qué |
 |---|---|---|
-| Escala compacta automática | Clase `simar-compacto` en el contenedor del panel (ya la pone `DashboardLayout`) | Baja de una vez `--spacing` (p-6, gap-5, w-6… al 87.5 %), los tamaños con nombre (`text-lg`, `rounded-2xl`…) y los tamaños fijos del lenguaje: 15→14, 17→15, 19→16, 22/23→18, 28→21 px; controles 64→50, 60→46, 56→44, 52→42, 48/44→38 px; esquinas 28→20, 18→14, 14→12 px |
+| Escala compacta automática | Clase `simar-compacto` en el contenedor del panel (ya la pone `DashboardLayout`) | Baja de una vez `--spacing` (p-6, gap-5, w-6… al 87.5 %), los tamaños con nombre (`text-lg`, `rounded-2xl`…) y los tamaños fijos del lenguaje: 13/14/17→15, 19→16, 22/23→18, 28→21 px (`text-xs`, `text-sm` y `text-base` quedan en 15); controles 64→50, 60→46, 56/54/52/48/44→44 px; esquinas 28→20, 18→14, 14→12 px |
+| Piso de toque | Automático dentro de `simar-compacto` | Todo botón, enlace suelto, `select`, `summary`, pestaña o `role="button"` mide al menos 44 px de alto (y de ancho, si es sólo ícono con `aria-label`). Le gana a un `movil:min-h-[40px]` escrito a mano. Para una excepción justificada, clase `simar-toque-libre` |
 | Variante `movil:` | `movil:grid-cols-2`, `movil:hidden`, `movil:text-[15px]`… | Cambiar el **acomodo** en celular: columnas, ocultar, deslizar, pestañas. Funciona dentro de `.simar-compacto` y de `.simar-landing`. Un valor `movil:` es **exacto**: le gana a la escala automática |
+
+- Un `movil:text-[…]` para algo que se lee va de **15 px para arriba**. Las únicas excepciones
+  son las que traen su propio apoyo: el número de un contador redondo (12 px en un círculo de
+  20 px), las marcas de los ejes de las gráficas y el mes chico bajo el día de un calendario
+  (11 px), y la palabra bajo el ícono en la barra de abajo y en las secciones de Empresas
+  recolectoras (se ajusta al ancho, 10–14 px), como en las apps del teléfono.
+- Un campo dentro de una caja con ícono o unidad lleva `simar-caja` en la caja y `self-stretch`
+  en el campo: así se toca en todo el alto de la caja (§10.4).
 
 - Para portar otro panel a la versión móvil basta con poner `simar-compacto` en su contenedor y
   luego ajustar el acomodo con `movil:`.

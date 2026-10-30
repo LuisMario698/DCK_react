@@ -558,14 +558,14 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                                     <button
                                         type="button"
                                         onClick={() => setProbando(false)}
-                                        className="min-h-[40px] px-2 rounded-xl text-[15px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:text-[14px]"
+                                        className="min-h-[40px] px-2 rounded-xl text-[15px] font-bold text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:text-[15px]"
                                     >
                                         Volver
                                     </button>
                                     <button
                                         type="button"
                                         onClick={siguiente}
-                                        className="min-h-[40px] px-2 rounded-xl text-[15px] font-bold text-simar-texto-2 hover:bg-simar-papel transition-colors movil:text-[14px]"
+                                        className="min-h-[40px] px-2 rounded-xl text-[15px] font-bold text-simar-texto-2 hover:bg-simar-papel transition-colors movil:text-[15px]"
                                     >
                                         Saltar
                                     </button>
@@ -832,7 +832,7 @@ export function Recorrido({ vista }: { vista: VistaDemo }) {
                         </div>
                     )}
                     {paso === 1 && (
-                        <p className="mt-4 text-[15px] text-simar-texto-2 movil:mt-3 movil:text-[13px]">
+                        <p className="mt-4 text-[15px] text-simar-texto-2 movil:mt-3 movil:text-[15px]">
                             {celular ? 'También puedes deslizar la tarjeta para avanzar.' : 'También puedes avanzar con las flechas del teclado.'}
                         </p>
                     )}

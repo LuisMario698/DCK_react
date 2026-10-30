@@ -1345,7 +1345,9 @@ html[data-barra-mini] .simar-flotante {
 @media (max-width: 639px) {
   .simar-compacto {
     --spacing: 0.21875rem;
-    --text-sm: 0.8125rem;
+    /* Piso de 15 px para leer (decisión 2026-10-30): text-xs y text-sm también quedan en 15 */
+    --text-xs: 0.9375rem;
+    --text-sm: 0.9375rem;
     --text-base: 0.9375rem;
     --text-lg: 1rem;
     --text-xl: 1.0625rem;
@@ -1357,8 +1359,10 @@ html[data-barra-mini] .simar-flotante {
     --radius-3xl: 1.25rem;
   }
 
-  /* Texto: apoyo 14, normal 15, títulos 18–22 */
-  .simar-compacto .text-\[15px\] { font-size: 14px; }
+  /* Texto: nada para leer baja de 15 px (apoyo y normal 15, títulos 16–24). Los contadores
+     redondos (text-[12px] en un círculo de 20 px) y las marcas de las gráficas quedan como están */
+  .simar-compacto .text-\[13px\],
+  .simar-compacto .text-\[14px\],
   .simar-compacto .text-\[17px\] { font-size: 15px; }
   .simar-compacto .text-\[19px\] { font-size: 16px; }
   .simar-compacto .text-\[21px\] { font-size: 17px; }
@@ -1372,17 +1376,17 @@ html[data-barra-mini] .simar-flotante {
   .simar-compacto .text-\[34px\] { font-size: 22px; }
   .simar-compacto .text-\[38px\] { font-size: 24px; }
 
-  /* Controles: principal 46, secundario 44, ícono 42, chip 38 */
+  /* Controles: principal 50, campo 46, todo lo demás 44 (nada que se toque baja de 44 px) */
   .simar-compacto .min-h-\[64px\] { min-height: 50px; }
   .simar-compacto .min-h-\[60px\] { min-height: 46px; }
   .simar-compacto .min-h-\[56px\],
-  .simar-compacto .min-h-\[54px\] { min-height: 44px; }
-  .simar-compacto .min-h-\[52px\] { min-height: 42px; }
-  .simar-compacto .min-h-\[48px\] { min-height: 38px; }
-  .simar-compacto .min-h-\[44px\] { min-height: 38px; }
-  .simar-compacto .min-w-\[44px\] { min-width: 38px; }
-  .simar-compacto .h-\[52px\] { height: 42px; }
-  .simar-compacto .w-\[52px\] { width: 42px; }
+  .simar-compacto .min-h-\[54px\],
+  .simar-compacto .min-h-\[52px\],
+  .simar-compacto .min-h-\[48px\],
+  .simar-compacto .min-h-\[44px\] { min-height: 44px; }
+  .simar-compacto .min-w-\[44px\] { min-width: 44px; }
+  .simar-compacto .h-\[52px\] { height: 44px; }
+  .simar-compacto .w-\[52px\] { width: 44px; }
 
   /* Íconos fijos */
   .simar-compacto .w-\[30px\] { width: 24px; }
@@ -1402,6 +1406,17 @@ html[data-barra-mini] .simar-flotante {
 }
 
 @media (max-width: 639px) {
+  /* Piso de 44 px para todo lo que se toca (decisión 2026-10-30; Apple pide 44 pt y la escala
+     compacta dejaba filtros, chips y botones de ícono en 38–42 px). Fuera de @layer para ganarle a
+     los movil:min-h-[40px] escritos a mano. Un min-height no afecta a los enlaces dentro de un
+     párrafo (son inline). Para una excepción justificada: clase simar-toque-libre */
+  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):not(.simar-toque-libre) {
+    min-height: 44px;
+  }
+  .simar-compacto :is(button, a[href], [role='button'])[aria-label]:not(.simar-toque-libre) {
+    min-width: 44px;
+  }
+
   /* Avisos (toasts) más discretos */
   body.simar:has(.simar-compacto) [data-sonner-toast][data-styled='true'] {
     font-size: 15px;

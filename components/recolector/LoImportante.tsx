@@ -79,9 +79,9 @@ export function ProximaRecoleccion({
                         <CalendarX className="w-7 h-7 movil:w-[22px] movil:h-[22px]" strokeWidth={2} aria-hidden="true" />
                     </span>
                     <div className="min-w-0">
-                        <p className="text-[15px] font-bold text-simar-coral movil:text-[13px]">Ya pasó su fecha</p>
+                        <p className="text-[15px] font-bold text-simar-coral movil:text-[15px]">Ya pasó su fecha</p>
                         <p className="text-[21px] font-extrabold leading-snug text-simar-texto movil:text-[16px]">Tu recolección del {diaLargo(proxima.fecha_propuesta).toLowerCase()}</p>
-                        <p className="text-[17px] text-simar-texto-2 movil:text-[13.5px]">{cantidadDe(proxima)}. Aún no se registra: escribe al centro de acopio para acordar otro día.</p>
+                        <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">{cantidadDe(proxima)}. Aún no se registra: escribe al centro de acopio para acordar otro día.</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2.5 movil:grid movil:grid-cols-2">
@@ -104,9 +104,9 @@ export function ProximaRecoleccion({
                     <CalendarCheck className="w-[34px] h-[34px] movil:w-[26px] movil:h-[26px]" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                    <p className="text-[17px] md:text-[19px] text-[#E6EEFB] movil:text-[14px]">Tu próxima recolección</p>
+                    <p className="text-[17px] md:text-[19px] text-[#E6EEFB] movil:text-[15px]">Tu próxima recolección</p>
                     <p className="text-[30px] md:text-[34px] font-extrabold leading-tight movil:text-[23px]">{diaLargo(proxima.fecha_propuesta)}</p>
-                    <p className="text-[17px] md:text-[19px] leading-snug text-[#E6EEFB] movil:text-[14px]">
+                    <p className="text-[17px] md:text-[19px] leading-snug text-[#E6EEFB] movil:text-[15px]">
                         {cantidadDe(proxima)} · Centro de acopio de {PUERTO_PENASCO.nombre}
                     </p>
                     <div className="flex flex-wrap gap-x-2">
@@ -134,19 +134,19 @@ export function ProximaRecoleccion({
             </div>
             {otras.length > 0 && (
                 <ul className="mt-5 pt-3 border-t border-white/25 movil:mt-3.5 movil:pt-2.5">
-                    <li className="text-[15px] font-bold text-[#E6EEFB] movil:text-[13px]">También agendadas</li>
+                    <li className="text-[15px] font-bold text-[#E6EEFB] movil:text-[15px]">También agendadas</li>
                     {otras.slice(0, 3).map((s) => (
                         <li key={s.id}>
                             <Link
                                 href={`${base}/solicitudes?ver=${s.id}`}
-                                className="flex flex-wrap items-center gap-x-2 min-h-[40px] text-[17px] hover:underline underline-offset-4 movil:text-[14px] movil:min-h-[36px]"
+                                className="flex flex-wrap items-center gap-x-2 min-h-[40px] text-[17px] hover:underline underline-offset-4 movil:text-[15px] movil:min-h-[36px]"
                             >
                                 <strong>{diaLargo(s.fecha_propuesta)}</strong>
                                 <span className="text-[#E6EEFB]">{cantidadDe(s)}</span>
                             </Link>
                         </li>
                     ))}
-                    {otras.length > 3 && <li className="text-[15px] text-[#E6EEFB] movil:text-[13px]">y {otras.length - 3} más en Mis solicitudes</li>}
+                    {otras.length > 3 && <li className="text-[15px] text-[#E6EEFB] movil:text-[15px]">y {otras.length - 3} más en Mis solicitudes</li>}
                 </ul>
             )}
         </div>
@@ -155,7 +155,7 @@ export function ProximaRecoleccion({
 
 /** "Nueva" (o "Nuevo"): lo que aún no se ve, escrito, no sólo de color (como en Notificaciones) */
 const Nueva = ({ children }: { children: ReactNode }) => (
-    <span className="flex-shrink-0 px-2 py-px rounded-full bg-simar-marea text-white text-[13px] font-bold leading-tight movil:text-[12px]">{children}</span>
+    <span className="flex-shrink-0 px-2 py-px rounded-full bg-simar-marea text-white text-[13px] font-bold leading-tight movil:text-[15px]">{children}</span>
 );
 
 // Un renglón de Avisos: sin ver, en azul suave; ya visto, en blanco
@@ -212,7 +212,7 @@ export function Avisos({
                 <div className="flex-1 flex flex-col items-center justify-center gap-2 px-6 py-8 text-center text-simar-texto-2">
                     <BellOff className="w-8 h-8 opacity-50" aria-hidden="true" />
                     <p className="text-[17px] font-bold text-simar-texto movil:text-[15px]">Sin avisos todavía</p>
-                    <p className="text-base movil:text-[14px]">Aquí te avisaremos cuando el centro de acopio revise tus solicitudes.</p>
+                    <p className="text-base movil:text-[15px]">Aquí te avisaremos cuando el centro de acopio revise tus solicitudes.</p>
                 </div>
             ) : (
                 <ul className="flex-1 px-2 sm:px-3 pb-2 space-y-1 movil:px-1.5">
@@ -229,7 +229,7 @@ export function Avisos({
                                         </span>
                                         <Nueva>{mensajes === 1 ? 'Nuevo' : 'Nuevos'}</Nueva>
                                     </span>
-                                    <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[13px]">Del centro de acopio de {PUERTO_PENASCO.nombre}</span>
+                                    <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[15px]">Del centro de acopio de {PUERTO_PENASCO.nombre}</span>
                                 </span>
                             </Link>
                         </li>
@@ -244,7 +244,7 @@ export function Avisos({
                                         <span className="text-[17px] font-bold leading-snug text-simar-texto truncate movil:text-[15px]">{n.titulo}</span>
                                         {!n.leida && <Nueva>Nueva</Nueva>}
                                     </span>
-                                    <span className="block text-[15px] leading-snug text-simar-texto-2 truncate movil:text-[13px]">
+                                    <span className="block text-[15px] leading-snug text-simar-texto-2 truncate movil:text-[15px]">
                                         {tiempoRelativo(n.created_at)}
                                         {n.detalle && ` · ${n.detalle}`}
                                     </span>
@@ -257,7 +257,7 @@ export function Avisos({
 
             <Link
                 href={`${base}/notificaciones`}
-                className="flex items-center justify-center gap-1 min-h-[52px] border-t border-simar-borde-suave text-[16px] font-bold text-simar-marea-tinta hover:bg-simar-papel/60 movil:min-h-[44px] movil:text-[14px]"
+                className="flex items-center justify-center gap-1 min-h-[52px] border-t border-simar-borde-suave text-[16px] font-bold text-simar-marea-tinta hover:bg-simar-papel/60 movil:min-h-[44px] movil:text-[15px]"
             >
                 Ver todos los avisos
                 <ChevronRight aria-hidden="true" className="w-4 h-4" strokeWidth={2.4} />
@@ -293,7 +293,7 @@ export function TuResumen({ datos, ancho }: { datos: DatoResumen[]; ancho: boole
                                 <d.icono className="w-[22px] h-[22px] movil:w-[18px] movil:h-[18px]" strokeWidth={2} aria-hidden="true" />
                             </span>
                             <span className="flex-1 min-w-0">
-                                <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[12.5px]">{d.etiqueta}</span>
+                                <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[15px]">{d.etiqueta}</span>
                                 <span className="block text-[21px] font-extrabold leading-tight text-simar-texto movil:text-[16px]">
                                     {typeof d.valor === 'number' ? <NumeroAnimado valor={d.valor} /> : d.valor}
                                 </span>

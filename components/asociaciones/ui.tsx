@@ -28,7 +28,7 @@ export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
     const { Icon, cls } = map[estado];
     return (
         // En celular más angosta, para dejarle espacio al nombre de la asociación en la misma línea
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[15px] font-bold whitespace-nowrap movil:gap-1 movil:px-2.5 movil:text-[13px] ${cls}`}>
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[15px] font-bold whitespace-nowrap movil:gap-1 movil:px-2.5 movil:text-[15px] ${cls}`}>
             <Icon className="w-4 h-4 movil:w-3.5 movil:h-3.5" strokeWidth={2.2} />
             {ESTADO_SOLICITUD_LABEL[estado]}
         </span>
@@ -173,7 +173,7 @@ export function ControlSegmentado<T extends string>({
                         className={`simar-presiona inline-flex items-center justify-center font-bold leading-tight transition-colors ${
                             computadora
                                 ? 'flex-1 whitespace-nowrap min-h-[48px] px-4 rounded-[12px] gap-2 text-[17px]'
-                                : 'flex-auto min-w-0 min-h-[42px] px-1.5 rounded-[11px] gap-1 text-[clamp(12px,3.6vw,14px)]'
+                                : 'flex-auto min-w-0 min-h-[44px] px-1.5 py-1 rounded-[11px] gap-1 text-center text-[15px]'
                         } ${activo ? 'bg-simar-superficie text-simar-texto shadow-simar' : `text-simar-texto-2 ${computadora ? 'hover:text-simar-texto' : ''}`}`}
                     >
                         {o.texto}

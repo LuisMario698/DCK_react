@@ -46,13 +46,13 @@ function Recorrido({ pasos }: { pasos: { etiqueta: string; valor: number; unidad
                         }`}
                     >
                         <span
-                            className={`text-[15px] font-bold leading-tight @xs:text-[13.5px] movil:text-[13.5px] ${p.destacado ? 'text-simar-arrecife-tinta' : 'text-simar-texto-2'}`}
+                            className={`text-[15px] font-bold leading-tight @xs:text-[13.5px] movil:text-[15px] ${p.destacado ? 'text-simar-arrecife-tinta' : 'text-simar-texto-2'}`}
                         >
                             {p.etiqueta}
                         </span>
                         <span className="text-[21px] font-extrabold leading-none text-simar-texto whitespace-nowrap @xs:text-[clamp(16px,6.2cqi,24px)] movil:text-[18px]">
                             <NumeroAnimado valor={p.valor} decimales={p.valor < 100 && !Number.isInteger(p.valor) ? 1 : 0} />
-                            <span className="ml-1 text-[14px] font-bold text-simar-texto-2 @xs:text-[13px] movil:text-[12.5px]">{p.unidad}</span>
+                            <span className="ml-1 text-[14px] font-bold text-simar-texto-2 @xs:text-[13px] movil:text-[15px]">{p.unidad}</span>
                         </span>
                     </div>
                 </li>
@@ -84,7 +84,7 @@ function AvanceReciclaje({ recibido, reciclado, nombre }: { recibido: number; re
                     />
                 </div>
             )}
-            <p className="mt-1.5 text-[15px] font-bold text-simar-texto movil:text-[13.5px]">{texto}</p>
+            <p className="mt-1.5 text-[15px] font-bold text-simar-texto movil:text-[15px]">{texto}</p>
         </div>
     );
 }
@@ -111,11 +111,11 @@ function TarjetaMaterial({
                 </span>
                 <div className="min-w-0">
                     <h4 className="text-[18px] font-extrabold leading-tight text-simar-texto movil:text-[16px]">{titulo}</h4>
-                    {detalle && <p className="text-[14px] leading-snug text-simar-texto-2 movil:text-[12.5px]">{detalle}</p>}
+                    {detalle && <p className="text-[14px] leading-snug text-simar-texto-2 movil:text-[15px]">{detalle}</p>}
                 </div>
             </div>
             {children}
-            <p className="mt-auto pt-3 text-[14px] leading-snug text-simar-texto-2 movil:pt-2.5 movil:text-[12.5px]">
+            <p className="mt-auto pt-3 text-[14px] leading-snug text-simar-texto-2 movil:pt-2.5 movil:text-[15px]">
                 {empresas ? (
                     <>
                         <span className="font-bold text-simar-texto">Se lo llevaron:</span> {empresas}
@@ -138,14 +138,14 @@ export function DestinoResiduos({ destino, recibidos }: { destino: Destino; reci
                 </span>
                 <div className="min-w-0">
                     <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">¿A dónde se fue?</h3>
-                    <p className="text-[17px] text-simar-texto-2 movil:text-[14px]">
+                    <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">
                         Lo que se recibió, lo que ya salió a reciclaje con las empresas recolectoras y lo que sigue en el centro de acopio
                     </p>
                 </div>
             </div>
 
             {!destino.hayDatos ? (
-                <p className="mt-4 rounded-2xl bg-simar-papel px-5 py-8 text-center text-[17px] text-simar-texto-2 movil:text-[14px]">
+                <p className="mt-4 rounded-2xl bg-simar-papel px-5 py-8 text-center text-[17px] text-simar-texto-2 movil:text-[15px]">
                     Todavía no hay recolecciones ni inventario registrados. Cuando una empresa recolectora se lleve residuos del centro de acopio, aquí se verá a
                     dónde fueron.
                 </p>
@@ -190,7 +190,7 @@ export function DestinoResiduos({ destino, recibidos }: { destino: Destino; reci
                                 { etiqueta: 'En acopio hoy', valor: reciclables.enAcopio, unidad: 'kg' },
                             ]}
                         />
-                        <p className="mt-3 text-[15px] font-bold text-simar-texto movil:text-[13.5px]">
+                        <p className="mt-3 text-[15px] font-bold text-simar-texto movil:text-[15px]">
                             {reciclables.porTipo.length > 0
                                 ? reciclables.porTipo.map((t) => `${TIPO_RESIDUO_LABEL[t.tipo as TipoResiduo] ?? t.tipo} ${fmt(t.reciclado)} kg`).join(' · ')
                                 : 'Sin salidas en el período'}

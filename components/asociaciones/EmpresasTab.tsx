@@ -243,7 +243,7 @@ export function EmpresasTab({
                                         ) : null
                                     )}
                                 </div>
-                                <p className="mt-1 text-[15px] text-simar-texto-2 movil:text-[14px]">
+                                <p className="mt-1 text-[15px] text-simar-texto-2 movil:text-[15px]">
                                     {m?.ultima ? `Última recolección: ${haceDias(m.ultima)}` : 'Aún no ha recolectado'}
                                 </p>
                                 {(abiertas.get(emp.id)?.porRevisar || abiertas.get(emp.id)?.porRecolectar) ? (

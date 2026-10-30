@@ -803,7 +803,7 @@ function AccionBtn({
         <button
             data-recorrido={recorrido}
             onClick={onClick}
-            className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[14px] movil:font-bold ${cls}`}
+            className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[15px] movil:font-bold ${cls}`}
         >
             {icon}
             <span>{children}</span>
