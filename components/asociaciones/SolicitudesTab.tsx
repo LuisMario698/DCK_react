@@ -158,6 +158,8 @@ export function SolicitudesTab({
     const conteo = (f: Filtro) => solicitudes.filter((s) => coincide(s, f)).length;
     const filtradas = solicitudes.filter((s) => coincide(s, tab));
     const enHistorial = tab !== 'pendiente' && tab !== 'aprobada';
+    // Con un solo estado a la vista (Pendientes, Por recolectar…) la columna Estado repetiría la pestaña
+    const variosEstados = tab === 'todas' || tab === 'historial';
     const disponibleDe = (s: SolicitudConAsociacion) => inventario.find((i) => i.tipo === s.tipo)?.cantidad ?? 0;
 
     const cancelar = async (s: SolicitudConAsociacion) => {
@@ -263,16 +265,17 @@ export function SolicitudesTab({
                 </div>
 
                 {/* Tabla (en celular cada solicitud es un bloque: empresa, fecha y estado; residuo y
-                    cantidad; la acción principal con su palabra a la izquierda y las demás a la derecha) */}
+                    cantidad; la acción principal con su palabra a la izquierda y las demás a la derecha).
+                    En computadora cabe sin deslizar de lado desde 1280 px: la cantidad va bajo el residuo,
+                    Estado sólo sale cuando hay varios y las acciones se acomodan en dos renglones */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full border-collapse movil:block">
                         <thead className="movil:hidden">
                             <tr className="bg-simar-papel border-b border-simar-borde">
                                 <Th>Empresa</Th>
                                 <Th>Residuo</Th>
-                                <Th className="hidden sm:table-cell">Cantidad</Th>
-                                <Th className="hidden md:table-cell">Recolección</Th>
-                                <Th>Estado</Th>
+                                <Th className={variosEstados ? 'hidden 2xl:table-cell' : 'hidden md:table-cell'}>Recolección</Th>
+                                {variosEstados && <Th>Estado</Th>}
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
@@ -294,8 +297,8 @@ export function SolicitudesTab({
                                                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-simar-marea flex items-center justify-center text-white font-bold text-[15px] shadow-simar">
                                                     {nombre.charAt(0)}
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-base font-semibold text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:leading-snug">{nombre}</p>
+                                                <div className="min-w-0 max-w-[200px] movil:max-w-none">
+                                                    <p className="text-base font-semibold text-simar-texto line-clamp-2 leading-snug">{nombre}</p>
                                                     <p className="text-[15px] text-simar-texto-2 truncate hidden sm:block">
                                                         Solicitada {formatearFecha(s.created_at)}
                                                     </p>
@@ -308,31 +311,49 @@ export function SolicitudesTab({
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:row-start-2">
                                             <ResiduoBadge tipo={s.tipo} />
+                                            {/* Computadora y tableta: la cantidad bajo su residuo (en celular va en su propia celda) */}
+                                            <div className="mt-1.5 movil:hidden">
+                                                <span className="whitespace-nowrap">
+                                                    <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
+                                                    <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
+                                                </span>
+                                                {s.recoleccion ? (
+                                                    <span className="block text-[15px] text-simar-texto-2">recolectados · <span className="whitespace-nowrap">{s.recoleccion.folio}</span></span>
+                                                ) : (
+                                                    s.cantidad_aprobada !== null &&
+                                                    s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                        <span className="block text-[15px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    )
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2 movil:min-w-0 movil:whitespace-normal">
+                                        <td className="hidden movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2 movil:min-w-0">
                                             <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
                                             <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
                                             {s.recoleccion ? (
-                                                <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">
-                                                    <span className="movil:hidden">recolectados · </span>
-                                                    <span className="hidden movil:inline">Folio </span>
-                                                    {s.recoleccion.folio}
-                                                </span>
+                                                <span className="block text-[13px] text-simar-texto-2">Folio {s.recoleccion.folio}</span>
                                             ) : (
                                                 s.cantidad_aprobada !== null &&
                                                 s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                    <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    <span className="block text-[13px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
                                                 )
                                             )}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
+                                        <td className={`px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden whitespace-nowrap ${variosEstados ? '2xl:table-cell' : 'md:table-cell'}`}>
                                             {formatearFecha(s.fecha_propuesta)}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end movil:self-start">
-                                            <EstadoSolicitudBadge estado={s.estado} />
-                                        </td>
+                                        {variosEstados && (
+                                            <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end movil:self-start">
+                                                <EstadoSolicitudBadge estado={s.estado} />
+                                                {/* Sin la columna Recolección (menos de 1536 px), su fecha va bajo el estado */}
+                                                <span className="block mt-1.5 text-[15px] text-simar-texto-2 whitespace-nowrap 2xl:hidden movil:hidden">
+                                                    {formatearFecha(s.fecha_propuesta)}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-4 md:px-5 py-3.5 text-right movil:p-0 movil:col-span-3 movil:text-left">
-                                            <div className="inline-flex items-center gap-1 movil:flex movil:flex-wrap movil:gap-1.5">
+                                            {/* Si no caben en un renglón, los íconos bajan a otro (alineados a la derecha) */}
+                                            <div className="inline-flex flex-wrap items-center justify-end gap-1 max-w-[210px] movil:flex movil:max-w-none movil:justify-start movil:gap-1.5">
                                                 {s.estado === 'pendiente' && (
                                                     <>
                                                         <AccionBtn color="emerald" recorrido="aprobar" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
@@ -373,7 +394,7 @@ export function SolicitudesTab({
                             })}
                             {filtradas.length === 0 && (
                                 <tr className="movil:block">
-                                    <td colSpan={6} className="py-16 text-center movil:block movil:py-10 movil:px-4">
+                                    <td colSpan={variosEstados ? 5 : 4} className="py-16 text-center movil:block movil:py-10 movil:px-4">
                                         <div className="flex flex-col items-center gap-2 text-simar-texto-2 max-w-md mx-auto">
                                             <Inbox className="w-10 h-10" />
                                             <p className="text-base font-medium">{VACIO[tab]?.titulo ?? 'No hay solicitudes en esta categoría.'}</p>
