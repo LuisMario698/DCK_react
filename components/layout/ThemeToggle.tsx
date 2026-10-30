@@ -60,8 +60,7 @@ export function BotonTemaIcono({ className = '', compacto = false, plano = false
 }
 
 /** Botón de tema para el pie del menú lateral (ver DISEÑO_SIMAR.md → Menú lateral). */
-/** `apretado`: en una computadora baja (variante bajo:) queda sólo el ícono, para que «Cerrar sesión» quepa en su fila */
-export function BotonTema({ colapsado = false, apretado = false }: { colapsado?: boolean; apretado?: boolean }) {
+export function BotonTema({ colapsado = false }: { colapsado?: boolean }) {
     const { theme, toggleTheme } = useTheme();
     const oscuro = theme === 'dark';
 
@@ -69,11 +68,11 @@ export function BotonTema({ colapsado = false, apretado = false }: { colapsado?:
         <button
             onClick={(e) => toggleTheme(centroDe(e))}
             aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            title={colapsado || apretado ? (oscuro ? 'Modo claro' : 'Modo oscuro') : ''}
-            className={`simar-presiona flex-1 min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 ${apretado ? 'bajo:flex-none bajo:w-[52px]' : ''}`}
+            title={colapsado ? (oscuro ? 'Modo claro' : 'Modo oscuro') : ''}
+            className="simar-presiona flex-1 min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10"
         >
             {oscuro ? <Sun className="w-[22px] h-[22px] flex-shrink-0" strokeWidth={2} /> : <Moon className="w-[22px] h-[22px] flex-shrink-0" strokeWidth={2} />}
-            <span className={`${colapsado ? 'lg:hidden' : ''} ${apretado ? 'bajo:hidden' : ''}`}>{oscuro ? 'Modo claro' : 'Modo oscuro'}</span>
+            <span className={colapsado ? 'lg:hidden' : ''}>{oscuro ? 'Modo claro' : 'Modo oscuro'}</span>
         </button>
     );
 }

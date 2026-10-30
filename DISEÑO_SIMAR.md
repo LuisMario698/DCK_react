@@ -391,11 +391,6 @@ van en coral con número (`SidebarRecolector`).
    el botón de colapsar (sólo escritorio).
 3. "Cerrar sesión" a lo ancho.
 
-**Laptop baja** (variante `bajo:`, computadora de 820 px de alto o menos, como 1366×768 o
-1280×800): para que todas las secciones quepan sin desplazarse, "Cerrar sesión" sube a la fila del
-tema (sin ícono), el tema queda en ícono (`BotonTema apretado`) y en el recinto "Externos" se
-vuelve una raya. Los botones siguen midiendo 52 px.
-
 Con el menú colapsado los botones quedan sólo con ícono y `title`. En celular el tema está en el
 encabezado móvil y en la hoja "Más" (ver 16.2).
 
