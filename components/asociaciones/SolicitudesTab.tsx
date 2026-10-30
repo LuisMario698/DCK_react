@@ -375,14 +375,14 @@ export function SolicitudesTab({
                                                     </AccionBtn>
                                                 )}
                                                 <span className="inline-flex items-center gap-1 movil:ml-auto movil:gap-0.5">
-                                                    <IconBtn title="Ver detalle" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
+                                                    <IconBtn title="Ver detalle" corto="Ver" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
                                                         <Eye className="w-4 h-4" />
                                                     </IconBtn>
-                                                    <IconBtn title="Abrir chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
+                                                    <IconBtn title="Abrir chat" corto="Chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
                                                         <MessageSquare className="w-4 h-4" />
                                                     </IconBtn>
                                                     {(s.estado === 'pendiente' || s.estado === 'aprobada') && (
-                                                        <IconBtn title="Cancelar solicitud" onClick={() => cancelar(s)}>
+                                                        <IconBtn title="Cancelar solicitud" corto="Cancelar" onClick={() => cancelar(s)}>
                                                             <Ban className="w-4 h-4" />
                                                         </IconBtn>
                                                     )}
@@ -811,15 +811,22 @@ function AccionBtn({
     );
 }
 
-function IconBtn({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
+/**
+ * Acción secundaria: sólo el ícono en la tabla de escritorio (con su nombre al pasar el ratón) y con
+ * su palabra en celular, donde no hay ratón que muestre el nombre. La palabra va dentro del nombre
+ * («Ver» en «Ver detalle»), para quien maneja la pantalla con la voz.
+ */
+function IconBtn({ title, corto, onClick, children }: { title: string; corto: string; onClick: () => void; children: React.ReactNode }) {
     return (
         <button
+            type="button"
             onClick={onClick}
             title={title}
             aria-label={title}
-            className="w-11 h-11 flex items-center justify-center rounded-xl text-simar-texto-2 hover:text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors"
+            className="w-11 h-11 flex items-center justify-center gap-1.5 rounded-xl text-simar-texto-2 hover:text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:w-auto movil:px-2.5 movil:text-[15px] movil:font-bold"
         >
             {children}
+            <span className="hidden movil:inline">{corto}</span>
         </button>
     );
 }
