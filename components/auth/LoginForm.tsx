@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { detalleDe } from '@/lib/utils/errores';
+import { detalleDe, esErrorDeRed, MENSAJE_SIN_CONEXION } from '@/lib/utils/errores';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, Eye, EyeOff, Loader2, Mail, Lock, User, KeyRound, ArrowLeft } from 'lucide-react';
@@ -48,11 +48,29 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
         setMessage(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true);
         setError(null);
         setMessage(null);
+
+        // Antes de ir a Supabase: con un campo vacío contestaba en inglés ("missing email or phone").
+        // El aviso sale arriba y el cursor va al campo que falta.
+        const enfocar = (nombre: string) => {
+            const campo = e.currentTarget.elements.namedItem(nombre);
+            if (campo instanceof HTMLInputElement) campo.focus();
+        };
+        if (!email.trim()) {
+            setError('Escribe tu correo electrónico.');
+            enfocar('email');
+            return;
+        }
+        if ((view === 'login' || view === 'register') && !password) {
+            setError('Escribe tu contraseña.');
+            enfocar('password');
+            return;
+        }
+
+        setLoading(true);
 
         try {
             if (view === 'login') {
@@ -139,6 +157,8 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
                 setError('El código es incorrecto o ya caducó. Solicita uno nuevo.');
             } else if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('too many')) {
                 setError('Demasiados intentos. Espera unos minutos antes de volver a probar.');
+            } else if (esErrorDeRed(msg)) {
+                setError(MENSAJE_SIN_CONEXION);
             } else {
                 setError(msg || 'Ocurrió un error. Inténtalo de nuevo.');
             }
@@ -163,7 +183,7 @@ export function LoginForm({ onSuccess, redirectTo = '/dashboard', showLogo = tru
             setMessage('Código reenviado. Revisa tu bandeja y la carpeta de spam.');
         } catch (causa) {
             const err = detalleDe(causa);
-            setError(err?.message || 'No se pudo reenviar el código.');
+            setError(esErrorDeRed(err?.message) ? MENSAJE_SIN_CONEXION : err?.message || 'No se pudo reenviar el código.');
         } finally {
             setLoading(false);
         }

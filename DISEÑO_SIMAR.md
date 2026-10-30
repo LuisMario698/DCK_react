@@ -921,6 +921,9 @@ recolectar" en azul). Sin giro del ícono ni barra al pasar el cursor (sección 
   - **Embarcación**, no "buque" (también en filtros y encabezados de Excel).
 - Fechas con `toLocaleDateString('es-MX', …)`, no `es-ES`. Cantidades con `formatCantidad`.
 - Sin "exitosamente": "Persona guardada", no "Persona creada exitosamente".
+- **Sin conexión:** si la petición no llegó, se dice `MENSAJE_SIN_CONEXION` ("No hay conexión con SiMAR. Revisa
+  tu internet e inténtalo de nuevo."; `esErrorDeRed` en `lib/utils/errores.ts`, ya lo usan el acceso y
+  `mensajeError`). Nunca el texto del navegador: "Failed to fetch", "Load failed".
 - El título de la pestaña del navegador dice la pantalla: "Manifiesto · SiMAR" (`tituloPantalla`).
 
 ---
@@ -1189,3 +1192,6 @@ Trabajan con cadenas: `'YYYY-MM-DD'` (como las columnas `date`) y `'HH:MM'` (24 
 - Una cuadrícula que tiene una fila deslizable adentro necesita columnas con `minmax(0, 1fr)`
   (`grid-cols-1`); si no, crece al ancho de todos los chips.
 - Revisa cada pantalla a 390 px **y** a 360 px, en claro y en oscuro.
+- Imágenes con `next/image` y el tamaño con que se ven (`sizes` del ancho de su columna, o `width`/`height`):
+  un `<img>` suelto baja completo aunque esté oculto con `hidden`. En la landing el logo del ITSPP (264 KB)
+  y dos fotos de 1200–1600 px bajaban así en celular; con eso la página pasó de 1.5 MB a 0.8 MB.
