@@ -52,6 +52,11 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+// Cada página se arma en cada visita, como cuando las traducciones vivían en este layout (getMessages
+// la volvía dinámica). Sin esto, el portal y otras pantallas se arman al compilar, y el build pide
+// las llaves de Supabase y falla donde no las tiene
+export const dynamic = 'force-dynamic';
+
 export default async function LocaleLayout({
   children,
   params
