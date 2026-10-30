@@ -34,12 +34,13 @@ function usePantalla() {
 
 /**
  * Encabezado del portal de empresas. Escritorio: vidrio flotante con el título de la pantalla, el
- * tema y la campana (ver DISEÑO_SIMAR.md). Celular y tableta: la píldora de cristal líquido del
- * recinto (logo, tema y campana) que se esconde al bajar; el título va en la pantalla
- * (TituloPantallaRecolector) y las secciones en la barra inferior.
+ * tema y la campana (ver DISEÑO_SIMAR.md). En Inicio no va: el saludo ya dice quién es y la campana
+ * está en el menú lateral, y con las dos cosas el nombre de la empresa salía dos veces. Celular y
+ * tableta: la píldora de cristal líquido del recinto (logo, tema y campana) que se esconde al bajar;
+ * el título va en la pantalla (TituloPantallaRecolector) y las secciones en la barra inferior.
  */
 export function HeaderRecolector() {
-    const { locale, meta } = usePantalla();
+    const { locale, clave, meta } = usePantalla();
     const { notificacionesNoLeidas, asociacion } = useRecolector();
     // "Mis solicitudes · SiMAR" en la pestaña
     useTituloPestana(meta.title);
@@ -47,34 +48,36 @@ export function HeaderRecolector() {
     return (
         <>
             <EncabezadoMovil locale={locale} notificaciones={notificacionesNoLeidas} />
-            <header className="hidden lg:block sticky top-3 z-30 mt-6">
-                <div className="simar-vidrio relative rounded-3xl min-h-[74px] flex items-center justify-between gap-3 pl-4 pr-3">
-                    <div className="min-w-0">
-                        <h1 className="text-xl font-extrabold text-simar-texto leading-tight truncate">{meta.title}</h1>
-                        <p className="text-[15px] text-simar-texto-2 truncate">{meta.subtitle}</p>
-                    </div>
+            {clave !== 'dashboard-recolector' && (
+                <header className="hidden lg:block sticky top-3 z-30 mt-6">
+                    <div className="simar-vidrio relative rounded-3xl min-h-[74px] flex items-center justify-between gap-3 pl-4 pr-3">
+                        <div className="min-w-0">
+                            <h1 className="text-xl font-extrabold text-simar-texto leading-tight truncate">{meta.title}</h1>
+                            <p className="text-[15px] text-simar-texto-2 truncate">{meta.subtitle}</p>
+                        </div>
 
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                        {asociacion && (
-                            <span className="text-[17px] font-bold text-simar-texto truncate max-w-[260px]">
-                                {asociacion.nombre_asociacion}
-                            </span>
-                        )}
-                        <Link
-                            href={`/${locale}/dashboard-recolector/notificaciones`}
-                            className="relative w-[52px] h-[52px] rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
-                            aria-label={`Notificaciones${notificacionesNoLeidas ? `, ${notificacionesNoLeidas} sin leer` : ''}`}
-                        >
-                            <Bell className="w-6 h-6" />
-                            {notificacionesNoLeidas > 0 && (
-                                <span className="absolute top-1.5 right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold flex items-center justify-center">
-                                    {notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas}
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                            {asociacion && (
+                                <span className="text-[17px] font-bold text-simar-texto truncate max-w-[260px]">
+                                    {asociacion.nombre_asociacion}
                                 </span>
                             )}
-                        </Link>
+                            <Link
+                                href={`/${locale}/dashboard-recolector/notificaciones`}
+                                className="relative w-[52px] h-[52px] rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
+                                aria-label={`Notificaciones${notificacionesNoLeidas ? `, ${notificacionesNoLeidas} sin leer` : ''}`}
+                            >
+                                <Bell className="w-6 h-6" />
+                                {notificacionesNoLeidas > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-simar-coral-solido text-white text-[13px] font-bold flex items-center justify-center">
+                                        {notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas}
+                                    </span>
+                                )}
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            </header>
+                </header>
+            )}
         </>
     );
 }
@@ -111,7 +114,7 @@ function EncabezadoMovil({ locale, notificaciones }: { locale: string; notificac
                     >
                         <Bell className="w-6 h-6" />
                         {notificaciones > 0 && (
-                            <span className="absolute top-1 right-1 min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
+                            <span className="absolute top-1 right-1 min-w-[20px] h-5 px-1 rounded-full bg-simar-coral-solido text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
                                 {notificaciones > 9 ? '9+' : notificaciones}
                             </span>
                         )}

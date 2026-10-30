@@ -5,6 +5,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Anchor } from 'lucide-react';
 import { useTheme } from '@/components/layout/ThemeContext';
 import { PUERTO_PENASCO } from '@/lib/constants/residuos';
+import { TEXTOS_MAPA_ES } from '@/lib/constants/mapa';
 
 // Estilos vectoriales de OpenFreeMap: gratis, sin API key y sin límite de uso.
 const ESTILOS = {
@@ -22,6 +23,8 @@ export default function MapaMapLibre({ zoom }: { zoom: number }) {
             initialViewState={{ latitude: lat, longitude: lng, zoom }}
             mapStyle={ESTILOS[theme]}
             style={{ width: '100%', height: '100%' }}
+            // El marcador se nombra como lo que dice su letrero (si no, el lector dice «Marcador del mapa»)
+            locale={{ ...TEXTOS_MAPA_ES, 'Marker.Title': 'Centro de acopio' }}
             attributionControl={{ compact: true }}
             dragRotate={false}
             touchPitch={false}

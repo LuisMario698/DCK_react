@@ -170,7 +170,7 @@ export function AvisosRecintoProvider({ children }: { children: ReactNode }) {
 function Contador({ n, className }: { n: number; className: string }) {
     if (n <= 0) return null;
     return (
-        <span key={n} aria-hidden="true" className={`simar-confirma min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ${className}`}>
+        <span key={n} aria-hidden="true" className={`simar-confirma min-w-[20px] h-5 px-1 rounded-full bg-simar-coral-solido text-white text-[12px] font-bold flex items-center justify-center ${className}`}>
             {n > 9 ? '9+' : n}
         </span>
     );
@@ -364,7 +364,7 @@ function ListaAvisos() {
                                         {n.detalle && <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[15px]">{n.detalle}</span>}
                                         <span className="block mt-0.5 text-[14px] text-simar-texto-2 movil:text-[15px]">{tiempoRelativo(n.created_at)}</span>
                                     </span>
-                                    {!n.leida && <span aria-label="Sin leer" className="mt-2 w-2.5 h-2.5 flex-shrink-0 rounded-full bg-[#A63F0E]" />}
+                                    {!n.leida && <span aria-label="Sin leer" className="mt-2 w-2.5 h-2.5 flex-shrink-0 rounded-full bg-simar-coral-solido" />}
                                 </button>
                             </li>
                         ))}

@@ -679,7 +679,7 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                             {o.valor === 'sin' && (
                                 <span
                                     className={`min-w-[22px] h-[22px] px-1.5 rounded-full text-[13px] font-bold tabular-nums inline-flex items-center justify-center ${
-                                        nSin > 0 ? 'bg-[#A63F0E] text-white' : 'bg-simar-superficie text-simar-texto-2'
+                                        nSin > 0 ? 'bg-simar-coral-solido text-white' : 'bg-simar-superficie text-simar-texto-2'
                                     }`}
                                 >
                                     {nSin}

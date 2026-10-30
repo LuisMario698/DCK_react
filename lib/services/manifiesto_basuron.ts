@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 import { traerTodas } from '@/lib/supabase/paginar'
 import { ManifiestoBasuron, ManifiestoBasuronConRelaciones } from '@/types/database'
-import { generarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron'
 
 export async function getManifiestosBasuron() {
   const supabase = createClient()
@@ -131,8 +130,9 @@ export async function completarManifiestoBasuron(
 
   const finalData = updatedData as ManifiestoBasuronConRelaciones;
 
-  // 2. Generar y Subir PDF
+  // 2. Generar y Subir PDF (el generador, con jsPDF, se baja hasta aquí)
   try {
+    const { generarPDFBasuron } = await import('@/lib/utils/pdfGeneratorBasuron')
     const pdfBlob = await generarPDFBasuron(finalData)
 
     const fileName = `Manifiesto_Basuron_${finalData.id}_${Date.now()}.pdf`

@@ -173,7 +173,7 @@ export default function DashboardRecolectorPage() {
         >
             <div className="flex items-start justify-between gap-3 px-5 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-simar-borde-suave movil:px-3.5 movil:pt-3.5 movil:pb-3">
                 <div className="min-w-0">
-                    <h3 className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">Disponible ahora</h3>
+                    <h2 className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">Disponible ahora</h2>
                     <p className="text-base text-simar-texto-2 movil:text-[15px]">
                         Centro de acopio de {PUERTO_PENASCO.nombre}
                         {ultimaActualizacion && ` · actualizado ${tiempoRelativo(ultimaActualizacion).toLowerCase()}`}
@@ -246,9 +246,10 @@ export default function DashboardRecolectorPage() {
                         <p className="text-base text-simar-texto-2 movil:text-[15px]">
                             {saludoPuerto()} · {fechaHoyPuerto()}
                         </p>
-                        <h2 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5 movil:text-[21px]">
+                        {/* El título de Inicio (en escritorio no hay barra con «Inicio» arriba) */}
+                        <h1 className="text-[27px] sm:text-[32px] font-extrabold leading-tight text-simar-texto mt-0.5 movil:text-[21px]">
                             {asociacion?.nombre_asociacion ?? 'Empresa recolectora'}
-                        </h2>
+                        </h1>
                         <p className="text-[17px] sm:text-lg leading-relaxed text-simar-texto-2 mt-2 max-w-2xl movil:text-[15px] movil:mt-1">{frase}</p>
                     </div>
                 </div>

@@ -26,8 +26,8 @@ export function Button({
   const variantStyles = {
     primary: 'bg-simar-marea text-white hover:bg-simar-marea-hover',
     secondary: 'bg-simar-superficie text-simar-texto border-2 border-simar-campo-borde hover:border-simar-marea-tinta',
-    // Coral fijo (#A63F0E, 6.3:1 con blanco) también en oscuro, donde el token coral es claro
-    danger: 'bg-[#A63F0E] text-white hover:bg-[#8C340B]',
+    // Coral sólido (6.3:1 con blanco), igual en oscuro, donde el token coral es claro
+    danger: 'bg-simar-coral-solido text-white hover:bg-simar-coral-solido-hover',
   };
 
   return (

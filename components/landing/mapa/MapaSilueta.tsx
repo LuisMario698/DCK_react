@@ -52,7 +52,8 @@ export default function MapaSilueta({
             viewBox={`0 0 ${VIEWBOX.ancho} ${VIEWBOX.alto}`}
             className="absolute inset-0 w-full h-full"
             preserveAspectRatio="xMidYMid meet"
-            role="img"
+            // group y no img: adentro hay puertos que se eligen con teclado (role="button")
+            role="group"
             aria-label="Mapa de México con el puerto activo y los puertos de expansión"
         >
             <defs>

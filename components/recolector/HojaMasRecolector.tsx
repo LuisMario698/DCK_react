@@ -66,7 +66,7 @@ export function HojaMasRecolector({ abierta, onCerrar }: { abierta: boolean; onC
                             <span className={`relative w-11 h-11 rounded-full flex items-center justify-center ${s.tono}`}>
                                 <Icono className="w-6 h-6" strokeWidth={2} />
                                 {!!s.badge && (
-                                    <span aria-hidden="true" className="absolute -top-1 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
+                                    <span aria-hidden="true" className="absolute -top-1 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-simar-coral-solido text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
                                         {s.badge > 9 ? '9+' : s.badge}
                                     </span>
                                 )}

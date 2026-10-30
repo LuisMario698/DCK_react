@@ -64,7 +64,9 @@ para consultar (abajo).
   `America/Hermosillo`): el servidor de Vercel corre en UTC.
 - **i18n parcial:** sólo `Sidebar`, `personas`, `embarcaciones` y `manifiesto` usan
   `useTranslations`. El resto está en español hardcodeado. Si tocas esas 4, mantén
-  `messages/es.json` y `messages/en.json` sincronizados.
+  `messages/es.json` y `messages/en.json` sincronizados. El `NextIntlClientProvider` está en
+  `app/[locale]/dashboard/layout.tsx`, no en el de `[locale]` (así la landing y el portal no bajan
+  ese código): fuera del recinto, `useTranslations` necesita su propio provider.
 - El repo no usa Prettier configurado; sigue el estilo del archivo que edites.
 - Git: rama principal `main`, despliega `online` (Vercel). No hagas commit/push salvo que se
   pida; si estás en `main`, crea rama antes.
@@ -125,7 +127,10 @@ para consultar (abajo).
 `lib/utils/pdfGenerator.ts` (manifiesto MARPOL) y `pdfGeneratorBasuron.ts` (recibo relleno
 sanitario). En Estadísticas, `components/dashboard/pdfEstadisticas.ts` (resumen del período) y
 `pdfReporteMensual.ts` (reporte del mes para SEMARNAT; datos de `lib/services/reporte_mensual.ts`).
-Sólo jsPDF, en el cliente. Firmas capturadas con `components/ui/SignaturePad.tsx`
+Sólo jsPDF, en el cliente. Los generadores se cargan con `await import()` justo al hacer el PDF,
+nunca con un `import` arriba del archivo: jsPDF pesa ~130 KB y se bajaría en cada pantalla (igual
+con lo pesado que sólo se usa al pedirlo, como el formulario de acceso o la ventana del perfil, que
+van con `next/dynamic`). Firmas capturadas con `components/ui/SignaturePad.tsx`
 (canvas → data URL base64 PNG). Los PDF e imágenes se suben a buckets de Supabase Storage
 (`manifiestos_img`, `manifiestos_pdf`, `manifiestos_basuron_pdf`, `manifiestos-no-firmados`); el
 logo SEMARNAT se lee del bucket público `images`.

@@ -8,17 +8,21 @@ import { AvisoGlobal } from './AvisoGlobal';
 import { FondoSimar } from './FondoSimar';
 import { BarraInferior } from './BarraInferior';
 import { HojaMas } from './HojaMas';
-import { UserProfileModal } from './UserProfileModal';
 import { AvisosRecintoProvider, PanelAvisos } from './AvisosRecinto';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { BarChart3, Ellipsis, FileText, LayoutGrid, Recycle } from 'lucide-react';
 import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
-import { Recorrido } from '@/components/demo/Recorrido';
 import { FranjaDck, useSoloConsulta } from './BaseDatos';
-import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
+
+// Lo que sólo se usa al pedirlo (la ventana del perfil) o sólo en la demostración se baja aparte: así
+// ninguna pantalla carga de entrada código que quizá no use
+const UserProfileModal = dynamic(() => import('./UserProfileModal').then((m) => m.UserProfileModal), { ssr: false });
+const Recorrido = dynamic(() => import('@/components/demo/Recorrido').then((m) => m.Recorrido), { ssr: false });
+const VistaPreviaPdf = dynamic(() => import('@/components/demo/VistaPreviaPdf').then((m) => m.VistaPreviaPdf), { ssr: false });
 
 /** Nombre de cada pantalla del recinto en la pestaña del navegador */
 const TITULOS_RECINTO: Record<string, string> = {
@@ -44,6 +48,10 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   const locale = pathname.split('/')[1] || 'es';
   // "Manifiesto · SiMAR" en la pestaña (por la última parte de la ruta)
   useTituloPestana(TITULOS_RECINTO[pathname.split('/').filter(Boolean).pop() ?? ''] ?? 'Panel');
+
+  // La ventana del perfil se monta la primera vez que se abre (y se queda, para cerrar con su animación)
+  const [perfilUsado, setPerfilUsado] = useState(false);
+  if (perfilAbierto && !perfilUsado) setPerfilUsado(true);
 
   // En celular el menú lateral y la hoja "Más" se cierran solos al llegar a otra pantalla
   useEffect(() => {
@@ -96,7 +104,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       />
       <HojaMas />
       <PanelAvisos colapsado={isCollapsed} />
-      <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />
+      {perfilUsado && <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />}
       {MODO_DEMO && <Recorrido vista="puerto" />}
       {MODO_DEMO && <VistaPreviaPdf />}
     </div>
