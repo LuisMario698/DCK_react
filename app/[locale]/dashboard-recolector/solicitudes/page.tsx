@@ -214,7 +214,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                         s.estado === 'aprobada'
                                             ? 'bg-simar-marea-suave/60 shadow-[inset_6px_0_0_0_var(--simar-marea)] hover:bg-simar-marea-suave'
                                             : s.estado === 'rechazada'
-                                              ? 'shadow-[inset_6px_0_0_0_#A63F0E] hover:bg-simar-papel'
+                                              ? 'shadow-[inset_6px_0_0_0_var(--simar-coral-solido)] hover:bg-simar-papel'
                                               : 'hover:bg-simar-papel'
                                     }`}
                                 >
@@ -292,7 +292,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                         {s.estado === 'pendiente' && (
                                             <button
                                                 onClick={() => cancelar(s)}
-                                                className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold bg-simar-coral-suave text-simar-coral hover:bg-[#A63F0E] hover:text-white inline-flex items-center justify-center gap-1.5"
+                                                className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold bg-simar-coral-suave text-simar-coral hover:bg-simar-coral-solido hover:text-white inline-flex items-center justify-center gap-1.5"
                                                 title="Cancelar solicitud"
                                                 aria-label="Cancelar solicitud"
                                             >

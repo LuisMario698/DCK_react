@@ -7,7 +7,6 @@ import { confirmar } from '@/components/ui/Confirmar';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { getManifiestosBasuron, deleteManifiestoBasuron } from '@/lib/services/manifiesto_basuron';
 import { Buque, ManifiestoBasuronConRelaciones } from '@/types/database';
-import { descargarPDFBasuron } from '@/lib/utils/pdfGeneratorBasuron';
 import { ManifiestoBasuronDetails } from '@/components/manifiestos/ManifiestoBasuronDetails';
 import { CreateManifiestoBasuronModal } from '@/components/manifiestos/CreateManifiestoBasuronModal';
 import { getBuques } from '@/lib/services/buques';
@@ -331,7 +330,7 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
                                 </button>
                                 {!soloConsulta && <button
                                   onClick={() => handleDelete(m.id)}
-                                  className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-[#A63F0E] hover:text-white transition-colors flex-shrink-0"
+                                  className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-simar-coral-solido hover:text-white transition-colors flex-shrink-0"
                                   title="Eliminar"
                                   aria-label="Eliminar"
                                 >

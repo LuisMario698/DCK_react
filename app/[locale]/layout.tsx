@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible_Next } from "next/font/google";
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/i18n';
 import { ThemeProvider } from '@/components/layout/ThemeContext';
@@ -54,6 +52,11 @@ export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
 
+// Cada página se arma en cada visita, como cuando las traducciones vivían en este layout (getMessages
+// la volvía dinámica). Sin esto, el portal y otras pantallas se arman al compilar, y el build pide
+// las llaves de Supabase y falla donde no las tiene
+export const dynamic = 'force-dynamic';
+
 export default async function LocaleLayout({
   children,
   params
@@ -66,7 +69,6 @@ export default async function LocaleLayout({
   if (!(locales as readonly string[]).includes(locale)) {
     notFound();
   }
-  const messages = await getMessages();
 
   return (
     <html lang={locale} className={atkinson.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
@@ -76,15 +78,15 @@ export default async function LocaleLayout({
       <body className="simar antialiased bg-simar-papel text-simar-texto" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>
-            <NextIntlClientProvider messages={messages}>
-              {children}
-              <ThemeToggle />
-              <Avisos />
-              {/* Las confirmaciones propias (confirmar()), en lugar de las del navegador */}
-              <Confirmador />
-              {/* Sólo con SiMAR instalada como app: ahí no hay botón de recargar */}
-              <DeslizarParaActualizar />
-            </NextIntlClientProvider>
+            {/* Las traducciones (NextIntlClientProvider) van en el layout del recinto: sólo ahí se usan,
+                y así la landing y el portal no bajan ese código ni los mensajes */}
+            {children}
+            <ThemeToggle />
+            <Avisos />
+            {/* Las confirmaciones propias (confirmar()), en lugar de las del navegador */}
+            <Confirmador />
+            {/* Sólo con SiMAR instalada como app: ahí no hay botón de recargar */}
+            <DeslizarParaActualizar />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -123,7 +123,7 @@ export function PersonasTable({
                   </button>}
                   {onDelete && <button
                     onClick={() => onDelete(persona.id)}
-                    className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-[#A63F0E] hover:text-white transition-colors flex-shrink-0"
+                    className="w-11 h-11 flex items-center justify-center bg-simar-coral-suave text-simar-coral rounded-xl hover:bg-simar-coral-solido hover:text-white transition-colors flex-shrink-0"
                     title={t('acciones.eliminar')}
                     aria-label={t('acciones.eliminar')}
                   >

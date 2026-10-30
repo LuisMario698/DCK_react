@@ -88,7 +88,7 @@ export function SidebarRecolector({ isCollapsed, onToggleCollapse }: SidebarReco
                                     <span className="relative flex-shrink-0">
                                         <Icon className="w-6 h-6" strokeWidth={2} />
                                         {isCollapsed && !!item.badge && (
-                                            <span className="hidden lg:block absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#A63F0E]" />
+                                            <span className="hidden lg:block absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-simar-coral-solido" />
                                         )}
                                     </span>
                                     <span className={`relative flex-1 text-lg leading-tight ${isCollapsed ? 'lg:hidden' : ''}`}>
@@ -96,7 +96,7 @@ export function SidebarRecolector({ isCollapsed, onToggleCollapse }: SidebarReco
                                         {active && <LineaMarea />}
                                     </span>
                                     {!!item.badge && (
-                                        <span className={`min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold flex items-center justify-center ${isCollapsed ? 'lg:hidden' : ''}`}>
+                                        <span className={`min-w-[26px] h-[26px] px-1.5 rounded-full bg-simar-coral-solido text-white text-[13px] font-bold flex items-center justify-center ${isCollapsed ? 'lg:hidden' : ''}`}>
                                             {item.badge > 99 ? '99+' : item.badge}
                                         </span>
                                     )}

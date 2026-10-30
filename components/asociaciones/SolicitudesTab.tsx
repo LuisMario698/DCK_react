@@ -23,7 +23,6 @@ import {
 import { getInventario } from '@/lib/services/inventario';
 import { abrirComprobante, getRecoleccionPorSolicitud, subirComprobante } from '@/lib/services/recolecciones';
 import { suscribirCambios } from '@/lib/services/notificaciones';
-import { generarPDFRecoleccion } from '@/lib/utils/pdfGeneratorRecoleccion';
 import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 import { useAuth } from '@/components/layout/AuthProvider';
 import SignaturePad, { SignaturePadRef } from '@/components/ui/SignaturePad';
@@ -196,6 +195,7 @@ export function SolicitudesTab({
             let ruta = rec.comprobante_pdf_path;
             if (!ruta) {
                 // El comprobante no se subió al completar (p. ej. falló la red): se regenera sin firmas
+                const { generarPDFRecoleccion } = await import('@/lib/utils/pdfGeneratorRecoleccion');
                 const pdf = await generarPDFRecoleccion({ recoleccion: rec, asociacion: rec.asociacion, solicitud: s });
                 ruta = await subirComprobante(rec, pdf);
             }
@@ -654,7 +654,7 @@ function RechazarModal({
                 </Campo>
                 <div className="grid grid-cols-2 gap-3 pt-1">
                     <BotonSecundario onClick={onClose}>Cancelar</BotonSecundario>
-                    <BotonPrimario onClick={rechazar} cargando={guardando} disabled={!motivo.trim()} className="!bg-[#A63F0E] hover:!bg-[#8C340B]">
+                    <BotonPrimario onClick={rechazar} cargando={guardando} disabled={!motivo.trim()} className="!bg-simar-coral-solido hover:!bg-simar-coral-solido-hover">
                         <XCircle className="w-4 h-4" /> Rechazar
                     </BotonPrimario>
                 </div>
@@ -704,8 +704,10 @@ function CompletarModal({
             return;
         }
 
-        // La recolección ya quedó registrada; el comprobante se puede regenerar después si esto falla
+        // La recolección ya quedó registrada; el comprobante se puede regenerar después si esto falla.
+        // El generador (con jsPDF) se baja hasta aquí, no al abrir la pantalla
         try {
+            const { generarPDFRecoleccion } = await import('@/lib/utils/pdfGeneratorRecoleccion');
             const pdf = await generarPDFRecoleccion({
                 recoleccion: rec,
                 asociacion: s.asociacion,

@@ -26,8 +26,8 @@ const ORDEN_ESTADOS: EstadoSuscripcion[] = ['activa', 'prueba', 'vencida', 'susp
 const BARRA_ESTADO: Record<EstadoSuscripcion, string> = {
     activa: 'bg-[#127A5D]',
     prueba: 'bg-simar-marea',
-    vencida: 'bg-[#A63F0E]',
-    suspendida: 'bg-[#A63F0E]',
+    vencida: 'bg-simar-coral-solido',
+    suspendida: 'bg-simar-coral-solido',
     cancelada: 'bg-simar-campo-borde',
 };
 
@@ -281,7 +281,7 @@ export default function ResumenSuperadminPage() {
                                 <li key={e.id} className="flex items-start gap-3">
                                     <span
                                         className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
-                                            e.operacion === 'INSERT' ? 'bg-[#127A5D]' : e.operacion === 'DELETE' ? 'bg-[#A63F0E]' : 'bg-simar-marea'
+                                            e.operacion === 'INSERT' ? 'bg-[#127A5D]' : e.operacion === 'DELETE' ? 'bg-simar-coral-solido' : 'bg-simar-marea'
                                         }`}
                                     />
                                     <div className="min-w-0">
