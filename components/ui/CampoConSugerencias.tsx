@@ -30,7 +30,8 @@ export function CampoConSugerencias<T>({
     invalido,
     inputRef,
     className,
-    claseLista = 'z-30 max-h-48',
+    // Ancho mínimo: junto a «Firmar» el campo de nombre queda angosto y los nombres se partían en dos renglones
+    claseLista = 'z-30 max-h-48 min-w-[280px]',
     envoltura,
     onFocus,
     onBlur,
@@ -54,7 +55,7 @@ export function CampoConSugerencias<T>({
     invalido?: boolean;
     inputRef?: Ref<HTMLInputElement>;
     className?: string;
-    /** Capa y alto máximo de la lista */
+    /** Capa, alto y ancho mínimo de la lista */
     claseLista?: string;
     /** Para meter el campo en una caja con ícono; la lista sale debajo de esa caja */
     envoltura?: (campo: ReactNode) => ReactNode;

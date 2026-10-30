@@ -649,6 +649,15 @@ body {
   outline: 3px solid var(--simar-marea-tinta);
   outline-offset: 3px;
 }
+/* Campo dentro de una caja (con ícono o unidad, DISEÑO_SIMAR.md §10.4): el anillo rodea la caja
+   redondeada y no el texto de adentro, que dibujaba un rectángulo dentro de la caja */
+.simar .simar-caja:has(:focus-visible) {
+  outline: 3px solid var(--simar-marea-tinta);
+  outline-offset: 3px;
+}
+.simar .simar-caja :focus-visible {
+  outline: none;
+}
 
 /* Movimiento 1: aparecer al abrir (0.4 s, sin rebote). Escalonar con style={{ animationDelay }} */
 @keyframes simar-aparece {

@@ -1116,7 +1116,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* FECHA */}
               <div>
                 <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                   <SelectorFecha
                     variante="incrustado"
@@ -1160,7 +1160,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     alEnterSinLista={(e) => handleKeyDown(e, 1)}
                     envoltura={(campo) => (
-                      <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id && !buqueNombre.trim() ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                      <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id && !buqueNombre.trim() ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                         <Search aria-hidden="true" className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
                         {campo}
                       </div>
@@ -1193,7 +1193,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* ACEITE USADO */}
               <div data-recorrido="manifiesto-aceite">
                 <label htmlFor="manifiesto-aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'aceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-aceite"
                     ref={aceiteRef}
                     type="number"
@@ -1218,7 +1218,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* FILTROS DE ACEITE */}
               <div>
                 <label htmlFor="manifiesto-filtros-aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aceite</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAceite' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-filtros-aceite"
                     ref={filtrosAceiteRef}
                     type="number"
@@ -1242,7 +1242,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* FILTROS DE DIESEL */}
               <div>
                 <label htmlFor="manifiesto-filtros-diesel" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de diésel</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosDiesel' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-filtros-diesel"
                     ref={filtrosDieselRef}
                     type="number"
@@ -1266,7 +1266,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* FILTROS DE AIRE */}
               <div>
                 <label htmlFor="manifiesto-filtros-aire" className="block mb-2 text-[17px] font-bold text-simar-texto">Filtros de aire</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'filtrosAire' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-filtros-aire"
                     ref={filtrosAireRef}
                     type="number"
@@ -1290,7 +1290,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* BASURA */}
               <div className="movil:col-span-2">
                 <label htmlFor="manifiesto-basura" className="block mb-2 text-[17px] font-bold text-simar-texto">Basura</label>
-                <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'basura' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                   <input id="manifiesto-basura"
                     ref={basuraRef}
                     type="number"

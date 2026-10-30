@@ -183,7 +183,7 @@ export function CreateManifiestoBasuronModal({
                 {/* FECHA */}
                 <div>
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Fecha</label>
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'fecha' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <CalendarDays className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <SelectorFecha
                       variante="incrustado"
@@ -200,7 +200,7 @@ export function CreateManifiestoBasuronModal({
                 {/* HORA */}
                 <div>
                   <label className="block mb-2 text-[17px] font-bold text-simar-texto">Hora</label>
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                  <div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activeField === 'horaEntrada' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
                     <Clock className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0 pointer-events-none" />
                     <SelectorHora
                       variante="incrustado"
