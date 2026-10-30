@@ -4,6 +4,8 @@ import { Fragment, useState, useEffect, useRef, type CSSProperties } from 'react
 import Image from 'next/image';
 import simboloGrande from '@/public/assets/simar/simbolo-grande.png';
 import nombreGrandeOscuro from '@/public/assets/simar/nombre-grande-oscuro.png';
+import logoItspp from '@/public/assets/logo_ITSPP.png';
+import logoIcs from '@/public/assets/logo_ICS.png';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
 import type { VarianteMapa } from './mapa/puertos';
@@ -244,7 +246,8 @@ function ModalRoleCard({
         <button
             type="button"
             onClick={onClick}
-            // En celular es un renglón: ícono, título y descripción, y la flecha a la derecha
+            // En celular es un renglón: ícono, título y descripción, y la flecha a la derecha. En computadora
+            // "Continuar" va al pie (mt-auto) y queda a la misma altura en las dos tarjetas
             className={`group text-left w-full rounded-3xl border-2 border-simar-borde bg-simar-superficie p-5 md:p-6 flex flex-col gap-2.5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-3 movil:gap-y-0.5 movil:p-4 movil:rounded-[20px] ${s.wrap}`}
         >
             <span className={`w-14 h-14 rounded-full flex items-center justify-center movil:w-12 movil:h-12 movil:row-span-2 ${s.icon}`}>
@@ -252,7 +255,7 @@ function ModalRoleCard({
             </span>
             <span className="text-xl md:text-[21px] font-extrabold text-simar-texto movil:text-[17px] movil:leading-tight">{title}</span>
             <span className="text-[17px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[14px]">{desc}</span>
-            <span className={`mt-1 flex items-center gap-1.5 text-[17px] font-bold movil:mt-0 movil:col-start-3 movil:row-start-1 movil:row-span-2 ${s.arrow}`}>
+            <span className={`mt-auto pt-1 flex items-center gap-1.5 text-[17px] font-bold movil:mt-0 movil:pt-0 movil:col-start-3 movil:row-start-1 movil:row-span-2 ${s.arrow}`}>
                 <span className="movil:sr-only">Continuar</span> <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-0.5 transition-transform movil:w-[22px] movil:h-[22px]" />
             </span>
         </button>
@@ -572,8 +575,10 @@ export function VariantCinematic({
                             ya no caben en un renglón (laptops de 1366 px y proyectores). Los cortes van todos
                             como min-[…]: Tailwind pone los arbitrarios antes que md/xl y xl:hidden les ganaría */}
                         <span className="hidden min-[768px]:flex min-[1280px]:hidden min-[1440px]:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
-                            <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
-                            <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
+                            {/* Con next/image (diferidas) no se descargan donde no se ven: en celular el PNG
+                                original del ITSPP pesaba 264 KB y bajaba aunque estuviera oculto */}
+                            <Image src={logoItspp} alt="ITSPP" width={35} height={40} className="h-10 w-auto object-contain" />
+                            <Image src={logoIcs} alt="ICS" width={48} height={36} className="h-9 w-auto object-contain" />
                         </span>
                     </a>
 
@@ -891,10 +896,14 @@ export function VariantCinematic({
                     </div>
 
                     <figure className="reveal relative m-0 h-[420px] md:h-[560px] rounded-[36px] overflow-hidden movil:h-[260px] movil:rounded-[26px]" data-efecto="foto" data-delay="150">
-                        <img
+                        {/* next/image con el ancho de la columna: antes bajaba el JPEG de 1200 px (175 KB)
+                            también en celular */}
+                        <Image
                             src="/assets/images/img3.jpeg"
                             alt="Puerto Peñasco, Sonora"
-                            className="absolute inset-0 w-full h-full object-cover"
+                            fill
+                            sizes="(min-width: 1280px) 540px, (min-width: 1024px) 440px, 100vw"
+                            className="object-cover"
                         />
                         <figcaption className="simar-vidrio-fuerte absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                             <span className="block text-xl font-extrabold movil:text-[17px]">Alto Golfo de California</span>
@@ -918,10 +927,12 @@ export function VariantCinematic({
 
                     <div className="mt-10 grid lg:grid-cols-[600px_1fr] gap-10 lg:gap-16 items-start movil:mt-6 movil:gap-6">
                         <figure className="reveal relative m-0 h-[360px] md:h-[440px] rounded-[36px] overflow-hidden movil:h-[270px] movil:rounded-[26px]" data-efecto="foto">
-                            <img
+                            <Image
                                 src="/assets/images/img5.jpeg"
                                 alt="Don Francisco en Puerto Peñasco"
-                                className="absolute inset-0 w-full h-full object-cover object-[60%_40%]"
+                                fill
+                                sizes="(min-width: 1024px) 600px, 100vw"
+                                className="object-cover object-[60%_40%]"
                             />
                             <figcaption className="simar-vidrio-fuerte absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                                 <span className="block text-lg md:text-[19px] font-extrabold movil:text-[16px]">Francisco Javier Bojórquez Ochoa</span>
@@ -1057,20 +1068,24 @@ export function VariantCinematic({
                                     <article
                                         key={eq.label}
                                         data-delay={`${i * 70}`}
-                                        className="reveal md:col-span-2 lg:col-span-3 rounded-[30px] bg-simar-marea text-white p-7 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-8 movil:col-span-2 movil:p-5 movil:gap-4 movil:rounded-[24px]"
+                                        className="reveal md:col-span-2 lg:col-span-3 rounded-[30px] bg-simar-marea text-white p-7 md:p-8 flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8 movil:col-span-2 movil:p-5 movil:gap-4 movil:rounded-[24px]"
                                     >
+                                        {/* En una fila sólo desde 1024 px: en tableta, con "Basado en" al lado, a la cifra
+                                            le quedaban ~280 px y "albercas olímpicas" se partía en dos renglones */}
                                         <span className="w-[72px] h-[72px] flex-shrink-0 rounded-full bg-white text-[#1B5FC9] flex items-center justify-center movil:w-[52px] movil:h-[52px]">
                                             <Icon className="w-[34px] h-[34px] movil:w-[26px] movil:h-[26px]" />
                                         </span>
                                         <div className="flex-1">
                                             <div className="text-lg md:text-[19px] font-bold text-[#DCE8FB] movil:text-[15px]">{eq.label}</div>
-                                            <div className="mt-1 text-5xl md:text-[56px] font-extrabold leading-tight movil:text-[38px]">
-                                                <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={2400} />{' '}
-                                                <span className="text-2xl md:text-[26px]">{eq.impactUnit}</span>
+                                            {/* flex-wrap: si la unidad no cabe junto a la cifra baja entera, sin el hueco
+                                                del interlineado de 56 px */}
+                                            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 text-5xl md:text-[56px] font-extrabold leading-tight movil:text-[38px] movil:gap-x-2">
+                                                <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={2400} />
+                                                <span className="text-2xl md:text-[26px] whitespace-nowrap">{eq.impactUnit}</span>
                                             </div>
                                             <div className="mt-1 text-lg md:text-[19px] text-[#E6EEFB] movil:text-[15px]">{eq.impactDescription}</div>
                                         </div>
-                                        <div className="md:w-[240px] md:pl-7 md:border-l border-white/30 movil:pt-3 movil:border-t">
+                                        <div className="pt-5 border-t border-white/30 lg:pt-0 lg:border-t-0 lg:w-[240px] lg:pl-7 lg:border-l movil:pt-3">
                                             <div className="text-base text-[#DCE8FB]">Basado en</div>
                                             <div className="text-2xl md:text-[26px] font-extrabold">
                                                 <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
@@ -1229,17 +1244,19 @@ export function VariantCinematic({
 
             {/* Footer */}
             <footer className="bg-simar-superficie py-12 md:py-14 px-6 movil:py-10 movil:px-5">
-                <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:items-center gap-8 md:gap-14 movil:gap-6">
-                    <LogoSimar tamano={60} />
+                {/* En tableta (768–1023 px) los tres bloques no caben en una fila: el logo quedaba encima de
+                    "DCK Conciencia y Cultura". Ahí el aviso de derechos baja a su propio renglón */}
+                <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:flex-wrap lg:flex-nowrap md:items-center gap-8 md:gap-x-14 md:gap-y-6 movil:gap-6">
+                    <LogoSimar tamano={60} prioridad={false} className="flex-shrink-0" />
                     <div>
                         <h3 className="text-lg font-extrabold">Instituciones</h3>
-                        <ul className="mt-2 space-y-1 text-lg text-simar-texto-2">
+                        <ul className="mt-2 space-y-1 text-lg text-simar-texto-2 whitespace-nowrap">
                             <li>ITSPP</li>
                             <li>DCK Conciencia y Cultura</li>
                             <li>SEMARNAT</li>
                         </ul>
                     </div>
-                    <div className="md:ml-auto md:text-right">
+                    <div className="md:basis-full lg:basis-auto lg:ml-auto lg:text-right">
                         <p className="text-[17px] text-simar-texto-2">© {new Date().getFullYear()} SiMAR · DCK / ITSPP. Todos los derechos reservados.</p>
                         {/* Acceso interno al panel de superadmin: discreto a propósito (texto chico y gris, sin
                             ícono; el área que se toca sigue siendo de 44 px). También se llega entrando a

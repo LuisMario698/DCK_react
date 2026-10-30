@@ -166,8 +166,10 @@ export function SeccionMapaPuertos({
                         </div>
                     </div>
 
-                    {/* En celular los puertos van en una fila que se desliza de lado */}
-                    <div className="simar-desliza grid grid-cols-2 sm:grid-cols-3 gap-2 movil:flex movil:overflow-x-auto movil:-mx-5 movil:px-5 movil:gap-1.5">
+                    {/* En celular los puertos van en una fila que se desliza de lado. Desde 1024 px la
+                        columna es angosta: en tres columnas iguales "Puerto Peñasco" (el puerto activo) se
+                        cortaba con "…", así que ahí cada botón mide lo que su nombre y se acomodan solos */}
+                    <div className="simar-desliza grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 movil:flex movil:overflow-x-auto movil:-mx-5 movil:px-5 movil:gap-1.5">
                         {PUERTOS.map((p) => {
                             const sel = p.id === seleccionado;
                             return (
@@ -176,7 +178,7 @@ export function SeccionMapaPuertos({
                                     type="button"
                                     onClick={() => setSeleccionado(p.id)}
                                     aria-pressed={sel}
-                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[42px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
+                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border lg:whitespace-nowrap movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[42px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
                                         sel
                                             ? 'bg-[rgba(127,224,214,0.12)] border-[rgba(127,224,214,0.5)] text-white font-bold'
                                             : 'border-white/10 text-[#C7D3DD] hover:bg-white/5 hover:text-white'
