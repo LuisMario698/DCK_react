@@ -21,6 +21,11 @@ const atkinson = Atkinson_Hyperlegible_Next({
   adjustFontFallback: false,
 });
 
+// Corre antes de pintar: si la persona eligió el modo oscuro, la página ya sale en oscuro y sin
+// esperar al JavaScript de React (ThemeContext mantiene la clase después). Sin esto había que
+// ocultar todo hasta cargar, o se veía un destello de papel claro.
+const SCRIPT_TEMA = `try{document.documentElement.classList.toggle('dark',localStorage.getItem('theme')==='dark')}catch(e){}`;
+
 export const metadata: Metadata = {
   // Las pantallas de los paneles cambian el título con useTituloPestana ("Manifiesto · SiMAR")
   title: TITULO_APP,
@@ -65,6 +70,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} className={atkinson.variable} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SCRIPT_TEMA }} />
+      </head>
       <body className="simar antialiased bg-simar-papel text-simar-texto" suppressHydrationWarning>
         <ThemeProvider>
           <AuthProvider>

@@ -21,6 +21,9 @@ function esWebKit() {
     return /AppleWebKit/.test(ua) && !/Chrome|Chromium|Edg\//.test(ua);
 }
 
+/** Color de la barra del navegador en cada tema: el papel de la app (igual que `viewport` del layout) */
+const COLOR_BARRA = { claro: '#E9E4D9', oscuro: '#081624' } as const;
+
 interface ThemeContextType {
     theme: Theme;
     toggleTheme: (origen?: Origen) => void;
@@ -66,6 +69,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 root.classList.remove('dark');
             }
             localStorage.setItem('theme', theme);
+            // La barra del navegador / de estado del teléfono sigue al tema de SiMAR, no al del sistema:
+            // con el teléfono en oscuro y SiMAR en claro (lo predeterminado) quedaba una franja azul noche
+            // sobre el papel
+            document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+                meta.setAttribute('content', theme === 'dark' ? COLOR_BARRA.oscuro : COLOR_BARRA.claro);
+            });
         }
     }, [theme, mounted]);
 
@@ -109,19 +118,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             });
     };
 
-    // Renderizamos el Provider SIEMPRE para evitar errores en childrens que usen el hook.
-    // Solo evitamos mostrar el contenido si es crítico para el layout shift, 
-    // pero para una app dashboard es mejor mostrar contenido y que el tema se ajuste.
-    // Si mounted es false, usamos el valor por defecto ('light') que es seguro porque es el estado inicial.
-
+    // La página se ve desde el primer cuadro: la clase .dark ya la puso SCRIPT_TEMA (en el <head> del
+    // layout) antes de pintar. Antes todo quedaba oculto (visibility: hidden) hasta que cargaba el
+    // JavaScript, y en un celular la pantalla tardaba segundos en aparecer.
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            {/* 
-        Usamos "suppressHydrationWarning" en el html/body generalmente, 
-        pero aquí renderizamos los children directamente. 
-        Si hay discrepancia de tema inicial, React la corregirá en el useEffect.
-      */}
-            {mounted ? children : <div style={{ visibility: 'hidden' }}>{children}</div>}
+            {children}
         </ThemeContext.Provider>
     );
 }
