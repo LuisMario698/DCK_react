@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
+import { esErrorDeRed, MENSAJE_SIN_CONEXION } from '@/lib/utils/errores';
 import { Ban, CheckCircle2, Clock, Loader2, Package, Truck, X, XCircle } from 'lucide-react';
 import {
     ESTADO_SOLICITUD_LABEL,
@@ -276,6 +277,7 @@ export function mensajeError(err: unknown, porDefecto = 'Ocurrió un error. Int�
         if (msg.includes('duplicate key') && msg.includes('nombre_asociacion')) return 'Ya existe una empresa con ese nombre.';
         if (msg.includes('duplicate key') && msg.includes('tipo')) return 'Ese residuo ya está en el inventario; edítalo en lugar de crearlo.';
         if (msg.includes('row-level security')) return 'No tienes permiso para realizar esta acción.';
+        if (esErrorDeRed(msg)) return MENSAJE_SIN_CONEXION;
         return msg;
     }
     return porDefecto;

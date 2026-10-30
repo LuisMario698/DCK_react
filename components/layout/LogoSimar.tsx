@@ -10,16 +10,20 @@ import nombreOscuro from '@/public/assets/simar/nombre-oscuro.png';
  * - variante "nombre": sólo la palabra SiMAR con su línea de marea.
  * El nombre cambia solo entre modo claro y oscuro (dos imágenes, se oculta una con CSS).
  * `tono="oscuro"` fuerza la versión para fondos oscuros (p. ej. bandas azul Abismo).
+ * `prioridad={false}` para un logo que no se ve al abrir (el pie de la landing): así no se
+ * precarga junto con lo de arriba.
  */
 export function LogoSimar({
     variante = 'horizontal',
     tamano = 50,
     tono = 'auto',
+    prioridad = true,
     className = '',
 }: {
     variante?: 'horizontal' | 'simbolo' | 'nombre';
     tamano?: number;
     tono?: 'auto' | 'claro' | 'oscuro';
+    prioridad?: boolean;
     className?: string;
 }) {
     const alturaNombre = Math.round(tamano * 0.52);
@@ -37,7 +41,7 @@ export function LogoSimar({
                     width={tamano}
                     height={tamano}
                     className="object-contain flex-shrink-0"
-                    priority
+                    priority={prioridad}
                 />
             )}
             {variante !== 'simbolo' && (
@@ -49,7 +53,7 @@ export function LogoSimar({
                             width={anchoNombre}
                             height={alturaNombre}
                             className={tono === 'auto' ? 'dark:hidden' : ''}
-                            priority
+                            priority={prioridad}
                         />
                     )}
                     {tono !== 'claro' && (
@@ -59,7 +63,7 @@ export function LogoSimar({
                             width={anchoNombre}
                             height={alturaNombre}
                             className={tono === 'auto' ? 'hidden dark:block' : ''}
-                            priority
+                            priority={prioridad}
                         />
                     )}
                 </>
