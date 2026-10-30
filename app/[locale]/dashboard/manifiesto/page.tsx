@@ -31,6 +31,7 @@ import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
 import { PalomitaAnimada } from '@/components/ui/movimiento';
 import { PestanasMovil } from '@/components/ui/simar';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
+import { CampoConSugerencias } from '@/components/ui/CampoConSugerencias';
 
 
 /** `?ver=ID` abre ese manifiesto en su ventana de detalle (así llega "Lo último registrado" del Panel) */
@@ -94,10 +95,6 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
   const [motoristaNombre, setMotoristaNombre] = useState('');
   const [cocineroNombre, setCocineroNombre] = useState('');
   const [liquidosNombre, setLiquidosNombre] = useState('');
-  const [showMotoristaSuggestions, setShowMotoristaSuggestions] = useState(false);
-  const [showCocineroSuggestions, setShowCocineroSuggestions] = useState(false);
-  const [showLiquidosSuggestions, setShowLiquidosSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
 
   // Estados para filtros y búsqueda de manifiestos
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,8 +112,6 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
 
   // Estados para autocompletado de embarcaciones
   const [buqueNombre, setBuqueNombre] = useState('');
-  const [showBuqueSuggestions, setShowBuqueSuggestions] = useState(false);
-  const [selectedBuqueIndex, setSelectedBuqueIndex] = useState(-1);
 
   const buqueInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -1138,74 +1133,40 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               {/* NOMBRE DEL BARCO */}
               <div>
                 <label htmlFor="manifiesto-barco" className="block mb-2 text-[17px] font-bold text-simar-texto">Barco</label>
-                <div className="relative">
-                  <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id && !buqueNombre.trim() ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-                    <Search className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
-                    <input id="manifiesto-barco"
-                      ref={buqueInputRef}
-                      type="text"
-                      value={buqueNombre}
-                      placeholder="Escribe el nombre del barco..."
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setBuqueNombre(value);
-                        setShowBuqueSuggestions(value.length > 0);
-                        setSelectedBuqueIndex(-1);
-                        const buqueExacto = buques.find(b => b.nombre_buque.toLowerCase() === value.toLowerCase());
-                        if (buqueExacto) {
-                          setFormData({ ...formData, buque_id: buqueExacto.id.toString() });
-                        } else {
-                          setFormData({ ...formData, buque_id: '' });
-                        }
-                        setShowValidation(false);
-                      }}
-                      onFocus={() => { setActiveField('buque'); if (buqueNombre.length > 0) setShowBuqueSuggestions(true); }}
-                      onBlur={() => { setActiveField(null); setTimeout(() => setShowBuqueSuggestions(false), 200); }}
-                      onKeyDown={(e) => {
-                        const filteredBuques = buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase()));
-                        if (e.key === 'ArrowDown' && showBuqueSuggestions && filteredBuques.length > 0) {
-                          e.preventDefault();
-                          setSelectedBuqueIndex(prev => prev < filteredBuques.length - 1 ? prev + 1 : prev);
-                        } else if (e.key === 'ArrowUp' && showBuqueSuggestions && selectedBuqueIndex > 0) {
-                          e.preventDefault();
-                          setSelectedBuqueIndex(prev => prev - 1);
-                        } else if (e.key === 'Enter' && showBuqueSuggestions && selectedBuqueIndex >= 0) {
-                          e.preventDefault();
-                          const buque = filteredBuques[selectedBuqueIndex];
-                          setBuqueNombre(buque.nombre_buque);
-                          setFormData({ ...formData, buque_id: buque.id.toString() });
-                          setShowBuqueSuggestions(false);
-                          setSelectedBuqueIndex(-1);
-                        } else if (e.key === 'Escape') {
-                          setShowBuqueSuggestions(false);
-                        } else if (e.key === 'Enter' && !showBuqueSuggestions) {
-                          handleKeyDown(e, 1);
-                        }
-                      }}
-                      className="flex-1 min-w-0 bg-transparent focus:outline-none text-xl font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium placeholder:text-lg"
-                    />
-                  </div>
-                  {showBuqueSuggestions && (
-                    <div className="absolute z-50 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-56 overflow-y-auto py-1">
-                      {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).map((buque, index) => (
-                        <div
-                          key={buque.id}
-                          onClick={() => {
-                            setBuqueNombre(buque.nombre_buque);
-                            setFormData({ ...formData, buque_id: buque.id.toString() });
-                            setShowBuqueSuggestions(false);
-                          }}
-                          className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedBuqueIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}
-                        >
-                          {buque.nombre_buque}
-                          {buque.matricula && <span className="text-base text-simar-texto-2 ml-2">({buque.matricula})</span>}
-                        </div>
-                      ))}
-                      {buques.filter(b => b.nombre_buque.toLowerCase().includes(buqueNombre.toLowerCase())).length === 0 && (
-                        <div className="px-4 py-3 text-base text-simar-texto-2">No se encontraron embarcaciones</div>
-                      )}
-                    </div>
-                  )}
+                <div>
+                  <CampoConSugerencias
+                    id="manifiesto-barco"
+                    inputRef={buqueInputRef}
+                    valor={buqueNombre}
+                    placeholder="Escribe el nombre del barco…"
+                    opciones={buques}
+                    textoDe={(b) => b.nombre_buque}
+                    claveDe={(b) => b.id}
+                    complementoDe={(b) => b.matricula && <span className="text-base text-simar-texto-2 ml-2">({b.matricula})</span>}
+                    sinResultados="Embarcación nueva: se registrará con este nombre"
+                    claseLista="z-50 max-h-56"
+                    invalido={showValidation && !formData.buque_id && !buqueNombre.trim()}
+                    onCambiar={(value) => {
+                      setBuqueNombre(value);
+                      const buqueExacto = buques.find(b => b.nombre_buque.toLowerCase() === value.toLowerCase());
+                      setFormData({ ...formData, buque_id: buqueExacto ? buqueExacto.id.toString() : '' });
+                      setShowValidation(false);
+                    }}
+                    onElegir={(buque) => {
+                      setBuqueNombre(buque.nombre_buque);
+                      setFormData({ ...formData, buque_id: buque.id.toString() });
+                    }}
+                    onFocus={() => setActiveField('buque')}
+                    onBlur={() => setActiveField(null)}
+                    alEnterSinLista={(e) => handleKeyDown(e, 1)}
+                    envoltura={(campo) => (
+                      <div className={`flex items-center gap-2.5 min-h-[60px] px-4 movil:px-3 movil:gap-2 rounded-[14px] border-2 bg-simar-superficie transition-colors ${showValidation && !formData.buque_id && !buqueNombre.trim() ? 'border-simar-coral' : activeField === 'buque' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+                        <Search aria-hidden="true" className="w-[22px] h-[22px] text-simar-texto-2 flex-shrink-0" />
+                        {campo}
+                      </div>
+                    )}
+                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-xl font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium placeholder:text-lg"
+                  />
                   {showValidation && !formData.buque_id && !buqueNombre.trim() && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Escribe o elige la embarcación</p>}
                   {ofrecerRepetir && ultimoDelBarco && (
                     <div className="simar-aparece mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[14px] bg-simar-marea-suave px-3.5 py-2.5 movil:px-3 movil:py-2">
@@ -1236,6 +1197,10 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   <input id="manifiesto-aceite"
                     ref={aceiteRef}
                     type="number"
+                    inputMode="decimal"
+                    enterKeyHint="next"
+                    // La rueda del ratón sobre un campo enfocado cambiaba el número sin querer
+                    onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="0.01"
                     value={residuos.aceite_usado || ''}
@@ -1257,6 +1222,10 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   <input id="manifiesto-filtros-aceite"
                     ref={filtrosAceiteRef}
                     type="number"
+                    inputMode="numeric"
+                    enterKeyHint="next"
+                    // La rueda del ratón sobre un campo enfocado cambiaba el número sin querer
+                    onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     value={residuos.filtros_aceite || ''}
                     onChange={(e) => setResiduos({ ...residuos, filtros_aceite: parseInt(e.target.value) || 0 })}
@@ -1277,6 +1246,10 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   <input id="manifiesto-filtros-diesel"
                     ref={filtrosDieselRef}
                     type="number"
+                    inputMode="numeric"
+                    enterKeyHint="next"
+                    // La rueda del ratón sobre un campo enfocado cambiaba el número sin querer
+                    onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     value={residuos.filtros_diesel || ''}
                     onChange={(e) => setResiduos({ ...residuos, filtros_diesel: parseInt(e.target.value) || 0 })}
@@ -1297,6 +1270,10 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   <input id="manifiesto-filtros-aire"
                     ref={filtrosAireRef}
                     type="number"
+                    inputMode="numeric"
+                    enterKeyHint="next"
+                    // La rueda del ratón sobre un campo enfocado cambiaba el número sin querer
+                    onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     value={residuos.filtros_aire || ''}
                     onChange={(e) => setResiduos({ ...residuos, filtros_aire: parseInt(e.target.value) || 0 })}
@@ -1317,6 +1294,10 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                   <input id="manifiesto-basura"
                     ref={basuraRef}
                     type="number"
+                    inputMode="decimal"
+                    enterKeyHint="next"
+                    // La rueda del ratón sobre un campo enfocado cambiaba el número sin querer
+                    onWheel={(e) => e.currentTarget.blur()}
                     min="0"
                     step="0.01"
                     value={residuos.basura || ''}
@@ -1388,58 +1369,31 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Motorista</span><span className="text-[15px] font-bold text-simar-coral">Requerido</span></p>
                 <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos</p>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
-                  <div className="relative">
-                    <input
-                      ref={motoristaRef}
-                      type="text"
-                      value={motoristaNombre}
+                  <div>
+                    <CampoConSugerencias
+                      inputRef={motoristaRef}
+                      etiqueta="Nombre del motorista"
+                      valor={motoristaNombre}
                       placeholder="Nombre"
-                      onChange={(e) => {
-                        const value = e.target.value;
+                      opciones={personas}
+                      textoDe={(p) => p.nombre}
+                      claveDe={(p) => p.id}
+                      invalido={showValidation && !formData.responsable_principal_id}
+                      onCambiar={(value) => {
                         setMotoristaNombre(value);
-                        setShowMotoristaSuggestions(value.length > 0);
-                        setSelectedSuggestionIndex(-1);
                         const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                        if (personaExacta) {
-                          setFormData({ ...formData, responsable_principal_id: personaExacta.id.toString() });
-                        } else {
-                          setFormData({ ...formData, responsable_principal_id: '' });
-                        }
+                        setFormData({ ...formData, responsable_principal_id: personaExacta ? personaExacta.id.toString() : '' });
                         setShowValidation(false);
                       }}
-                      onFocus={() => { setActiveField('motorista'); if (motoristaNombre.length > 0) setShowMotoristaSuggestions(true); }}
-                      onBlur={() => { setActiveField(null); setTimeout(() => setShowMotoristaSuggestions(false), 200); }}
-                      onKeyDown={(e) => {
-                        const filteredPersonas = personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase()));
-                        if (e.key === 'ArrowDown' && showMotoristaSuggestions && filteredPersonas.length > 0) {
-                          e.preventDefault();
-                          setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
-                        } else if (e.key === 'ArrowUp' && showMotoristaSuggestions && selectedSuggestionIndex > 0) {
-                          e.preventDefault();
-                          setSelectedSuggestionIndex(prev => prev - 1);
-                        } else if (e.key === 'Enter' && showMotoristaSuggestions && selectedSuggestionIndex >= 0) {
-                          e.preventDefault();
-                          const persona = filteredPersonas[selectedSuggestionIndex];
-                          setMotoristaNombre(persona.nombre);
-                          setFormData({ ...formData, responsable_principal_id: persona.id.toString() });
-                          setShowMotoristaSuggestions(false);
-                          setSelectedSuggestionIndex(-1);
-                        } else if (e.key === 'Escape') {
-                          setShowMotoristaSuggestions(false);
-                        }
+                      onElegir={(persona) => {
+                        setMotoristaNombre(persona.nombre);
+                        setFormData({ ...formData, responsable_principal_id: persona.id.toString() });
                       }}
+                      onFocus={() => setActiveField('motorista')}
+                      onBlur={() => setActiveField(null)}
+                      alEnterSinLista={(e) => handleKeyDown(e, 7)}
                       className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${showValidation && !formData.responsable_principal_id ? 'border-simar-coral' : activeField === 'motorista' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
                     />
-                    {showMotoristaSuggestions && (
-                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
-                        {personas.filter(p => p.nombre.toLowerCase().includes(motoristaNombre.toLowerCase())).map((persona, index) => (
-                          <div key={persona.id} onClick={() => { setMotoristaNombre(persona.nombre); setFormData({ ...formData, responsable_principal_id: persona.id.toString() }); setShowMotoristaSuggestions(false); }}
-                            className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedSuggestionIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}>
-                            {persona.nombre}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                     {showValidation && !formData.responsable_principal_id && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Requerido</p>}
                   </div>
 
@@ -1472,58 +1426,27 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
               <div className="py-4 border-b border-simar-borde-suave">
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Cocinero</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
-                  <div className="relative">
-                    <input
-                      ref={cocineroRef}
-                      type="text"
-                      value={cocineroNombre}
-                      placeholder="Nombre"
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setCocineroNombre(value);
-                        setShowCocineroSuggestions(value.length > 0);
-                        setSelectedSuggestionIndex(-1);
-                        const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                        if (personaExacta) {
-                          setFormData({ ...formData, responsable_secundario_id: personaExacta.id.toString() });
-                        } else {
-                          setFormData({ ...formData, responsable_secundario_id: '' });
-                        }
-                      }}
-                      onFocus={() => { setActiveField('cocinero'); if (cocineroNombre.length > 0) setShowCocineroSuggestions(true); }}
-                      onBlur={() => { setActiveField(null); setTimeout(() => setShowCocineroSuggestions(false), 200); }}
-                      onKeyDown={(e) => {
-                        const filteredPersonas = personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase()));
-                        if (e.key === 'ArrowDown' && showCocineroSuggestions && filteredPersonas.length > 0) {
-                          e.preventDefault();
-                          setSelectedSuggestionIndex(prev => prev < filteredPersonas.length - 1 ? prev + 1 : prev);
-                        } else if (e.key === 'ArrowUp' && showCocineroSuggestions && selectedSuggestionIndex > 0) {
-                          e.preventDefault();
-                          setSelectedSuggestionIndex(prev => prev - 1);
-                        } else if (e.key === 'Enter' && showCocineroSuggestions && selectedSuggestionIndex >= 0) {
-                          e.preventDefault();
-                          const persona = filteredPersonas[selectedSuggestionIndex];
-                          setCocineroNombre(persona.nombre);
-                          setFormData({ ...formData, responsable_secundario_id: persona.id.toString() });
-                          setShowCocineroSuggestions(false);
-                          setSelectedSuggestionIndex(-1);
-                        } else if (e.key === 'Escape') {
-                          setShowCocineroSuggestions(false);
-                        }
-                      }}
-                      className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'cocinero' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
-                    />
-                    {showCocineroSuggestions && (
-                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
-                        {personas.filter(p => p.id !== parseInt(formData.responsable_principal_id)).filter(p => p.nombre.toLowerCase().includes(cocineroNombre.toLowerCase())).map((persona, index) => (
-                          <div key={persona.id} onClick={() => { setCocineroNombre(persona.nombre); setFormData({ ...formData, responsable_secundario_id: persona.id.toString() }); setShowCocineroSuggestions(false); }}
-                            className={`px-4 py-3 cursor-pointer text-lg text-simar-texto ${index === selectedSuggestionIndex ? 'bg-simar-marea-suave' : 'hover:bg-simar-papel'}`}>
-                            {persona.nombre}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <CampoConSugerencias
+                    inputRef={cocineroRef}
+                    etiqueta="Nombre del cocinero"
+                    valor={cocineroNombre}
+                    placeholder="Nombre"
+                    opciones={personas.filter(p => p.id !== parseInt(formData.responsable_principal_id))}
+                    textoDe={(p) => p.nombre}
+                    claveDe={(p) => p.id}
+                    onCambiar={(value) => {
+                      setCocineroNombre(value);
+                      const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                      setFormData({ ...formData, responsable_secundario_id: personaExacta ? personaExacta.id.toString() : '' });
+                    }}
+                    onElegir={(persona) => {
+                      setCocineroNombre(persona.nombre);
+                      setFormData({ ...formData, responsable_secundario_id: persona.id.toString() });
+                    }}
+                    onFocus={() => setActiveField('cocinero')}
+                    onBlur={() => setActiveField(null)}
+                    className={`w-full min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors ${activeField === 'cocinero' ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}
+                  />
 
                   <div className={cocineroSignature ? 'movil:col-span-2' : ''}>
                     {!cocineroSignature ? (
@@ -1555,37 +1478,24 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                 <p className="flex items-baseline gap-2.5"><span className="text-lg font-extrabold text-simar-texto">Resp. de líquidos</span><span className="text-[15px] text-simar-texto-2">Opcional</span></p>
                 <p className="text-[15px] text-simar-texto-2">Responsable de entrega de líquidos (aceite usado)</p>
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-[1fr_190px] gap-3 items-start movil:grid-cols-[1fr_auto] movil:gap-2">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={liquidosNombre}
-                      placeholder="Nombre"
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setLiquidosNombre(value);
-                        setShowLiquidosSuggestions(value.length > 0);
-                        const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
-                        if (personaExacta) {
-                          setFormData({ ...formData, responsable_liquidos_id: personaExacta.id.toString() });
-                        } else {
-                          setFormData({ ...formData, responsable_liquidos_id: '' });
-                        }
-                      }}
-                      onFocus={() => { if (liquidosNombre.length > 0) setShowLiquidosSuggestions(true); }}
-                      onBlur={() => { setTimeout(() => setShowLiquidosSuggestions(false), 200); }}
-                      className="w-full min-h-[60px] px-4 rounded-[14px] border-2 border-simar-campo-borde focus:border-simar-marea-tinta bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors"
-                    />
-                    {showLiquidosSuggestions && (
-                      <div className="absolute z-30 w-full mt-2 rounded-2xl border border-simar-borde bg-simar-superficie shadow-[0_16px_32px_-16px_rgba(11,34,54,0.45)] max-h-48 overflow-y-auto py-1">
-                        {personas.filter(p => p.nombre.toLowerCase().includes(liquidosNombre.toLowerCase())).map((persona) => (
-                          <div key={persona.id} onClick={() => { setLiquidosNombre(persona.nombre); setFormData({ ...formData, responsable_liquidos_id: persona.id.toString() }); setShowLiquidosSuggestions(false); }}
-                            className="px-4 py-3 cursor-pointer text-lg text-simar-texto hover:bg-simar-papel">
-                            {persona.nombre}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <CampoConSugerencias
+                    etiqueta="Nombre del responsable de líquidos"
+                    valor={liquidosNombre}
+                    placeholder="Nombre"
+                    opciones={personas}
+                    textoDe={(p) => p.nombre}
+                    claveDe={(p) => p.id}
+                    onCambiar={(value) => {
+                      setLiquidosNombre(value);
+                      const personaExacta = personas.find(p => p.nombre.toLowerCase() === value.toLowerCase());
+                      setFormData({ ...formData, responsable_liquidos_id: personaExacta ? personaExacta.id.toString() : '' });
+                    }}
+                    onElegir={(persona) => {
+                      setLiquidosNombre(persona.nombre);
+                      setFormData({ ...formData, responsable_liquidos_id: persona.id.toString() });
+                    }}
+                    className="w-full min-h-[60px] px-4 rounded-[14px] border-2 border-simar-campo-borde focus:border-simar-marea-tinta bg-simar-superficie focus:outline-none text-lg font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium transition-colors"
+                  />
 
                   <div className={liquidosSignature ? 'movil:col-span-2' : ''}>
                     {!liquidosSignature ? (
