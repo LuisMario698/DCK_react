@@ -72,7 +72,7 @@ const CIRCULO: Record<EstadoPaso, string> = {
     hecho: 'bg-simar-arrecife text-white',
     actual: 'bg-simar-superficie border-[3px] border-simar-marea-tinta',
     pendiente: 'bg-simar-superficie border-2 border-simar-campo-borde',
-    rechazado: 'bg-[#A63F0E] text-white',
+    rechazado: 'bg-simar-coral-solido text-white',
     cancelado: 'bg-simar-campo-borde text-white',
 };
 

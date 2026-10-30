@@ -222,7 +222,7 @@ function PorAtender({ pendientes, angosto }: { pendientes: Pendiente[]; angosto:
       <h2 id="por-atender" className="flex items-center gap-2.5 text-xl font-bold text-simar-texto-2 movil:text-[15px] movil:px-1">
         Por atender
         {/* Contador de SiMAR (DISEÑO_SIMAR.md §10.6) */}
-        <span className="min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold inline-flex items-center justify-center">
+        <span className="min-w-[26px] h-[26px] px-1.5 rounded-full bg-simar-coral-solido text-white text-[13px] font-bold inline-flex items-center justify-center">
           {pendientes.length}
         </span>
       </h2>

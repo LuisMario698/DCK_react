@@ -125,8 +125,8 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
                                 {t.badge ? (
                                     <span
                                         aria-label={`${t.badge} ${t.badgeTexto}`}
-                                        className={`text-[13px] px-1.5 h-[22px] rounded-full font-bold min-w-[22px] inline-flex items-center justify-center movil:absolute movil:top-1 movil:left-[calc(50%+3px)] movil:h-[18px] movil:min-w-[18px] movil:px-1 movil:text-[11px] movil:bg-[#A63F0E] movil:text-white movil:ring-2 ${
-                                            active ? 'bg-white/25 text-white movil:ring-simar-marea' : 'bg-[#A63F0E] text-white movil:ring-simar-superficie'
+                                        className={`text-[13px] px-1.5 h-[22px] rounded-full font-bold min-w-[22px] inline-flex items-center justify-center movil:absolute movil:top-1 movil:left-[calc(50%+3px)] movil:h-[18px] movil:min-w-[18px] movil:px-1 movil:text-[11px] movil:bg-simar-coral-solido movil:text-white movil:ring-2 ${
+                                            active ? 'bg-white/25 text-white movil:ring-simar-marea' : 'bg-simar-coral-solido text-white movil:ring-simar-superficie'
                                         }`}
                                     >
                                         {t.badge}

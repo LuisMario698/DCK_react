@@ -292,7 +292,7 @@ export function InventarioTab() {
                                                 </button>
                                                 <button
                                                     onClick={() => remove(item)}
-                                                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-simar-coral-suave text-simar-coral hover:bg-[#A63F0E] hover:text-white transition-colors"
+                                                    className="w-11 h-11 flex items-center justify-center rounded-xl bg-simar-coral-suave text-simar-coral hover:bg-simar-coral-solido hover:text-white transition-colors"
                                                     title="Eliminar"
                                                     aria-label="Eliminar"
                                                 >

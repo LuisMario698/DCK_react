@@ -73,7 +73,7 @@ export function Confirmador() {
                     onClick={() => responder(true)}
                     autoFocus={!pendiente.peligro}
                     className={`simar-presiona inline-flex items-center justify-center gap-2 min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white transition-colors ${
-                        pendiente.peligro ? 'bg-[#A63F0E] hover:bg-[#8A3409]' : 'bg-simar-marea hover:bg-simar-marea-hover'
+                        pendiente.peligro ? 'bg-simar-coral-solido hover:bg-simar-coral-solido-hover' : 'bg-simar-marea hover:bg-simar-marea-hover'
                     }`}
                 >
                     {pendiente.accion ?? 'Aceptar'}

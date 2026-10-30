@@ -22,7 +22,7 @@ export function EstadoSolicitudBadge({ estado }: { estado: EstadoSolicitud }) {
     const map = {
         pendiente: { Icon: Clock, cls: 'bg-simar-coral-suave text-simar-coral' },
         aprobada: { Icon: CheckCircle2, cls: 'bg-simar-marea-suave text-simar-marea-tinta' },
-        rechazada: { Icon: XCircle, cls: 'bg-[#A63F0E] text-white' },
+        rechazada: { Icon: XCircle, cls: 'bg-simar-coral-solido text-white' },
         completada: { Icon: Truck, cls: 'bg-simar-arrecife-suave text-simar-arrecife-tinta' },
         cancelada: { Icon: Ban, cls: 'bg-simar-papel text-simar-texto-2' },
     } as const;
@@ -159,7 +159,7 @@ export function ControlSegmentado<T extends string>({
                 const n = o.conteo ?? 0;
                 const tonoConteo =
                     n > 0 && o.tono === 'coral'
-                        ? 'bg-[#A63F0E] text-white'
+                        ? 'bg-simar-coral-solido text-white'
                         : n > 0 && o.tono === 'marea'
                           ? 'bg-simar-marea-suave text-simar-marea-tinta'
                           : activo

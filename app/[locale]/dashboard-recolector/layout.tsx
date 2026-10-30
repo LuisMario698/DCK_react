@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { AlertTriangle, ClipboardList, Ellipsis, LayoutGrid, Map as MapIcon, MessageSquare, ShieldCheck, Unlink } from 'lucide-react';
 import { BarraInferior } from '@/components/layout/BarraInferior';
@@ -16,8 +17,10 @@ import { ESTADO_EMPRESA_LABEL } from '@/lib/constants/empresas';
 import { AvisoVencimiento } from '@/components/recolector/MiSuscripcion';
 import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
-import { Recorrido } from '@/components/demo/Recorrido';
-import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
+
+// Sólo en la demostración: en la app real ni se descargan
+const Recorrido = dynamic(() => import('@/components/demo/Recorrido').then((m) => m.Recorrido), { ssr: false });
+const VistaPreviaPdf = dynamic(() => import('@/components/demo/VistaPreviaPdf').then((m) => m.VistaPreviaPdf), { ssr: false });
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();

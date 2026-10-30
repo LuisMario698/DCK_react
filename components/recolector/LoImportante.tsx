@@ -197,15 +197,15 @@ export function Avisos({
             style={{ animationDelay: '0.1s' }}
         >
             <div className="flex items-center justify-between gap-3 px-5 sm:px-6 pt-5 pb-2 movil:px-3.5 movil:pt-3.5 movil:pb-1.5">
-                <h3 id="avisos-inicio" className="flex items-center gap-2.5 text-[22px] font-extrabold text-simar-texto movil:text-[17px]">
+                <h2 id="avisos-inicio" className="flex items-center gap-2.5 text-[22px] font-extrabold text-simar-texto movil:text-[17px]">
                     Avisos
                     {/* Contador de SiMAR (DISEÑO_SIMAR.md §10.6) */}
                     {nuevos > 0 && (
-                        <span className="min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold inline-flex items-center justify-center">
+                        <span className="min-w-[26px] h-[26px] px-1.5 rounded-full bg-simar-coral-solido text-white text-[13px] font-bold inline-flex items-center justify-center">
                             {nuevos > 9 ? '9+' : nuevos}
                         </span>
                     )}
-                </h3>
+                </h2>
             </div>
 
             {lista.length === 0 && mensajes === 0 ? (
@@ -277,14 +277,15 @@ export interface DatoResumen {
 
 /**
  * Los datos de la empresa en una tarjeta: uno por renglón en la columna angosta; a lo ancho (sin
- * recolección agendada) en cuatro columnas. Cada uno lleva a su pantalla.
+ * recolección agendada) en cuatro columnas. Cada uno lleva a su pantalla. Mide lo que su contenido
+ * (self-start): estirada al alto de «Disponible ahora» quedaba con un hueco abajo.
  */
 export function TuResumen({ datos, ancho }: { datos: DatoResumen[]; ancho: boolean }) {
     return (
-        <section aria-labelledby="tu-resumen" className={`simar-aparece h-full p-5 sm:p-6 ${tarjeta} movil:p-3.5`} style={{ animationDelay: '0.22s' }}>
-            <h3 id="tu-resumen" className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">
+        <section aria-labelledby="tu-resumen" className={`simar-aparece self-start p-5 sm:p-6 ${tarjeta} movil:p-3.5`} style={{ animationDelay: '0.22s' }}>
+            <h2 id="tu-resumen" className="text-[22px] font-extrabold text-simar-texto movil:text-[17px]">
                 Tu resumen
-            </h3>
+            </h2>
             <ul className={`mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-6 movil:grid-cols-2 movil:gap-x-2 movil:mt-1 ${ancho ? 'xl:grid-cols-4' : 'xl:grid-cols-1'}`}>
                 {datos.map((d) => (
                     <li key={d.etiqueta}>

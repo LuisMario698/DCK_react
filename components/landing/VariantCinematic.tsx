@@ -2,11 +2,11 @@
 
 import { Fragment, useState, useEffect, useRef, type CSSProperties } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import simboloGrande from '@/public/assets/simar/simbolo-grande.png';
 import nombreGrandeOscuro from '@/public/assets/simar/nombre-grande-oscuro.png';
 import logoItspp from '@/public/assets/logo_ITSPP.png';
 import logoIcs from '@/public/assets/logo_ICS.png';
-import { LoginForm } from '@/components/auth/LoginForm';
 import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
 import type { VarianteMapa } from './mapa/puertos';
 import { useScrollReveal } from './useScrollReveal';
@@ -30,6 +30,7 @@ import {
     X,
     ArrowLeft,
     SquareTerminal,
+    Loader2,
     Pause,
     Play,
     Menu,
@@ -53,6 +54,18 @@ import {
     type Equivalencia,
 } from '@/lib/utils/equivalencias';
 import { LITROS_AGUA_POR_LITRO_ACEITE } from '@/lib/constants/impacto';
+
+// El formulario de acceso (con el registro y la recuperación de contraseña) se baja al abrir la
+// ventana, no con la landing: sólo hace falta para entrar, y en la demostración ni se abre
+const cargarLoginForm = () => import('@/components/auth/LoginForm').then((m) => m.LoginForm);
+const LoginForm = dynamic(cargarLoginForm, {
+    ssr: false,
+    loading: () => (
+        <div className="min-h-[320px] flex items-center justify-center text-simar-texto-2" role="status" aria-label="Cargando">
+            <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+    ),
+});
 
 /** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
 const SEGUNDOS_POR_FOTO = 6;
@@ -254,7 +267,7 @@ function ModalRoleCard({
                 <Icon className="w-7 h-7 movil:w-6 movil:h-6" />
             </span>
             <span className="text-xl md:text-[21px] font-extrabold text-simar-texto movil:text-[17px] movil:leading-tight">{title}</span>
-            <span className="text-[17px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[14px]">{desc}</span>
+            <span className="text-[17px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[15px]">{desc}</span>
             <span className={`mt-auto pt-1 flex items-center gap-1.5 text-[17px] font-bold movil:mt-0 movil:pt-0 movil:col-start-3 movil:row-start-1 movil:row-span-2 ${s.arrow}`}>
                 <span className="movil:sr-only">Continuar</span> <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-0.5 transition-transform movil:w-[22px] movil:h-[22px]" />
             </span>
@@ -542,6 +555,8 @@ export function VariantCinematic({
 
     useEffect(() => {
         if (showLoginModal) {
+            // Mientras se elige el tipo de usuario, ya se va bajando el formulario
+            void cargarLoginForm();
             const prevOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden';
             return () => {
@@ -907,7 +922,7 @@ export function VariantCinematic({
                         />
                         <figcaption className="simar-vidrio-fuerte absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                             <span className="block text-xl font-extrabold movil:text-[17px]">Alto Golfo de California</span>
-                            <span className="block mt-0.5 text-[17px] text-simar-texto-2 movil:text-[14px]">
+                            <span className="block mt-0.5 text-[17px] text-simar-texto-2 movil:text-[15px]">
                                 Una de las regiones marinas más biodiversas y frágiles del planeta.
                             </span>
                         </figcaption>
@@ -936,7 +951,7 @@ export function VariantCinematic({
                             />
                             <figcaption className="simar-vidrio-fuerte absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                                 <span className="block text-lg md:text-[19px] font-extrabold movil:text-[16px]">Francisco Javier Bojórquez Ochoa</span>
-                                <span className="block text-base text-simar-texto-2 movil:text-[14px]">SEMARNAT · Puerto Peñasco</span>
+                                <span className="block text-base text-simar-texto-2 movil:text-[15px]">SEMARNAT · Puerto Peñasco</span>
                             </figcaption>
                         </figure>
 
@@ -1005,10 +1020,11 @@ export function VariantCinematic({
                     </div>
 
                     {/* En celular, carrusel que se desliza de lado (cada tarjeta ocupa casi el ancho) */}
-                    <p className="hidden movil:flex mt-5 items-center gap-1.5 text-[14px] font-bold text-simar-espuma">
+                    <p className="hidden movil:flex mt-5 items-center gap-1.5 text-[15px] font-bold text-simar-espuma">
                         Desliza para ver las {AWARENESS_PANELS.length} <ArrowRight className="w-4 h-4" />
                     </p>
-                    <div className="simar-carrusel mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 movil:mt-3">
+                    {/* tabIndex: en celular se desliza de lado, y con teclado también tiene que poder moverse */}
+                    <div className="simar-carrusel mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 movil:mt-3" role="region" aria-label="Por qué importan los datos del mar" tabIndex={0}>
                         {AWARENESS_PANELS.map((panel, i) => {
                             const Icon = panel.icon;
                             return (
@@ -1044,7 +1060,7 @@ export function VariantCinematic({
             <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-clip movil:py-14 movil:px-5">
                 <div className="max-w-[1248px] mx-auto">
                     <div className="max-w-4xl">
-                        <span className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[14px] movil:px-3 movil:py-1.5">
+                        <span className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[15px] movil:px-3 movil:py-1.5">
                             <span className="w-2 h-2 rounded-full bg-simar-marea-tinta" />
                             {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
                         </span>
@@ -1104,13 +1120,13 @@ export function VariantCinematic({
                                     <span className={`w-[52px] h-[52px] rounded-full flex items-center justify-center movil:w-9 movil:h-9 ${eq.tono}`}>
                                         <Icon className="w-[26px] h-[26px] movil:w-[18px] movil:h-[18px]" />
                                     </span>
-                                    <div className="mt-3.5 text-lg font-bold text-simar-texto-2 movil:mt-2.5 movil:text-[14px] movil:leading-tight">{eq.label}</div>
+                                    <div className="mt-3.5 text-lg font-bold text-simar-texto-2 movil:mt-2.5 movil:text-[15px] movil:leading-tight">{eq.label}</div>
                                     <div className="text-[38px] font-extrabold leading-tight movil:mt-1 movil:text-[22px] movil:break-all">
                                         <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={1800} />
                                     </div>
-                                    <div className="text-lg font-bold movil:text-[14px] movil:leading-tight">{eq.impactUnit}</div>
-                                    <div className="text-[17px] text-simar-texto-2 movil:text-[13px] movil:leading-snug">{eq.impactDescription}</div>
-                                    <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2 movil:mt-2 movil:pt-2 movil:text-[12.5px] movil:leading-snug">
+                                    <div className="text-lg font-bold movil:text-[15px] movil:leading-tight">{eq.impactUnit}</div>
+                                    <div className="text-[17px] text-simar-texto-2 movil:text-[15px] movil:leading-snug">{eq.impactDescription}</div>
+                                    <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2 movil:mt-2 movil:pt-2 movil:text-[15px] movil:leading-snug">
                                         Basado en{' '}
                                         <strong className="text-simar-texto">
                                             <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
@@ -1120,7 +1136,7 @@ export function VariantCinematic({
                                 </article>
                             );
                         })}
-                        <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[13px]" data-delay="200">
+                        <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[15px]" data-delay="200">
                             Estimaciones con los registros reales del sistema y factores aproximados: 1 L de aceite
                             puede contaminar {LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
                             papeleo. Cada registro que se captura hace crecer estos números.
@@ -1187,7 +1203,7 @@ export function VariantCinematic({
                                     <Icon className="w-8 h-8 text-simar-marea-tinta movil:row-span-3 movil:w-7 movil:h-7" />
                                     <div className="mt-4 text-4xl md:text-5xl font-extrabold leading-none movil:mt-0 movil:text-[26px]">{stat.value}</div>
                                     <div className="mt-2 text-xl font-extrabold movil:mt-1 movil:text-[16px]">{stat.label}</div>
-                                    <div className="mt-1 text-[17px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">{stat.detail}</div>
+                                    <div className="mt-1 text-[17px] text-simar-texto-2 movil:mt-0 movil:text-[15px]">{stat.detail}</div>
                                 </div>
                             );
                         })}
@@ -1264,7 +1280,7 @@ export function VariantCinematic({
                         <button
                             type="button"
                             onClick={abrirAccesoDesarrollador}
-                            className="mt-1 min-h-[44px] inline-flex items-center text-[14px] text-simar-texto-3 hover:text-simar-texto-2 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                            className="mt-1 min-h-[44px] inline-flex items-center text-[14px] movil:text-[15px] text-simar-texto-3 hover:text-simar-texto-2 hover:underline underline-offset-2 transition-colors cursor-pointer"
                         >
                             Acceso desarrollador
                         </button>

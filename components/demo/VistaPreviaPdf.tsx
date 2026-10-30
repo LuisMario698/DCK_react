@@ -78,24 +78,26 @@ function interceptarPdfs() {
     if (interceptado) return;
     interceptado = true;
 
-    // doc.save() de jsPDF (Estadísticas, reporte del mes, constancia anual…)
-    import('jspdf').then(({ jsPDF }) => {
-        const api = jsPDF.API as unknown as { save: (this: { output: (tipo: 'blob') => Blob }, nombre?: string) => unknown };
-        api.save = function (nombre?: string) {
-            abrirVistaPrevia(tituloDeArchivo(nombre ?? 'Documento.pdf'), this.output('blob'));
-            return this;
-        };
-    });
-
-    // Enlaces de descarga de un PDF (manifiesto, borrador, basurón)
+    // Enlaces de descarga de un PDF: los de las pantallas (manifiesto, borrador, basurón) usan
+    // .click(), y doc.save() de jsPDF (Estadísticas, reporte del mes, constancia anual…) hace lo mismo
+    // con dispatchEvent. Así no hay que bajar jsPDF al abrir cada pantalla para cambiarle el save()
+    const esDescargaPdf = (a: HTMLAnchorElement) => !!a.download && /\.pdf$/i.test(a.download) && /^(blob|data):/.test(a.href);
+    const mostrar = (a: HTMLAnchorElement) => {
+        const pdf = fetch(a.href).then((r) => r.blob());
+        abrirVistaPrevia(tituloDeArchivo(a.download), () => pdf);
+    };
     const clicOriginal = HTMLAnchorElement.prototype.click;
     HTMLAnchorElement.prototype.click = function (this: HTMLAnchorElement) {
-        if (this.download && /\.pdf$/i.test(this.download) && /^(blob|data):/.test(this.href)) {
-            const pdf = fetch(this.href).then((r) => r.blob());
-            abrirVistaPrevia(tituloDeArchivo(this.download), () => pdf);
-            return;
-        }
+        if (esDescargaPdf(this)) return mostrar(this);
         return clicOriginal.call(this);
+    };
+    const despacharOriginal = HTMLAnchorElement.prototype.dispatchEvent;
+    HTMLAnchorElement.prototype.dispatchEvent = function (this: HTMLAnchorElement, evento: Event) {
+        if (evento.type === 'click' && esDescargaPdf(this)) {
+            mostrar(this);
+            return false;
+        }
+        return despacharOriginal.call(this, evento);
     };
 
     // Abrir un PDF recién hecho en otra pestaña

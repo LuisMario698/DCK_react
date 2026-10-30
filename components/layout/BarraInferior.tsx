@@ -310,7 +310,7 @@ function Contenido({ Icono, label, activo, contador }: { Icono: LucideIcon; labe
 
 function Contador({ valor }: { valor: number }) {
     return (
-        <span aria-hidden="true" className="absolute -top-1.5 -right-3 min-w-[20px] h-[20px] px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
+        <span aria-hidden="true" className="absolute -top-1.5 -right-3 min-w-[20px] h-[20px] px-1 rounded-full bg-simar-coral-solido text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
             {valor > 9 ? '9+' : valor}
         </span>
     );

@@ -74,7 +74,8 @@ oscuro**: no escribas `dark:` para colores de la paleta.
 | `simar-marea-tinta` | `#1B5FC9` / oscuro `#8AB4F8` | Enlaces, íconos azules, borde del campo activo | "Firmar", "¿Olvidaste tu contraseña?" |
 | `simar-marea-suave` | `#EAF1FB` | Fondo de círculos de ícono y avisos informativos | |
 | `simar-arrecife` / `-tinta` / `-suave` | `#127A5D` / `#0E6A50` / `#E3F2EC` | **Listo, firmado, guardado, completado** (5.3:1) | "Firmado", archivo adjunto, Basurón |
-| `simar-coral` / `-suave` | `#A63F0E` / `#FBEADF` | **Falta, requerido, pendiente, sin leer** (6.3:1) | "Requerido", contadores, "Eliminar" |
+| `simar-coral` / `-suave` | `#A63F0E` / `#FBEADF` | **Falta, requerido, pendiente, sin leer** (6.3:1) | "Requerido", ícono y texto de "Eliminar" |
+| `simar-coral-solido` / `-hover` | `#A63F0E` / `#8C340B`, igual en oscuro | Fondo coral con **letra blanca** (en oscuro, `simar-coral` es claro y no sirve de fondo) | Contadores, "Rechazada", botón "Eliminar" |
 | `simar-violeta` / `-suave` | `#5B3FA8` / `#EEEAF8` | Estadísticas y todo lo de **superadmin** | Tarjeta Estadísticas, aviso "Modo superadmin" |
 | `simar-golfo` | `#20B2C4` | Decorativo: la línea de marea bajo la sección activa | Nunca para texto |
 | `simar-abismo` | `#0B2236` | Bandas oscuras de la landing | |
@@ -526,7 +527,7 @@ enfocar. Si el dato tiene unidad, la unidad va escrita dentro, a la derecha.
 
 La palomita se dibuja cuando aparece la insignia: así se nota que la firma acaba de quedar.
 
-Contador (mensajes, notificaciones): `min-w-[26px] h-[26px] px-1.5 rounded-full bg-[#A63F0E] text-white text-[13px] font-bold`.
+Contador (mensajes, notificaciones): `min-w-[26px] h-[26px] px-1.5 rounded-full bg-simar-coral-solido text-white text-[13px] font-bold`.
 Es el único texto de 13 px permitido.
 
 ### 10.7 Bloque de firma
@@ -712,7 +713,7 @@ Los mismos colores en toda la app (`EstadoSolicitudBadge` y `NotifIcon`), siempr
 | Pendiente | coral suave (falta que alguien actúe) |
 | Aprobada | marea suave (en curso) |
 | Completada | arrecife suave (listo) |
-| Rechazada | coral sólido `#A63F0E` con texto blanco |
+| Rechazada | `simar-coral-solido` con texto blanco |
 | Cancelada | papel con texto de apoyo |
 
 ### 10.18 Colores de categoría y gráficas
@@ -1058,7 +1059,8 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
   con `EncabezadoPantalla` (salvo en Inicio, que tiene su saludo, y en Mensajes, donde manda el chat).
   En el superadmin (`HeaderSuperadmin`) la píldora lleva la marca violeta "Superadmin" y el tema, y
   `TituloPantallaSuperadmin` pone el título (tono violeta). En escritorio el portal y el superadmin
-  conservan su encabezado con el título.
+  conservan su encabezado con el título, salvo Inicio del portal: ahí el saludo es el título (`h1`)
+  y la barra repetía el nombre de la empresa.
 - **Barra inferior** (`BarraInferior`): cápsula de **cristal líquido** plano (16.4) flotante a 10 px del
   borde (respeta la zona segura del teléfono). Cuatro secciones + un botón al final. Palabras de
   9.5–12 px: `BarraInferior` mide la palabra más larga con la fuente real y el ancho que tendrá

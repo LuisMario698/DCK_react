@@ -24,7 +24,7 @@ import {
 import { getBuques, createBuqueAutomatico } from '@/lib/services/buques';
 import { getPersonas, createPersonaAutomatica, getOrCreateTipoPersona } from '@/lib/services/personas';
 import { createManifiesto, getManifiestos, deleteManifiesto, generarNumeroManifiesto, updateManifiesto } from '@/lib/services/manifiestos';
-import { generarPDFManifiesto, generarNombreArchivoPDF, FirmasManifiesto } from '@/lib/utils/pdfGenerator';
+import type { FirmasManifiesto } from '@/lib/utils/pdfGenerator';
 import { uploadManifiestoPDF } from '@/lib/services/storage';
 import { ManifiestoConRelaciones, Buque, PersonaConTipo } from '@/types/database';
 import { hoyLocal, parseFechaLocal } from '@/lib/utils/fechas';
@@ -33,6 +33,15 @@ import { PestanasMovil } from '@/components/ui/simar';
 import { SelectorFecha } from '@/components/ui/SelectorFecha';
 import { CampoConSugerencias } from '@/components/ui/CampoConSugerencias';
 
+// El generador de PDF (con jsPDF, unos 130 KB) se baja la primera vez que se arma un PDF, no al
+// abrir la pantalla
+type GeneradorPdf = typeof import('@/lib/utils/pdfGenerator');
+async function generarPDFManifiesto(...datos: Parameters<GeneradorPdf['generarPDFManifiesto']>) {
+  return (await import('@/lib/utils/pdfGenerator')).generarPDFManifiesto(...datos);
+}
+async function generarNombreArchivoPDF(...datos: Parameters<GeneradorPdf['generarNombreArchivoPDF']>) {
+  return (await import('@/lib/utils/pdfGenerator')).generarNombreArchivoPDF(...datos);
+}
 
 /** `?ver=ID` abre ese manifiesto en su ventana de detalle (así llega "Lo último registrado" del Panel) */
 export default function ManifiestosPage({ searchParams }: { searchParams: Promise<{ ver?: string }> }) {
@@ -912,7 +921,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
     }
     try {
       setGenerandoPDF(manifiesto.id.toString());
-      const nombreArchivo = generarNombreArchivoPDF(manifiesto.numero_manifiesto);
+      const nombreArchivo = await generarNombreArchivoPDF(manifiesto.numero_manifiesto);
 
       let pdfBlob: Blob;
 

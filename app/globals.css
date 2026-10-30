@@ -45,6 +45,10 @@
   --simar-arrecife-suave: #E3F2EC;
   --simar-coral: #A63F0E;          /* requerido, sin leer, pendiente */
   --simar-coral-suave: #FBEADF;
+  /* Coral de fondo con letra blanca (contadores, «Rechazada», «Eliminar»): igual en los dos temas,
+     porque el coral del tema oscuro es claro y con blanco no se lee (6.3:1) */
+  --simar-coral-solido: #A63F0E;
+  --simar-coral-solido-hover: #8C340B;
   --simar-violeta: #5B3FA8;        /* Estadísticas y avisos de superadmin */
   --simar-violeta-suave: #EEEAF8;
   --simar-abismo: #0B2236;         /* bandas oscuras (landing) */
@@ -168,6 +172,8 @@
   --color-simar-arrecife-suave: var(--simar-arrecife-suave);
   --color-simar-coral: var(--simar-coral);
   --color-simar-coral-suave: var(--simar-coral-suave);
+  --color-simar-coral-solido: var(--simar-coral-solido);
+  --color-simar-coral-solido-hover: var(--simar-coral-solido-hover);
   --color-simar-violeta: var(--simar-violeta);
   --color-simar-violeta-suave: var(--simar-violeta-suave);
   --color-simar-abismo: var(--simar-abismo);
@@ -201,6 +207,11 @@ body {
   }
   .simar-landing h1 {
     letter-spacing: normal;
+  }
+  /* Que ningún párrafo ni título termine con una sola palabra en el último renglón.
+     Donde el navegador no lo sabe hacer, se ignora */
+  :is(h1, h2, h3, h4, p, li, dd, figcaption, blockquote) {
+    text-wrap: pretty;
   }
 }
 
@@ -1324,6 +1335,45 @@ html[data-barra-mini] .simar-flotante {
 .simar-desliza::-webkit-scrollbar {
   display: none;
 }
+/* Como no hay barra, la orilla se desvanece para que se note que hay más. Donde el navegador
+   sabe del avance del scroll, la orilla izquierda aparece al mover y la derecha se va al llegar
+   al final; donde no, sólo queda la derecha */
+@property --desliza-ini {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --desliza-fin {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 28px;
+}
+@keyframes simar-desliza-orillas {
+  0% {
+    --desliza-ini: 0px;
+  }
+  12% {
+    --desliza-ini: 28px;
+  }
+  88% {
+    --desliza-fin: 28px;
+  }
+  100% {
+    --desliza-ini: 28px;
+    --desliza-fin: 0px;
+  }
+}
+@media (max-width: 639px) {
+  :is(.simar-compacto, .simar-landing) .simar-desliza {
+    mask-image: linear-gradient(to right, transparent, #000 var(--desliza-ini), #000 calc(100% - var(--desliza-fin)), transparent);
+  }
+  @supports (animation-timeline: scroll()) {
+    :is(.simar-compacto, .simar-landing) .simar-desliza {
+      animation: simar-desliza-orillas linear both;
+      animation-timeline: scroll(self inline);
+    }
+  }
+}
 
 @media (prefers-reduced-motion: reduce) {
   .simar-hoja,
@@ -1408,18 +1458,18 @@ html[data-barra-mini] .simar-flotante {
 }
 
 @media (max-width: 639px) {
-  /* Piso de 44 px para todo lo que se toca (decisión 2026-10-30; Apple pide 44 pt y la escala
-     compacta dejaba filtros, chips y botones de ícono en 38–42 px). Fuera de @layer para ganarle a
+  /* Piso de 44 px para todo lo que se toca, en la app y en la landing (decisión 2026-10-30; Apple
+     pide 44 pt y la escala compacta dejaba filtros, chips y botones de ícono en 38–42 px). Fuera de @layer para ganarle a
      los movil:min-h-[40px] escritos a mano. Un min-height no afecta a los enlaces dentro de un
      párrafo (son inline). Para una excepción justificada: clase simar-toque-libre.
      Sólo sube, nunca baja: lo que ya trae su propia altura mínima (una clase min-h-* o la barra de
      abajo, de 58 px) se queda con la suya; este piso le ganaba y lo dejaba en 44. Las clases
      min-h-* de menos de 44 px sí suben */
-  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):not(.simar-toque-libre, .simar-barra-boton, [class*='min-h-']),
-  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):is([class*='min-h-[34px]'], [class*='min-h-[36px]'], [class*='min-h-[38px]'], [class*='min-h-[40px]'], [class*='min-h-[42px]']):not(.simar-toque-libre) {
+  :is(.simar-compacto, .simar-landing) :is(button, a[href], select, summary, [role='button'], [role='tab']):not(.simar-toque-libre, .simar-barra-boton, [class*='min-h-']),
+  :is(.simar-compacto, .simar-landing) :is(button, a[href], select, summary, [role='button'], [role='tab']):is([class*='min-h-[34px]'], [class*='min-h-[36px]'], [class*='min-h-[38px]'], [class*='min-h-[40px]'], [class*='min-h-[42px]']):not(.simar-toque-libre) {
     min-height: 44px;
   }
-  .simar-compacto :is(button, a[href], [role='button'])[aria-label]:not(.simar-toque-libre, .simar-barra-boton, [class*='min-w-[']) {
+  :is(.simar-compacto, .simar-landing) :is(button, a[href], [role='button'])[aria-label]:not(.simar-toque-libre, .simar-barra-boton, [class*='min-w-[']) {
     min-width: 44px;
   }
 

@@ -130,7 +130,7 @@ export function SeccionMapaPuertos({
                             <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4 min-w-0 movil:p-3 movil:rounded-[18px]">
                                 <Icono className="w-6 h-6 text-[#7FE0D6] mb-2 movil:w-5 movil:h-5 movil:mb-1.5" strokeWidth={2} />
                                 <NumeroAnimado valor={valor} duracion={1200} className="block text-[28px] font-extrabold text-white leading-none movil:text-[21px]" />
-                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5 movil:text-[13px] movil:mt-1">{texto}</p>
+                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5 movil:text-[15px] movil:mt-1">{texto}</p>
                             </div>
                         ))}
                     </div>
@@ -162,7 +162,7 @@ export function SeccionMapaPuertos({
                                 </span>
                             </div>
                             <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed movil:mt-2.5 movil:text-[15px]">{puerto.descripcion}</p>
-                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4] movil:mt-2.5 movil:text-[13px]">{coordenadas(puerto.lat, puerto.lng)}</p>
+                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4] movil:mt-2.5 movil:text-[15px]">{coordenadas(puerto.lat, puerto.lng)}</p>
                         </div>
                     </div>
 
@@ -178,7 +178,7 @@ export function SeccionMapaPuertos({
                                     type="button"
                                     onClick={() => setSeleccionado(p.id)}
                                     aria-pressed={sel}
-                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border lg:whitespace-nowrap movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[42px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
+                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border lg:whitespace-nowrap movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[44px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
                                         sel
                                             ? 'bg-[rgba(127,224,214,0.12)] border-[rgba(127,224,214,0.5)] text-white font-bold'
                                             : 'border-white/10 text-[#C7D3DD] hover:bg-white/5 hover:text-white'
