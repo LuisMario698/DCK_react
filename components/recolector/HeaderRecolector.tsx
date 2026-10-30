@@ -63,7 +63,7 @@ export function HeaderRecolector() {
                         <Link
                             href={`/${locale}/dashboard-recolector/notificaciones`}
                             className="relative w-[52px] h-[52px] rounded-2xl bg-white/60 dark:bg-white/10 text-simar-texto flex items-center justify-center"
-                            aria-label={`Notificaciones${notificacionesNoLeidas ? ` (${notificacionesNoLeidas} sin leer)` : ''}`}
+                            aria-label={`Notificaciones${notificacionesNoLeidas ? `, ${notificacionesNoLeidas} sin leer` : ''}`}
                         >
                             <Bell className="w-6 h-6" />
                             {notificacionesNoLeidas > 0 && (
@@ -105,7 +105,7 @@ function EncabezadoMovil({ locale, notificaciones }: { locale: string; notificac
                     <BotonTemaIcono compacto plano />
                     <Link
                         href={`/${locale}/dashboard-recolector/notificaciones`}
-                        aria-label={`Notificaciones${notificaciones ? ` (${notificaciones} sin leer)` : ''}`}
+                        aria-label={`Notificaciones${notificaciones ? `, ${notificaciones} sin leer` : ''}`}
                         title="Notificaciones"
                         className="simar-presiona relative w-[52px] h-[52px] flex-shrink-0 rounded-full hover:bg-simar-texto/5 dark:hover:bg-white/10 text-simar-texto flex items-center justify-center"
                     >

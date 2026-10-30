@@ -500,7 +500,7 @@ function GraficaTendencia({ serie, granularidad }: { serie: TramoSerie[]; granul
         <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 md:p-7 min-w-0 movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.12s' }}>
             <div className="flex flex-wrap items-start justify-between gap-3 movil:gap-2.5">
                 <div className="min-w-0">
-                    <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">Tendencia</h3>
+                    <h2 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">Tendencia</h2>
                     <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">
                         {m.texto} {POR_TRAMO[granularidad]}, en {m.unidad === 'L' ? 'litros' : 'kilos'}
                     </p>
@@ -653,7 +653,7 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
 
     return (
         <section className="simar-aparece bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-5 md:p-7 flex flex-col min-w-0 movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.18s' }}>
-            <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">Embarcaciones</h3>
+            <h2 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">Embarcaciones</h2>
 
             {sinEntregar && (
                 <div role="group" aria-label="Qué embarcaciones mostrar" className="mt-3 grid grid-cols-2 gap-1 p-1 rounded-[16px] bg-simar-papel movil:mt-2.5 movil:rounded-[14px]">
@@ -699,7 +699,8 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                             {lista.map((e, i) => {
                                 const contenido = (
                                     <>
-                                        <span className="w-9 h-9 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta font-extrabold text-base flex items-center justify-center movil:w-7 movil:h-7 movil:text-[15px]">
+                                        {/* El lugar ya lo dice la lista numerada (<ol>) */}
+                                        <span aria-hidden="true" className="w-9 h-9 flex-shrink-0 rounded-full bg-simar-marea-suave text-simar-marea-tinta font-extrabold text-base flex items-center justify-center movil:w-7 movil:h-7 movil:text-[15px]">
                                             {i + 1}
                                         </span>
                                         <span className="flex-1 min-w-0">
@@ -728,10 +729,10 @@ function EmbarcacionesPeriodo({ datos, onVer, sinEntregar }: { datos: Estadistic
                                             <button
                                                 type="button"
                                                 onClick={() => onVer(e.buqueId)}
-                                                aria-label={`${e.nombre}: ${e.entregas} entregas. Ver sus registros`}
                                                 className="simar-presiona w-full text-left flex items-center gap-3 rounded-2xl px-2 py-2.5 hover:bg-simar-papel movil:gap-2.5 movil:px-1.5 movil:py-2"
                                             >
                                                 {contenido}
+                                                <span className="sr-only">. Ver sus registros</span>
                                             </button>
                                         ) : (
                                             <div className="flex items-center gap-3 px-2 py-2.5">{contenido}</div>

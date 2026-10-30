@@ -172,7 +172,8 @@ function Contador({ n, className }: { n: number; className: string }) {
     );
 }
 
-const etiquetaCampana = (n: number) => `Avisos${n ? ` (${n} sin leer)` : ''}`;
+// «Avisos, 2 sin leer» y no «Avisos (2 sin leer)»: el nombre debe contener lo que se ve («Avisos 2»)
+const etiquetaCampana = (n: number) => `Avisos${n ? `, ${n} sin leer` : ''}`;
 
 /** Campana de la píldora de arriba (celular y tableta) */
 export function CampanaMovil() {
@@ -210,7 +211,7 @@ export function CampanaMenu({ colapsado }: { colapsado: boolean }) {
                 <Bell className="w-6 h-6" />
                 {colapsado && <Contador n={noLeidos} className="absolute -top-2.5 -right-3 ring-2 ring-simar-superficie" />}
             </span>
-            <span className={`flex-1 text-left text-lg font-semibold leading-tight ${colapsado ? 'lg:hidden' : ''}`}>Avisos</span>
+            <span className={`flex-1 text-left text-lg font-semibold leading-tight ${colapsado ? 'lg:hidden' : ''}`}>Avisos</span>{' '}
             {!colapsado && <Contador n={noLeidos} className="" />}
         </button>
     );

@@ -92,7 +92,8 @@ export function Conversacion({
 
     return (
         <div className="flex flex-col min-h-0 flex-1">
-            <div ref={scrollRef} className="flex-1 overflow-y-auto p-5 space-y-3 bg-simar-papel custom-scrollbar movil:p-3 movil:space-y-2">
+            {/* role="log": el lector de pantalla lee los mensajes nuevos al llegar; tabIndex para bajar con el teclado */}
+            <div ref={scrollRef} role="log" aria-label="Conversación" tabIndex={0} className="flex-1 overflow-y-auto p-5 space-y-3 bg-simar-papel custom-scrollbar movil:p-3 movil:space-y-2">
                 {cargando && (
                     <div className="h-full flex items-center justify-center text-lg text-simar-texto-2 gap-2.5">
                         <Loader2 className="w-5 h-5 animate-spin" /> Cargando mensajes…
@@ -113,7 +114,7 @@ export function Conversacion({
                                 }`}
                             >
                                 <p className="leading-relaxed whitespace-pre-wrap break-words">{m.texto}</p>
-                                <p className={`text-[15px] mt-1 ${mio ? 'text-white/85' : 'text-simar-texto-2'}`}>
+                                <p className={`text-[15px] mt-1 ${mio ? 'text-white/90' : 'text-simar-texto-2'}`}>
                                     {tiempoRelativo(m.created_at)}
                                     {mio && m.leido_at && ' · Leído'}
                                 </p>

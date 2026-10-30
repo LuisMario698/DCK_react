@@ -165,10 +165,10 @@ export default function MapaPage() {
                             <MapPin className="w-[18px] h-[18px]" />
                             <span>{PUERTO_PENASCO.region}</span>
                         </div>
-                        <h3 className="text-[22px] font-extrabold text-simar-texto flex items-center gap-2">
+                        <h2 className="text-[22px] font-extrabold text-simar-texto flex items-center gap-2">
                             <Anchor className="w-6 h-6 text-simar-marea-tinta" />
                             {PUERTO_PENASCO.nombre}
-                        </h3>
+                        </h2>
                         <span
                             className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-bold ${
                                 disponibles.length > 0

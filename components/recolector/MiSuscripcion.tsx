@@ -55,10 +55,10 @@ export function TarjetaSuscripcion() {
     return (
         <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.03s' }}>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4 movil:mb-3">
-                <h3 className="flex items-center gap-2.5 text-[21px] font-extrabold text-simar-texto movil:text-[17px]">
+                <h2 className="flex items-center gap-2.5 text-[21px] font-extrabold text-simar-texto movil:text-[17px]">
                     <CreditCard className="w-6 h-6 text-simar-marea-tinta movil:w-5 movil:h-5" />
                     Tu suscripción
-                </h3>
+                </h2>
                 {estado && <span className={`px-3 py-1 rounded-full text-[15px] font-bold movil:text-[15px] ${TONO_ESTADO[estado]}`}>{ESTADO_SUSCRIPCION_LABEL[estado]}</span>}
             </div>
             <dl className="space-y-3 movil:space-y-2">

@@ -126,7 +126,7 @@ export function ProximaRecoleccion({
                     href={COMO_LLEGAR}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="simar-presiona min-h-[52px] px-6 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-[17px] font-bold inline-flex items-center justify-center gap-2 transition-colors movil:min-h-[46px] movil:px-3 movil:text-[15px]"
+                    className="simar-presiona min-h-[52px] px-6 rounded-2xl bg-white/10 hover:bg-black/10 text-white text-[17px] font-bold inline-flex items-center justify-center gap-2 transition-colors movil:min-h-[46px] movil:px-3 movil:text-[15px]"
                 >
                     <Navigation className="w-5 h-5" aria-hidden="true" />
                     Cómo llegar

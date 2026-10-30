@@ -293,7 +293,7 @@ export default function ImpactoPage() {
                 <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.2s' }}>
                     <div className="flex flex-wrap items-start justify-between gap-3 mb-5 movil:mb-3">
                         <div className="min-w-0">
-                            <h3 className="text-[21px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{MATERIAL[unidad].titulo}</h3>
+                            <h2 className="text-[21px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{MATERIAL[unidad].titulo}</h2>
                             <p className="text-base text-simar-texto-2 movil:text-[15px]">
                                 Por {periodo === '1m' ? 'semana' : 'mes'}: este periodo y el anterior
                             </p>
@@ -356,7 +356,7 @@ export default function ImpactoPage() {
 
                 {/* Composición: cada material con su cantidad y su unidad (la dona, sólo lo que va en kilos) */}
                 <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.26s' }}>
-                    <h3 className="text-[21px] font-extrabold text-simar-texto mb-4 movil:text-[17px] movil:mb-3">Lo que recolectaste</h3>
+                    <h2 className="text-[21px] font-extrabold text-simar-texto mb-4 movil:text-[17px] movil:mb-3">Lo que recolectaste</h2>
                     {composicion.length === 0 ? (
                         <p className="text-base text-simar-texto-2 py-6 text-center">Sin recolecciones en este periodo.</p>
                     ) : (

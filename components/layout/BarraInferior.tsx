@@ -275,7 +275,6 @@ export function BarraInferior({
                         type="button"
                         onClick={onAbrirMenu}
                         aria-expanded={menuAbierto}
-                        aria-label={contadorMenu > 0 ? `${etiquetaMenu} (${contadorMenu} pendientes)` : etiquetaMenu}
                         className="simar-barra-boton group flex-1 basis-0 min-w-0 rounded-full px-px flex flex-col items-center justify-center"
                     >
                         <Contenido Icono={IconoMenu} label={etiquetaMenu} activo={indiceVisible === items.length} contador={contadorMenu} />
@@ -304,13 +303,14 @@ function Contenido({ Icono, label, activo, contador }: { Icono: LucideIcon; labe
             >
                 {label}
             </span>
+            {!!contador && contador > 0 && <span className="sr-only">, {contador} pendientes</span>}
         </>
     );
 }
 
 function Contador({ valor }: { valor: number }) {
     return (
-        <span className="absolute -top-1.5 -right-3 min-w-[20px] h-[20px] px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
+        <span aria-hidden="true" className="absolute -top-1.5 -right-3 min-w-[20px] h-[20px] px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
             {valor > 9 ? '9+' : valor}
         </span>
     );

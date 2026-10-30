@@ -110,7 +110,7 @@ function TarjetaMaterial({
                     <Icono className="w-5 h-5 movil:w-[17px] movil:h-[17px]" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                    <h4 className="text-[18px] font-extrabold leading-tight text-simar-texto movil:text-[16px]">{titulo}</h4>
+                    <h3 className="text-[18px] font-extrabold leading-tight text-simar-texto movil:text-[16px]">{titulo}</h3>
                     {detalle && <p className="text-[14px] leading-snug text-simar-texto-2 movil:text-[15px]">{detalle}</p>}
                 </div>
             </div>
@@ -137,7 +137,7 @@ export function DestinoResiduos({ destino, recibidos }: { destino: Destino; reci
                     <Recycle className="w-6 h-6 movil:w-[18px] movil:h-[18px]" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                    <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">¿A dónde se fue?</h3>
+                    <h2 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">¿A dónde se fue?</h2>
                     <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">
                         Lo que se recibió, lo que ya salió a reciclaje con las empresas recolectoras y lo que sigue en el centro de acopio
                     </p>

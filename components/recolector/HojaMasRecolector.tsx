@@ -59,7 +59,6 @@ export function HojaMasRecolector({ abierta, onCerrar }: { abierta: boolean; onC
                             href={s.href}
                             onClick={onCerrar}
                             aria-current={activo ? 'page' : undefined}
-                            aria-label={s.badge ? `${s.label} (${s.badge} sin leer)` : undefined}
                             className={`simar-presiona min-h-[96px] rounded-[18px] border p-2.5 flex flex-col items-center justify-center gap-2 text-center ${
                                 activo ? 'border-simar-marea-tinta bg-simar-marea-suave' : 'border-simar-borde bg-simar-superficie'
                             }`}
@@ -67,12 +66,15 @@ export function HojaMasRecolector({ abierta, onCerrar }: { abierta: boolean; onC
                             <span className={`relative w-11 h-11 rounded-full flex items-center justify-center ${s.tono}`}>
                                 <Icono className="w-6 h-6" strokeWidth={2} />
                                 {!!s.badge && (
-                                    <span className="absolute -top-1 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
+                                    <span aria-hidden="true" className="absolute -top-1 -right-1.5 min-w-[20px] h-5 px-1 rounded-full bg-[#A63F0E] text-white text-[12px] font-bold flex items-center justify-center ring-2 ring-simar-superficie">
                                         {s.badge > 9 ? '9+' : s.badge}
                                     </span>
                                 )}
                             </span>
-                            <span className="text-[15px] font-bold leading-tight text-simar-texto">{s.label}</span>
+                            <span className="text-[15px] font-bold leading-tight text-simar-texto">
+                                {s.label}
+                                {!!s.badge && <span className="sr-only">, {s.badge} sin leer</span>}
+                            </span>
                         </Link>
                     );
                 })}

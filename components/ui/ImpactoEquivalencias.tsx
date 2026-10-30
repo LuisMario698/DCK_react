@@ -54,12 +54,12 @@ export function ImpactoEquivalencias({
                     <Leaf className="w-6 h-6 movil:w-[18px] movil:h-[18px]" strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">
+                    <h2 className="text-[22px] md:text-2xl font-extrabold text-simar-texto movil:text-[18px]">
                         Impacto ambiental{' '}
                         <span className="align-middle inline-flex px-2.5 py-0.5 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[14px] font-bold movil:text-[15px]">
                             Estimado
                         </span>
-                    </h3>
+                    </h2>
                     <p className="text-[17px] text-simar-texto-2 movil:text-[15px]">{subtitulo}</p>
                 </div>
             </div>
