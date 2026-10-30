@@ -1409,11 +1409,15 @@ html[data-barra-mini] .simar-flotante {
   /* Piso de 44 px para todo lo que se toca (decisión 2026-10-30; Apple pide 44 pt y la escala
      compacta dejaba filtros, chips y botones de ícono en 38–42 px). Fuera de @layer para ganarle a
      los movil:min-h-[40px] escritos a mano. Un min-height no afecta a los enlaces dentro de un
-     párrafo (son inline). Para una excepción justificada: clase simar-toque-libre */
-  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):not(.simar-toque-libre) {
+     párrafo (son inline). Para una excepción justificada: clase simar-toque-libre.
+     Sólo sube, nunca baja: lo que ya trae su propia altura mínima (una clase min-h-* o la barra de
+     abajo, de 58 px) se queda con la suya; este piso le ganaba y lo dejaba en 44. Las clases
+     min-h-* de menos de 44 px sí suben */
+  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):not(.simar-toque-libre, .simar-barra-boton, [class*='min-h-']),
+  .simar-compacto :is(button, a[href], select, summary, [role='button'], [role='tab']):is([class*='min-h-[34px]'], [class*='min-h-[36px]'], [class*='min-h-[38px]'], [class*='min-h-[40px]'], [class*='min-h-[42px]']):not(.simar-toque-libre) {
     min-height: 44px;
   }
-  .simar-compacto :is(button, a[href], [role='button'])[aria-label]:not(.simar-toque-libre) {
+  .simar-compacto :is(button, a[href], [role='button'])[aria-label]:not(.simar-toque-libre, .simar-barra-boton, [class*='min-w-[']) {
     min-width: 44px;
   }
 

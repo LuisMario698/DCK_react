@@ -1021,7 +1021,7 @@ el superadmin (`superadmin/layout.tsx`)— y la landing.
 | Qué | Cómo | Para qué |
 |---|---|---|
 | Escala compacta automática | Clase `simar-compacto` en el contenedor del panel (ya la pone `DashboardLayout`) | Baja de una vez `--spacing` (p-6, gap-5, w-6… al 87.5 %), los tamaños con nombre (`text-lg`, `rounded-2xl`…) y los tamaños fijos del lenguaje: 13/14/17→15, 19→16, 22/23→18, 28→21 px (`text-xs`, `text-sm` y `text-base` quedan en 15); controles 64→50, 60→46, 56/54/52/48/44→44 px; esquinas 28→20, 18→14, 14→12 px |
-| Piso de toque | Automático dentro de `simar-compacto` | Todo botón, enlace suelto, `select`, `summary`, pestaña o `role="button"` mide al menos 44 px de alto (y de ancho, si es sólo ícono con `aria-label`). Le gana a un `movil:min-h-[40px]` escrito a mano. Para una excepción justificada, clase `simar-toque-libre` |
+| Piso de toque | Automático dentro de `simar-compacto` | Todo botón, enlace suelto, `select`, `summary`, pestaña o `role="button"` mide al menos 44 px de alto (y de ancho, si es sólo ícono con `aria-label`). Le gana a un `movil:min-h-[40px]` escrito a mano. Sólo sube: lo que trae su propia altura mínima de 44 px o más (una clase `min-h-*`, la barra de abajo de 58 px) se queda con la suya. Para una excepción justificada, clase `simar-toque-libre` |
 | Variante `movil:` | `movil:grid-cols-2`, `movil:hidden`, `movil:text-[15px]`… | Cambiar el **acomodo** en celular: columnas, ocultar, deslizar, pestañas. Funciona dentro de `.simar-compacto` y de `.simar-landing`. Un valor `movil:` es **exacto**: le gana a la escala automática |
 
 - Un `movil:text-[…]` para algo que se lee va de **15 px para arriba**. Las únicas excepciones
