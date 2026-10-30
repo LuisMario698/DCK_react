@@ -471,19 +471,28 @@ Etiqueta arriba (nunca sólo placeholder), caja de 60 px con borde de 2 px que s
 enfocar. Si el dato tiene unidad, la unidad va escrita dentro, a la derecha.
 
 ```tsx
-<label className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
-<div className={`flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activo ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
-  <input type="number" placeholder="0"
-    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3" />
+<label htmlFor="aceite" className="block mb-2 text-[17px] font-bold text-simar-texto">Aceite usado</label>
+<div className={`simar-caja flex items-center gap-2.5 min-h-[60px] px-4 rounded-[14px] border-2 bg-simar-superficie transition-colors ${activo ? 'border-simar-marea-tinta' : 'border-simar-campo-borde'}`}>
+  <input id="aceite" type="number" inputMode="decimal" enterKeyHint="next" placeholder="0"
+    onWheel={(e) => e.currentTarget.blur()}
+    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3" />
   <span className="text-[17px] font-bold text-simar-texto-2">litros</span>
 </div>
 ```
 
+- Caja con ícono o unidad: lleva `simar-caja` (el anillo de foco rodea la caja, no el texto) y el
+  `input` lleva `self-stretch` (se puede tocar en todo el alto de la caja, no sólo en el renglón).
+- Números: `inputMode="decimal"` (litros, kg) o `"numeric"` (piezas) para que el celular abra el
+  teclado de números, y `onWheel` que lo desenfoca para que la rueda del ratón no cambie la cifra.
+
 - Error: borde `border-simar-coral` y debajo `text-[15px] font-bold text-simar-coral` con el
   motivo ("* Requerido").
 - Opcional: se dice en la etiqueta con peso normal: `Observaciones <span className="font-normal">(opcional)</span>`.
-- Sugerencias desplegables: `rounded-2xl border border-simar-borde bg-simar-superficie`,
-  opciones de `text-lg` con `px-4 py-3`, la resaltada en `bg-simar-marea-suave`.
+- Sugerencias desplegables: usa `CampoConSugerencias` (`components/ui/`). Ya trae el patrón
+  combobox (el lector de pantalla oye cuántas hay y cuál está resaltada), ↑ ↓ Enter Escape, y el
+  aspecto: `rounded-2xl border border-simar-borde bg-simar-superficie`, opciones de `text-lg` con
+  `px-4 py-3`, la resaltada en `bg-simar-marea-suave`. Si el campo no tiene `<label>`, pásale
+  `etiqueta` ("Nombre del motorista").
 
 ### 10.5 Botones
 

@@ -1165,7 +1165,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                         {campo}
                       </div>
                     )}
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-xl font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium placeholder:text-lg"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-xl font-bold text-simar-texto placeholder:text-simar-texto-3 placeholder:font-medium placeholder:text-lg"
                   />
                   {showValidation && !formData.buque_id && !buqueNombre.trim() && <p className="mt-1.5 text-[15px] font-bold text-simar-coral">* Escribe o elige la embarcación</p>}
                   {ofrecerRepetir && ultimoDelBarco && (
@@ -1209,7 +1209,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 2)}
                     placeholder="0"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">litros</span>
                 </div>
@@ -1233,7 +1233,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 3)}
                     placeholder="0"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
@@ -1257,7 +1257,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 4)}
                     placeholder="0"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
@@ -1281,7 +1281,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 5)}
                     placeholder="0"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">piezas</span>
                 </div>
@@ -1306,7 +1306,7 @@ export default function ManifiestosPage({ searchParams }: { searchParams: Promis
                     onBlur={() => setActiveField(null)}
                     onKeyDown={(e) => handleKeyDown(e, 6)}
                     placeholder="0"
-                    className="flex-1 min-w-0 bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="flex-1 min-w-0 self-stretch bg-transparent focus:outline-none text-[22px] font-extrabold text-simar-texto placeholder:text-simar-texto-3 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   <span className="text-[17px] font-bold text-simar-texto-2">kg</span>
                 </div>
