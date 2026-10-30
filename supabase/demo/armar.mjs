@@ -64,7 +64,7 @@ const migraciones = readdirSync(join(raiz, 'supabase', 'migrations'))
     .sort()
     .map((f) => join(raiz, 'supabase', 'migrations', f));
 
-const propios = ['10_almacenamiento.sql', '20_datos.sql', '30_candado.sql'].map((f) => join(aqui, f));
+const propios = ['10_almacenamiento.sql', '15_columnas.sql', '20_datos.sql', '30_candado.sql'].map((f) => join(aqui, f));
 
 const bloque = (ruta) => `\n-- >>>>> ${relative(raiz, ruta).replaceAll('\\', '/')}\n\n${readFileSync(ruta, 'utf8').trim()}\n`;
 

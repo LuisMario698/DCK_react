@@ -69,7 +69,7 @@ export default function PlanesPage() {
     return (
         <div className="space-y-5 movil:space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-base text-simar-texto-2 max-w-2xl movil:text-[14px] movil:leading-snug">
+                <p className="text-base text-simar-texto-2 max-w-2xl movil:text-[15px] movil:leading-snug">
                     Un plan desactivado ya no se ofrece en suscripciones nuevas, pero las existentes lo conservan. Los precios
                     son una referencia: cada suscripción guarda el precio acordado.
                 </p>

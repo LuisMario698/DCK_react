@@ -20,6 +20,7 @@ import { EnlacesPaneles } from '@/components/superadmin/EnlacesPaneles';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTema } from '@/components/layout/ThemeToggle';
 import { LineaMarea } from '@/components/layout/LineaMarea';
+import { useBordeDesplazamiento } from '@/components/layout/useBordeDesplazamiento';
 
 interface SidebarRecolectorProps {
     isCollapsed: boolean;
@@ -33,6 +34,8 @@ interface SidebarRecolectorProps {
 export function SidebarRecolector({ isCollapsed, onToggleCollapse }: SidebarRecolectorProps) {
     const pathname = usePathname();
     const { signOut, user } = useAuth();
+    // En laptops bajas la lista no cabe: su orilla se desvanece para avisar que hay más
+    const listaRef = useBordeDesplazamiento<HTMLDivElement>();
     const { asociacion, mensajesNoLeidos, notificacionesNoLeidas } = useRecolector();
     const locale = pathname.split('/')[1] || 'es';
     const base = `/${locale}/dashboard-recolector`;
@@ -66,7 +69,7 @@ export function SidebarRecolector({ isCollapsed, onToggleCollapse }: SidebarReco
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
+                <div ref={listaRef} className="simar-borde-lista flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1">
                     <nav aria-label="Menú de la empresa" className="flex flex-col gap-1">
                         {items.map((item) => {
                             const Icon = item.icon;

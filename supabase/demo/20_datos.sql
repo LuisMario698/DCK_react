@@ -185,6 +185,9 @@ begin
     end loop;
 end $$;
 
+-- Los recibos del basurón, cerrados y con su ticket (15_columnas.sql)
+select public.demo_tickets_basuron();
+
 -- ---------------------------------------------------------------------------
 -- 4. Empresas recolectoras, planes y suscripciones
 -- ---------------------------------------------------------------------------
@@ -435,6 +438,7 @@ begin
            created_at = created_at + v_int, updated_at = updated_at + v_int;
     update public.manifiestos_residuos set created_at = created_at + v_int, updated_at = updated_at + v_int;
     update public.manifiesto_basuron set fecha = fecha + v_dias, created_at = created_at + v_int, updated_at = updated_at + v_int;
+    perform public.demo_tickets_basuron(); -- el ticket lleva la fecha
     update public.buques set fecha_registro = fecha_registro + v_dias, created_at = created_at + v_int, updated_at = updated_at + v_int;
     update public.personas set created_at = created_at + v_int, updated_at = updated_at + v_int;
     update public.asociaciones_recolectoras set created_at = created_at + v_int, updated_at = updated_at + v_int;

@@ -17,6 +17,7 @@ import { AvisoVencimiento } from '@/components/recolector/MiSuscripcion';
 import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
 import { Recorrido } from '@/components/demo/Recorrido';
+import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
 
 export default function DashboardRecolectorLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -56,6 +57,7 @@ export default function DashboardRecolectorLayout({ children }: { children: Reac
                 <BarraPortal hojaAbierta={hojaAbierta} onAbrirHoja={() => setHojaAbierta(true)} />
                 <HojaMasRecolector abierta={hojaAbierta} onCerrar={() => setHojaAbierta(false)} />
                 {MODO_DEMO && <Recorrido vista="empresa" />}
+                {MODO_DEMO && <VistaPreviaPdf />}
             </div>
         </RecolectorProvider>
     );
@@ -104,13 +106,13 @@ function AvisoSuperadmin() {
     if (!esSuperadmin || !asociacion) return null;
     // En celular, en tres renglones: quién eres, a nombre de quién, y los dos enlaces en una fila
     return (
-        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-simar-violeta-suave px-5 py-4 text-base text-simar-texto movil:mb-3 movil:px-3.5 movil:py-2.5 movil:gap-x-2.5 movil:gap-y-0.5 movil:text-[14px] movil:leading-snug">
+        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-simar-violeta-suave px-5 py-4 text-base text-simar-texto movil:mb-3 movil:px-3.5 movil:py-2.5 movil:gap-x-2.5 movil:gap-y-0.5 movil:text-[15px] movil:leading-snug">
             <ShieldCheck className="w-6 h-6 flex-shrink-0 text-simar-violeta movil:w-5 movil:h-5 movil:self-start movil:mt-0.5" />
             <p className="flex-1 min-w-[220px] movil:min-w-0">
                 <strong>Modo superadmin:</strong> usas el portal como <strong>{asociacion.nombre_asociacion}</strong>.
                 <span className="movil:hidden"> Las solicitudes y mensajes que envíes quedan a nombre de esta empresa.</span>
             </p>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base font-bold text-simar-violeta movil:basis-full movil:pl-[30px] movil:text-[14px]">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-base font-bold text-simar-violeta movil:basis-full movil:pl-[30px] movil:text-[15px]">
                 <Link href={`/${locale}/superadmin?elegir_asociacion=1`} className="min-h-[44px] inline-flex items-center underline-offset-4 hover:underline">
                     Cambiar empresa
                 </Link>
@@ -127,7 +129,7 @@ function AvisoEstado() {
     const { asociacion, motivoBloqueo, suscripcion } = useRecolector();
     if (!motivoBloqueo || !asociacion) return null;
     return (
-        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-simar-coral-suave p-5 text-base text-simar-texto movil:mb-3 movil:p-3.5 movil:gap-2.5 movil:text-[14px] movil:leading-snug">
+        <div className="mb-5 flex items-start gap-3 rounded-2xl bg-simar-coral-suave p-5 text-base text-simar-texto movil:mb-3 movil:p-3.5 movil:gap-2.5 movil:text-[15px] movil:leading-snug">
             <AlertTriangle className="w-6 h-6 flex-shrink-0 text-simar-coral movil:w-5 movil:h-5" />
             {motivoBloqueo === 'asociacion' ? (
                 <p>

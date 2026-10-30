@@ -243,7 +243,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                             )}
                                         </div>
                                         {s.estado === 'rechazada' && s.motivo_rechazo && (
-                                            <p className="mt-1.5 text-[15px] leading-snug text-simar-coral movil:text-[13px]">
+                                            <p className="mt-1.5 text-[15px] leading-snug text-simar-coral movil:text-[15px]">
                                                 <strong>Motivo:</strong> {s.motivo_rechazo}
                                             </p>
                                         )}
@@ -280,6 +280,7 @@ export default function SolicitudesPage({ searchParams }: { searchParams: Promis
                                     <td className="px-4 sm:px-6 py-4 text-right movil:p-0 movil:col-span-2 movil:text-left">
                                         <div className="inline-flex flex-col sm:flex-row items-stretch sm:items-center gap-2 movil:flex movil:flex-row">
                                         <button
+                                            data-recorrido="ver-solicitud"
                                             onClick={() => setDetalle(s)}
                                             className="simar-presiona min-h-[44px] px-3.5 rounded-xl text-[15px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta inline-flex items-center justify-center gap-1.5"
                                             title="Ver detalle"

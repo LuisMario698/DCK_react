@@ -41,8 +41,13 @@ export const C = {
 
 const fmt = (n: number, dec?: number) =>
     n.toLocaleString('es-MX', { maximumFractionDigits: dec ?? (Math.abs(n) < 100 && !Number.isInteger(n) ? 1 : 0) });
-const fmtCifra = (n: number, unidad: string) =>
-    n >= 1_000_000 ? `${fmt(n / 1_000_000, 1)} millones de ${unidad === 'L' ? 'litros' : unidad}` : `${fmt(n)} ${unidad}`;
+// "10.3 mil millones de litros", "2.9 millones de litros", "1,250 kg" (como en la pantalla)
+const fmtCifra = (n: number, unidad: string) => {
+    const nombre = unidad === 'L' ? 'litros' : unidad;
+    if (n >= 1_000_000_000) return `${fmt(n / 1_000_000_000, 1)} mil millones de ${nombre}`;
+    if (n >= 1_000_000) return `${fmt(n / 1_000_000, 1)} ${n < 2_000_000 ? 'millón' : 'millones'} de ${nombre}`;
+    return `${fmt(n)} ${unidad}`;
+};
 const fechaCorta = (t: string) => {
     const [a, m, d] = t.split('-').map(Number);
     return new Date(a, m - 1, d).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });

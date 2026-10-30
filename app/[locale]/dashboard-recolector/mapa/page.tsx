@@ -152,7 +152,7 @@ export default function MapaPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                 {/* Mapa enmarcado como tarjeta; ocupa toda la altura del panel de residuos */}
-                <section data-recorrido="residuos" className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
+                <section className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde shadow-simar rounded-[28px] p-2 flex flex-col" style={{ animationDelay: '0.16s' }}>
                     <div className="flex-1 min-h-[400px] rounded-[22px] overflow-hidden">
                         <MapaCentroAcopio alto="h-full" zoom={15} />
                     </div>
@@ -165,10 +165,10 @@ export default function MapaPage() {
                             <MapPin className="w-[18px] h-[18px]" />
                             <span>{PUERTO_PENASCO.region}</span>
                         </div>
-                        <h3 className="text-[22px] font-extrabold text-simar-texto flex items-center gap-2">
+                        <h2 className="text-[22px] font-extrabold text-simar-texto flex items-center gap-2">
                             <Anchor className="w-6 h-6 text-simar-marea-tinta" />
                             {PUERTO_PENASCO.nombre}
-                        </h3>
+                        </h2>
                         <span
                             className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[15px] font-bold ${
                                 disponibles.length > 0
@@ -191,7 +191,7 @@ export default function MapaPage() {
                         />
                     </div>
 
-                    <div className="p-5 flex-1 overflow-y-auto">
+                    <div data-recorrido="residuos" className="p-5 flex-1 overflow-y-auto">
                         <div className="flex items-center justify-between gap-3 mb-3">
                             <p className="text-[17px] font-bold text-simar-texto">Residuos publicados</p>
                             {misTipos.length > 0 && (
@@ -233,6 +233,7 @@ export default function MapaPage() {
                                             </div>
                                             {r.notas && <p className="text-[15px] text-simar-texto-2 mt-1">{r.notas}</p>}
                                             <button
+                                                data-recorrido="solicitar"
                                                 onClick={() => setSolicitar(r)}
                                                 disabled={agotado || bloqueada}
                                                 className="simar-presiona mt-3 w-full min-h-[52px] inline-flex items-center justify-center gap-2 text-[17px] font-bold rounded-2xl text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-40 disabled:cursor-not-allowed"
@@ -423,6 +424,7 @@ function ResiduosCelular({
                                     ) : (
                                         <button
                                             type="button"
+                                            data-recorrido="solicitar"
                                             onClick={() => onSolicitar(r)}
                                             disabled={bloqueada}
                                             aria-label={`Solicitar recolección de ${TIPO_RESIDUO_LABEL[r.tipo].toLowerCase()}`}

@@ -183,7 +183,7 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
               value={searchCriteria}
               onChange={(e) => setSearchCriteria(e.target.value as 'ticket' | 'fecha' | 'total')}
               aria-label="Buscar por"
-              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[14px]"
+              className="px-4 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg font-bold text-simar-texto focus:outline-none focus:border-simar-marea-tinta transition-colors movil:w-[140px] movil:flex-shrink-0 movil:px-2 movil:text-[15px]"
             >
               <option value="ticket">Ticket o embarcación</option>
               <option value="fecha">Fecha</option>
@@ -200,9 +200,9 @@ export default function ManifiestoBasuronPage({ searchParams }: { searchParams: 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
-                  searchCriteria === 'ticket' ? 'Buscar ticket o buque...' :
-                    searchCriteria === 'fecha' ? 'Buscar por fecha...' :
-                      'Buscar por peso total...'
+                  searchCriteria === 'ticket' ? 'Buscar ticket o embarcación…' :
+                    searchCriteria === 'fecha' ? 'Buscar por fecha…' :
+                      'Buscar por peso total…'
                 }
                 className="block w-full pl-12 pr-4 movil:pl-10 movil:pr-3 min-h-[56px] rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors"
               />

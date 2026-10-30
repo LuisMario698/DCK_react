@@ -1,6 +1,8 @@
 import { toast } from 'sonner';
 
 const ID_AVISO = 'modo-demo';
+/** Lo escucha el recorrido: en "Pruébalo tú", enviar (aunque no se guarde) cuenta como probado */
+export const EVENTO_CAMBIO_DETENIDO = 'simar-demo-cambio-detenido';
 // Cuándo se detuvo el último cambio: el error que la pantalla muestre enseguida ("No se pudo guardar…")
 // ya lo explica el aviso de la demo
 let ultimoBloqueo = 0;
@@ -8,6 +10,7 @@ let ultimoBloqueo = 0;
 /** Aviso amable cuando alguien intenta guardar algo en la demostración (uno solo aunque sean varios intentos) */
 export function avisarCambioBloqueado() {
     ultimoBloqueo = Date.now();
+    window.dispatchEvent(new Event(EVENTO_CAMBIO_DETENIDO));
     toast.info('En la demostración no se guardan cambios', {
         id: ID_AVISO,
         description: 'Puedes probar todo con calma. En SiMAR, cada registro se guarda al momento.',
@@ -27,4 +30,10 @@ export function callarErroresDeLaDemo() {
     const original = toast.error;
     t.error = ((mensaje, datos) =>
         Date.now() - ultimoBloqueo < 4000 ? ID_AVISO : original(mensaje, datos)) as typeof toast.error;
+
+    // En la demo los PDF no se descargan: se abren en una vista previa (components/demo/VistaPreviaPdf.tsx),
+    // así que "PDF descargado" no sería cierto
+    const exito = toast.success;
+    t.success = ((mensaje, datos) =>
+        typeof mensaje === 'string' && /descargad[oa]/i.test(mensaje) ? ID_AVISO : exito(mensaje, datos)) as typeof toast.success;
 }

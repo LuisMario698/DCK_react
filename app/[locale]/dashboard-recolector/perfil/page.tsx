@@ -80,7 +80,7 @@ export default function PerfilPage() {
                                 <Building2 className="w-7 h-7" strokeWidth={2} />
                             </span>
                             <div className="min-w-0">
-                                <h3 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate movil:whitespace-normal">{asociacion.nombre_asociacion}</h3>
+                                <h2 className="text-[23px] font-extrabold leading-tight text-simar-texto truncate movil:whitespace-normal">{asociacion.nombre_asociacion}</h2>
                                 <p className="text-base text-simar-texto-2">
                                     {asociacion.tipo_asociacion || 'Empresa recolectora'} · {ESTADO_EMPRESA_LABEL[asociacion.estado]}
                                 </p>
@@ -128,7 +128,7 @@ export default function PerfilPage() {
 
                     {/* Tipos de residuo */}
                     <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.06s' }}>
-                        <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Tipos de residuo</h3>
+                        <h2 className="text-[21px] font-extrabold text-simar-texto mb-1">Tipos de residuo</h2>
                         <p className="text-base text-simar-texto-2 mb-4">
                             Materiales que tu empresa recolecta. Recibirás avisos cuando haya nuevos lotes de estos residuos.
                         </p>
@@ -190,7 +190,7 @@ function CambioContrasena() {
 
     return (
         <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar" style={{ animationDelay: '0.12s' }}>
-            <h3 className="text-[21px] font-extrabold text-simar-texto mb-1">Seguridad</h3>
+            <h2 className="text-[21px] font-extrabold text-simar-texto mb-1">Seguridad</h2>
             <p className="text-base text-simar-texto-2 mb-5 break-all">Cuenta: {user?.email}</p>
             <div className="space-y-4">
                 <PasswordInput label="Contraseña actual" value={actual} onChange={setActual} autoComplete="current-password" />

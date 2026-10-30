@@ -61,11 +61,11 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                 data: { full_name: fullName }
             });
             if (error) throw error;
-            toast.success('Nombre actualizado correctamente');
+            toast.success('Nombre actualizado');
             setMode('view');
         } catch (causa) {
-            const error = detalleDe(causa);
-            toast.error(error.message);
+            console.error('No se pudo cambiar el nombre:', detalleDe(causa).message);
+            toast.error('No se pudo guardar el nombre', { description: 'Revisa tu conexión e inténtalo de nuevo.' });
         } finally {
             setLoading(false);
         }
@@ -83,9 +83,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             if (error) throw error;
 
             setStep(2); // Move to input new email
-        } catch (causa) {
-            const error = detalleDe(causa);
-            toast.error('Contraseña incorrecta');
+        } catch {
+            toast.error('Contraseña incorrecta', { description: 'Escríbela de nuevo, con mayúsculas y minúsculas como la creaste.' });
         } finally {
             setLoading(false);
         }
@@ -103,9 +102,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             // setNewEmail(''); // Keep to show in message
         } catch (causa) {
             const error = detalleDe(causa);
-            let msg = error.message ?? 'No se pudo cambiar el correo. Inténtalo de nuevo.';
-            if (msg.includes('already registered') || msg.includes('assigned to another user')) {
-                msg = 'Este correo electrónico ya está registrado por otro usuario.';
+            const original = error.message ?? '';
+            let msg = 'No se pudo cambiar el correo. Inténtalo de nuevo.';
+            if (original.includes('already registered') || original.includes('assigned to another user')) {
+                msg = 'Ese correo ya lo usa otra cuenta.';
+            } else if (/invalid|format/i.test(original)) {
+                msg = 'Revisa el correo: parece que le falta algo (ejemplo: nombre@correo.com).';
+            } else {
+                console.error('No se pudo cambiar el correo:', original);
             }
             toast.error(msg);
         } finally {
@@ -122,8 +126,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             toast.success('Código enviado a tu correo');
             setStep(2); // Move to verify code
         } catch (causa) {
-            const error = detalleDe(causa);
-            toast.error(error.message);
+            const { message = '' } = detalleDe(causa);
+            console.error('No se pudo enviar el código:', message);
+            // Supabase limita los envíos seguidos ("For security purposes, you can only request this after N seconds")
+            toast.error('No se pudo enviar el código', {
+                description: /security purposes|rate limit/i.test(message)
+                    ? 'Ya pediste uno hace poco. Espera un minuto e inténtalo de nuevo.'
+                    : 'Revisa tu conexión e inténtalo de nuevo.',
+            });
         } finally {
             setLoading(false);
         }
@@ -163,15 +173,18 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
             }
         } catch (causa) {
             const error = detalleDe(causa);
-            let msg = error.message || 'Error al restablecer contraseña';
+            const original = error.message ?? '';
+            let msg = 'No se pudo cambiar la contraseña. Inténtalo de nuevo.';
 
-            // Translate common errors
-            if (msg.includes('New password should be different from the old password')) {
+            // Los avisos de Supabase vienen en inglés: nunca se muestran tal cual
+            if (original.includes('New password should be different from the old password')) {
                 msg = 'La nueva contraseña debe ser diferente a la anterior.';
-            } else if (msg.includes('Password should be at least')) {
+            } else if (original.includes('Password should be at least')) {
                 msg = 'La contraseña debe tener al menos 6 caracteres.';
-            } else if (msg.includes('Token has expired or is invalid')) {
-                msg = 'El código es inválido o ha expirado.';
+            } else if (original.includes('Token has expired or is invalid')) {
+                msg = 'El código no es válido o ya venció. Pide uno nuevo.';
+            } else {
+                console.error('No se pudo cambiar la contraseña:', original);
             }
 
             toast.error(msg);
@@ -220,7 +233,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             {/* Nombre */}
                             <div className="bg-simar-papel p-4 rounded-2xl flex justify-between items-center gap-3">
                                 <div>
-                                    <label className="text-[15px] font-bold text-simar-texto-2">Nombre</label>
+                                    <p className="text-[15px] font-bold text-simar-texto-2">Nombre</p>
                                     <div className="text-lg font-bold text-simar-texto">{fullName}</div>
                                 </div>
                                 <button onClick={() => setMode('edit_name')} className="min-h-[44px] px-4 rounded-xl text-base font-bold text-simar-marea-tinta border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">
@@ -231,7 +244,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             {/* Email */}
                             <div className="bg-simar-papel p-4 rounded-2xl flex justify-between items-center gap-3">
                                 <div>
-                                    <label className="text-[15px] font-bold text-simar-texto-2">Correo</label>
+                                    <p className="text-[15px] font-bold text-simar-texto-2">Correo</p>
                                     <div className="text-lg font-bold text-simar-texto truncate max-w-[200px]">{email}</div>
                                 </div>
                                 <button onClick={() => setMode('edit_email')} className="min-h-[44px] px-4 rounded-xl text-base font-bold text-simar-marea-tinta border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">
@@ -242,7 +255,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             {/* Contraseña */}
                             <div className="bg-simar-papel p-4 rounded-2xl flex justify-between items-center gap-3">
                                 <div>
-                                    <label className="text-[15px] font-bold text-simar-texto-2">Contraseña</label>
+                                    <p className="text-[15px] font-bold text-simar-texto-2">Contraseña</p>
                                     <div className="text-lg font-bold text-simar-texto">••••••••</div>
                                 </div>
                                 <button onClick={() => setMode('reset_password')} className="min-h-[44px] px-4 rounded-xl text-base font-bold text-simar-marea-tinta border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">
@@ -259,6 +272,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                 <label htmlFor="user-profile-modal-1" className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo nombre</label>
                                 <input id="user-profile-modal-1"
                                     type="text"
+                                    autoComplete="name"
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -266,8 +280,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                             </div>
                             <div className="flex flex-wrap gap-3 justify-end">
                                 <button onClick={resetState} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">Cancelar</button>
-                                <button onClick={handleUpdateName} disabled={loading} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
-                                    {loading ? 'Guardando...' : 'Guardar'}
+                                <button onClick={handleUpdateName} disabled={loading || !fullName.trim()} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
+                                    {loading ? 'Guardando…' : 'Guardar'}
                                 </button>
                             </div>
                         </div>
@@ -278,13 +292,14 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                         <div className="space-y-4 simar-aparece">
                             {step === 1 ? (
                                 <>
-                                    <div className="bg-simar-coral-suave p-3 rounded-lg text-base text-simar-coral mb-2">
+                                    <div className="bg-simar-marea-suave p-3 rounded-[14px] text-base text-simar-texto mb-2">
                                         Por seguridad, confirma tu contraseña actual para cambiar el correo.
                                     </div>
                                     <div>
-                                        <label htmlFor="user-profile-modal-2" className="block text-[17px] font-bold text-simar-texto mb-2">Contraseña actual (para verificar)</label>
+                                        <label htmlFor="user-profile-modal-2" className="block text-[17px] font-bold text-simar-texto mb-2">Contraseña actual</label>
                                         <input id="user-profile-modal-2"
                                             type="password"
+                                            autoComplete="current-password"
                                             value={currentPassword}
                                             onChange={(e) => setCurrentPassword(e.target.value)}
                                             className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -293,7 +308,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                     <div className="flex flex-wrap gap-3 justify-end">
                                         <button onClick={resetState} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">Cancelar</button>
                                         <button onClick={handleVerifyPasswordForEmail} disabled={loading} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
-                                            {loading ? 'Verificando...' : 'Continuar'}
+                                            {loading ? 'Verificando…' : 'Continuar'}
                                         </button>
                                     </div>
                                 </>
@@ -303,6 +318,9 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                         <label htmlFor="user-profile-modal-3" className="block text-[17px] font-bold text-simar-texto mb-2">Nuevo correo electrónico</label>
                                         <input id="user-profile-modal-3"
                                             type="email"
+                                            autoComplete="email"
+                                            spellCheck={false}
+                                            placeholder="nombre@correo.com"
                                             value={newEmail}
                                             onChange={(e) => setNewEmail(e.target.value)}
                                             className="w-full px-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -311,7 +329,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                     <div className="flex flex-wrap gap-3 justify-end">
                                         <button onClick={() => setStep(1)} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">Atrás</button>
                                         <button onClick={handleUpdateEmail} disabled={loading} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
-                                            {loading ? 'Actualizando...' : 'Actualizar Correo'}
+                                            {loading ? 'Actualizando…' : 'Cambiar correo'}
                                         </button>
                                     </div>
                                 </>
@@ -357,7 +375,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                     <div className="flex flex-wrap gap-3 justify-end">
                                         <button onClick={resetState} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">Cancelar</button>
                                         <button onClick={handleSendResetCode} disabled={loading} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
-                                            {loading ? 'Enviando...' : 'Enviar Código'}
+                                            {loading ? 'Enviando…' : 'Enviar código'}
                                         </button>
                                     </div>
                                 </>
@@ -368,6 +386,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                             <label htmlFor="user-profile-modal-4" className="block text-[17px] font-bold text-simar-texto mb-2">Código de verificación</label>
                                             <input id="user-profile-modal-4"
                                                 type="text"
+                                                inputMode="numeric"
+                                                autoComplete="one-time-code"
                                                 value={resetToken}
                                                 onChange={(e) => setResetToken(e.target.value)}
                                                 placeholder="123456"
@@ -379,6 +399,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                             <div className="relative">
                                                 <input id="user-profile-modal-5"
                                                     type={showNewPassword ? "text" : "password"}
+                                                    autoComplete="new-password"
                                                     value={newPassword}
                                                     onChange={(e) => setNewPassword(e.target.value)}
                                                     className="w-full pr-12 pl-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -386,6 +407,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowNewPassword(!showNewPassword)}
+                                                    aria-label={showNewPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                                    aria-pressed={showNewPassword}
                                                     className="absolute inset-y-0 right-0 w-12 flex items-center justify-center text-simar-texto-2 hover:text-simar-texto"
                                                 >
                                                     {showNewPassword ? (
@@ -401,6 +424,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                             <div className="relative">
                                                 <input id="user-profile-modal-6"
                                                     type={showConfirmPassword ? "text" : "password"}
+                                                    autoComplete="new-password"
                                                     value={confirmNewPassword}
                                                     onChange={(e) => setConfirmNewPassword(e.target.value)}
                                                     className="w-full pr-12 pl-4 min-h-[52px] py-2.5 rounded-[14px] border-2 border-simar-campo-borde bg-simar-superficie text-lg text-simar-texto placeholder:text-simar-texto-3 focus:outline-none focus:border-simar-marea-tinta transition-colors disabled:opacity-60"
@@ -408,6 +432,8 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    aria-label={showConfirmPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                                    aria-pressed={showConfirmPassword}
                                                     className="absolute inset-y-0 right-0 w-12 flex items-center justify-center text-simar-texto-2 hover:text-simar-texto"
                                                 >
                                                     {showConfirmPassword ? (
@@ -423,7 +449,7 @@ export function UserProfileModal({ isOpen, onClose }: UserProfileModalProps) {
                                     <div className="flex flex-wrap gap-3 justify-end mt-4">
                                         <button onClick={() => setStep(1)} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-simar-texto border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta transition-colors">Atrás</button>
                                         <button onClick={handleResetPassword} disabled={loading} className="min-h-[52px] px-5 rounded-2xl text-[17px] font-bold text-white bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 transition-colors">
-                                            {loading ? 'Verificando...' : 'Cambiar Contraseña'}
+                                            {loading ? 'Verificando…' : 'Cambiar contraseña'}
                                         </button>
                                     </div>
                                 </>

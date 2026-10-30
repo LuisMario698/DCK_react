@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfComprobanteDe } from '@/lib/demo/documentos';
 import { Download, FileDown, Loader2, Truck } from 'lucide-react';
 import { PUERTO_PENASCO, TIPO_RESIDUO_LABEL, formatCantidad } from '@/lib/constants/residuos';
 import { formatearFecha, hoyLocal } from '@/lib/utils/fechas';
@@ -61,6 +64,11 @@ export default function HistorialPage() {
     };
 
     const verComprobante = async (h: RecoleccionConAsociacion) => {
+        // En la demostración, se genera y se ve (no hay comprobantes guardados)
+        if (MODO_DEMO) {
+            abrirVistaPrevia(`Comprobante ${h.folio}`, () => pdfComprobanteDe(h, h.asociacion));
+            return;
+        }
         if (!h.comprobante_pdf_path) {
             return toast.info('El comprobante aún no está disponible', {
                 description: 'El centro de acopio lo generará en breve. Si lo necesitas, escríbeles desde Mensajes.',
@@ -91,12 +99,12 @@ export default function HistorialPage() {
                 <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center sm:gap-3">
                 <ConstanciaAnual
                     historial={historial}
-                    className="simar-presiona min-h-[56px] px-5 rounded-[18px] border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-50 text-simar-texto text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
+                    className="simar-presiona min-h-[56px] px-5 rounded-[18px] border-2 border-simar-campo-borde bg-simar-superficie hover:border-simar-marea-tinta disabled:opacity-50 text-simar-texto text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[15px]"
                 />
                 <button
                     onClick={descargarCSV}
                     disabled={historial.length === 0}
-                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[14px]"
+                    className="simar-presiona min-h-[56px] px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover disabled:opacity-50 text-white text-[17px] font-extrabold inline-flex items-center justify-center gap-2 movil:min-h-[42px] movil:px-3 movil:rounded-[14px] movil:text-[15px]"
                 >
                     <FileDown className="w-[22px] h-[22px]" />
                     <span className="movil:hidden">Descargar historial (CSV)</span>

@@ -50,6 +50,7 @@ import {
     esUno,
     type Equivalencia,
 } from '@/lib/utils/equivalencias';
+import { LITROS_AGUA_POR_LITRO_ACEITE } from '@/lib/constants/impacto';
 
 /** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
 const SEGUNDOS_POR_FOTO = 6;
@@ -166,8 +167,8 @@ const AWARENESS_PANELS: {
         icon: Droplets,
         title: 'Aceites y combustibles',
         stat: '1 L',
-        // Mismo factor que las equivalencias y Estadísticas (LITROS_AGUA_POR_LITRO_ACEITE)
-        statLabel: 'puede contaminar 1,000 L de agua',
+        // Mismo factor que las equivalencias y Estadísticas
+        statLabel: `puede contaminar ${LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua`,
         desc: 'Los aceites usados y residuos de diésel derramados en el mar forman películas que impiden el intercambio de oxígeno y afectan toda la cadena alimentaria marina.',
         color: 'bg-[rgba(242,193,78,0.16)] text-[#F2C14E]',
         accent: 'text-[#F2C14E]',
@@ -266,9 +267,10 @@ const MINUTOS_POR_MANIFIESTO = 25;
 /**
  * Las equivalencias de "¿Cuánto es cuánto?". Las cuentas son las mismas de Estadísticas
  * (lib/utils/equivalencias.ts): mismos factores y misma forma de decirlo (albercas, árboles,
- * camiones). Antes la landing usaba otras (1 L de aceite = 1,000,000 L de agua, bolsas de
- * plástico a partir de toda la basura, 0.02 árboles por hojas de papel, 40 L de tierra por filtro)
- * y sumaba la basura de los barcos con la del basurón, que es la misma basura camino al relleno.
+ * camiones). Antes la landing usaba otras (bolsas de plástico a partir de toda la basura, 0.02
+ * árboles por hojas de papel, 40 L de tierra por filtro) y sumaba la basura de los barcos con la del
+ * basurón, que es la misma basura camino al relleno. El agua por litro de aceite es
+ * LITROS_AGUA_POR_LITRO_ACEITE (lib/constants/impacto.ts).
  */
 function buildEquivalencias(stats: LandingStats | null): EquivalenciaCard[] {
     const aceite       = stats?.totalAceiteUsado ?? 0;
@@ -400,9 +402,7 @@ export function VariantCinematic({
     const [menuMovil, setMenuMovil] = useState(false);
     // La ventana de acceso se queda montada mientras hace su salida
     const ventanaAcceso = usePresencia(showLoginModal, 200);
-    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón "Iniciar sesión"
     const accesoRef = useRef<HTMLDivElement>(null);
-    useVentanaAccesible(accesoRef, showLoginModal);
 
     // Carrusel: se puede pausar (botón, o al pasar el cursor / enfocar la foto).
     // Con "reducir movimiento" no avanza solo.
@@ -463,19 +463,13 @@ export function VariantCinematic({
         }
     };
 
-    // Escape cierra la ventana de acceso, como todas las ventanas de SiMAR
+    // Foco adentro al abrir, Tab no se sale y al cerrar regresa al botón "Iniciar sesión". Escape la
+    // cierra, como todas las ventanas de SiMAR, y en celular (donde sube como hoja) también jalarla
     const cerrarLoginRef = useRef(cerrarLoginModal);
     useEffect(() => {
         cerrarLoginRef.current = cerrarLoginModal;
     });
-    useEffect(() => {
-        if (!showLoginModal) return;
-        const alTeclear = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') cerrarLoginRef.current();
-        };
-        document.addEventListener('keydown', alTeclear);
-        return () => document.removeEventListener('keydown', alTeclear);
-    }, [showLoginModal]);
+    useVentanaAccesible(accesoRef, showLoginModal, { alEscape: () => cerrarLoginRef.current() });
 
     const selectModalRole = (r: RolGuardado) => {
         saveRole(r);
@@ -572,9 +566,12 @@ export function VariantCinematic({
                         {/* En celular sólo el símbolo: el nombre ya está grande en el hero */}
                         <LogoSimar variante="simbolo" tamano={42} className="sm:hidden" />
                         <LogoSimar tamano={46} className="hidden sm:inline-flex" />
-                        <span aria-hidden="true" className="hidden md:block h-9 w-px bg-simar-texto/20" />
-                        {/* Logos institucionales: en oscuro van sobre una pastilla clara (tienen letras negras) */}
-                        <span className="hidden md:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
+                        <span aria-hidden="true" className="hidden min-[768px]:block min-[1280px]:hidden min-[1440px]:block h-9 w-px bg-simar-texto/20" />
+                        {/* Logos institucionales: en oscuro van sobre una pastilla clara (tienen letras negras).
+                            De 1280 a 1439 px no van: ahí aparecen los enlaces de las secciones y con los logos
+                            ya no caben en un renglón (laptops de 1366 px y proyectores). Los cortes van todos
+                            como min-[…]: Tailwind pone los arbitrarios antes que md/xl y xl:hidden les ganaría */}
+                        <span className="hidden min-[768px]:flex min-[1280px]:hidden min-[1440px]:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
                             <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
                             <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
                         </span>
@@ -586,7 +583,7 @@ export function VariantCinematic({
                                 key={link.href}
                                 href={link.href}
                                 aria-current={seccionActiva === link.href ? 'location' : undefined}
-                                className="min-h-[48px] flex items-center text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
+                                className="min-h-[48px] flex items-center whitespace-nowrap text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
                             >
                                 {link.label}
                             </a>
@@ -1110,7 +1107,7 @@ export function VariantCinematic({
                         })}
                         <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[13px]" data-delay="200">
                             Estimaciones con los registros reales del sistema y factores aproximados: 1 L de aceite
-                            contamina unos 1,000 L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
+                            puede contaminar {LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
                             papeleo. Cada registro que se captura hace crecer estos números.
                         </p>
                     </div>

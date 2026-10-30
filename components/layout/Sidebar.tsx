@@ -24,12 +24,15 @@ import { BotonTema } from '@/components/layout/ThemeToggle';
 import { CampanaMenu } from '@/components/layout/AvisosRecinto';
 import { useSoloConsulta } from '@/components/layout/BaseDatos';
 import { LineaMarea } from '@/components/layout/LineaMarea';
+import { useBordeDesplazamiento } from '@/components/layout/useBordeDesplazamiento';
 
 export function Sidebar() {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();
   const { isCollapsed, isOpen, closeSidebar, toggleCollapse, abrirPerfil } = useSidebar();
   const { signOut, user } = useAuth();
+  // En laptops bajas la lista no cabe: su orilla se desvanece para avisar que hay más
+  const listaRef = useBordeDesplazamiento<HTMLDivElement>();
 
   const locale = pathname.split('/')[1] || 'es';
 
@@ -118,7 +121,7 @@ export function Sidebar() {
         </div>
 
         {/* Navegación */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1 custom-scrollbar">
+        <div ref={listaRef} className="simar-borde-lista flex-1 overflow-y-auto overflow-x-hidden -mx-1 px-1 custom-scrollbar">
           <nav aria-label={t('menu.titulo')} className="flex flex-col gap-1">
             {menuItems.map(renderItem)}
 

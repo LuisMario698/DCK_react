@@ -234,7 +234,7 @@ export default function ImpactoPage() {
             {/* Filtro de periodo (el título ya está en la barra de arriba). En celular, el control segmentado
                 de los filtros (el azul relleno queda para la sección activa de la barra) */}
             <div className="simar-aparece flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 movil:gap-2">
-                <p className="text-lg text-simar-texto-2 movil:text-[14px]">Calculado a partir de tus recolecciones completadas.</p>
+                <p className="text-lg text-simar-texto-2 movil:text-[15px]">Calculado a partir de tus recolecciones completadas.</p>
                 {/* Sobre una tarjeta: su canal gris no se ve directo en el fondo de la página */}
                 <div className="hidden movil:block bg-simar-superficie border border-simar-borde rounded-[18px] p-1.5 shadow-simar">
                     <ControlSegmentado
@@ -293,8 +293,8 @@ export default function ImpactoPage() {
                 <div className="simar-aparece lg:col-span-2 bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.2s' }}>
                     <div className="flex flex-wrap items-start justify-between gap-3 mb-5 movil:mb-3">
                         <div className="min-w-0">
-                            <h3 className="text-[21px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{MATERIAL[unidad].titulo}</h3>
-                            <p className="text-base text-simar-texto-2 movil:text-[14px]">
+                            <h2 className="text-[21px] font-extrabold leading-tight text-simar-texto movil:text-[17px]">{MATERIAL[unidad].titulo}</h2>
+                            <p className="text-base text-simar-texto-2 movil:text-[15px]">
                                 Por {periodo === '1m' ? 'semana' : 'mes'}: este periodo y el anterior
                             </p>
                         </div>
@@ -306,7 +306,7 @@ export default function ImpactoPage() {
                                         type="button"
                                         onClick={() => setUnidadElegida(u)}
                                         aria-pressed={unidad === u}
-                                        className={`simar-presiona min-h-[46px] px-3.5 rounded-[12px] inline-flex items-center justify-center gap-2 text-base font-bold transition-colors movil:min-h-[40px] movil:px-2 movil:gap-1.5 movil:text-[14px] movil:rounded-[11px] ${
+                                        className={`simar-presiona min-h-[46px] px-3.5 rounded-[12px] inline-flex items-center justify-center gap-2 text-base font-bold transition-colors movil:min-h-[40px] movil:px-2 movil:gap-1.5 movil:text-[15px] movil:rounded-[11px] ${
                                             unidad === u ? 'bg-simar-superficie text-simar-texto shadow-simar' : 'text-simar-texto-2 hover:text-simar-texto'
                                         }`}
                                     >
@@ -318,7 +318,7 @@ export default function ImpactoPage() {
                         )}
                     </div>
                     {serie.every((p) => p.actual === 0 && p.anterior === 0) ? (
-                        <p className="h-56 flex items-center justify-center rounded-2xl bg-simar-papel px-6 text-center text-[17px] text-simar-texto-2 movil:h-40 movil:text-[14px]">
+                        <p className="h-56 flex items-center justify-center rounded-2xl bg-simar-papel px-6 text-center text-[17px] text-simar-texto-2 movil:h-40 movil:text-[15px]">
                             Sin recolecciones de {MATERIAL[unidad].texto.toLowerCase()} en este periodo ni en el anterior.
                         </p>
                     ) : (
@@ -356,7 +356,7 @@ export default function ImpactoPage() {
 
                 {/* Composición: cada material con su cantidad y su unidad (la dona, sólo lo que va en kilos) */}
                 <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-5 sm:p-6 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.26s' }}>
-                    <h3 className="text-[21px] font-extrabold text-simar-texto mb-4 movil:text-[17px] movil:mb-3">Lo que recolectaste</h3>
+                    <h2 className="text-[21px] font-extrabold text-simar-texto mb-4 movil:text-[17px] movil:mb-3">Lo que recolectaste</h2>
                     {composicion.length === 0 ? (
                         <p className="text-base text-simar-texto-2 py-6 text-center">Sin recolecciones en este periodo.</p>
                     ) : (

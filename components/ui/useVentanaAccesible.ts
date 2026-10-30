@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, type RefObject } from 'react';
+import { arrastrarVentana } from './arrastreHoja';
 
 const ENFOCABLES =
     'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -44,7 +45,8 @@ function focoFueraDe(panel: HTMLElement): HTMLElement | null {
  *   que algo de adentro ya lo haya pedido con autoFocus;
  * - Tab y Mayús+Tab dan la vuelta dentro de la ventana y no se escapan a la página de atrás;
  * - al cerrar, el foco regresa a lo que lo tenía (normalmente el botón que la abrió);
- * - con `alEscape`, Escape la cierra (si hay una ventana encima de otra, sólo la de arriba).
+ * - con `alEscape`, Escape la cierra (si hay una ventana encima de otra, sólo la de arriba) y, en
+ *   celular, donde la ventana sube como hoja, también jalarla hacia abajo (`arrastrarVentana`).
  *
  * `ref` es el panel de la ventana (lleva `tabIndex={-1}` para poder recibir el foco). Con
  * `enfocar: false` no mueve el foco al abrir (la ventana ya lo hace por su cuenta).
@@ -103,8 +105,15 @@ export function useVentanaAccesible(
         };
         document.addEventListener('keydown', alEscapar);
 
+        // En celular las ventanas suben como hoja (globals.css): también se cierran jalándolas hacia
+        // abajo, por el mismo camino que Escape (sólo la de arriba y sólo si se cierra con Escape)
+        const quitarArrastre = arrastrarVentana(panel, () =>
+            escapeRef.current && pila[pila.length - 1] === panel ? escapeRef.current : undefined
+        );
+
         return () => {
             cancelAnimationFrame(cuadro);
+            quitarArrastre();
             panel.removeEventListener('keydown', alTeclear);
             document.removeEventListener('keydown', alEscapar);
             const lugar = pila.lastIndexOf(panel);
