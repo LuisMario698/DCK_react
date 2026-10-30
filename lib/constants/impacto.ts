@@ -30,9 +30,9 @@ export const RECINTO_CO2_POR_LITRO_ACEITE = CO2E_EVITADO_POR_UNIDAD.aceite;
 /** kg de CO₂ evitados por kg llevado al relleno sanitario (basurón). */
 export const RECINTO_CO2_POR_KG_BASURON = 0.5;
 /**
- * Litros de agua que no se contaminan por cada litro de aceite recolectado: un millón, la cifra
- * de las campañas ambientales (un litro de aceite usado puede contaminar hasta 1,000,000 L de
- * agua). Del 2026-09-30 al 2026-10-07 se usó 1,000; se corrigió a un millón el 2026-10-07.
+ * Litros de agua que puede contaminar un litro de aceite (los que se protegen al recolectarlo):
+ * 1,000,000 L, decisión del equipo del 2026-10-07. Antes era 1,000 L (desde el 2026-09-30).
+ * Se cambia sólo aquí: la landing, Estadísticas, su PDF, el portal y la demo lo toman de esta constante.
  */
 export const LITROS_AGUA_POR_LITRO_ACEITE = 1_000_000;
 

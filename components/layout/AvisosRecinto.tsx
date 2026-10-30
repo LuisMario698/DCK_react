@@ -176,7 +176,8 @@ function Contador({ n, className }: { n: number; className: string }) {
     );
 }
 
-const etiquetaCampana = (n: number) => `Avisos${n ? ` (${n} sin leer)` : ''}`;
+// «Avisos, 2 sin leer» y no «Avisos (2 sin leer)»: el nombre debe contener lo que se ve («Avisos 2»)
+const etiquetaCampana = (n: number) => `Avisos${n ? `, ${n} sin leer` : ''}`;
 
 /** Campana de la píldora de arriba (celular y tableta) */
 export function CampanaMovil() {
@@ -216,7 +217,7 @@ export function CampanaMenu({ colapsado }: { colapsado: boolean }) {
                 <Bell className="w-6 h-6" />
                 {colapsado && <Contador n={noLeidos} className="absolute -top-2.5 -right-3 ring-2 ring-simar-superficie" />}
             </span>
-            <span className={`flex-1 text-left text-lg font-semibold leading-tight ${colapsado ? 'lg:hidden' : ''}`}>Avisos</span>
+            <span className={`flex-1 text-left text-lg font-semibold leading-tight ${colapsado ? 'lg:hidden' : ''}`}>Avisos</span>{' '}
             {!colapsado && <Contador n={noLeidos} className="" />}
         </button>
     );
@@ -325,7 +326,7 @@ function ListaAvisos() {
                     <Bell className="w-7 h-7" />
                 </span>
                 <p className="mt-3 text-lg font-bold text-simar-texto movil:text-[16px]">Sin avisos</p>
-                <p className="mt-1 text-[17px] text-simar-texto-2 movil:text-[14px]">
+                <p className="mt-1 text-[17px] text-simar-texto-2 movil:text-[15px]">
                     Aquí verás cuando una empresa recolectora pida o cancele una recolección.
                 </p>
             </div>
@@ -346,7 +347,7 @@ function ListaAvisos() {
             {/* Por días: "Hoy", "Ayer" y "Antes" (la hora de cada aviso sigue abajo de su texto) */}
             {agruparPorDia(avisos).map(({ grupo, items }) => (
                 <section key={grupo} aria-label={grupo}>
-                    <h3 className="px-2.5 pt-2 pb-1 text-[15px] font-bold text-simar-texto-2 movil:text-[13px]">{grupo}</h3>
+                    <h3 className="px-2.5 pt-2 pb-1 text-[15px] font-bold text-simar-texto-2 movil:text-[15px]">{grupo}</h3>
                     <ul className="space-y-1">
                         {items.map((n) => (
                             <li key={n.id} className="simar-aparece" style={{ animationDelay: `${Math.min(avisos.indexOf(n), 6) * 0.03}s` }}>
@@ -360,8 +361,8 @@ function ListaAvisos() {
                                     <NotifIcon tipo={n.tipo} />
                                     <span className="flex-1 min-w-0">
                                         <span className={`block text-[17px] leading-snug text-simar-texto movil:text-[15px] ${n.leida ? 'font-medium' : 'font-bold'}`}>{n.titulo}</span>
-                                        {n.detalle && <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[13.5px]">{n.detalle}</span>}
-                                        <span className="block mt-0.5 text-[14px] text-simar-texto-2 movil:text-[12.5px]">{tiempoRelativo(n.created_at)}</span>
+                                        {n.detalle && <span className="block text-[15px] leading-snug text-simar-texto-2 movil:text-[15px]">{n.detalle}</span>}
+                                        <span className="block mt-0.5 text-[14px] text-simar-texto-2 movil:text-[15px]">{tiempoRelativo(n.created_at)}</span>
                                     </span>
                                     {!n.leida && <span aria-label="Sin leer" className="mt-2 w-2.5 h-2.5 flex-shrink-0 rounded-full bg-[#A63F0E]" />}
                                 </button>

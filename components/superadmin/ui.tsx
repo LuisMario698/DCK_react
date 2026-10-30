@@ -76,7 +76,7 @@ export function Kpi({
     return (
         <div className="bg-simar-superficie border border-simar-borde rounded-[22px] p-5 shadow-simar movil:p-3">
             <div className="flex items-center justify-between gap-3 movil:items-start movil:gap-2">
-                <span className="text-[17px] text-simar-texto-2 movil:text-[13px] movil:leading-tight">{label}</span>
+                <span className="text-[17px] text-simar-texto-2 movil:text-[15px] movil:leading-tight">{label}</span>
                 <span
                     className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 movil:w-8 movil:h-8 ${
                         alerta
@@ -91,7 +91,7 @@ export function Kpi({
                 {/* Los conteos cuentan al aparecer; los textos (MXN, bytes) se muestran tal cual */}
                 {typeof valor === 'number' ? <NumeroAnimado valor={valor} /> : valor}
             </p>
-            {detalle && <p className="mt-1 text-[15px] text-simar-texto-2 movil:mt-0.5 movil:text-[13px] movil:leading-snug">{detalle}</p>}
+            {detalle && <p className="mt-1 text-[15px] text-simar-texto-2 movil:mt-0.5 movil:text-[15px] movil:leading-snug">{detalle}</p>}
         </div>
     );
 }

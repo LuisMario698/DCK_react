@@ -18,6 +18,7 @@ import { MODO_DEMO } from '@/lib/demo/config';
 import { FranjaDemo } from '@/components/demo/FranjaDemo';
 import { Recorrido } from '@/components/demo/Recorrido';
 import { FranjaDck, useSoloConsulta } from './BaseDatos';
+import { VistaPreviaPdf } from '@/components/demo/VistaPreviaPdf';
 
 /** Nombre de cada pantalla del recinto en la pestaña del navegador */
 const TITULOS_RECINTO: Record<string, string> = {
@@ -56,12 +57,14 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
     return isCollapsed ? 'pl-0 lg:pl-[120px]' : 'pl-0 lg:pl-[308px]';
   };
 
-  // Barra inferior (celular y tableta): las tareas del día y "Más" para lo demás
+  // Barra inferior (celular y tableta): las tareas del día y "Más" para lo demás. "Reportes" y no
+  // "Estadísticas": la palabra más larga fija el tamaño de todas y con ella quedaban en 10 px; con
+  // ésta suben a 12 px. La pantalla conserva su título
   const principales = [
     { label: t('menu.panel'), href: `/${locale}/dashboard`, icon: LayoutGrid },
     { label: t('menu.manifiesto'), href: `/${locale}/dashboard/manifiesto`, icon: FileText },
     { label: 'Basurón', href: `/${locale}/dashboard/manifiesto-basuron`, icon: Recycle },
-    { label: 'Estadísticas', href: `/${locale}/dashboard/estadisticas`, icon: BarChart3 },
+    { label: 'Reportes', href: `/${locale}/dashboard/estadisticas`, icon: BarChart3 },
   ].map((i) => ({ ...i, activo: pathname === i.href }));
 
   return (
@@ -95,6 +98,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
       <PanelAvisos colapsado={isCollapsed} />
       <UserProfileModal isOpen={perfilAbierto} onClose={cerrarPerfil} />
       {MODO_DEMO && <Recorrido vista="puerto" />}
+      {MODO_DEMO && <VistaPreviaPdf />}
     </div>
   );
 }

@@ -21,7 +21,7 @@
     "subtitulo": "Bienvenido al Sistema de Gestión de Residuos Marítimos",
     "estadisticas": {
       "totalManifiestos": "Total Manifiestos",
-      "totalBuques": "Total Buques",
+      "totalBuques": "Total de embarcaciones",
       "totalPersonas": "Total Personas",
       "totalAsociaciones": "Total de empresas"
     },
@@ -32,7 +32,7 @@
     "accesosRapidos": {
       "titulo": "Accesos Rápidos",
       "nuevoManifiesto": "Nuevo Manifiesto",
-      "nuevoBuque": "Nuevo Buque",
+      "nuevoBuque": "Nueva embarcación",
       "nuevaPersona": "Nueva persona",
       "nuevaAsociacion": "Nueva empresa"
     }
@@ -40,7 +40,7 @@
   "Personas": {
     "titulo": "Gestión de personas",
     "subtitulo": "Administra las personas registradas en el sistema",
-    "buscar": "Buscar persona...",
+    "buscar": "Buscar persona…",
     "filtrarTipo": "Filtrar por tipo",
     "todosTipos": "Todos los tipos",
     "nuevaPersona": "Nueva persona",
@@ -98,7 +98,7 @@
   "Embarcaciones": {
     "titulo": "Gestión de embarcaciones",
     "subtitulo": "Administra las embarcaciones registradas en el sistema",
-    "buscar": "Buscar embarcación...",
+    "buscar": "Buscar embarcación…",
     "nuevaEmbarcacion": "Nueva embarcación",
     "tabla": {
       "nombre": "Nombre de la embarcación",
@@ -163,10 +163,10 @@
       "eliminar": "Eliminar"
     },
     "mensajes": {
-      "generandoPDF": "Generando PDF...",
+      "generandoPDF": "Generando PDF…",
       "pdfGenerado": "PDF listo",
       "errorGenerarPDF": "No se pudo generar el PDF. Inténtalo de nuevo.",
-      "descargando": "Descargando...",
+      "descargando": "Descargando…",
       "descargaExitosa": "PDF descargado",
       "errorDescarga": "No se pudo descargar el PDF. Inténtalo de nuevo."
     }

@@ -18,7 +18,7 @@ export function InsigniaCalma({ avisosIniciales }: { avisosIniciales: number }) 
     // Con la clave, si cambia el texto entra de nuevo (pulso de simar-confirma)
     <span
       key={texto}
-      className="simar-confirma self-start md:self-center md:ml-auto flex-shrink-0 inline-flex items-center gap-2 min-h-[44px] px-4 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[17px] font-bold movil:min-h-[34px] movil:px-3 movil:text-[14px]"
+      className="simar-confirma self-start md:self-center md:ml-auto flex-shrink-0 inline-flex items-center gap-2 min-h-[44px] px-4 rounded-full bg-simar-arrecife-suave text-simar-arrecife-tinta text-[17px] font-bold movil:min-h-[34px] movil:px-3 movil:text-[15px]"
     >
       <PalomitaAnimada tamano={18} circulo={false} />
       {texto}

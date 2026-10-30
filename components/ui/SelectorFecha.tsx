@@ -90,6 +90,11 @@ export function SelectorFecha({
     const nombreLargo = tieneValor
         ? deTexto(valor).toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
         : 'sin elegir';
+    // El nombre contiene lo que se ve ("29 oct 2026"): quien maneja la pantalla con la voz dice lo
+    // que lee (WCAG 2.5.3). El día de la semana va después, para el lector de pantalla
+    const nombreBoton = tieneValor
+        ? `${etiqueta}: ${textoValor}, ${deTexto(valor).toLocaleDateString('es-MX', { weekday: 'long' })}`
+        : `${etiqueta}: ${textoValor}`;
 
     // El campo se ajusta a su propio ancho (@container): angosto, sin ícono; más angosto, sin la X
     // (borrar sigue dentro del calendario). Así "28 sep 2026" cabe en filtros de cuatro columnas
@@ -102,7 +107,7 @@ export function SelectorFecha({
                 onClick={() => (abierto ? cerrar() : abrir())}
                 aria-haspopup="dialog"
                 aria-expanded={abierto}
-                aria-label={`${etiqueta}: ${nombreLargo}`}
+                aria-label={nombreBoton}
                 title={tieneValor ? nombreLargo : undefined}
                 className={
                     variante === 'campo'

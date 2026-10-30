@@ -1,8 +1,37 @@
 # Demostración de SiMAR
 
 Una copia de SiMAR para el jurado y el público: **datos inventados** y **de sólo lectura**, con
-una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 7 pasos (el puerto) o 4 (una empresa
+una entrada sin cuenta (`/es/demo`) y un recorrido guiado de 5 pasos (el puerto) o 4 (una empresa
 recolectora).
+
+## El recorrido
+
+- **Cuenta una historia** en la que cada paso lleva al siguiente, para que cualquiera la siga sin saber
+  qué es SiMAR. Puerto: el barco entrega (manifiesto, explicado) → se firma → se junta en el acopio →
+  una empresa lo pide y el puerto aprueba → lo que gana el mar. Empresa: ve lo que hay → lo pide →
+  sigue su solicitud → el puerto le avisa el día → su aporte. El basurón (relleno sanitario) no entra
+  a propósito. Los textos están en `components/demo/recorridos.ts` (lo que va
+  entre `**` sale en negritas).
+- **Bienvenida** con el camino completo en íconos; **final** con ese mismo camino, ya completo (sin
+  cifras: las de la demo son inventadas y no vienen al caso).
+- **Documentos de ejemplo:** en «Se firma en la pantalla» y en los pasos del comprobante, un enlace
+  («Ver cómo queda el PDF del manifiesto», «Ver un comprobante de recolección») abre una **vista
+  previa**: el PDF real que genera la app, con firmas de ejemplo, como imagen y sin poder descargarlo
+  ni imprimirlo. Fuera del recorrido pasa lo mismo con todo PDF que la app iba a descargar o imprimir
+  (manifiesto, comprobante, PDF del período, reporte del mes, constancia del año). pdf.js se carga
+  del CDN sólo al abrir la primera vista previa.
+- **"Pruébalo tú"** (pasos con `prueba`), guiado: se ilumina SÓLO lo que se va a probar (el campo de
+  aceite, «Firmar», «Aprobar», «Solicitar», «Ver») y es lo único que responde (el cursor no sale de ahí:
+  Enter o Tab no lo mandan a otro campo); una burbuja con flecha dice qué
+  hacer y, cuando se hizo (un número escrito, "Firmado", un envío que la demo detuvo —cancelar no cuenta—
+  o ver una solicitud), cambia a "¡Listo!" con "Seguir". Tras un envío, la ventana se cierra sola. Si la pantalla abre una ventana, el recorrido se hace a un lado. Lo que se
+  intente guardar se detiene con el aviso de la demo.
+- Diseño: la pantalla queda detrás de un velo con desenfoque y lo que se explica, nítido, en un hueco
+  que se desliza de un paso al siguiente; la tarjeta lleva una flechita hacia el hueco y el avance en
+  segmentos arriba.
+- Se avanza con botones, con las flechas del teclado, deslizando la tarjeta en celular o tocando los
+  puntos de arriba. Cada paso ilumina un `data-recorrido` de la pantalla; si una vista cambia y ya no
+  lo tiene, el paso sale igual, con la tarjeta al centro.
 
 ## Cómo está armada
 
@@ -12,6 +41,7 @@ recolectora).
 | La misma app, con el modo demostración encendido | Otro proyecto de Vercel, mismo repo y rama, con `NEXT_PUBLIC_MODO_DEMO=1` |
 | Entrada: elegir "Como el puerto" o "Como empresa recolectora" | `app/[locale]/demo/page.tsx`, `components/demo/EntradaDemo.tsx` |
 | Recorrido guiado y franja "Demostración" | `components/demo/Recorrido.tsx`, `recorridos.ts` (textos), `FranjaDemo.tsx` |
+| Vista previa de los PDF (sin descargar) | `components/demo/VistaPreviaPdf.tsx`, `lib/demo/vistaPrevia.ts`, `lib/demo/documentos.ts` (los de ejemplo) |
 | Primera llave: el navegador detiene cualquier guardado antes de enviarlo y avisa con calma | `lib/demo/supabaseDemo.ts`, `lib/demo/avisos.ts` |
 | Segunda llave: la base rechaza toda escritura que llegue por la app | `30_candado.sql` |
 
@@ -55,6 +85,8 @@ Si Supabase no acepta esos correos, usa otros, ponlos en Vercel (`NEXT_PUBLIC_DE
   más nuevo sea de hoy. Si no, la mañana del evento: `select public.demo_poner_al_dia();`.
 - **Volver a empezar de cero:** corre `20_datos.sql` (borra y siembra otra vez; las cuentas se
   conservan).
+- **Si la demo se armó antes de que existiera `15_columnas.sql`** (el reporte del mes dice "No se pudo
+  generar"): en el SQL Editor de la demo corre `15_columnas.sql` y luego `20_datos.sql`.
 - Nadie puede cambiar nada: ni guardar, ni borrar, ni cambiar la contraseña de las cuentas. Cerrar
   sesión sólo cierra la de ese equipo (no saca a los demás).
 - Lleva el video del recorrido en la computadora y en un teléfono por si falla el internet del lugar.
@@ -66,6 +98,7 @@ Si Supabase no acepta esos correos, usa otros, ponlos en Vercel (`NEXT_PUBLIC_DE
 | `simar-demo.sql` | **Generado**: todo junto para pegarlo en el editor SQL. No lo edites a mano |
 | `armar.mjs` | Lo genera: `node supabase/demo/armar.mjs` (vuélvelo a correr si cambian las migraciones) |
 | `10_almacenamiento.sql` | Buckets que lee la app |
+| `15_columnas.sql` | Columnas que el proyecto real tiene y el volcado viejo no (`estado` y `numero_ticket` del basurón) |
 | `20_datos.sql` | Datos de ejemplo (todo inventado), `demo_configurar_cuentas()` y `demo_poner_al_dia()` |
 | `30_candado.sql` | Sólo lectura: disparador en cada tabla y políticas restrictivas en Storage |
 | `40_cuentas.sql` | Les da su rol a las dos cuentas después de crearlas |

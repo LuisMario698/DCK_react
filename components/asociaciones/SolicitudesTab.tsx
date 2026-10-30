@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { MODO_DEMO } from '@/lib/demo/config';
+import { abrirVistaPrevia } from '@/lib/demo/vistaPrevia';
+import { pdfComprobanteDe } from '@/lib/demo/documentos';
 import { confirmar } from '@/components/ui/Confirmar';
 import { CheckCircle2, XCircle, Truck, Eye, MessageSquare, Inbox, Ban, FileDown, Loader2 } from 'lucide-react';
 import { TIPO_RESIDUO_LABEL, formatCantidad, unidadEscrita, type EstadoSolicitud } from '@/lib/constants/residuos';
@@ -155,6 +158,8 @@ export function SolicitudesTab({
     const conteo = (f: Filtro) => solicitudes.filter((s) => coincide(s, f)).length;
     const filtradas = solicitudes.filter((s) => coincide(s, tab));
     const enHistorial = tab !== 'pendiente' && tab !== 'aprobada';
+    // Con un solo estado a la vista (Pendientes, Por recolectar…) la columna Estado repetiría la pestaña
+    const variosEstados = tab === 'todas' || tab === 'historial';
     const disponibleDe = (s: SolicitudConAsociacion) => inventario.find((i) => i.tipo === s.tipo)?.cantidad ?? 0;
 
     const cancelar = async (s: SolicitudConAsociacion) => {
@@ -183,6 +188,11 @@ export function SolicitudesTab({
         try {
             const rec = await getRecoleccionPorSolicitud(s.id);
             if (!rec) throw new Error('No se encontró la recolección de esta solicitud.');
+            // En la demostración, se genera y se ve (no hay comprobantes guardados ni se sube nada)
+            if (MODO_DEMO) {
+                abrirVistaPrevia(`Comprobante ${rec.folio}`, () => pdfComprobanteDe(rec, rec.asociacion, s));
+                return;
+            }
             let ruta = rec.comprobante_pdf_path;
             if (!ruta) {
                 // El comprobante no se subió al completar (p. ej. falló la red): se regenera sin firmas
@@ -203,7 +213,7 @@ export function SolicitudesTab({
         <div className="space-y-6 movil:space-y-3">
             {error && <ErrorCarga mensaje={error} onReintentar={cargar} />}
 
-            <div className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
+            <div data-recorrido="empresas-solicitudes" className="bg-simar-superficie border border-simar-borde rounded-2xl shadow-simar overflow-hidden transition-shadow">
                 {/* Tableta y computadora: el mismo control segmentado que en celular (canal gris y la opción
                     elegida en blanco), con las seis opciones. Antes eran pestañas subrayadas sobre una
                     franja beige que no coincidía con la de la tabla ni con su margen. Lo que hay que atender
@@ -255,16 +265,17 @@ export function SolicitudesTab({
                 </div>
 
                 {/* Tabla (en celular cada solicitud es un bloque: empresa, fecha y estado; residuo y
-                    cantidad; la acción principal con su palabra a la izquierda y las demás a la derecha) */}
+                    cantidad; la acción principal con su palabra a la izquierda y las demás a la derecha).
+                    En computadora cabe sin deslizar de lado desde 1280 px: la cantidad va bajo el residuo,
+                    Estado sólo sale cuando hay varios y las acciones se acomodan en dos renglones */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full border-collapse movil:block">
                         <thead className="movil:hidden">
                             <tr className="bg-simar-papel border-b border-simar-borde">
                                 <Th>Empresa</Th>
                                 <Th>Residuo</Th>
-                                <Th className="hidden sm:table-cell">Cantidad</Th>
-                                <Th className="hidden md:table-cell">Recolección</Th>
-                                <Th>Estado</Th>
+                                <Th className={variosEstados ? 'hidden 2xl:table-cell' : 'hidden md:table-cell'}>Recolección</Th>
+                                {variosEstados && <Th>Estado</Th>}
                                 <Th className="text-right">Acciones</Th>
                             </tr>
                         </thead>
@@ -286,8 +297,8 @@ export function SolicitudesTab({
                                                 <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-simar-marea flex items-center justify-center text-white font-bold text-[15px] shadow-simar">
                                                     {nombre.charAt(0)}
                                                 </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-base font-semibold text-simar-texto truncate movil:whitespace-normal movil:line-clamp-2 movil:leading-snug">{nombre}</p>
+                                                <div className="min-w-0 max-w-[200px] movil:max-w-none">
+                                                    <p className="text-base font-semibold text-simar-texto line-clamp-2 leading-snug">{nombre}</p>
                                                     <p className="text-[15px] text-simar-texto-2 truncate hidden sm:block">
                                                         Solicitada {formatearFecha(s.created_at)}
                                                     </p>
@@ -300,34 +311,52 @@ export function SolicitudesTab({
                                         </td>
                                         <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:row-start-2">
                                             <ResiduoBadge tipo={s.tipo} />
+                                            {/* Computadora y tableta: la cantidad bajo su residuo (en celular va en su propia celda) */}
+                                            <div className="mt-1.5 movil:hidden">
+                                                <span className="whitespace-nowrap">
+                                                    <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
+                                                    <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
+                                                </span>
+                                                {s.recoleccion ? (
+                                                    <span className="block text-[15px] text-simar-texto-2">recolectados · <span className="whitespace-nowrap">{s.recoleccion.folio}</span></span>
+                                                ) : (
+                                                    s.cantidad_aprobada !== null &&
+                                                    s.cantidad_aprobada !== s.cantidad_solicitada && (
+                                                        <span className="block text-[15px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    )
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 hidden sm:table-cell whitespace-nowrap movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2 movil:min-w-0 movil:whitespace-normal">
+                                        <td className="hidden movil:block movil:p-0 movil:row-start-2 movil:col-start-2 movil:col-span-2 movil:min-w-0">
                                             <span className="text-base font-bold text-simar-texto">{formatCantidad(cantidad)}</span>
                                             <span className="text-[15px] text-simar-texto-2 ml-1">{s.unidad}</span>
                                             {s.recoleccion ? (
-                                                <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">
-                                                    <span className="movil:hidden">recolectados · </span>
-                                                    <span className="hidden movil:inline">Folio </span>
-                                                    {s.recoleccion.folio}
-                                                </span>
+                                                <span className="block text-[13px] text-simar-texto-2">Folio {s.recoleccion.folio}</span>
                                             ) : (
                                                 s.cantidad_aprobada !== null &&
                                                 s.cantidad_aprobada !== s.cantidad_solicitada && (
-                                                    <span className="block text-[15px] text-simar-texto-2 movil:text-[13px]">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
+                                                    <span className="block text-[13px] text-simar-texto-2">de {formatCantidad(s.cantidad_solicitada)} solicitados</span>
                                                 )
                                             )}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden md:table-cell whitespace-nowrap">
+                                        <td className={`px-4 md:px-5 py-3.5 text-base text-simar-texto-2 hidden whitespace-nowrap ${variosEstados ? '2xl:table-cell' : 'md:table-cell'}`}>
                                             {formatearFecha(s.fecha_propuesta)}
                                         </td>
-                                        <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end movil:self-start">
-                                            <EstadoSolicitudBadge estado={s.estado} />
-                                        </td>
+                                        {variosEstados && (
+                                            <td className="px-4 md:px-5 py-3.5 movil:p-0 movil:col-start-3 movil:row-start-1 movil:justify-self-end movil:self-start">
+                                                <EstadoSolicitudBadge estado={s.estado} />
+                                                {/* Sin la columna Recolección (menos de 1536 px), su fecha va bajo el estado */}
+                                                <span className="block mt-1.5 text-[15px] text-simar-texto-2 whitespace-nowrap 2xl:hidden movil:hidden">
+                                                    {formatearFecha(s.fecha_propuesta)}
+                                                </span>
+                                            </td>
+                                        )}
                                         <td className="px-4 md:px-5 py-3.5 text-right movil:p-0 movil:col-span-3 movil:text-left">
-                                            <div className="inline-flex items-center gap-1 movil:flex movil:flex-wrap movil:gap-1.5">
+                                            {/* Si no caben en un renglón, los íconos bajan a otro (alineados a la derecha) */}
+                                            <div className="inline-flex flex-wrap items-center justify-end gap-1 max-w-[210px] movil:flex movil:max-w-none movil:justify-start movil:gap-1.5">
                                                 {s.estado === 'pendiente' && (
                                                     <>
-                                                        <AccionBtn color="emerald" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
+                                                        <AccionBtn color="emerald" recorrido="aprobar" onClick={() => setAccion({ tipo: 'aprobar', solicitud: s })} icon={<CheckCircle2 className="w-3.5 h-3.5" />}>
                                                             Aprobar
                                                         </AccionBtn>
                                                         <AccionBtn color="red" onClick={() => setAccion({ tipo: 'rechazar', solicitud: s })} icon={<XCircle className="w-3.5 h-3.5" />}>
@@ -346,14 +375,14 @@ export function SolicitudesTab({
                                                     </AccionBtn>
                                                 )}
                                                 <span className="inline-flex items-center gap-1 movil:ml-auto movil:gap-0.5">
-                                                    <IconBtn title="Ver detalle" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
+                                                    <IconBtn title="Ver detalle" corto="Ver" onClick={() => setAccion({ tipo: 'detalle', solicitud: s })}>
                                                         <Eye className="w-4 h-4" />
                                                     </IconBtn>
-                                                    <IconBtn title="Abrir chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
+                                                    <IconBtn title="Abrir chat" corto="Chat" onClick={() => onAbrirChat?.(s.asociacion_id)}>
                                                         <MessageSquare className="w-4 h-4" />
                                                     </IconBtn>
                                                     {(s.estado === 'pendiente' || s.estado === 'aprobada') && (
-                                                        <IconBtn title="Cancelar solicitud" onClick={() => cancelar(s)}>
+                                                        <IconBtn title="Cancelar solicitud" corto="Cancelar" onClick={() => cancelar(s)}>
                                                             <Ban className="w-4 h-4" />
                                                         </IconBtn>
                                                     )}
@@ -365,7 +394,7 @@ export function SolicitudesTab({
                             })}
                             {filtradas.length === 0 && (
                                 <tr className="movil:block">
-                                    <td colSpan={6} className="py-16 text-center movil:block movil:py-10 movil:px-4">
+                                    <td colSpan={variosEstados ? 5 : 4} className="py-16 text-center movil:block movil:py-10 movil:px-4">
                                         <div className="flex flex-col items-center gap-2 text-simar-texto-2 max-w-md mx-auto">
                                             <Inbox className="w-10 h-10" />
                                             <p className="text-base font-medium">{VACIO[tab]?.titulo ?? 'No hay solicitudes en esta categoría.'}</p>
@@ -755,11 +784,14 @@ function AccionBtn({
     onClick,
     icon,
     children,
+    recorrido,
 }: {
     color: 'emerald' | 'red' | 'blue';
     onClick: () => void;
     icon: React.ReactNode;
     children: React.ReactNode;
+    /** Ancla del recorrido de la demostración (components/demo/recorridos.ts) */
+    recorrido?: string;
 }) {
     const cls = {
         emerald: 'text-simar-arrecife-tinta bg-simar-arrecife-suave hover:bg-simar-arrecife-suave',
@@ -769,8 +801,9 @@ function AccionBtn({
     return (
         // En celular lleva siempre su palabra (sólo el ícono no dice si aprueba o rechaza) y mide 40 px
         <button
+            data-recorrido={recorrido}
             onClick={onClick}
-            className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[14px] movil:font-bold ${cls}`}
+            className={`simar-presiona inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[15px] font-semibold transition-all movil:min-h-[40px] movil:px-3 movil:gap-1.5 movil:rounded-[12px] movil:text-[15px] movil:font-bold ${cls}`}
         >
             {icon}
             <span>{children}</span>
@@ -778,15 +811,22 @@ function AccionBtn({
     );
 }
 
-function IconBtn({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
+/**
+ * Acción secundaria: sólo el ícono en la tabla de escritorio (con su nombre al pasar el ratón) y con
+ * su palabra en celular, donde no hay ratón que muestre el nombre. La palabra va dentro del nombre
+ * («Ver» en «Ver detalle»), para quien maneja la pantalla con la voz.
+ */
+function IconBtn({ title, corto, onClick, children }: { title: string; corto: string; onClick: () => void; children: React.ReactNode }) {
     return (
         <button
+            type="button"
             onClick={onClick}
             title={title}
             aria-label={title}
-            className="w-11 h-11 flex items-center justify-center rounded-xl text-simar-texto-2 hover:text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors"
+            className="w-11 h-11 flex items-center justify-center gap-1.5 rounded-xl text-simar-texto-2 hover:text-simar-marea-tinta hover:bg-simar-marea-suave transition-colors movil:w-auto movil:px-2.5 movil:text-[15px] movil:font-bold"
         >
             {children}
+            <span className="hidden movil:inline">{corto}</span>
         </button>
     );
 }

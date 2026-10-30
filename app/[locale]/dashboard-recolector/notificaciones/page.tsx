@@ -83,7 +83,7 @@ export default function NotificacionesPage() {
                     <button
                         onClick={() => marcar()}
                         disabled={noLeidas === 0}
-                        className="simar-presiona min-h-[48px] px-4 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-base font-bold hover:border-simar-marea-tinta disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 movil:flex-shrink-0 movil:px-3 movil:text-[14px]"
+                        className="simar-presiona min-h-[48px] px-4 rounded-2xl border-2 border-simar-campo-borde bg-simar-superficie text-simar-texto text-base font-bold hover:border-simar-marea-tinta disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2 movil:flex-shrink-0 movil:px-3 movil:text-[15px]"
                     >
                         <CheckCheck className="w-5 h-5 text-simar-marea-tinta" />
                         <span className="movil:hidden">Marcar todas como leídas</span>
@@ -98,7 +98,7 @@ export default function NotificacionesPage() {
                     // Por días: "Hoy", "Ayer" y "Antes" (la hora de cada una sigue abajo de su texto)
                     agruparPorDia(notificaciones).map(({ grupo, items }, g) => (
                         <section key={grupo} aria-label={grupo} className={g > 0 ? 'border-t border-simar-borde-suave' : ''}>
-                            <h3 className="px-5 sm:px-6 pt-4 pb-1 text-[15px] font-bold text-simar-texto-2 movil:px-3.5 movil:pt-3 movil:text-[13px]">{grupo}</h3>
+                            <h3 className="px-5 sm:px-6 pt-4 pb-1 text-[15px] font-bold text-simar-texto-2 movil:px-3.5 movil:pt-3 movil:text-[15px]">{grupo}</h3>
                             <ul className="divide-y divide-simar-borde-suave">
                                 {items.map((n) => (
                                     <li key={n.id}>

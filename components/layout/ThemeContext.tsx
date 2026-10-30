@@ -73,8 +73,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const nuevo: Theme = theme === 'dark' ? 'light' : 'dark';
         const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-        // Sin View Transitions, con "reducir movimiento" o en WebKit el cambio es instantáneo
-        if (typeof document.startViewTransition !== 'function' || reducir || esWebKit()) {
+        // Sin View Transitions o en WebKit el cambio es instantáneo
+        if (typeof document.startViewTransition !== 'function' || esWebKit()) {
             setTheme(nuevo);
             return;
         }
@@ -90,6 +90,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         const radio = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
         transicion.ready
             .then(() => {
+                // Con "reducir movimiento" nada se mueve, pero el brillo tampoco salta de golpe (de papel
+                // a azul noche en un cuadro): el tema nuevo aparece con un fundido corto, como en Apple
+                if (reducir) {
+                    document.documentElement.animate(
+                        { opacity: [0, 1] },
+                        { duration: 200, easing: 'ease', pseudoElement: '::view-transition-new(root)' }
+                    );
+                    return;
+                }
                 document.documentElement.animate(
                     { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radio}px at ${x}px ${y}px)`] },
                     { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', pseudoElement: '::view-transition-new(root)' }

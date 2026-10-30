@@ -114,7 +114,7 @@ export default function AsociacionesPage({ searchParams }: { searchParams: Promi
                                 key={t.value}
                                 onClick={() => setTab(t.value)}
                                 aria-current={active ? 'page' : undefined}
-                                className={`simar-presiona relative sm:flex-1 min-w-0 sm:min-w-fit whitespace-nowrap min-h-[52px] px-3 sm:px-5 text-[17px] sm:text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 movil:flex-col movil:gap-1 movil:min-h-[58px] movil:px-0.5 movil:text-[clamp(11px,3.3vw,13px)] movil:leading-none movil:rounded-[16px] ${
+                                className={`simar-presiona relative sm:flex-1 min-w-0 sm:min-w-fit whitespace-nowrap min-h-[52px] px-3 sm:px-5 text-[17px] sm:text-lg font-bold rounded-xl transition-colors inline-flex items-center justify-center gap-2 movil:flex-col movil:gap-1 movil:min-h-[58px] movil:px-0.5 movil:text-[clamp(12px,3.6vw,14px)] movil:leading-none movil:rounded-[16px] ${
                                     active
                                         ? 'bg-simar-marea text-white shadow-simar'
                                         : 'text-simar-texto-2 hover:bg-simar-papel hover:text-simar-texto'

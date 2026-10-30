@@ -14,7 +14,8 @@
  */
 import { useEffect, useId, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 
-const CONSULTA_TRANSPARENCIA = '(prefers-reduced-transparency: reduce)';
+// Con "reducir transparencia" o "aumentar contraste" no hay refracción: el cristal es sólido (globals.css)
+const CONSULTA_TRANSPARENCIA = '(prefers-reduced-transparency: reduce), (prefers-contrast: more)';
 
 function suscribirTransparencia(avisar: () => void) {
     const consulta = window.matchMedia(CONSULTA_TRANSPARENCIA);

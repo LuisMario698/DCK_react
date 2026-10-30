@@ -79,7 +79,8 @@ export function SelectorHora({
                 onClick={() => (abierto ? cerrar() : abrir())}
                 aria-haspopup="dialog"
                 aria-expanded={abierto}
-                aria-label={`${etiqueta}: ${actual ? enPalabras(...actual) : 'sin elegir'}`}
+                // Primero lo que se ve ("14:30"), para quien maneja la pantalla con la voz; luego en palabras
+                aria-label={`${etiqueta}: ${actual ? `${dos(actual[0])}:${dos(actual[1])}, ${enPalabras(...actual)}` : marcador}`}
                 className={
                     variante === 'campo'
                         ? `w-full min-h-[56px] px-4 rounded-[14px] border-2 bg-simar-superficie text-left text-lg inline-flex items-center gap-2.5 transition-colors focus:outline-none focus-visible:border-simar-marea-tinta ${

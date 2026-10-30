@@ -249,7 +249,7 @@ export function InventarioTab() {
                                             <span className="text-[15px] text-simar-texto-2 ml-1">{unidadEscrita(item.unidad, item.cantidad)}</span>
                                         </td>
                                         {/* En celular sólo si hay algo apartado, debajo de la cantidad */}
-                                        <td className={`px-4 md:px-5 py-3.5 hidden md:table-cell whitespace-nowrap text-base text-simar-texto-2 movil:p-0 movil:row-start-3 movil:col-span-2 movil:text-[13px] ${reservado[item.tipo] ? 'movil:block' : ''}`}>
+                                        <td className={`px-4 md:px-5 py-3.5 hidden md:table-cell whitespace-nowrap text-base text-simar-texto-2 movil:p-0 movil:row-start-3 movil:col-span-2 movil:text-[15px] ${reservado[item.tipo] ? 'movil:block' : ''}`}>
                                             {reservado[item.tipo] ? (
                                                 <>
                                                     {formatCantidad(reservado[item.tipo]!)} {unidadEscrita(item.unidad, reservado[item.tipo]!)}
@@ -531,7 +531,7 @@ function KPI({
                 {icon}
             </span>
             <div className="min-w-0 movil:contents">
-                <p className="text-[17px] text-simar-texto-2 leading-tight movil:order-3 movil:col-span-2 movil:text-[13px]">{label}</p>
+                <p className="text-[17px] text-simar-texto-2 leading-tight movil:order-3 movil:col-span-2 movil:text-[15px]">{label}</p>
                 <p className="text-[30px] font-extrabold leading-tight text-simar-texto movil:order-2 movil:text-[17px] movil:whitespace-nowrap">{value}</p>
             </div>
         </div>

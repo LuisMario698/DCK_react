@@ -55,27 +55,27 @@ export function TarjetaSuscripcion() {
     return (
         <div className="simar-aparece bg-simar-superficie border border-simar-borde rounded-[28px] p-6 md:p-7 shadow-simar movil:p-4 movil:rounded-[22px]" style={{ animationDelay: '0.03s' }}>
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4 movil:mb-3">
-                <h3 className="flex items-center gap-2.5 text-[21px] font-extrabold text-simar-texto movil:text-[17px]">
+                <h2 className="flex items-center gap-2.5 text-[21px] font-extrabold text-simar-texto movil:text-[17px]">
                     <CreditCard className="w-6 h-6 text-simar-marea-tinta movil:w-5 movil:h-5" />
                     Tu suscripción
-                </h3>
-                {estado && <span className={`px-3 py-1 rounded-full text-[15px] font-bold movil:text-[13px] ${TONO_ESTADO[estado]}`}>{ESTADO_SUSCRIPCION_LABEL[estado]}</span>}
+                </h2>
+                {estado && <span className={`px-3 py-1 rounded-full text-[15px] font-bold movil:text-[15px] ${TONO_ESTADO[estado]}`}>{ESTADO_SUSCRIPCION_LABEL[estado]}</span>}
             </div>
             <dl className="space-y-3 movil:space-y-2">
                 <div>
-                    <dt className="text-[15px] font-bold text-simar-texto-2 movil:text-[13px]">Plan</dt>
+                    <dt className="text-[15px] font-bold text-simar-texto-2 movil:text-[15px]">Plan</dt>
                     <dd className="text-[19px] font-extrabold text-simar-texto movil:text-[16px]">{suscripcion.plan ?? (suscripcion.estado ? 'Sin plan asignado' : 'Sin suscripción')}</dd>
                 </div>
                 {suscripcion.vence_el && dias !== null && (
                     <div>
-                        <dt className="text-[15px] font-bold text-simar-texto-2 movil:text-[13px]">{dias < 0 ? 'Venció' : 'Vence'}</dt>
+                        <dt className="text-[15px] font-bold text-simar-texto-2 movil:text-[15px]">{dias < 0 ? 'Venció' : 'Vence'}</dt>
                         <dd className={`text-[17px] font-bold movil:text-[15px] ${pronto || dias < 0 ? 'text-simar-coral' : 'text-simar-texto'}`}>
                             {fechaLarga(suscripcion.vence_el)} · {cuando(dias)}
                         </dd>
                     </div>
                 )}
             </dl>
-            <p className="mt-4 text-base leading-relaxed text-simar-texto-2 movil:mt-3 movil:text-[14px]">{nota}</p>
+            <p className="mt-4 text-base leading-relaxed text-simar-texto-2 movil:mt-3 movil:text-[15px]">{nota}</p>
         </div>
     );
 }
@@ -90,7 +90,7 @@ export function AvisoVencimiento() {
     if (dias < 0 || dias > AVISAR_DIAS_ANTES) return null;
 
     return (
-        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-simar-coral-suave px-5 py-4 text-base text-simar-texto movil:mb-3 movil:px-3.5 movil:py-2.5 movil:gap-x-2.5 movil:text-[14px] movil:leading-snug">
+        <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-simar-coral-suave px-5 py-4 text-base text-simar-texto movil:mb-3 movil:px-3.5 movil:py-2.5 movil:gap-x-2.5 movil:text-[15px] movil:leading-snug">
             <CalendarClock className="w-6 h-6 flex-shrink-0 text-simar-coral movil:w-5 movil:h-5 movil:self-start movil:mt-0.5" />
             <p className="flex-1 min-w-[220px] movil:min-w-0">
                 La suscripción de tu empresa vence <strong>{dias <= 1 ? cuando(dias) : `el ${fechaLarga(suscripcion.vence_el)}`}</strong>
