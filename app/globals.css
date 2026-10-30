@@ -65,6 +65,8 @@
 }
 
 .dark {
+  /* Controles del navegador (barras de desplazamiento, <select>, autocompletar) en oscuro también */
+  color-scheme: dark;
   --background: #081624;
   --foreground: #EEF3F7;
 

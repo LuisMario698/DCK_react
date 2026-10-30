@@ -338,6 +338,11 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
   ya eligió, se respeta lo guardado en `localStorage.theme`.
 - El modo oscuro funciona con la clase `.dark` en `<html>`. Los tokens `--simar-*` se
   redefinen ahí, así que una pantalla hecha con tokens funciona en los dos modos sin más.
+- **Sin esperar al JavaScript.** `SCRIPT_TEMA` (en el `<head>` de `app/[locale]/layout.tsx`) pone `.dark`
+  antes de pintar, así la página se ve desde el primer cuadro y sin destello claro. No vuelvas a
+  ocultar el contenido hasta que cargue React: en celular la pantalla tardaba segundos en aparecer y
+  todo se montaba dos veces. `.dark` lleva `color-scheme: dark` (barras de desplazamiento y `<select>`
+  en oscuro) y la barra del navegador (`theme-color`) sigue al tema de SiMAR, no al del teléfono.
 - `.simar-claro` fuerza los valores claros dentro de un bloque. Lo usa la landing, que siempre
   se ve en claro.
 - Las firmas y el lienzo para firmar son **siempre blancos** (`bg-white`), también en oscuro,
