@@ -44,9 +44,14 @@ export function usePresencia(abierto: boolean, duracionSalida = 180) {
     return { montado: montado || abierto, saliendo };
 }
 
+// Pantallas donde ya se contó en esta visita (se marcan al salir de ellas). Al volver al Panel o a
+// Estadísticas los números ya están: contar otra vez en cada regreso distrae y no dice nada nuevo
+const pantallasContadas = new Set<string>();
+
 /**
  * Número que cuenta hasta su valor al aparecer en pantalla y, si el valor cambia
  * (otro período, otro filtro), pasa del anterior al nuevo. Formato es-MX.
+ * Cuenta sólo la primera vez que se abre la pantalla; al regresar a ella sale ya completo.
  * El lector de pantalla oye sólo el valor final.
  */
 export function NumeroAnimado({
@@ -62,10 +67,19 @@ export function NumeroAnimado({
 }) {
     const reducir = usePrefiereMenosMovimiento();
     const ref = useRef<HTMLSpanElement>(null);
-    const [visto, setVisto] = useState(false);
-    const [mostrado, setMostrado] = useState(0);
-    const desde = useRef(0);
     const final = Number.isFinite(valor) ? valor : 0;
+    // Al cargar la página el conjunto está vacío, así que coincide con lo que dibujó el servidor
+    const [repetida] = useState(() => typeof window !== 'undefined' && pantallasContadas.has(window.location.pathname));
+    const [visto, setVisto] = useState(false);
+    const [mostrado, setMostrado] = useState(repetida ? final : 0);
+    const desde = useRef(repetida ? final : 0);
+
+    useEffect(() => {
+        const pantalla = window.location.pathname;
+        return () => {
+            pantallasContadas.add(pantalla);
+        };
+    }, []);
 
     // Empieza a contar cuando el número entra en pantalla
     useEffect(() => {
@@ -87,6 +101,7 @@ export function NumeroAnimado({
     useEffect(() => {
         if (!visto || reducir) return;
         const inicio = desde.current;
+        if (inicio === final) return;
         const t0 = performance.now();
         let id = requestAnimationFrame(function paso(ahora: number) {
             // La hora del cuadro puede ser un poco anterior a t0: sin el mínimo de 0 salía "-5"

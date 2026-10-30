@@ -264,7 +264,7 @@ de profundidad.
 
 | Pieza | Para qué |
 |---|---|
-| `NumeroAnimado` | Un número que cuenta al aparecer y pasa del valor anterior al nuevo (al cambiar de período). El lector de pantalla oye sólo el valor final. `TarjetaDato` y `Kpi` ya lo usan cuando el valor es un número |
+| `NumeroAnimado` | Un número que cuenta al aparecer y pasa del valor anterior al nuevo (al cambiar de período). Cuenta sólo la primera vez que se abre la pantalla: al regresar a ella sale ya completo. El lector de pantalla oye sólo el valor final. `TarjetaDato` y `Kpi` ya lo usan cuando el valor es un número |
 | `PalomitaAnimada` | Palomita que se dibuja (con círculo, o sólo la marca con `circulo={false}`). "Firmado", "¡Guardado!", avisos de éxito |
 | `usePresencia(abierto)` | Deja montada una ventana mientras hace su salida: `{ montado, saliendo }` |
 | `Esqueleto`, `EsqueletoPantalla` | Esqueletos para los `loading.tsx` (esperan 0.15 s antes de verse, para no parpadear) |
@@ -390,6 +390,11 @@ van en coral con número (`SidebarRecolector`).
 2. Fila con `BotonTema` ("Modo oscuro" / "Modo claro", de `components/layout/ThemeToggle.tsx`) y
    el botón de colapsar (sólo escritorio).
 3. "Cerrar sesión" a lo ancho.
+
+**Laptop baja** (variante `bajo:`, computadora de 820 px de alto o menos, como 1366×768 o
+1280×800): para que todas las secciones quepan sin desplazarse, "Cerrar sesión" sube a la fila del
+tema (sin ícono), el tema queda en ícono (`BotonTema apretado`) y en el recinto "Externos" se
+vuelve una raya. Los botones siguen midiendo 52 px.
 
 Con el menú colapsado los botones quedan sólo con ícono y `title`. En celular el tema está en el
 encabezado móvil y en la hoja "Más" (ver 16.2).

@@ -90,7 +90,7 @@ export function Sidebar() {
         className={`
           simar-vidrio fixed z-50 top-4 bottom-4 left-4 rounded-[30px]
           w-[276px] ${isCollapsed ? 'lg:w-[88px]' : 'lg:w-[276px]'}
-          px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden
+          px-4 pt-6 pb-4 flex flex-col gap-5 overflow-x-hidden bajo:pt-4 bajo:gap-3
           transition-all duration-300 ease-in-out
           ${isOpen ? 'translate-x-0' : '-translate-x-[120%] lg:translate-x-0'}
         `}
@@ -122,10 +122,11 @@ export function Sidebar() {
           <nav aria-label={t('menu.titulo')} className="flex flex-col gap-1">
             {menuItems.map(renderItem)}
 
-            <p className={`mt-3 mb-1 px-4 text-[15px] font-bold text-simar-texto-2 ${isCollapsed ? 'lg:hidden' : ''}`}>Externos</p>
+            {/* En una laptop baja la palabra se vuelve una raya (sigue ahí para el lector de pantalla) */}
+            <p className={`mt-3 mb-1 px-4 text-[15px] font-bold text-simar-texto-2 bajo:my-1.5 bajo:mx-4 bajo:p-0 bajo:h-px bajo:overflow-hidden bajo:text-[0px] bajo:bg-simar-borde ${isCollapsed ? 'lg:hidden' : ''}`}>Externos</p>
             {externosItems.map(renderItem)}
 
-            <div className="mt-3">
+            <div className="mt-3 empty:hidden">
               <EnlacesPaneles actual="recinto" colapsado={isCollapsed} />
             </div>
           </nav>
@@ -148,8 +149,18 @@ export function Sidebar() {
             </span>
           </button>
 
+          {/* En una laptop baja (768–800 px) «Cerrar sesión» sube a esta fila y el tema queda en ícono:
+              así el menú cabe completo sin desplazarse */}
           <div className={`flex gap-2 ${isCollapsed ? 'lg:flex-col' : ''}`}>
-            <BotonTema colapsado={isCollapsed} />
+            <BotonTema colapsado={isCollapsed} apretado={!isCollapsed} />
+            {!isCollapsed && (
+              <button
+                onClick={signOut}
+                className="hidden bajo:flex flex-1 min-w-0 min-h-[52px] px-1 whitespace-nowrap rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+              >
+                {t('menu.logout')}
+              </button>
+            )}
             <button
               onClick={toggleCollapse}
               aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
@@ -162,7 +173,7 @@ export function Sidebar() {
           <button
             onClick={signOut}
             title={isCollapsed ? t('menu.logout') : ''}
-            className="w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+            className={`w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors ${isCollapsed ? '' : 'bajo:hidden'}`}
           >
             <LogOut className="w-[22px] h-[22px] flex-shrink-0" />
             <span className={isCollapsed ? 'lg:hidden' : ''}>{t('menu.logout')}</span>

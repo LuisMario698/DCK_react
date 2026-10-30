@@ -111,8 +111,18 @@ export function SidebarSuperadmin({ isCollapsed, onToggleCollapse }: SidebarSupe
                         </span>
                     </div>
 
+                    {/* En una laptop baja (768–800 px) «Cerrar sesión» sube a esta fila y el tema queda en ícono:
+                        así el menú cabe completo sin desplazarse */}
                     <div className={`flex gap-2 ${isCollapsed ? 'lg:flex-col' : ''}`}>
-                        <BotonTema colapsado={isCollapsed} />
+                        <BotonTema colapsado={isCollapsed} apretado={!isCollapsed} />
+                        {!isCollapsed && (
+                            <button
+                                onClick={signOut}
+                                className="hidden bajo:flex flex-1 min-w-0 min-h-[52px] px-1 whitespace-nowrap rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold items-center justify-center hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+                            >
+                                Cerrar sesión
+                            </button>
+                        )}
                         <button
                             onClick={onToggleCollapse}
                             aria-label={isCollapsed ? 'Expandir menú' : 'Colapsar menú'}
@@ -124,7 +134,7 @@ export function SidebarSuperadmin({ isCollapsed, onToggleCollapse }: SidebarSupe
                     </div>
                     <button
                         onClick={signOut}
-                        className="w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
+                        className={`w-full min-h-[52px] rounded-2xl border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto text-[17px] font-bold flex items-center justify-center gap-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors ${isCollapsed ? '' : 'bajo:hidden'}`}
                         title={isCollapsed ? 'Cerrar sesión' : ''}
                     >
                         <LogOut className="w-[22px] h-[22px] flex-shrink-0" />
