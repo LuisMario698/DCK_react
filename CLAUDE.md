@@ -109,6 +109,9 @@ para consultar (abajo).
   Mantén `maplibre-gl` en v5: la v6 no carga su worker con Turbopack. El mapa de la landing es
   SVG puro. **Motion** (motion.dev) se usa sólo en la landing nueva (`components/landing/nueva/`,
   escenas atadas al scroll; ver DISEÑO_SIMAR.md §8.5): no lo lleves a los paneles.
+  **three.js** se usa sólo en la landing 3D (`components/landing/tresd/`, `?landing=3d`; ver
+  DISEÑO_SIMAR.md §8.6), cargado con `await import()`: no lo importes arriba de un archivo.
+- Las **noticias** (`/[locale]/noticias`) salen de `lib/constants/noticias.ts`, no de Supabase.
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar). Las
   cifras de impacto (agua, CO₂, basura) salen **sólo** de `lib/utils/equivalencias.ts`, que usan
   Estadísticas, su PDF y la landing: 1 L de aceite = 1,000,000 L de agua; 1.0 kg CO₂e por litro. La

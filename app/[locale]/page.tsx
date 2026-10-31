@@ -1,5 +1,6 @@
 import { VariantCinematic } from '@/components/landing/VariantCinematic';
 import { LandingNueva } from '@/components/landing/nueva/LandingNueva';
+import { LandingTresD } from '@/components/landing/tresd/LandingTresD';
 import { SelectorVersionLanding, type VersionLanding } from '@/components/landing/SelectorVersionLanding';
 import { baseElegida, createServerClient } from '@/lib/supabase/server';
 import { AvisoBaseDck } from '@/components/landing/AvisoBaseDck';
@@ -14,8 +15,8 @@ import {
 export const revalidate = 3600;
 
 /**
- * La landing. Mientras se decide entre la actual y la nueva, las dos conviven: ?landing=nueva
- * enseña la nueva y el botón de abajo a la izquierda cambia entre ellas (sin el parámetro, la actual).
+ * La landing. Mientras se decide entre la actual, la nueva y la 3D, conviven las tres: ?landing=nueva
+ * y ?landing=3d enseñan las otras y el botón flotante cambia entre ellas (sin el parámetro, la actual).
  */
 export default async function LandingPage({
     searchParams,
@@ -27,7 +28,7 @@ export default async function LandingPage({
     const varianteMapa = VARIANTES_MAPA.some((v) => v.id === mapa)
         ? (mapa as VarianteMapa)
         : VARIANTE_MAPA_PREDETERMINADA;
-    const version: VersionLanding = landing === 'nueva' ? 'nueva' : 'actual';
+    const version: VersionLanding = landing === 'nueva' || landing === '3d' ? landing : 'actual';
 
     // Si el superadmin eligió la base de DCK (sólo consulta) en su navegador, las cifras salen de ahí
     const conDck = (await baseElegida()) === 'dck';
@@ -42,7 +43,9 @@ export default async function LandingPage({
 
     return (
         <>
-            {version === 'nueva' ? (
+            {version === '3d' ? (
+                <LandingTresD stats={stats} varianteMapa={varianteMapa} />
+            ) : version === 'nueva' ? (
                 <LandingNueva stats={stats} varianteMapa={varianteMapa} />
             ) : (
                 <VariantCinematic stats={stats} varianteMapa={varianteMapa} compararMapas={mapa !== undefined} />

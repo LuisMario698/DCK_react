@@ -1816,6 +1816,99 @@ html[data-barra-mini] .simar-flotante {
   border-radius: 999px;
 }
 
+/* ============================================
+   LANDING 3D (components/landing/tresd/, ?landing=3d). Ver DISEÑO_SIMAR.md §8.6.
+   El primer acto es oscuro siempre (partículas de luz sobre Abismo); el resto sigue el tema.
+   ============================================ */
+
+/* Barra: vidrio oscuro sobre el primer acto, vidrio del tema después */
+.t3-barra {
+  background: var(--simar-vidrio-fuerte);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid var(--simar-vidrio-borde);
+  box-shadow: inset 0 1px 0 var(--simar-vidrio-brillo), 0 12px 32px -18px var(--simar-vidrio-sombra);
+  color: var(--simar-texto);
+  transition: background-color 0.35s var(--simar-frena), border-color 0.35s var(--simar-frena), color 0.35s var(--simar-frena);
+}
+.t3-barra[data-oscuro='true'] {
+  background: rgba(6, 18, 30, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 32px -18px rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+.t3-barra .t3-enlace:hover,
+.t3-barra .t3-enlace[aria-current] {
+  color: var(--simar-marea-tinta);
+}
+.t3-barra[data-oscuro='true'] .t3-enlace:hover,
+.t3-barra[data-oscuro='true'] .t3-enlace[aria-current] {
+  color: var(--simar-espuma);
+}
+.t3-barra[data-oscuro='true'] .t3-tema {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Viñeta del mar de partículas: las orillas se hunden y el texto se lee mejor */
+.t3-vineta {
+  background:
+    radial-gradient(120% 90% at 62% 45%, transparent 40%, rgba(6, 18, 30, 0.55) 100%),
+    linear-gradient(90deg, rgba(6, 18, 30, 0.35), transparent 45%);
+}
+@media (max-width: 767px) {
+  .t3-vineta {
+    background:
+      radial-gradient(120% 80% at 50% 30%, transparent 45%, rgba(6, 18, 30, 0.6) 100%),
+      linear-gradient(0deg, rgba(6, 18, 30, 0.75), transparent 45%);
+  }
+}
+
+/* Los textos del primer acto siguen legibles cuando pasa la mancha de aceite por detrás
+   (en celular ya van sobre una tarjeta de vidrio) */
+@media (min-width: 768px) {
+  .t3-legible {
+    text-shadow: 0 1px 2px rgba(6, 18, 30, 0.6), 0 2px 24px rgba(6, 18, 30, 0.9);
+  }
+}
+
+/* Detrás de la laptop y el celular: una luz azul muy suave, como un estudio de fotografía */
+.t3-escenario {
+  background: radial-gradient(70% 55% at 50% 78%, var(--simar-marea-suave), transparent 72%);
+}
+
+/* El llamado final: una marea de luz que sube desde abajo */
+.t3-cierre-luz {
+  background:
+    radial-gradient(80% 60% at 50% 110%, rgba(32, 178, 196, 0.32), transparent 70%),
+    radial-gradient(50% 40% at 50% 0%, rgba(27, 95, 201, 0.18), transparent 70%);
+}
+
+/* Entra desenfocado y se aclara al recorrer el tercio de abajo (como .ln-enfoca de la nueva) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .t3-enfoca {
+      animation: t3-enfoca linear backwards;
+      animation-timeline: view();
+      animation-range: cover 0% cover 28%;
+    }
+    .t3-enfoca-2 {
+      animation-range: cover 4% cover 32%;
+    }
+    .t3-enfoca-3 {
+      animation-range: cover 8% cover 36%;
+    }
+  }
+}
+@keyframes t3-enfoca {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(28px);
+  }
+}
+
 /* Reducir movimiento: todo lo anterior (y cualquier transición) se vuelve instantáneo.
    Los indicadores de carga siguen girando, más despacio. */
 @media (prefers-reduced-motion: reduce) {
