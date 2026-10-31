@@ -12,11 +12,13 @@ export const VERSIONES_LANDING: { id: VersionLanding; nombre: string }[] = [
 ];
 
 /**
- * Botón flotante para comparar las dos landings mientras se decide con cuál quedarse (abajo a la
- * izquierda, en las dos). Cambia ?landing= en la URL, así cada versión se puede compartir con su
- * enlace. En celular empieza como un botón redondo y se abre al tocarlo, para no tapar los botones
- * del inicio. Al elegir una versión, se quita este botón y la otra landing.
- * `sobreAviso`: sube para no tapar el aviso de la base de DCK (AvisoBaseDck, también abajo a la izquierda).
+ * Botón flotante para comparar las dos landings mientras se decide con cuál quedarse: abajo a la
+ * izquierda en celular y abajo a la derecha en computadora (a la izquierda tapaba el camino de "El
+ * viaje"). Cambia ?landing= en la URL, así cada versión se puede compartir con su enlace. En celular
+ * empieza como un botón redondo y se abre al tocarlo, para no tapar los botones del inicio. Al
+ * elegir una versión, se quita este botón y la otra landing.
+ * `sobreAviso`: en celular sube para no tapar el aviso de la base de DCK (AvisoBaseDck, abajo a la
+ * izquierda); en computadora ya va del otro lado.
  */
 export function SelectorVersionLanding({ version, sobreAviso = false }: { version: VersionLanding; sobreAviso?: boolean }) {
     const [abierto, setAbierto] = useState(false);
@@ -24,8 +26,8 @@ export function SelectorVersionLanding({ version, sobreAviso = false }: { versio
     return (
         <nav
             aria-label="Versión de la landing"
-            className={`simar-vidrio-fuerte fixed z-[60] left-3 md:left-6 rounded-full p-1.5 flex items-center gap-1 text-simar-texto ${
-                sobreAviso ? 'bottom-[84px]' : 'bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6'
+            className={`simar-vidrio-fuerte fixed z-[60] left-3 md:left-auto md:right-6 rounded-full p-1.5 flex items-center gap-1 text-simar-texto ${
+                sobreAviso ? 'bottom-[84px] md:bottom-6' : 'bottom-[max(12px,env(safe-area-inset-bottom))] md:bottom-6'
             }`}
         >
             <button

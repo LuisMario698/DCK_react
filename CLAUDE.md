@@ -107,7 +107,8 @@ para consultar (abajo).
   "gráficas" son divs/SVG a mano. El mapa del portal recolector usa **MapLibre GL JS +
   react-map-gl** con teselas de OpenFreeMap, sin API key (`components/recolector/MapaMapLibre.tsx`).
   Mantén `maplibre-gl` en v5: la v6 no carga su worker con Turbopack. El mapa de la landing es
-  SVG puro.
+  SVG puro. **Motion** (motion.dev) se usa sólo en la landing nueva (`components/landing/nueva/`,
+  escenas atadas al scroll; ver DISEÑO_SIMAR.md §8.5): no lo lleves a los paneles.
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar). Las
   cifras de impacto (agua, CO₂, basura) salen **sólo** de `lib/utils/equivalencias.ts`, que usan
   Estadísticas, su PDF y la landing: 1 L de aceite = 1,000,000 L de agua; 1.0 kg CO₂e por litro. La

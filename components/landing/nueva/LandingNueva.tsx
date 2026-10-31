@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { ArrowRight, MapPin, PlayCircle } from 'lucide-react';
+import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { MODO_DEMO } from '@/lib/demo/config';
@@ -17,7 +18,9 @@ import { ViajeDeUnLitro } from './ViajeDeUnLitro';
 import { LoQueLogramos } from './LoQueLogramos';
 import { QuienesSomos } from './QuienesSomos';
 import { CalculaTuImpacto } from './CalculaTuImpacto';
+import { Cierre } from './Cierre';
 import { Encabezado } from './comunes';
+import { TextoQueSeEnciende } from './escena';
 
 const ENLACES = [
     { href: '#problema', texto: 'El problema' },
@@ -45,10 +48,33 @@ export function LandingNueva({ stats, varianteMapa }: { stats: LandingStats | nu
     // La barra se vuelve más sólida al bajar; en celular, después del hero aparece "Probar la demo"
     const [bajo, setBajo] = useState(false);
     const [pasoHero, setPasoHero] = useState(false);
+    // La sección que está a la vista se marca en la barra (la que cruza la mitad de la pantalla)
+    const [seccion, setSeccion] = useState<string | null>(null);
+    useEffect(() => {
+        const vistas = new IntersectionObserver(
+            (entradas) => {
+                for (const e of entradas) if (e.isIntersecting) setSeccion(`#${e.target.id}`);
+            },
+            { rootMargin: '-50% 0px -50% 0px' }
+        );
+        for (const { href } of ENLACES) {
+            const el = document.querySelector(href);
+            if (el) vistas.observe(el);
+        }
+        const inicio = document.getElementById('inicio');
+        const enInicio = new IntersectionObserver(([e]) => e.isIntersecting && setSeccion(null), { rootMargin: '-50% 0px -50% 0px' });
+        if (inicio) enInicio.observe(inicio);
+        return () => {
+            vistas.disconnect();
+            enInicio.disconnect();
+        };
+    }, []);
     useEffect(() => {
         const medir = () => {
             setBajo(window.scrollY > 60);
-            setPasoHero(window.scrollY > window.innerHeight * 0.9);
+            // El hero es una escena fija más alta que la pantalla: "pasó" cuando su final sale por arriba
+            const hero = document.getElementById('inicio');
+            setPasoHero(window.scrollY > (hero ? hero.offsetHeight - window.innerHeight * 0.5 : window.innerHeight * 0.9));
         };
         medir();
         window.addEventListener('scroll', medir, { passive: true });
@@ -56,6 +82,10 @@ export function LandingNueva({ stats, varianteMapa }: { stats: LandingStats | nu
     }, []);
 
     return (
+        // Motion con sólo lo que se usa (animar, entrar a la vista, salir y gestos: ~15 KB) y que
+        // respete "reducir movimiento" en lo que anima con el tiempo
+        <LazyMotion features={domAnimation} strict>
+        <MotionConfig reducedMotion="user">
         <div className="simar-landing relative min-h-screen w-full overflow-x-clip bg-simar-papel font-sans text-simar-texto antialiased">
             {/* Barra de arriba: vidrio flotante. El logo vive aquí; "Iniciar sesión" sólo aquí y al final */}
             <nav
@@ -73,15 +103,28 @@ export function LandingNueva({ stats, varianteMapa }: { stats: LandingStats | nu
                         <LogoSimar tamano={46} className="hidden sm:inline-flex" />
                     </a>
                     <div className="hidden xl:flex items-center gap-6 ml-auto">
-                        {ENLACES.map((e) => (
-                            <a
-                                key={e.href}
-                                href={e.href}
-                                className="min-h-[48px] flex items-center whitespace-nowrap text-[17px] font-semibold text-simar-texto hover:text-simar-marea-tinta transition-colors"
-                            >
-                                {e.texto}
-                            </a>
-                        ))}
+                        {ENLACES.map((e) => {
+                            const activa = seccion === e.href;
+                            return (
+                                <a
+                                    key={e.href}
+                                    href={e.href}
+                                    aria-current={activa ? 'location' : undefined}
+                                    className={`relative min-h-[48px] flex items-center whitespace-nowrap text-[17px] font-semibold transition-colors ${
+                                        activa ? 'text-simar-marea-tinta' : 'text-simar-texto hover:text-simar-marea-tinta'
+                                    }`}
+                                >
+                                    {e.texto}
+                                    {/* La marca de la sección a la vista: crece desde el centro */}
+                                    <span
+                                        aria-hidden="true"
+                                        className={`absolute inset-x-0 bottom-1.5 h-[3px] rounded-full bg-simar-marea transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                                            activa ? 'scale-x-100' : 'scale-x-0'
+                                        }`}
+                                    />
+                                </a>
+                            );
+                        })}
                     </div>
                     <div className="ml-auto xl:ml-2 flex items-center gap-2">
                         <BotonTemaIcono className="movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
@@ -100,76 +143,61 @@ export function LandingNueva({ stats, varianteMapa }: { stats: LandingStats | nu
             <main>
                 {/* Sentir */}
                 <HeroGota litros={statsReales ? statsReales.totalAceiteUsado : null} rutaDemo={rutaDemo} />
-                <BajarAlFondo />
+                <PorPartes>
+                    <BajarAlFondo />
+                </PorPartes>
 
                 {/* Entender */}
-                <div className="relative">
-                    <OlaSeparador color="var(--simar-abismo)" lado="arriba" />
-                    <AntesDespues manifiestos={statsReales ? statsReales.totalManifiestos : null} />
-                </div>
+                <PorPartes>
+                    <div className="relative">
+                        <OlaSeparador color="var(--simar-abismo)" lado="arriba" />
+                        <AntesDespues manifiestos={statsReales ? statsReales.totalManifiestos : null} />
+                    </div>
+                </PorPartes>
 
                 {/* Ver cómo */}
-                <ViajeDeUnLitro />
+                <PorPartes>
+                    <ViajeDeUnLitro />
+                </PorPartes>
 
                 {/* Comprobar */}
-                <LoQueLogramos stats={statsReales} />
+                <PorPartes>
+                    <LoQueLogramos stats={statsReales} />
+                </PorPartes>
 
-                <section id="puertos" className="relative bg-simar-abismo text-white px-6 pt-24 md:pt-36 pb-20 md:pb-28 overflow-clip movil:px-5 movil:pt-16 movil:pb-14">
-                    <OlaSeparador color="var(--simar-papel)" lado="arriba" />
-                    <div className="relative max-w-[1248px] mx-auto">
-                        <Encabezado
-                            oscuro
-                            className="mb-10 md:mb-12 movil:mb-6"
-                            antetitulo="Puertos"
-                            titulo="Hoy, Puerto Peñasco. Mañana, otros puertos."
-                            texto="Puerto Peñasco es el primero. Estos son puertos pesqueros de México donde el modelo de SiMAR puede replicarse."
-                        />
-                        <SeccionMapaPuertos variante={varianteMapa} nombreFuturos="Puede sumarse" resumenFuturos="Pueden sumarse" />
+                <PorPartes>
+                    <section id="puertos" className="relative bg-simar-abismo text-white px-6 pt-28 md:pt-40 pb-20 md:pb-32 overflow-clip movil:px-5 movil:pt-16 movil:pb-14">
+                        <OlaSeparador color="var(--simar-papel)" lado="arriba" />
+                        <div className="relative max-w-[1248px] mx-auto">
+                            <Encabezado
+                                oscuro
+                                className="mb-12 md:mb-16 movil:mb-7"
+                                antetitulo="Puertos"
+                                titulo={<TextoQueSeEnciende texto="Hoy, Puerto Peñasco. Mañana, otros puertos." />}
+                                texto="Puerto Peñasco es el primero. Estos son puertos pesqueros de México donde el modelo de SiMAR puede replicarse."
+                            />
+                            <div className="ln-enfoca-foto">
+                                <SeccionMapaPuertos variante={varianteMapa} nombreFuturos="Puede sumarse" resumenFuturos="Pueden sumarse" />
+                            </div>
+                        </div>
+                    </section>
+                </PorPartes>
+
+                <PorPartes>
+                    <div className="relative">
+                        <OlaSeparador color="var(--simar-abismo)" lado="arriba" />
+                        <QuienesSomos />
                     </div>
-                </section>
-
-                <div className="relative">
-                    <OlaSeparador color="var(--simar-abismo)" lado="arriba" />
-                    <QuienesSomos />
-                </div>
+                </PorPartes>
 
                 {/* Actuar */}
-                <CalculaTuImpacto alRegistrarEmpresa={() => abrirAcceso('recolector')} />
+                <PorPartes>
+                    <CalculaTuImpacto alRegistrarEmpresa={() => abrirAcceso('recolector')} />
+                </PorPartes>
 
-                <section className="relative bg-simar-abismo text-white px-6 pt-24 md:pt-32 pb-24 md:pb-32 overflow-clip text-center movil:px-5 movil:pt-16 movil:pb-20">
-                    <OlaSeparador color="var(--simar-papel)" lado="arriba" />
-                    <div className="relative max-w-3xl mx-auto">
-                        <LogoSimar variante="simbolo" tamano={72} prioridad={false} />
-                        <h2 className="mt-4 text-4xl md:text-[52px] font-extrabold leading-tight movil:text-[30px]">
-                            Cada dato cuenta. <br />
-                            <span className="text-simar-espuma">Cada mar lo agradece.</span>
-                        </h2>
-                        <p className="mt-4 text-lg md:text-[21px] text-simar-franja-texto-2 leading-relaxed movil:mt-3 movil:text-[16px]">
-                            Conoce SiMAR por dentro o entra con tu cuenta.
-                        </p>
-                        <div className="mt-8 flex flex-wrap justify-center gap-3 movil:mt-6 movil:flex-col">
-                            {rutaDemo && !MODO_DEMO && (
-                                <a
-                                    href={rutaDemo}
-                                    className="simar-presiona min-h-[60px] px-7 rounded-[20px] bg-simar-espuma text-simar-abismo text-lg md:text-xl font-extrabold inline-flex items-center justify-center gap-2.5 movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px]"
-                                >
-                                    <PlayCircle className="w-[22px] h-[22px]" />
-                                    Probar la demostración
-                                </a>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => abrirAcceso()}
-                                className={`simar-presiona min-h-[60px] px-7 rounded-[20px] text-lg md:text-xl font-extrabold inline-flex items-center justify-center gap-2.5 cursor-pointer movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px] ${
-                                    rutaDemo && !MODO_DEMO ? 'border-2 border-white/80 text-white hover:bg-white/10' : 'bg-simar-espuma text-simar-abismo'
-                                }`}
-                            >
-                                {MODO_DEMO ? 'Probar la demostración' : 'Iniciar sesión'}
-                                <ArrowRight className="w-[22px] h-[22px]" strokeWidth={2.4} />
-                            </button>
-                        </div>
-                    </div>
-                </section>
+                <PorPartes>
+                    <Cierre rutaDemo={rutaDemo} alEntrar={() => abrirAcceso()} />
+                </PorPartes>
             </main>
 
             <footer className="bg-simar-superficie px-6 py-12 md:py-14 movil:px-5 movil:py-10 movil:pb-28">
@@ -216,5 +244,15 @@ export function LandingNueva({ stats, varianteMapa }: { stats: LandingStats | nu
 
             {ventana}
         </div>
+        </MotionConfig>
+        </LazyMotion>
     );
+}
+
+/**
+ * Cada parte de la página después de la portada se hidrata por su cuenta: React reparte el trabajo
+ * en tareas cortas en vez de una larga, y la portada responde antes. No cambia el HTML del servidor.
+ */
+function PorPartes({ children }: { children: ReactNode }) {
+    return <Suspense fallback={null}>{children}</Suspense>;
 }

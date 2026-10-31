@@ -1,183 +1,310 @@
 'use client';
 
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { ArrowDown, ArrowRight, PlayCircle } from 'lucide-react';
-import { NumeroAnimado } from '@/components/ui/movimiento';
+import { useMotionValueEvent, useTransform, type MotionValue } from 'motion/react';
+import * as m from 'motion/react-m';
+import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
+import { cifra } from './comunes';
+import { useEscena, useRango, useTramo } from './escena';
 
-/**
- * La gota: cae junto a un barco camaronero, toca el agua, la mancha se extiende y se encoge sobre
- * la cifra de litros que ya no llegaron al mar. Es decorativa (el lector de pantalla la salta). Las
- * clases ln-* de app/globals.css la animan una sola vez; con "reducir movimiento" queda en su
- * estado final (el barco en el agua, sin gota).
- * Medidas del dibujo (480 × 380): el agua está en y = 300 (80 abajo del borde) y la gota cae en
- * x = 300. `left` pone esa x sobre el centro de la columna (donde va la cifra) y `bottom`, el agua a
- * la altura de la cresta de la ola de la superficie: 24 px arriba del final del cielo.
+/*
+ * 1 · Hero «Una gota». Una escena fija de pantalla completa que avanza con el scroll:
+ *   0.00–0.20  la gota cae junto al barco camaronero
+ *   0.20–0.45  toca el agua: ondas, y la mancha de aceite se extiende por el mar, que se oscurece
+ *   0.32–0.56  el título deja su lugar a la cifra real de litros, que cuenta mientras se baja
+ *   0.60–0.85  la mancha se recoge y el mar vuelve a su color: lo que ya hizo el puerto
+ * El título se ve desde el primer cuadro (es el elemento LCP) y el texto de abajo y los botones no
+ * se mueven en toda la escena. Con "reducir movimiento", el hero quieto (HeroQuieto).
+ * El horizonte está al 50 % de la pantalla en celular y al 64 % en computadora.
  */
-function GotaQueCae() {
-    const id = useId();
+
+const HORIZONTE = 'top-[50svh] md:top-[64svh]';
+/** Dónde cae la gota (y de dónde sale la mancha), a lo ancho */
+const X_GOTA = 74;
+
+function Barco({ className = '' }: { className?: string }) {
     return (
-        <svg
-            viewBox="0 0 480 380"
-            className="absolute left-[calc(50%-300px)] bottom-[-56px] w-[480px] h-[380px] pointer-events-none movil:left-[calc(50%-187.5px)] movil:bottom-[-26px] movil:w-[300px] movil:h-[237.5px]"
-            aria-hidden="true"
-        >
-            <defs>
-                <linearGradient id={`${id}-gota`} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stopColor="#FFE29A" />
-                    <stop offset="0.55" stopColor="#F2C14E" />
-                    <stop offset="1" stopColor="#B7791F" />
-                </linearGradient>
-                {/* Película de aceite: tornasol, como se ve en el agua */}
-                <linearGradient id={`${id}-pelicula`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0" stopColor="#F2C14E" stopOpacity="0" />
-                    <stop offset="0.18" stopColor="#F2C14E" />
-                    <stop offset="0.42" stopColor="#C9A3F5" />
-                    <stop offset="0.62" stopColor="#7FE0D6" />
-                    <stop offset="0.82" stopColor="#F2C14E" />
-                    <stop offset="1" stopColor="#F2C14E" stopOpacity="0" />
-                </linearGradient>
-                {/* Lo que queda bajo el agua no se dibuja: ahí ya está la ola */}
-                <clipPath id={`${id}-flota`}>
-                    <rect x="0" y="0" width="480" height="303" />
-                </clipPath>
-            </defs>
-            {/* Barco camaronero a contraluz, meciéndose */}
-            <g clipPath={`url(#${id}-flota)`}>
-                <g className="ln-mece" fill="#081B2E" stroke="#081B2E" strokeLinecap="round">
-                    <path d="M28 276 L214 270 C210 290 198 304 178 308 L58 308 C42 304 32 292 28 276 Z" stroke="none" />
-                    <rect x="118" y="244" width="58" height="30" rx="3" stroke="none" />
-                    <rect x="128" y="232" width="38" height="14" rx="2" stroke="none" />
-                    <line x1="88" y1="276" x2="88" y2="176" strokeWidth="4" />
-                    <line x1="88" y1="188" x2="24" y2="236" strokeWidth="3" />
-                    <line x1="88" y1="188" x2="160" y2="226" strokeWidth="3" />
-                    <line x1="88" y1="178" x2="30" y2="274" strokeWidth="1.2" />
-                    <line x1="88" y1="178" x2="206" y2="270" strokeWidth="1.2" />
-                    <g fill="#7FE0D6" fillOpacity="0.55" stroke="none">
-                        <rect x="126" y="252" width="10" height="8" rx="1.5" />
-                        <rect x="142" y="252" width="10" height="8" rx="1.5" />
-                        <rect x="158" y="252" width="10" height="8" rx="1.5" />
-                    </g>
-                    <circle cx="88" cy="174" r="3.5" fill="#F2C14E" stroke="none" />
+        <svg viewBox="0 0 220 140" className={className} aria-hidden="true">
+            <g fill="#06172A" stroke="#06172A" strokeLinecap="round">
+                <path d="M8 104 L206 98 C202 118 190 132 170 136 L40 136 C24 132 12 120 8 104 Z" stroke="none" />
+                <rect x="104" y="70" width="62" height="32" rx="3" stroke="none" />
+                <rect x="114" y="57" width="40" height="15" rx="2" stroke="none" />
+                <line x1="70" y1="104" x2="70" y2="4" strokeWidth="4" />
+                <line x1="70" y1="16" x2="4" y2="64" strokeWidth="3" />
+                <line x1="70" y1="16" x2="146" y2="54" strokeWidth="3" />
+                <line x1="70" y1="6" x2="10" y2="102" strokeWidth="1.2" />
+                <line x1="70" y1="6" x2="198" y2="98" strokeWidth="1.2" />
+                <g fill="#7FE0D6" fillOpacity="0.6" stroke="none">
+                    <rect x="112" y="79" width="11" height="8" rx="1.5" />
+                    <rect x="129" y="79" width="11" height="8" rx="1.5" />
+                    <rect x="146" y="79" width="11" height="8" rx="1.5" />
                 </g>
-            </g>
-            {/* Ondas */}
-            <ellipse className="ln-onda" cx="300" cy="300" rx="150" ry="16" fill="none" stroke="#7FE0D6" strokeWidth="2" />
-            <ellipse className="ln-onda" style={{ '--ln-retraso': '1.12s' } as React.CSSProperties} cx="300" cy="300" rx="110" ry="12" fill="none" stroke="#FFFFFF" strokeOpacity="0.7" strokeWidth="1.5" />
-            {/* Mancha */}
-            <ellipse className="ln-mancha" cx="300" cy="301" rx="140" ry="9" fill={`url(#${id}-pelicula)`} />
-            {/* Gota (el óvalo blanco es el brillo) */}
-            <g className="ln-gota">
-                <path d="M300 256 C300 256 286 274 286 284 a14 14 0 0 0 28 0 C314 274 300 256 300 256 Z" fill={`url(#${id}-gota)`} />
-                <ellipse cx="294" cy="282" rx="3" ry="5" fill="#FFFFFF" fillOpacity="0.75" />
+                <circle cx="70" cy="3" r="3.5" fill="#F2C14E" stroke="none" />
             </g>
         </svg>
     );
 }
 
-/** El borde del agua: dos capas de oleaje que se cruzan despacio (se repiten a lo ancho) */
-function Superficie() {
-    const ola = 'M0 24 C60 14 120 14 180 24 C240 34 300 34 360 24 C420 14 480 14 540 24 C600 34 660 34 720 24 V48 H0 Z';
+function Gota({ className = '' }: { className?: string }) {
+    const id = useId();
     return (
-        <div aria-hidden="true" className="relative h-12 -mt-12 overflow-hidden pointer-events-none">
-            <svg viewBox="0 0 1440 48" preserveAspectRatio="none" className="ln-oleaje-lento absolute inset-y-0 left-0 w-[200%] h-full">
-                <path d={ola} transform="translate(0 -4)" fill="#13708A" fillOpacity="0.55" />
-                <path d={ola} transform="translate(720 -4)" fill="#13708A" fillOpacity="0.55" />
+        <svg viewBox="0 0 40 54" className={className} aria-hidden="true">
+            <defs>
+                <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="#FFE29A" />
+                    <stop offset="0.55" stopColor="#F2C14E" />
+                    <stop offset="1" stopColor="#B7791F" />
+                </linearGradient>
+            </defs>
+            <path d="M20 1 C20 1 2 24 2 35 a18 18 0 0 0 36 0 C38 24 20 1 20 1 Z" fill={`url(#${id})`} />
+            <ellipse cx="13" cy="34" rx="3.5" ry="6" fill="#FFFFFF" fillOpacity="0.75" />
+        </svg>
+    );
+}
+
+/** El fondo, el barco, la gota, las ondas y la mancha: todo decorativo */
+function Escenario({ p }: { p: MotionValue<number> }) {
+    // La gota cae (con la aceleración de algo que cae) y se estira un poco; al tocar el agua se va
+    const caidaEscritorio = useRango(p, [0, 0.2], ['translateY(-38svh) scaleY(1)', 'translateY(0svh) scaleY(1.12)'], {
+        ease: (t) => t * t,
+    });
+    const caidaCelular = useRango(p, [0, 0.2], ['translateY(-15svh) scaleY(1)', 'translateY(0svh) scaleY(1.12)'], {
+        ease: (t) => t * t,
+    });
+    const gotaOpacidad = useRango(p, [0, 0.195, 0.205], [1, 1, 0]);
+
+    // Dos ondas desde el punto donde cayó
+    const onda1 = useRango(p, [0.2, 0.36], ['scale(0.2)', 'scale(2.4)']);
+    const onda2 = useRango(p, [0.23, 0.4], ['scale(0.2)', 'scale(2)']);
+    const ondaOpacidad1 = useRango(p, [0.2, 0.36], [0.9, 0]);
+    const ondaOpacidad2 = useRango(p, [0.23, 0.4], [0.7, 0]);
+
+    // La mancha se extiende por el mar y luego se recoge
+    const mancha = useRango(
+        p,
+        [0.2, 0.46, 0.6, 0.86],
+        [
+            `ellipse(0% 0% at ${X_GOTA}% 0%)`,
+            `ellipse(150% 95% at ${X_GOTA}% 0%)`,
+            `ellipse(150% 95% at ${X_GOTA}% 0%)`,
+            `ellipse(0% 0% at ${X_GOTA}% 0%)`,
+        ]
+    );
+    const marSucio = useRango(p, [0.2, 0.46, 0.6, 0.86], [0, 1, 1, 0]);
+    // Al final el mar se ve más claro que al principio: la luz que vuelve
+    const luz = useRango(p, [0, 0.6, 0.9], [0.55, 0.4, 1]);
+    const deriva = useRango(p, [0, 1], ['translateX(0px)', 'translateX(28px)']);
+
+    return (
+        <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+            {/* Cielo de madrugada */}
+            <div className="absolute inset-x-0 top-0 h-[50svh] md:h-[64svh] bg-[linear-gradient(180deg,var(--simar-abismo)_0%,#0F2B47_55%,var(--simar-mar-2)_100%)]" />
+            <m.div
+                style={{ opacity: luz }}
+                className="absolute inset-x-0 top-0 h-[50svh] md:h-[64svh] bg-[radial-gradient(48%_70%_at_78%_100%,rgba(242,163,124,0.5),transparent_70%)]"
+            />
+            {/* El mar */}
+            <div className={`absolute inset-x-0 bottom-0 ${HORIZONTE} bg-[linear-gradient(180deg,#13708A_0%,var(--simar-mar-1)_40%,#0B3A52_100%)]`} />
+            <m.div
+                style={{ opacity: luz }}
+                className={`absolute inset-x-0 bottom-0 ${HORIZONTE} bg-[radial-gradient(60%_40%_at_78%_0%,rgba(127,224,214,0.32),transparent_75%)]`}
+            />
+            {/* El mar se oscurece bajo la mancha */}
+            <m.div
+                style={{ opacity: marSucio }}
+                className={`absolute inset-x-0 bottom-0 ${HORIZONTE} bg-[linear-gradient(180deg,#2A2A1C_0%,#1A2420_50%,#0C1A1F_100%)]`}
+            />
+            {/* La mancha: película tornasol que sale de donde cayó la gota */}
+            <m.div
+                style={{ clipPath: mancha }}
+                className={`absolute inset-x-0 bottom-0 ${HORIZONTE} opacity-80 bg-[linear-gradient(100deg,rgba(242,193,78,0.0)_0%,rgba(242,193,78,0.55)_18%,rgba(201,163,245,0.5)_38%,rgba(127,224,214,0.45)_58%,rgba(242,193,78,0.5)_78%,rgba(242,193,78,0.1)_100%)]`}
+            />
+            {/* La línea del agua */}
+            <svg viewBox="0 0 1440 16" preserveAspectRatio="none" className={`absolute inset-x-0 ${HORIZONTE} -translate-y-1/2 w-full h-4`}>
+                <path
+                    d="M0 8 C60 3 120 3 180 8 C240 13 300 13 360 8 C420 3 480 3 540 8 C600 13 660 13 720 8 C780 3 840 3 900 8 C960 13 1020 13 1080 8 C1140 3 1200 3 1260 8 C1320 13 1380 13 1440 8"
+                    fill="none"
+                    stroke="#7FE0D6"
+                    strokeOpacity="0.55"
+                    strokeWidth="2"
+                />
             </svg>
-            <svg viewBox="0 0 1440 48" preserveAspectRatio="none" className="ln-oleaje absolute inset-y-0 left-0 w-[200%] h-full">
-                <path d={ola} fill="#13708A" />
-                <path d={ola} transform="translate(720 0)" fill="#13708A" />
-                <path d="M0 24 C60 14 120 14 180 24 C240 34 300 34 360 24 C420 14 480 14 540 24 C600 34 660 34 720 24" fill="none" stroke="#7FE0D6" strokeOpacity="0.5" strokeWidth="1.5" />
-                <path d="M0 24 C60 14 120 14 180 24 C240 34 300 34 360 24 C420 14 480 14 540 24 C600 34 660 34 720 24" transform="translate(720 0)" fill="none" stroke="#7FE0D6" strokeOpacity="0.5" strokeWidth="1.5" />
-            </svg>
+
+            {/* El barco a contraluz, con el casco en el agua */}
+            <m.div style={{ transform: deriva }} className={`absolute ${HORIZONTE} -translate-y-[78%] left-[54%] w-[140px] md:left-[54%] md:w-[300px]`}>
+                <Barco className="w-full h-auto" />
+            </m.div>
+
+            {/* Ondas */}
+            {[
+                { escala: onda1, opacidad: ondaOpacidad1, clase: 'border-simar-espuma' },
+                { escala: onda2, opacidad: ondaOpacidad2, clase: 'border-white/80' },
+            ].map((o, i) => (
+                <m.span
+                    key={i}
+                    style={{ transform: o.escala, opacity: o.opacidad, left: `${X_GOTA}%` }}
+                    className={`absolute ${HORIZONTE} -ml-[90px] -mt-[12px] w-[180px] h-[24px] rounded-[50%] border-2 ${o.clase}`}
+                />
+            ))}
+
+            {/* La gota: su punta de abajo llega a la línea del agua */}
+            <m.div style={{ opacity: gotaOpacidad, left: `${X_GOTA}%` }} className={`absolute ${HORIZONTE} -ml-5 -translate-y-full`}>
+                <m.div style={{ transform: caidaEscritorio }} className="hidden md:block origin-bottom">
+                    <Gota className="w-12 h-[65px] drop-shadow-[0_8px_16px_rgba(242,193,78,0.45)]" />
+                </m.div>
+                <m.div style={{ transform: caidaCelular }} className="md:hidden origin-bottom">
+                    <Gota className="w-8 h-[43px] drop-shadow-[0_8px_16px_rgba(242,193,78,0.45)]" />
+                </m.div>
+            </m.div>
         </div>
     );
 }
 
-/**
- * 1 · Hero «Una gota». Lo primero que se lee es el problema y la cifra real; el logo ya está en la
- * barra de arriba. El título se ve desde el primer cuadro (es el elemento LCP): sólo la gota se
- * anima. `litros` es el aceite que ya llegó al centro de acopio (null sin datos).
- */
-export function HeroGota({ litros, rutaDemo }: { litros: number | null; rutaDemo: string | null }) {
+function Acciones({ rutaDemo }: { rutaDemo: string | null }) {
     return (
-        <header id="inicio" className="relative isolate overflow-clip text-white bg-simar-abismo">
-            {/* Cielo de madrugada */}
-            <div className="ln-cielo pt-[132px] md:pt-[170px] px-6 movil:pt-[104px] movil:px-5">
-                <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-x-12">
-                    <div className="relative z-20 pb-14 lg:pb-20 movil:pb-4">
-                        <p className="text-lg font-bold text-simar-espuma movil:text-[15px]">Puerto Peñasco · Alto Golfo de California</p>
-                        <h1 className="mt-4 text-[44px] md:text-[60px] xl:text-[66px] font-extrabold leading-[1.04] tracking-[-0.02em] movil:mt-3 movil:text-[34px] movil:leading-[1.08]">
-                            Un litro de aceite puede contaminar hasta un millón de litros de mar.
-                        </h1>
-                    </div>
-                    {/* La gota cae sobre la cifra (en celular, entre el título y la cifra) */}
-                    <div className="relative z-10 h-[120px] lg:h-auto movil:h-[96px]">
-                        <GotaQueCae />
-                    </div>
-                </div>
-            </div>
-
-            <Superficie />
-
-            {/* El mar: la cifra justo donde cayó la gota, y las acciones */}
-            <div className="ln-mar px-6 pt-8 pb-16 md:pb-20 movil:px-5 movil:pt-6 movil:pb-10">
-                <div className="max-w-[1248px] mx-auto grid lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] gap-x-12 gap-y-8 items-start movil:gap-y-6">
-                    <div className="order-2 lg:order-1">
-                        <p className="max-w-xl text-lg md:text-[21px] leading-relaxed text-simar-franja-texto-2 movil:text-[16px]">
-                            SiMAR registra cada litro, filtro y kilo de basura que los barcos entregan en el muelle, para que
-                            llegue al reciclaje y no al Golfo.
-                        </p>
-                        <div className="mt-7 flex flex-wrap gap-3 movil:mt-5 movil:flex-col">
-                            <a
-                                href="#viaje"
-                                className="simar-presiona group min-h-[60px] px-7 rounded-[20px] bg-simar-espuma text-simar-abismo text-lg md:text-xl font-extrabold inline-flex items-center justify-center gap-2.5 movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px]"
-                            >
-                                Ver cómo lo hacemos
-                                <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
-                            </a>
-                            {rutaDemo && (
-                                <a
-                                    href={rutaDemo}
-                                    className="simar-presiona min-h-[60px] px-7 rounded-[20px] border-2 border-white/80 text-white text-lg md:text-xl font-bold hover:bg-white/10 inline-flex items-center justify-center gap-2.5 movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px]"
-                                >
-                                    <PlayCircle className="w-[22px] h-[22px]" />
-                                    Probar la demostración
-                                </a>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="order-1 lg:order-2 text-center">
-                        {litros !== null ? (
-                            <>
-                                <p className="text-lg font-bold text-simar-espuma movil:text-[15px]">En Puerto Peñasco ya evitamos que</p>
-                                <p className="relative mt-1 inline-flex items-baseline justify-center gap-3 font-extrabold leading-none text-simar-aceite">
-                                    {/* Lo que deja la mancha al encogerse */}
-                                    <span aria-hidden="true" className="ln-brillo absolute -inset-x-6 -inset-y-4 rounded-full border-2 border-simar-aceite/70" />
-                                    <NumeroAnimado valor={litros} duracion={1600} className="text-[84px] md:text-[96px] tracking-[-0.03em] movil:text-[64px]" />
-                                    <span className="text-[30px] md:text-[34px] movil:text-[24px]">litros</span>
-                                </p>
-                                <p className="mt-2 text-xl md:text-[22px] font-bold movil:text-[17px]">de aceite usado llegaran al Golfo.</p>
-                                <a href="#fuentes" className="mt-2 inline-flex min-h-[44px] items-center text-[17px] text-simar-franja-texto-2 underline underline-offset-4 hover:text-white movil:text-[15px]">
-                                    ¿De dónde sale esta cifra?
-                                </a>
-                            </>
-                        ) : (
-                            <p className="text-2xl md:text-[28px] font-extrabold leading-snug movil:text-[20px]">
-                                Cada litro que se entrega en el muelle es un litro que no llega al Golfo.
-                            </p>
-                        )}
-                    </div>
-                </div>
-
+        <div className="mt-7 flex flex-wrap gap-3 movil:mt-5 movil:flex-col">
+            <a
+                href="#viaje"
+                className="simar-presiona group min-h-[60px] px-7 rounded-[20px] bg-simar-espuma text-simar-abismo text-lg md:text-xl font-extrabold inline-flex items-center justify-center gap-2.5 movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px]"
+            >
+                Ver cómo lo hacemos
+                <ArrowRight className="w-[22px] h-[22px] transition-transform duration-200 group-hover:translate-x-1" strokeWidth={2.4} />
+            </a>
+            {rutaDemo && (
                 <a
+                    href={rutaDemo}
+                    className="simar-presiona min-h-[60px] px-7 rounded-[20px] border-2 border-white/80 text-white text-lg md:text-xl font-bold hover:bg-white/10 inline-flex items-center justify-center gap-2.5 movil:min-h-[52px] movil:rounded-[17px] movil:text-[17px]"
+                >
+                    <PlayCircle className="w-[22px] h-[22px]" />
+                    Probar la demostración
+                </a>
+            )}
+        </div>
+    );
+}
+
+const ANTETITULO = 'Puerto Peñasco · Alto Golfo de California';
+const TITULO = 'Un litro de aceite puede contaminar hasta un millón de litros de mar.';
+const TEXTO = 'SiMAR registra cada litro, filtro y kilo de basura que los barcos entregan en el muelle, para que llegue al reciclaje y no al Golfo.';
+const CLASE_TITULO =
+    'font-extrabold text-[clamp(48px,5.6vw,84px)] leading-[1.02] tracking-[-0.035em] movil:text-[34px] movil:leading-[1.08] movil:tracking-[-0.02em]';
+
+/** La cifra: cuenta de 0 a `litros` mientras se baja (entre 0.5 y 0.72 de la escena) */
+function Cifra({ p, litros, enfocable }: { p: MotionValue<number>; litros: number; enfocable: boolean }) {
+    const texto = useTransform(p, [0.5, 0.72], [0, litros], { clamp: true });
+    const redondeado = useTransform(texto, (v) => cifra(Math.round(v)));
+    return (
+        <>
+            <p className="text-lg md:text-xl font-bold text-simar-espuma movil:text-[15px]">En Puerto Peñasco ya evitamos que</p>
+            <p className="mt-2 flex flex-wrap items-baseline gap-x-4 font-extrabold leading-none text-simar-aceite">
+                <span className="sr-only">{cifra(litros)} litros</span>
+                <m.span aria-hidden="true" className="tabular-nums text-[clamp(84px,9vw,148px)] tracking-[-0.04em] movil:text-[68px]">
+                    {redondeado}
+                </m.span>
+                <span aria-hidden="true" className="text-[clamp(30px,3vw,44px)] movil:text-[26px]">
+                    litros
+                </span>
+            </p>
+            <p className="mt-3 text-2xl md:text-[30px] font-bold leading-tight movil:text-[19px]">de aceite usado llegaran al Golfo.</p>
+            <a
+                href="#fuentes"
+                tabIndex={enfocable ? undefined : -1}
+                className="mt-2 inline-flex min-h-[44px] items-center text-[17px] text-simar-franja-texto-2 underline underline-offset-4 hover:text-white movil:text-[15px]"
+            >
+                ¿De dónde sale esta cifra?
+            </a>
+        </>
+    );
+}
+
+function HeroEscena({ litros, rutaDemo }: { litros: number | null; rutaDemo: string | null }) {
+    const [ref, p] = useEscena<HTMLElement>();
+    const titulo = useTramo(p, [0, 0, 0.32, 0.44]);
+    const segundo = useTramo(p, [0.46, 0.56, 1, 1]);
+    const pista = useTramo(p, [0, 0, 0.04, 0.1]);
+    // El enlace de la cifra sólo se enfoca con Tab cuando la cifra está a la vista
+    const [conCifra, setConCifra] = useState(false);
+    useMotionValueEvent(p, 'change', (v) => setConCifra(v > 0.5));
+
+    return (
+        <header id="inicio" ref={ref} className="relative h-[260svh] bg-simar-abismo text-white">
+            <div className="sticky top-0 h-[100svh] overflow-hidden isolate">
+                <Escenario p={p} />
+
+                {/* Arriba, en el cielo: el título y luego la cifra, en el mismo lugar */}
+                <div className="relative z-10 h-[50svh] md:h-[64svh] px-6 movil:px-5">
+                    <div className="relative h-full max-w-[1248px] mx-auto">
+                        <m.div style={titulo} className="absolute inset-x-0 bottom-[11svh] md:bottom-[9svh] max-w-[880px] movil:bottom-[15svh]">
+                            <p className="text-lg md:text-xl font-bold text-simar-espuma movil:text-[15px]">{ANTETITULO}</p>
+                            <h1 className={`mt-4 movil:mt-3 ${CLASE_TITULO}`}>{TITULO}</h1>
+                        </m.div>
+                        <m.div style={segundo} className="absolute inset-x-0 bottom-[9svh] max-w-[880px] movil:bottom-[12svh]">
+                            {litros !== null ? (
+                                <Cifra p={p} litros={litros} enfocable={conCifra} />
+                            ) : (
+                                <p className="text-[clamp(36px,4vw,60px)] font-extrabold leading-[1.06] tracking-[-0.03em] movil:text-[28px]">
+                                    Cada litro que se entrega en el muelle es un litro que no llega al Golfo.
+                                </p>
+                            )}
+                        </m.div>
+                    </div>
+                </div>
+
+                {/* Abajo, en el mar: lo que hace SiMAR y los botones, quietos toda la escena */}
+                <div className="relative z-10 px-6 pt-8 md:pt-10 movil:px-5 movil:pt-6">
+                    <div className="max-w-[1248px] mx-auto">
+                        <p className="max-w-xl text-lg md:text-[21px] leading-relaxed text-simar-franja-texto-2 movil:text-[16px]">{TEXTO}</p>
+                        <Acciones rutaDemo={rutaDemo} />
+                    </div>
+                </div>
+
+                <m.a
                     href="#problema"
-                    className="mt-12 mx-auto flex w-fit min-h-[52px] items-center gap-2 px-4 rounded-full text-[17px] font-bold text-simar-franja-texto-2 hover:text-white movil:mt-8 movil:min-h-[44px] movil:text-[15px]"
+                    style={pista}
+                    className="absolute z-10 bottom-5 left-1/2 -translate-x-1/2 hidden md:flex min-h-[52px] items-center gap-2 px-4 rounded-full text-[17px] font-bold text-simar-franja-texto-2 hover:text-white"
                 >
                     <ArrowDown className="w-5 h-5" />
                     Baja al fondo del mar
-                </a>
+                </m.a>
             </div>
         </header>
     );
+}
+
+/** El hero sin escena (con "reducir movimiento"): el título, la cifra y los botones, quietos */
+function HeroQuieto({ litros, rutaDemo }: { litros: number | null; rutaDemo: string | null }) {
+    return (
+        <header id="inicio" className="relative bg-simar-abismo text-white px-6 pt-[150px] pb-20 movil:px-5 movil:pt-[104px] movil:pb-14">
+            <div className="max-w-[1248px] mx-auto">
+                <p className="text-lg md:text-xl font-bold text-simar-espuma movil:text-[15px]">{ANTETITULO}</p>
+                <h1 className={`mt-4 max-w-[880px] movil:mt-3 ${CLASE_TITULO}`}>{TITULO}</h1>
+                <p className="mt-6 max-w-xl text-lg md:text-[21px] leading-relaxed text-simar-franja-texto-2 movil:text-[16px]">{TEXTO}</p>
+                <Acciones rutaDemo={rutaDemo} />
+                {litros !== null && (
+                    <div className="mt-14 pt-10 border-t border-white/15 movil:mt-10 movil:pt-8">
+                        <p className="text-lg md:text-xl font-bold text-simar-espuma movil:text-[15px]">En Puerto Peñasco ya evitamos que</p>
+                        <p className="mt-2 font-extrabold leading-none text-simar-aceite">
+                            <span className="text-[96px] tracking-[-0.04em] movil:text-[64px]">{cifra(litros)}</span>
+                            <span className="ml-3 text-[36px] movil:text-[24px]">litros</span>
+                        </p>
+                        <p className="mt-3 text-2xl font-bold movil:text-[19px]">de aceite usado llegaran al Golfo.</p>
+                        <a href="#fuentes" className="mt-2 inline-flex min-h-[44px] items-center text-[17px] text-simar-franja-texto-2 underline underline-offset-4 hover:text-white movil:text-[15px]">
+                            ¿De dónde sale esta cifra?
+                        </a>
+                    </div>
+                )}
+            </div>
+        </header>
+    );
+}
+
+/**
+ * El hero. `litros` es el aceite que ya llegó al centro de acopio (null sin datos). El servidor
+ * dibuja la escena en su primer cuadro; si el sistema pide reducir movimiento, se cambia al hero
+ * quieto al cargar.
+ */
+export function HeroGota({ litros, rutaDemo }: { litros: number | null; rutaDemo: string | null }) {
+    const reducir = usePrefiereMenosMovimiento();
+    return reducir ? <HeroQuieto litros={litros} rutaDemo={rutaDemo} /> : <HeroEscena litros={litros} rutaDemo={rutaDemo} />;
 }

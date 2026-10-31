@@ -331,6 +331,42 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
   texto grande (reconocimientos) no van de fondo: pelean con el logo.
 - Con "reducir movimiento" todo aparece ya nítido.
 
+### 8.5 Landing nueva: escenas atadas al scroll
+
+La landing nueva (`components/landing/nueva/`, se ve con `?landing=nueva` y el selector de abajo)
+cuenta la historia con **escenas fijas**: el bloque es alto, el escenario va con `position: sticky`
+y lo que pasa adentro depende de cuánto se ha bajado, no del tiempo (al subir se revierte). Usa
+**Motion** (motion.dev, `motion/react`), sólo en esta landing: `LazyMotion` con `domAnimation` y
+componentes `m.*` (`motion/react-m`), para bajar sólo lo que se usa. Las piezas comunes están en
+`components/landing/nueva/escena.tsx`.
+
+| Pieza | Qué hace | Dónde |
+|---|---|---|
+| `useEscena()` | Progreso de 0 a 1 de una escena fija (`['start start', 'end end']`) | Portada, Bajar al fondo, El viaje |
+| `useRango(p, entradas, salidas)` | `useTransform` con el rango completado hasta 0 y 1. **Siempre úsalo en lugar de `useTransform` sobre un progreso de scroll:** donde hay ScrollTimeline, Motion pasa el rango a una animación nativa, y si no empieza en 0 y acaba en 1 el navegador llena los extremos con el valor base (el título volvía al final y la gota regresaba arriba) | Todas las escenas |
+| `useTramo(p, [a, b, c, d])` | Un texto aparece entre `a` y `b` (sube 28 px), se queda quieto mientras se lee y se va entre `c` y `d` | Textos de la portada y de las paradas |
+| `TextoQueSeEnciende` | El título se enciende palabra por palabra al bajar. Las apagadas quedan a **0.5 de opacidad** (así cumple 3:1 de texto grande). El lector oye la frase entera una vez | Títulos `h2` |
+| `FRENA` / `RESORTE` | La curva de SiMAR y un resorte **sin rebote** (0.45 s), interrumpible | Lo que se toca: el deslizador de Antes y después, la hoja del viaje |
+| `ln-enfoca`, `ln-enfoca-foto`, `ln-tras-1/2`, `ln-llena` | CSS con `animation-timeline: view()`: entra desenfocado y se aclara en el tercio de abajo; `ln-tras-*` escalona; `ln-llena` sube el agua de la tarjeta grande de Logros | Antetítulos, párrafos, tarjetas y fotos |
+
+- Las escenas: la **portada** (cae la gota, se extiende la mancha y aparece la cifra de litros),
+  **Bajar al fondo** (la cámara baja de la superficie al fondo con un profundímetro; cada parada
+  queda quieta mientras se lee), **El viaje de un litro** (el celular se levanta y cambia de
+  pantalla en cada paso; los nodos del riel llevan a cada paso) y el **cierre** (el símbolo gira
+  hasta su lugar y el mar sube).
+- Siguen las prohibiciones de 8.3: nada se mueve en bucle ni solo; lo que la persona lee no se
+  mueve (los textos llegan, se quedan quietos y se van); sin rebotes ni parallax de fondo.
+- Sólo se anima `transform`, `opacity` y `clip-path` (Motion los corre fuera del hilo principal);
+  en SVG no hay aceleración, así que ahí van pocas piezas.
+- **Con "reducir movimiento" no hay escenas:** cada sección tiene su versión quieta
+  (`HeroQuieto`, las tarjetas de Bajar al fondo, `ListaQuieta` del viaje), los títulos se ven
+  enteros y el cierre queda en su lugar. `MotionConfig reducedMotion="user"` cubre lo demás.
+- Lo que va abajo de la portada se envuelve en `<Suspense>` (`PorPartes` en `LandingNueva`): React
+  lo hidrata en tareas cortas y la portada responde antes. No cambia el HTML del servidor.
+- El lector de pantalla oye el contenido una vez y en orden: los textos de la portada y de las
+  paradas están en la página aunque no se vean; El viaje es `aria-hidden` y sus pasos van en una
+  lista `sr-only`.
+
 ---
 
 ## 9. Modo claro y oscuro

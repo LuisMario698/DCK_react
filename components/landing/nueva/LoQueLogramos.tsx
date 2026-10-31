@@ -22,6 +22,7 @@ import {
     RECINTO_CO2_POR_LITRO_ACEITE,
 } from '@/lib/constants/impacto';
 import { Encabezado, cifra } from './comunes';
+import { TextoQueSeEnciende } from './escena';
 
 interface Tarjeta {
     icono: LucideIcon;
@@ -91,21 +92,25 @@ export function LoQueLogramos({ stats }: { stats: LandingStats | null }) {
         });
 
     return (
-        <section id="logros" className="relative bg-simar-papel px-6 py-20 md:py-28 movil:px-5 movil:py-14">
+        <section id="logros" className="relative bg-simar-papel px-6 pt-24 md:pt-36 pb-20 md:pb-32 movil:px-5 movil:pt-16 movil:pb-14">
             <div className="max-w-[1248px] mx-auto">
                 <Encabezado
                     antetitulo="Lo que ya logramos"
-                    titulo="Lo que el puerto ya le quitó al mar."
+                    titulo={<TextoQueSeEnciende texto="Lo que el puerto ya le quitó al mar." />}
                     texto="Son la suma de todos los manifiestos registrados en SiMAR en Puerto Peñasco, y se actualizan solas."
                 />
 
                 {eqAgua ? (
                     <div className="mt-10 grid gap-5 movil:mt-7 movil:gap-3">
                         {/* La grande: agua protegida */}
-                        <div className="ln-sube relative overflow-hidden rounded-[36px] bg-simar-marea text-white p-10 md:p-12 movil:rounded-[26px] movil:p-6">
-                            <svg aria-hidden="true" viewBox="0 0 1200 120" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-16 w-full opacity-15 movil:h-10">
-                                <path d="M0 60 C150 20 300 20 450 60 C600 100 750 100 900 60 C1050 20 1150 30 1200 50 V120 H0 Z" fill="#FFFFFF" />
-                            </svg>
+                        <div className="ln-enfoca relative overflow-hidden rounded-[40px] bg-simar-marea text-white p-10 md:p-14 movil:rounded-[28px] movil:p-6">
+                            {/* El agua que sube al entrar la tarjeta */}
+                            <div aria-hidden="true" className="ln-llena absolute inset-x-0 bottom-0 h-[58%]">
+                                <svg viewBox="0 0 1200 40" preserveAspectRatio="none" className="absolute inset-x-0 -top-[39px] h-10 w-full">
+                                    <path d="M0 20 C150 0 300 0 450 20 C600 40 750 40 900 20 C1050 0 1150 6 1200 14 V40 H0 Z" fill="#FFFFFF" fillOpacity="0.1" />
+                                </svg>
+                                <div className="h-full bg-white/10" />
+                            </div>
                             <div className="relative grid lg:grid-cols-[auto_minmax(0,1fr)] gap-x-10 gap-y-4 items-center">
                                 <span className="w-20 h-20 rounded-full bg-white/15 flex items-center justify-center movil:w-14 movil:h-14">
                                     <Waves className="w-10 h-10 movil:w-7 movil:h-7" />
@@ -117,7 +122,7 @@ export function LoQueLogramos({ stats }: { stats: LandingStats | null }) {
                                             valor={eqAgua.valor}
                                             decimales={decimalesEquivalencia(eqAgua.valor)}
                                             duracion={1600}
-                                            className="text-[80px] md:text-[104px] tracking-[-0.03em] movil:text-[56px]"
+                                            className="tabular-nums text-[clamp(88px,9vw,140px)] tracking-[-0.04em] movil:text-[60px]"
                                         />
                                         <span className="text-[30px] md:text-[38px] movil:text-[22px]">{esUno(eqAgua.valor) ? eqAgua.nombre[0] : eqAgua.nombre[1]}</span>
                                     </p>
@@ -131,12 +136,12 @@ export function LoQueLogramos({ stats }: { stats: LandingStats | null }) {
                         {/* Las chicas: en computadora en fila, en celular en lista con el ícono a la izquierda */}
                         {chicas.length > 0 && (
                             <div className={`grid gap-5 movil:gap-3 ${COLUMNAS[chicas.length]}`}>
-                                {chicas.map((t) => {
+                                {chicas.map((t, i) => {
                                     const Icono = t.icono;
                                     return (
                                         <div
                                             key={t.etiqueta}
-                                            className="ln-sube rounded-[28px] bg-simar-superficie border border-simar-borde shadow-simar p-7 movil:rounded-[22px] movil:p-4 movil:grid movil:grid-cols-[48px_minmax(0,1fr)] movil:gap-x-3.5"
+                                            className={`ln-enfoca ${i === 1 ? 'ln-tras-1' : i === 2 ? 'ln-tras-2' : ''} rounded-[28px] bg-simar-superficie border border-simar-borde shadow-simar p-7 movil:rounded-[22px] movil:p-4 movil:grid movil:grid-cols-[48px_minmax(0,1fr)] movil:gap-x-3.5`}
                                         >
                                             <span className={`w-14 h-14 rounded-full flex items-center justify-center movil:w-12 movil:h-12 ${t.tono}`}>
                                                 <Icono className="w-7 h-7 movil:w-6 movil:h-6" />
@@ -144,7 +149,7 @@ export function LoQueLogramos({ stats }: { stats: LandingStats | null }) {
                                             <div className="mt-4 movil:mt-0">
                                                 <p className="text-[17px] font-bold text-simar-texto-2 movil:text-[15px]">{t.etiqueta}</p>
                                                 <p className="mt-1 flex flex-wrap items-baseline gap-x-2 font-extrabold leading-tight">
-                                                    <NumeroAnimado valor={t.valor} decimales={t.decimales} duracion={1300} className="text-[44px] movil:text-[30px]" />
+                                                    <NumeroAnimado valor={t.valor} decimales={t.decimales} duracion={1300} className="tabular-nums text-[52px] tracking-[-0.03em] movil:text-[30px]" />
                                                     <span className="text-[22px] movil:text-[18px]">{t.unidad}</span>
                                                 </p>
                                                 <p className="mt-1.5 text-[17px] leading-snug text-simar-texto movil:text-[15px]">{t.descripcion}</p>

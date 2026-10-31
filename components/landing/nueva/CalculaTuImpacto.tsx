@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { useMotionValue, useSpring, useTransform } from 'motion/react';
+import * as m from 'motion/react-m';
 import { toast } from 'sonner';
 import { Building2, Link2, Minus, Plus, Share2, Ship, Users, type LucideIcon } from 'lucide-react';
 import { aguaProtegidaL, co2EvitadoKg, decimalesEquivalencia, equivalenciaAgua, equivalenciaCO2, esUno } from '@/lib/utils/equivalencias';
 import { Encabezado, cifra } from './comunes';
+import { TextoQueSeEnciende } from './escena';
 
 const MINIMO = 30;
 const MAXIMO = 2000;
@@ -21,6 +24,33 @@ const enlace = () => `${window.location.origin}${window.location.pathname}#calcu
  * Estadísticas (lib/utils/equivalencias.ts). Debajo, qué le toca a cada quien. `alRegistrarEmpresa`
  * abre la ventana de acceso en "Empresa Recolectora".
  */
+/**
+ * Un número de la respuesta que corre hacia su nuevo valor con un resorte sin rebote al mover el
+ * deslizador (no salta). `formato` convierte los litros que van pasando en lo que se lee.
+ */
+function NumeroQueCorre({ litros, formato, className = '' }: { litros: number; formato: (l: number) => string; className?: string }) {
+    const objetivo = useMotionValue(litros);
+    const suave = useSpring(objetivo, { stiffness: 260, damping: 34 });
+    useEffect(() => {
+        objetivo.set(litros);
+    }, [litros, objetivo]);
+    const texto = useTransform(suave, formato);
+    return (
+        <>
+            <span className="sr-only">{formato(litros)}</span>
+            <m.span aria-hidden="true" className={className}>
+                {texto}
+            </m.span>
+        </>
+    );
+}
+
+const albercasDe = (l: number) => {
+    const eq = equivalenciaAgua(aguaProtegidaL(l));
+    return eq ? cifra(eq.valor, decimalesEquivalencia(eq.valor)) : '0';
+};
+const litrosAguaDe = (l: number) => cifra(Math.round(aguaProtegidaL(l)));
+
 export function CalculaTuImpacto({ alRegistrarEmpresa }: { alRegistrarEmpresa: () => void }) {
     const [litros, setLitros] = useState(200);
     const agua = equivalenciaAgua(aguaProtegidaL(litros));
@@ -55,13 +85,13 @@ export function CalculaTuImpacto({ alRegistrarEmpresa }: { alRegistrarEmpresa: (
     const cambiar = (n: number) => setLitros(Math.min(MAXIMO, Math.max(MINIMO, n)));
 
     return (
-        <section id="calcula" className="relative bg-simar-papel px-6 py-20 md:py-28 movil:px-5 movil:py-14">
+        <section id="calcula" className="relative bg-simar-papel px-6 py-24 md:py-36 movil:px-5 movil:py-16">
             <div className="max-w-[1248px] mx-auto">
                 <div className="grid lg:grid-cols-2 gap-6 items-stretch movil:gap-4">
                     {/* La pregunta */}
-                    <div className="ln-sube rounded-[36px] bg-simar-superficie border border-simar-borde shadow-simar p-10 md:p-12 movil:rounded-[26px] movil:p-6">
+                    <div className="ln-enfoca rounded-[40px] bg-simar-superficie border border-simar-borde shadow-simar p-10 md:p-12 movil:rounded-[28px] movil:p-6">
                         <p className="text-lg font-bold text-simar-marea-tinta movil:text-[15px]">Calcula tu impacto</p>
-                        <h2 className="mt-3 text-[34px] md:text-[44px] font-extrabold leading-[1.1] movil:mt-2 movil:text-[26px]">
+                        <h2 className="mt-3 text-[34px] md:text-[46px] font-extrabold leading-[1.06] tracking-[-0.025em] movil:mt-2 movil:text-[26px]">
                             ¿Cuántos litros de aceite cambia tu motor al año?
                         </h2>
                         <label htmlFor="ln-litros" className="mt-8 block text-[17px] font-bold text-simar-texto-2 movil:mt-6 movil:text-[15px]">
@@ -111,18 +141,20 @@ export function CalculaTuImpacto({ alRegistrarEmpresa }: { alRegistrarEmpresa: (
                     </div>
 
                     {/* La respuesta */}
-                    <div className="ln-sube relative overflow-hidden rounded-[36px] bg-simar-abismo text-white p-10 md:p-12 flex flex-col movil:rounded-[26px] movil:p-6" aria-live="polite">
+                    <div className="ln-enfoca ln-tras-1 relative overflow-hidden rounded-[40px] bg-simar-abismo text-white p-10 md:p-12 flex flex-col movil:rounded-[28px] movil:p-6" aria-live="polite">
                         <p className="text-lg font-bold text-simar-espuma movil:text-[15px]">Si los entregas en el centro de acopio, proteges hasta</p>
                         {agua && (
                             <p className="mt-3 font-extrabold leading-none">
-                                <span className="text-[72px] md:text-[88px] tracking-[-0.03em] text-simar-aceite movil:text-[56px]">
-                                    {cifra(agua.valor, decimalesEquivalencia(agua.valor))}
-                                </span>
+                                <NumeroQueCorre
+                                    litros={litros}
+                                    formato={albercasDe}
+                                    className="tabular-nums text-[72px] md:text-[96px] tracking-[-0.04em] text-simar-aceite movil:text-[56px]"
+                                />
                                 <span className="block mt-2 text-[28px] md:text-[32px] movil:text-[22px]">{nombreDe(agua.valor, agua.nombre)} de agua</span>
                             </p>
                         )}
                         <p className="mt-4 text-xl leading-snug text-simar-franja-texto-2 movil:text-[17px]">
-                            Son {cifra(aguaProtegidaL(litros))} litros que no se contaminan.
+                            Son <NumeroQueCorre litros={litros} formato={litrosAguaDe} className="tabular-nums" /> litros que no se contaminan.
                         </p>
                         {aire && (
                             <p className="mt-6 pt-6 border-t border-white/15 text-xl leading-snug movil:mt-5 movil:pt-5 movil:text-[17px]">
@@ -168,7 +200,7 @@ export function CalculaTuImpacto({ alRegistrarEmpresa }: { alRegistrarEmpresa: (
                 <Encabezado
                     className="mt-20 movil:mt-14"
                     antetitulo="Tú también cuentas"
-                    titulo="Cada quien tiene algo que hacer."
+                    titulo={<TextoQueSeEnciende texto="Cada quien tiene algo que hacer." />}
                 />
                 <div className="mt-8 grid md:grid-cols-3 gap-5 movil:mt-6 movil:gap-3">
                     {(
@@ -193,10 +225,10 @@ export function CalculaTuImpacto({ alRegistrarEmpresa }: { alRegistrarEmpresa: (
                                 tono: 'bg-simar-coral-suave text-simar-coral',
                             },
                         ] as { icono: LucideIcon; titulo: string; texto: string; tono: string; accion?: { texto: string; alPulsar: () => void } }[]
-                    ).map((t) => {
+                    ).map((t, i) => {
                         const Icono = t.icono;
                         return (
-                            <div key={t.titulo} className="ln-sube rounded-[28px] bg-simar-superficie border border-simar-borde shadow-simar p-7 flex flex-col movil:rounded-[22px] movil:p-5">
+                            <div key={t.titulo} className={`ln-enfoca ${i === 1 ? 'ln-tras-1' : i === 2 ? 'ln-tras-2' : ''} rounded-[28px] bg-simar-superficie border border-simar-borde shadow-simar p-7 flex flex-col movil:rounded-[22px] movil:p-5`}>
                                 <span className={`w-14 h-14 rounded-full flex items-center justify-center movil:w-12 movil:h-12 ${t.tono}`}>
                                     <Icono className="w-7 h-7 movil:w-6 movil:h-6" />
                                 </span>
