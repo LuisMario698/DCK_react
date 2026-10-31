@@ -367,6 +367,42 @@ componentes `m.*` (`motion/react-m`), para bajar sólo lo que se usa. Las piezas
   paradas están en la página aunque no se vean; El viaje es `aria-hidden` y sus pasos van en una
   lista `sr-only`.
 
+### 8.6 Landing 3D: dos actos con three.js
+
+La tercera landing (`components/landing/tresd/`, se ve con `?landing=3d` y el selector de abajo)
+junta dos ideas: un **mar de partículas** que cuenta el problema y una **página de producto** al
+estilo de Apple. Usa **three.js** (sólo aquí) escrito a mano, sin React Three Fiber: cada motor es
+un módulo que se baja con `await import()` cuando hace falta, así three no pesa en la carga inicial.
+
+| Pieza | Qué hace | Dónde |
+|---|---|---|
+| `MarDeParticulas` + `motorParticulas.ts` | **Acto 1** (oscuro, 650 vh, escenario `sticky`). 20,000 partículas (9,000 en celular) que cambian de figura con el scroll: mar, gota, mancha de aceite (con el contador de litros), hojas de papel, el Alto Golfo con Puerto Peñasco y el símbolo de SiMAR con sus colores. Un `ShaderMaterial` mezcla las figuras en la GPU con un retraso por partícula y un remolino de ruido; la gota cae y salpica | `#inicio` |
+| `formas.ts`, `golfo.ts`, `ruido.ts` | Las figuras se muestrean de dibujos en un canvas fuera de pantalla. La costa sale de Natural Earth 1:10m (dominio público); el ruido es simplex 3D (MIT) | Acto 1 |
+| `ProductoEnEscena` + `motorDispositivos.ts` | **Acto 2** (claro, 600 vh). Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla. La laptop se abre, la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. `encuadre()` baja los dispositivos para que el título de arriba quede libre | `#producto` |
+| `CifrasEnVivo`, `SeccionNoticias`, `Cierre` | Cifras reales (`getLandingStats` + `lib/utils/equivalencias.ts`), las últimas noticias y el llamado final | `#impacto`, `#noticias` |
+
+- Cada parada del scroll tiene una **pausa**: la figura viaja sólo entre el 35 % y el 80 % de su
+  tramo y el texto se queda quieto mientras se lee. Los textos se mueven por `data-*` dentro del
+  `requestAnimationFrame` (sin volver a renderizar React).
+- **Excepción a 8.3:** el mar del primer acto respira despacio y las partículas se apartan del
+  cursor (sólo con `pointer: fine`). Es lo único que se mueve solo; se detiene cuando la sección
+  no se ve y con "reducir movimiento".
+- **Con "reducir movimiento"** las figuras cambian de golpe en cada parada (sin viaje, sin olas ni
+  ruido), la cámara salta de toma en toma y los textos sólo aparecen y desaparecen.
+- **Sin WebGL** el acto 2 muestra la captura de cada toma en un marco sencillo; el acto 1 deja el
+  fondo `--simar-abismo` y los textos.
+- Los colores de las partículas salen de los tokens (`--simar-abismo`, `--simar-aceite`,
+  `--simar-espuma`, ...) y se vuelven a leer al cambiar de tema.
+- La barra se vuelve vidrio oscuro sobre las secciones con `data-tono="oscuro"` (actos 1,
+  Puertos y Cierre) y toma el tema en las demás.
+- Los textos del acto 1 llevan `t3-legible` (sombra suave) en computadora y una tarjeta de
+  vidrio en celular, porque pasan partículas por detrás.
+
+**Noticias.** La sección y las páginas `/[locale]/noticias` y `/[locale]/noticias/[slug]` leen
+`lib/constants/noticias.ts` (sin base de datos). Cada noticia lleva fecha, categoría, cuerpo en
+párrafos y **fuentes** con enlace. Para agregar una, súmala al arreglo `NOTICIAS` (la más nueva
+arriba); sin `imagen`, la portada se dibuja sola (`components/noticias/PortadaNoticia.tsx`).
+
 ---
 
 ## 9. Modo claro y oscuro
