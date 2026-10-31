@@ -53,6 +53,12 @@
   --simar-violeta-suave: #EEEAF8;
   --simar-abismo: #0B2236;         /* bandas oscuras (landing) */
   --simar-espuma: #7FE0D6;         /* acento sobre fondo oscuro */
+  /* Franjas oscuras de la landing (iguales en claro y en oscuro: el fondo siempre es Abismo o mar) */
+  --simar-franja-texto-2: #C7D3DD; /* texto de apoyo sobre Abismo (11:1) y sobre Mar 1 (5:1) */
+  --simar-franja-texto-3: #8FA3B4; /* notas y fuentes sobre Abismo (6:1) */
+  --simar-aceite: #F2C14E;         /* la gota de aceite y su cifra (sobre fondo oscuro) */
+  --simar-mar-1: #0E5A72;          /* el mar junto a la superficie (texto blanco 7.7:1) */
+  --simar-mar-2: #0C3D5C;          /* media agua */
 
   /* Vidrio (sólo en lo que flota) */
   --simar-vidrio: rgba(255, 255, 255, 0.56);
@@ -178,6 +184,11 @@
   --color-simar-violeta-suave: var(--simar-violeta-suave);
   --color-simar-abismo: var(--simar-abismo);
   --color-simar-espuma: var(--simar-espuma);
+  --color-simar-franja-texto-2: var(--simar-franja-texto-2);
+  --color-simar-franja-texto-3: var(--simar-franja-texto-3);
+  --color-simar-aceite: var(--simar-aceite);
+  --color-simar-mar-1: var(--simar-mar-1);
+  --color-simar-mar-2: var(--simar-mar-2);
 
   --shadow-simar: var(--simar-sombra);
 }
@@ -1708,6 +1719,101 @@ html[data-barra-mini] .simar-flotante {
 .simar-avance {
   transform-origin: left;
   animation: simar-avance var(--simar-avance-dur, 6s) linear both;
+}
+
+/* ============================================
+   LANDING NUEVA (components/landing/nueva). Prefijo ln-.
+   Las escenas fijas (hero, bajar al fondo, el viaje) las mueve Motion con el scroll
+   (components/landing/nueva/escena.tsx). Aquí va lo que entra a la vista con el gesto de la
+   landing, enfocar: llega transparente, 28 px abajo y desenfocado, y queda nítido al cruzar el
+   tercio de abajo de la pantalla. Atado al scroll (como `reveal`), sólo donde el navegador lo
+   soporta y sin "reducir movimiento": en los demás todo se ve desde el principio. `backwards`: al
+   terminar el tramo queda el estilo normal (ver DISEÑO_SIMAR.md §8.3).
+   ============================================ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ln-enfoca,
+    .ln-enfoca-foto {
+      animation: ln-enfoca linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+    .ln-enfoca-foto {
+      animation-name: ln-enfoca-foto;
+      animation-range: entry 0% cover 34%;
+    }
+    /* Escalonado de una fila de tarjetas: cada una empieza un poco más arriba */
+    .ln-enfoca.ln-tras-1,
+    .ln-enfoca-foto.ln-tras-1 {
+      animation-range: entry 10% cover 34%;
+    }
+    .ln-enfoca.ln-tras-2,
+    .ln-enfoca-foto.ln-tras-2 {
+      animation-range: entry 20% cover 38%;
+    }
+    /* El agua que sube en la tarjeta de "Agua protegida" */
+    .ln-llena {
+      transform-origin: 50% 100%;
+      animation: ln-llena linear backwards;
+      animation-timeline: view();
+      animation-range: entry 20% cover 50%;
+    }
+  }
+}
+@keyframes ln-enfoca {
+  from { opacity: 0; transform: translateY(28px); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes ln-enfoca-foto {
+  from { opacity: 0; transform: scale(0.94); filter: blur(14px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes ln-llena {
+  from { transform: scaleY(0.12); }
+  to { transform: none; }
+}
+
+/* Barra de "Calcula tu impacto": riel grueso y perilla de 44 px */
+.ln-deslizador {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+.ln-deslizador::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--simar-marea) var(--ln-lleno, 50%), var(--simar-borde) var(--ln-lleno, 50%));
+}
+.ln-deslizador::-moz-range-track {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--simar-marea) var(--ln-lleno, 50%), var(--simar-borde) var(--ln-lleno, 50%));
+}
+.ln-deslizador::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 44px;
+  height: 44px;
+  margin-top: -16px;
+  border-radius: 50%;
+  background: var(--simar-superficie);
+  border: 4px solid var(--simar-marea);
+  box-shadow: var(--simar-sombra);
+}
+.ln-deslizador::-moz-range-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--simar-superficie);
+  border: 4px solid var(--simar-marea);
+  box-shadow: var(--simar-sombra);
+}
+.ln-deslizador:focus-visible {
+  outline: 3px solid var(--simar-golfo);
+  outline-offset: 4px;
+  border-radius: 999px;
 }
 
 /* Reducir movimiento: todo lo anterior (y cualquier transición) se vuelve instantáneo.
