@@ -53,6 +53,12 @@
   --simar-violeta-suave: #EEEAF8;
   --simar-abismo: #0B2236;         /* bandas oscuras (landing) */
   --simar-espuma: #7FE0D6;         /* acento sobre fondo oscuro */
+  /* Franjas oscuras de la landing (iguales en claro y en oscuro: el fondo siempre es Abismo o mar) */
+  --simar-franja-texto-2: #C7D3DD; /* texto de apoyo sobre Abismo (11:1) y sobre Mar 1 (5:1) */
+  --simar-franja-texto-3: #8FA3B4; /* notas y fuentes sobre Abismo (6:1) */
+  --simar-aceite: #F2C14E;         /* la gota de aceite y su cifra (sobre fondo oscuro) */
+  --simar-mar-1: #0E5A72;          /* el mar junto a la superficie (texto blanco 7.7:1) */
+  --simar-mar-2: #0C3D5C;          /* media agua */
 
   /* Vidrio (sólo en lo que flota) */
   --simar-vidrio: rgba(255, 255, 255, 0.56);
@@ -178,6 +184,11 @@
   --color-simar-violeta-suave: var(--simar-violeta-suave);
   --color-simar-abismo: var(--simar-abismo);
   --color-simar-espuma: var(--simar-espuma);
+  --color-simar-franja-texto-2: var(--simar-franja-texto-2);
+  --color-simar-franja-texto-3: var(--simar-franja-texto-3);
+  --color-simar-aceite: var(--simar-aceite);
+  --color-simar-mar-1: var(--simar-mar-1);
+  --color-simar-mar-2: var(--simar-mar-2);
 
   --shadow-simar: var(--simar-sombra);
 }
@@ -1708,6 +1719,182 @@ html[data-barra-mini] .simar-flotante {
 .simar-avance {
   transform-origin: left;
   animation: simar-avance var(--simar-avance-dur, 6s) linear both;
+}
+
+/* ============================================
+   LANDING NUEVA (components/landing/nueva). Prefijo ln-.
+   Regla: el texto siempre se ve. Sólo se anima lo decorativo (la gota, las ondas, la mancha y el
+   oleaje), cada tramo en 600 ms o menos y sin desenfoque. Con "reducir movimiento" el bloque de
+   abajo deja todo en su estado final.
+   ============================================ */
+
+/* La gota cae, toca el agua y desaparece */
+.ln-gota {
+  transform-box: fill-box;
+  animation:
+    ln-cae 0.6s cubic-bezier(0.55, 0, 1, 0.45) 0.35s both,
+    ln-se-va 0.12s linear 0.95s forwards;
+}
+@keyframes ln-cae {
+  from { transform: translateY(-240px); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes ln-se-va {
+  to { opacity: 0; }
+}
+
+/* Ondas en la superficie */
+.ln-onda {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: ln-onda 0.6s cubic-bezier(0.22, 1, 0.36, 1) var(--ln-retraso, 0.95s) both;
+}
+@keyframes ln-onda {
+  from { transform: scale(0.15); opacity: 0.9; }
+  to { transform: scale(1); opacity: 0; }
+}
+
+/* La mancha se extiende y luego se encoge: el aceite que se recolectó */
+.ln-mancha {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation:
+    ln-mancha-crece 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both,
+    ln-mancha-encoge 0.6s cubic-bezier(0.65, 0, 0.35, 1) 1.8s forwards;
+}
+@keyframes ln-mancha-crece {
+  from { transform: scaleX(0.05) scaleY(0.4); opacity: 0; }
+  to { transform: scaleX(1) scaleY(1); opacity: 0.95; }
+}
+@keyframes ln-mancha-encoge {
+  from { transform: scaleX(1) scaleY(1); opacity: 0.95; }
+  to { transform: scaleX(0.08) scaleY(0.6); opacity: 0; }
+}
+
+/* Brillo que deja la mancha sobre la cifra al encogerse */
+.ln-brillo {
+  animation: ln-brillo 0.6s ease-out 2.25s both;
+}
+@keyframes ln-brillo {
+  from { opacity: 0; transform: scale(0.85); }
+  50% { opacity: 1; }
+  to { opacity: 0; transform: scale(1.25); }
+}
+
+/* El barco del hero se mece */
+.ln-mece {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: ln-mece 7s ease-in-out infinite;
+}
+@keyframes ln-mece {
+  0%, 100% { transform: rotate(-0.8deg) translateY(0); }
+  50% { transform: rotate(0.8deg) translateY(2px); }
+}
+
+/* Oleaje lento de la superficie (dos capas que se cruzan) */
+.ln-oleaje {
+  animation: ln-oleaje 16s linear infinite;
+}
+.ln-oleaje-lento {
+  animation: ln-oleaje 26s linear infinite reverse;
+}
+@keyframes ln-oleaje {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Tarjetas y capturas suben un poco al entrar (sólo transform: el texto nunca se oculta).
+   Navegadores sin animaciones atadas al scroll las ven quietas */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .ln-sube {
+      animation: ln-sube linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+@keyframes ln-sube {
+  from { transform: translateY(36px); }
+  to { transform: none; }
+}
+
+/* Hero: cielo de madrugada (con el sol que asoma a la derecha) y el mar junto a la superficie */
+.ln-cielo {
+  background:
+    radial-gradient(55% 60% at 80% 100%, rgba(242, 163, 124, 0.26), transparent 70%),
+    linear-gradient(180deg, var(--simar-abismo) 0%, var(--simar-mar-2) 100%);
+}
+.ln-mar {
+  background: linear-gradient(180deg, #13708A 0%, var(--simar-mar-1) 100%);
+}
+
+/* El viaje de un litro: el texto del paso nuevo sube un poco al cambiar (no se oculta) */
+.ln-cambia {
+  animation: ln-cambia 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ln-cambia {
+  from { transform: translateY(12px); }
+  to { transform: none; }
+}
+
+/* El fondo de "Bajar al fondo del mar": de la superficie al abismo */
+.ln-profundidad {
+  background: linear-gradient(180deg, var(--simar-mar-1) 0%, var(--simar-mar-2) 45%, var(--simar-abismo) 100%);
+}
+
+/* Barra de "Calcula tu impacto": riel grueso y perilla de 44 px */
+.ln-deslizador {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  cursor: pointer;
+}
+.ln-deslizador::-webkit-slider-runnable-track {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--simar-marea) var(--ln-lleno, 50%), var(--simar-borde) var(--ln-lleno, 50%));
+}
+.ln-deslizador::-moz-range-track {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--simar-marea) var(--ln-lleno, 50%), var(--simar-borde) var(--ln-lleno, 50%));
+}
+.ln-deslizador::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 44px;
+  height: 44px;
+  margin-top: -16px;
+  border-radius: 50%;
+  background: var(--simar-superficie);
+  border: 4px solid var(--simar-marea);
+  box-shadow: var(--simar-sombra);
+}
+.ln-deslizador::-moz-range-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--simar-superficie);
+  border: 4px solid var(--simar-marea);
+  box-shadow: var(--simar-sombra);
+}
+.ln-deslizador:focus-visible {
+  outline: 3px solid var(--simar-golfo);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ln-mece,
+  .ln-oleaje,
+  .ln-oleaje-lento {
+    animation: none !important;
+  }
 }
 
 /* Reducir movimiento: todo lo anterior (y cualquier transición) se vuelve instantáneo.

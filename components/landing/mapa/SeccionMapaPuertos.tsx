@@ -28,14 +28,19 @@ function coordenadas(lat: number, lng: number) {
 /**
  * Mapa de puertos de la landing. `variante` elige el tipo de mapa; con
  * `mostrarSelector` aparece un selector para comparar las opciones (se activa
- * con ?mapa=... en la URL).
+ * con ?mapa=... en la URL). `nombreFuturos` y `resumenFuturos` nombran a los puertos que todavía
+ * no usan SiMAR (la landing nueva dice "Puede sumarse", para no prometer una expansión).
  */
 export function SeccionMapaPuertos({
     variante,
     mostrarSelector = false,
+    nombreFuturos = 'Expansión',
+    resumenFuturos = 'En expansión',
 }: {
     variante: VarianteMapa;
     mostrarSelector?: boolean;
+    nombreFuturos?: string;
+    resumenFuturos?: string;
 }) {
     const [seleccionado, setSeleccionado] = useState(PUERTOS[0].id);
     const [visible, setVisible] = useState(false);
@@ -114,7 +119,7 @@ export function SeccionMapaPuertos({
                         </span>
                         <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#06121E]/85 border border-white/10 text-[15px] text-white backdrop-blur">
                             <span className={`w-3 h-3 rounded-full ${EXPANSION_PUNTO}`} />
-                            Expansión ({FUTUROS})
+                            {nombreFuturos} ({FUTUROS})
                         </span>
                     </div>
                 </div>
@@ -124,7 +129,7 @@ export function SeccionMapaPuertos({
                     <div className="grid grid-cols-3 gap-3 movil:gap-2">
                         {[
                             { icono: Anchor, valor: ACTIVOS, texto: 'Puerto activo' },
-                            { icono: Compass, valor: FUTUROS, texto: 'En expansión' },
+                            { icono: Compass, valor: FUTUROS, texto: resumenFuturos },
                             { icono: Waves, valor: 11122, texto: 'km de litoral' },
                         ].map(({ icono: Icono, valor, texto }) => (
                             <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4 min-w-0 movil:p-3 movil:rounded-[18px]">
@@ -152,13 +157,14 @@ export function SeccionMapaPuertos({
                                 </div>
                                 <span
                                     className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[15px] font-bold border ${
+                                        // Fondo sólido: el resplandor de la ficha pasa por detrás y bajaba el contraste a 4.4:1
                                         puerto.activo
-                                            ? 'bg-[rgba(127,224,214,0.14)] text-[#7FE0D6] border-[rgba(127,224,214,0.4)]'
-                                            : 'bg-[rgba(138,180,248,0.12)] text-[#9DBEF7] border-[rgba(138,180,248,0.35)]'
+                                            ? 'bg-[#123F4D] text-[#7FE0D6] border-[rgba(127,224,214,0.4)]'
+                                            : 'bg-[#1B3557] text-[#9DBEF7] border-[rgba(138,180,248,0.35)]'
                                     }`}
                                 >
                                     <span className={`w-2.5 h-2.5 rounded-full ${puerto.activo ? ACTIVO_PUNTO : EXPANSION_PUNTO}`} />
-                                    {puerto.activo ? 'Activo' : 'Expansión'}
+                                    {puerto.activo ? 'Activo' : nombreFuturos}
                                 </span>
                             </div>
                             <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed movil:mt-2.5 movil:text-[15px]">{puerto.descripcion}</p>
