@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowRight, PlayCircle } from 'lucide-react';
 import type { MotorParticulas } from './motorParticulas';
-import { avanceDe, crearRecorrido, etapaEn, rampa, textoEn, usePrefiereMenosMovimiento } from './comun';
+import { avanceDe, crearPrisa, crearRecorrido, crearSeguidor, etapaEn, rampa, scrollDe, textoEn, usePrefiereMenosMovimiento } from './comun';
 import { BarraPasos, ImanesPasos, colocarImanes, pintarPasos } from './PasosEscena';
 
 /**
@@ -55,7 +55,11 @@ export function MarDeParticulas({
         const rellenos = Array.from(seccion.querySelectorAll<HTMLElement>('[data-relleno]'));
         const botones = Array.from(seccion.querySelectorAll<HTMLElement>('[data-paso]'));
         let vertical = window.innerWidth >= 768;
+        let scroll = scrollDe(seccion);
         colocarImanes(seccion, RECORRIDO, IMANES);
+        // Una sola posición seguida (con resorte) para textos, barra, contador y figuras
+        const seguidor = crearSeguidor();
+        const prisa = crearPrisa();
 
         // three.js y las figuras se bajan aparte, después de que la portada ya se ve
         const cargar = async () => {
@@ -77,15 +81,23 @@ export function MarDeParticulas({
         let cuadro = 0;
         const dibujar = (ahora: number) => {
             cuadro = requestAnimationFrame(dibujar);
-            const dt = Math.min(0.05, (ahora - antes) / 1000);
+            // Hasta 0.1 s por cuadro: en un celular lento la escena sigue al dedo sin quedarse atrás
+            const dt = Math.min(0.1, (ahora - antes) / 1000);
             antes = ahora;
-            if (!visible) return;
-            const posicion = RECORRIDO.posicion(avanceDe(seccion));
+            const real = RECORRIDO.posicion(avanceDe(seccion, scroll));
+            // Fuera de vista la escena espera donde va el scroll (al volver no se rebobina)
+            if (!visible) {
+                seguidor.saltar(real);
+                return;
+            }
+            const posicion = reducido ? real : seguidor.seguir(real, dt);
+            // Al pasar de largo con un deslizón, los textos que se cruzan no parpadean
+            const atenua = 1 - (reducido ? 0 : prisa(seguidor.velocidad, dt));
 
             // Los textos: llegan, se quedan quietos mientras se leen y se van
             for (const el of textos) {
                 const [entra, sale] = textoEn(posicion, Number(el.dataset.parada), PARADAS);
-                const op = entra * sale;
+                const op = entra * sale * atenua;
                 el.style.opacity = op.toFixed(3);
                 el.style.transform = reducido ? '' : `translate3d(0, ${((1 - entra) * 32 - (1 - sale) * 32).toFixed(1)}px, 0)`;
                 el.style.pointerEvents = op > 0.5 ? '' : 'none';
@@ -111,6 +123,7 @@ export function MarDeParticulas({
         const alRedimensionar = () => {
             motor?.redimensionar();
             vertical = window.innerWidth >= 768;
+            scroll = scrollDe(seccion);
             colocarImanes(seccion, RECORRIDO, IMANES);
         };
         window.addEventListener('resize', alRedimensionar);
@@ -148,7 +161,7 @@ export function MarDeParticulas({
     return (
         <section ref={seccionRef} id="inicio" aria-label="La historia de SiMAR" style={{ height: RECORRIDO.alto }} className="relative bg-simar-abismo text-white">
             <ImanesPasos pasos={PARADAS} />
-            <div className="sticky top-0 h-[100svh] overflow-hidden">
+            <div data-escenario className="sticky top-0 h-[100svh] overflow-hidden">
                 <canvas
                     ref={canvasRef}
                     aria-hidden="true"

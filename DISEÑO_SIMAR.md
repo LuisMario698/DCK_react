@@ -378,7 +378,7 @@ un módulo que se baja con `await import()` cuando hace falta, así three no pes
 |---|---|---|
 | `MarDeParticulas` + `motorParticulas.ts` | **Acto 1** (oscuro, ~590 vh, escenario `sticky`). 15,000 a 24,000 partículas (10,000 a 14,000 en celular, según los núcleos) que cambian de figura con el scroll: mar, gota, mancha de aceite (con el contador de litros), hojas de papel, el golfo de California con su costa y Puerto Peñasco, y el símbolo de SiMAR con sus colores. Un `ShaderMaterial` mezcla las figuras en la GPU con un retraso por partícula y un remolino de ruido; cada figura tiene su tamaño, brillo y nitidez de punto (la costa y el logo van nítidos, el mar suave) | `#inicio` |
 | `formas.ts`, `golfo.ts`, `ruido.ts` | Las figuras se muestrean de dibujos en un canvas fuera de pantalla. La costa sale de Natural Earth 1:10m (dominio público), sin las orillas del recorte; el mar se junta hacia el eje del golfo y se desvanece en los bordes. El mar del inicio es más denso donde cae la gota, para que la mancha se lea como una película y no como confeti. El ruido es simplex 3D (MIT) | Acto 1 |
-| `ProductoEnEscena` + `motorDispositivos.ts` | **Acto 2** (claro, ~525 vh). Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla. La laptop se abre, la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. `encuadre()` baja los dispositivos para que el título de arriba quede libre | `#producto` |
+| `ProductoEnEscena` + `motorDispositivos.ts` | **Acto 2** (claro, ~525 vh). Laptop y celular hechos con geometría (sin modelos que bajar: ~6 KB comprimidos) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla. La laptop se abre, la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. `encuadre()` baja los dispositivos para que el título de arriba quede libre | `#producto` |
 | `PasosEscena.tsx` | La barra de pasos de cada acto (horizontal arriba en celular, vertical a la derecha en computadora) y los imanes del scroll | Actos 1 y 2 |
 | `CifrasEnVivo`, `SeccionNoticias`, `Cierre` | Cifras reales (`getLandingStats` + `lib/utils/equivalencias.ts`), las últimas noticias y el llamado final | `#impacto`, `#noticias` |
 
@@ -395,6 +395,19 @@ parada (`TIEMPOS`):
 
 - Los textos y las barras se mueven por `data-*` dentro del `requestAnimationFrame` (sin volver a
   renderizar React).
+- **Seguimiento del scroll** (`crearSeguidor`): la escena no copia el scroll tal cual, lo sigue
+  con un resorte amortiguado (SmoothDamp, 0.16 s, tope de 6.5 paradas por segundo). Textos,
+  barra, contador y figuras leen esa misma posición, así siempre van juntos. Con scroll lento va
+  pegada al dedo; con un deslizón rápido alcanza al dedo sin brincos y llega frenando. Los motores
+  ya no suavizan por su cuenta (sería doble arrastre).
+- **Prisa** (`crearPrisa`): según la velocidad (de 1.4 a 2.8 paradas por segundo) los textos se
+  apagan, para que al pasar de largo los que se cruzan no parpadeen; al frenar, el de la parada
+  donde se llega aparece con calma. Medido a 7,000 px/s: ningún texto intermedio pasa de 6 %; a
+  400 px/s cada texto se lee igual que antes (de 1.2 a 1.6 s).
+- **La barra del navegador del celular** sube y baja al hacer scroll y cambia `innerHeight`. Por
+  eso el avance se mide con el alto del escenario (`scrollDe`, el `[data-escenario]` de 100svh),
+  no con `innerHeight`, y los motores ignoran un «resize» que no cambia el tamaño del lienzo (antes
+  la escena brincaba y el lienzo rehacía su memoria).
 - **Barra de pasos** (`BarraPasos`): un segmento por parada que se llena mientras la figura viaja;
   el actual lleva `aria-current="step"`. Cada segmento es un botón (44 px de alto en celular) que
   lleva a esa parada, con su nombre al pasar el cursor o con el foco.
@@ -411,6 +424,17 @@ parada (`TIEMPOS`):
 - **Con "reducir movimiento"** las figuras cambian de golpe en cada parada (sin viaje, sin olas ni
   ruido), la cámara salta de toma en toma, los textos sólo aparecen y desaparecen y el contador
   muestra la cifra completa.
+- **Rendimiento:** el acto 2 sólo dibuja cuando la toma cambia (quieto no gasta). Ambos motores
+  bajan solos la densidad de píxeles si los cuadros pasan de ~22 ms (`crearAjustePixeles`: un
+  escalón de 0.25, hasta 1 en las partículas y 1.25 en los dispositivos, para que el texto de las
+  pantallas se lea). El acto 2 compila sus shaders y sube las capturas antes de llegar.
+- **Los dispositivos** (`motorDispositivos.ts`): cuerpos de aluminio gris espacial con esquinas y
+  cantos redondos (`losa()`: extrusión con bisel y vértices unidos para sombreado suave, caras
+  planas con su normal exacta), teclado en 3D en una sola malla, bocinas, trackpad, bisagra,
+  cámara, el símbolo de SiMAR en la tapa, celular con botones, cristal que suma reflejos encima de
+  las pantallas, sombras de contacto difuminadas y un estudio de luz propio (cajas de luz alrededor,
+  en un PMREM) con el tono `NeutralToneMapping`. Se probaron paquetes de modelos: los gratis son de
+  pocos polígonos o con licencia dudosa y los realistas pesan megas; por eso van con código.
 - **Sin WebGL** el acto 2 muestra la captura de cada toma en un marco sencillo; el acto 1 deja el
   fondo `--simar-abismo` y los textos.
 - Los colores de las partículas salen de los tokens (`--simar-abismo`, `--simar-aceite`,

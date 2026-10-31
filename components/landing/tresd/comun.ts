@@ -82,11 +82,94 @@ export function crearRecorrido(pesos: number[]): Recorrido {
     };
 }
 
+/**
+ * Cuánto scroll (px) tiene una sección fija: su alto menos el del escenario pegado
+ * (`[data-escenario]`, 100svh). Se mide con el escenario y no con `innerHeight` porque en el
+ * celular la barra del navegador sube y baja al hacer scroll: `innerHeight` cambia y la escena
+ * brincaba; el alto del escenario no cambia.
+ */
+export function scrollDe(seccion: HTMLElement) {
+    const escenario = seccion.querySelector<HTMLElement>('[data-escenario]');
+    return Math.max(1, seccion.offsetHeight - (escenario?.offsetHeight ?? window.innerHeight));
+}
+
 /** Avance (0–1) de una sección fija: qué tanto de su scroll ya pasó */
-export function avanceDe(seccion: HTMLElement) {
+export function avanceDe(seccion: HTMLElement, scroll = scrollDe(seccion)) {
     const r = seccion.getBoundingClientRect();
-    const recorrido = Math.max(1, r.height - window.innerHeight);
-    return Math.min(1, Math.max(0, -r.top / recorrido));
+    return Math.min(1, Math.max(0, -r.top / scroll));
+}
+
+/* ── El seguimiento del scroll ──────────────────────────────────────────────────────────────
+ *
+ * La escena no copia el scroll tal cual: lo sigue con un resorte amortiguado (el SmoothDamp de
+ * Unity, «Game Programming Gems 4», cap. 1.10). Así:
+ *  - con scroll lento va pegada al dedo (se atrasa unos 0.15 s, no se nota);
+ *  - con un deslizón rápido no brinca: alcanza al dedo con su propia curva, sin pasarse, y con
+ *    un límite de velocidad para que las figuras no se atropellen;
+ *  - al soltar, llega frenando, sin rebote.
+ * Textos, barras y figuras leen la misma posición seguida: siempre van juntos.
+ */
+export interface Seguidor {
+    readonly valor: number;
+    /** Paradas por segundo (con signo) */
+    readonly velocidad: number;
+    seguir(objetivo: number, dt: number): number;
+    saltar(valor: number): void;
+}
+
+export function crearSeguidor(tiempo = 0.16, velocidadMaxima = 6.5): Seguidor {
+    let valor = Number.NaN;
+    let velocidad = 0;
+    return {
+        get valor() {
+            return valor;
+        },
+        get velocidad() {
+            return velocidad;
+        },
+        saltar(v) {
+            valor = v;
+            velocidad = 0;
+        },
+        seguir(objetivo, dt) {
+            if (Number.isNaN(valor) || dt <= 0) {
+                if (Number.isNaN(valor)) valor = objetivo;
+                return valor;
+            }
+            const omega = 2 / tiempo;
+            const x = omega * dt;
+            const factor = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+            const maximo = velocidadMaxima * tiempo;
+            const cambio = Math.min(maximo, Math.max(-maximo, valor - objetivo));
+            const destino = valor - cambio;
+            const temp = (velocidad + omega * cambio) * dt;
+            velocidad = (velocidad - omega * temp) * factor;
+            let salida = destino + (cambio + temp) * factor;
+            // Nunca se pasa del objetivo
+            if (objetivo - valor > 0 === salida > objetivo) {
+                salida = objetivo;
+                velocidad = 0;
+            }
+            valor = salida;
+            return valor;
+        },
+    };
+}
+
+/**
+ * Con un deslizón rápido los textos de las paradas que se cruzan no deben parpadear: «prisa»
+ * va de 0 (lectura) a 1 (pasando de largo) según la velocidad, y baja despacio al frenar para
+ * que el texto donde se llega aparezca con calma.
+ */
+export function crearPrisa() {
+    let prisa = 0;
+    return (velocidad: number, dt: number) => {
+        const objetivo = rampa(Math.abs(velocidad), 1.4, 2.8);
+        // Sube rápido (se apaga al acelerar) y baja más despacio (se enciende al frenar)
+        const k = objetivo > prisa ? 14 : 6;
+        prisa += (objetivo - prisa) * (1 - Math.exp(-dt * k));
+        return prisa;
+    };
 }
 
 /** Etapa de la figura (0 a pasos − 1) en una posición */
@@ -101,4 +184,42 @@ export function textoEn(posicion: number, j: number, pasos: number): [number, nu
     const entra = j === 0 ? 1 : rampa(posicion, j - 1 + TIEMPOS.entra[0], j - 1 + TIEMPOS.entra[1]);
     const sale = j === pasos - 1 ? 1 : 1 - rampa(posicion, j + TIEMPOS.sale[0], j + TIEMPOS.sale[1]);
     return [entra, sale];
+}
+
+/**
+ * Calidad que se ajusta sola. Si los cuadros tardan (un celular modesto, o con ahorro de
+ * batería), baja un escalón la densidad de píxeles del lienzo hasta `minimo`: se ve un poco menos
+ * nítido pero el scroll sigue fluido. Nunca la vuelve a subir, para que no oscile.
+ */
+export function crearAjustePixeles(maximo: number, minimo = 1) {
+    let dpr = Math.max(minimo, maximo);
+    let suma = 0;
+    let cuadros = 0;
+    // Los primeros cuadros no cuentan: ahí se compilan los shaders y se suben las texturas
+    let calentando = 60;
+    return {
+        get dpr() {
+            return dpr;
+        },
+        /** Cuenta un cuadro dibujado justo después de otro; true si hay que bajar la calidad */
+        medir(dt: number) {
+            if (dt <= 0 || dt > 0.2) return false;
+            if (calentando > 0) {
+                calentando--;
+                return false;
+            }
+            suma += dt;
+            cuadros++;
+            if (cuadros < 45) return false;
+            const promedio = suma / cuadros;
+            suma = 0;
+            cuadros = 0;
+            // Menos de ~45 cuadros por segundo: un escalón abajo
+            if (promedio > 1 / 45 && dpr > minimo) {
+                dpr = Math.max(minimo, dpr - 0.25);
+                return true;
+            }
+            return false;
+        },
+    };
 }

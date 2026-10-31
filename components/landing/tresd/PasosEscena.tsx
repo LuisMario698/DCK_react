@@ -1,6 +1,6 @@
 'use client';
 
-import { TIEMPOS, rampa, type Recorrido } from './comun';
+import { TIEMPOS, rampa, scrollDe, type Recorrido } from './comun';
 
 /**
  * Los pasos de una escena fija (el mar de partículas y la laptop):
@@ -34,7 +34,7 @@ export function BarraPasos({
         const seccion = boton.closest('section');
         if (!seccion) return;
         const arriba = seccion.getBoundingClientRect().top + window.scrollY;
-        const destino = arriba + recorrido.avance(j + imanes[j]) * Math.max(0, seccion.offsetHeight - window.innerHeight);
+        const destino = arriba + recorrido.avance(j + imanes[j]) * scrollDe(seccion);
         const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.scrollTo({ top: destino, behavior: quieto ? 'auto' : 'smooth' });
     };
@@ -94,7 +94,7 @@ export function ImanesPasos({ pasos }: { pasos: number }) {
 }
 
 export function colocarImanes(seccion: HTMLElement, recorrido: Recorrido, imanes: Imanes) {
-    const scroll = Math.max(0, seccion.offsetHeight - window.innerHeight);
+    const scroll = scrollDe(seccion);
     seccion.querySelectorAll<HTMLElement>('[data-iman]').forEach((el) => {
         const j = Number(el.dataset.iman);
         el.style.top = `${Math.round(recorrido.avance(j + imanes[j]) * scroll)}px`;

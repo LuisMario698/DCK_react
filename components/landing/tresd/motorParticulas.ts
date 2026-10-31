@@ -12,6 +12,7 @@ import {
 } from 'three';
 import { crearFormas, type Formas } from './formas';
 import { RUIDO_GLSL } from './ruido';
+import { crearAjustePixeles } from './comun';
 
 /**
  * El «Mar de partículas»: miles de puntos de luz que cambian de figura según cuánto se ha bajado.
@@ -20,8 +21,8 @@ import { RUIDO_GLSL } from './ruido';
  *
  * Etapas (uEtapa, de 0 a 5): mar → gota → mancha → papel → golfo → símbolo. Entre una y otra cada
  * partícula viaja con un pequeño retraso propio y un remolino de ruido, así la figura se deshace y
- * se rehace como agua. El avance llega en bruto y aquí se suaviza (la figura sigue al scroll con un
- * leve arrastre, nunca brinca).
+ * se rehace como agua. La etapa llega ya suavizada (la sección la sigue con un resorte, igual
+ * que a sus textos) y aquí se dibuja tal cual.
  */
 
 export interface OpcionesMotor {
@@ -38,7 +39,7 @@ export interface EstadoMotor {
 }
 
 export interface MotorParticulas {
-    /** etapa 0–5 y mancha 0–1, en bruto; dt en segundos */
+    /** etapa 0–5 y mancha 0–1, ya suavizadas; dt en segundos */
     actualizar(etapa: number, mancha: number, dt: number): EstadoMotor;
     puntero(x: number | null, y: number | null): void;
     redimensionar(): void;
@@ -369,11 +370,20 @@ export function crearMotorParticulas(canvas: HTMLCanvasElement, opciones: Opcion
     const mirar = new Vector3();
     const puertoMundo = new Vector3();
 
+    // Si los cuadros tardan, el lienzo baja su densidad de píxeles (las partículas son suaves:
+    // casi no se nota y el scroll sigue fluido)
+    const ajuste = crearAjustePixeles(Math.min(window.devicePixelRatio || 1, movil ? 1.75 : 2), 1);
+    let medida = '';
     const redimensionar = () => {
         const rect = canvas.getBoundingClientRect();
+        const dpr = ajuste.dpr;
+        // En el celular la barra del navegador avisa «resize» al subir y bajar, pero el lienzo
+        // (100svh) no cambia: sin esto se volvía a crear su memoria a cada rato
+        const nueva = `${Math.round(rect.width)}x${Math.round(rect.height)}@${dpr}`;
+        if (nueva === medida) return;
+        medida = nueva;
         ancho = Math.max(1, rect.width);
         alto = Math.max(1, rect.height);
-        const dpr = Math.min(window.devicePixelRatio || 1, movil ? 1.75 : 2);
         renderer.setPixelRatio(dpr);
         renderer.setSize(ancho, alto, false);
         camara.aspect = ancho / alto;
@@ -407,12 +417,11 @@ export function crearMotorParticulas(canvas: HTMLCanvasElement, opciones: Opcion
                 etapa = Math.round(etapaObjetivo);
                 mancha = etapa === 2 ? 1 : 0;
             } else {
-                const k = 1 - Math.exp(-dt * 4.2);
-                etapa += (etapaObjetivo - etapa) * k;
-                mancha += (manchaObjetivo - mancha) * (1 - Math.exp(-dt * 3.2));
-                if (Math.abs(etapaObjetivo - etapa) < 0.0004) etapa = etapaObjetivo;
+                etapa = etapaObjetivo;
+                mancha = manchaObjetivo;
                 tiempo += dt;
             }
+            if (ajuste.medir(dt)) redimensionar();
             fuerza += ((hayPuntero ? 1 : 0) - fuerza) * (1 - Math.exp(-dt * 3));
             const u = material.uniforms;
             u.uEtapa.value = etapa;

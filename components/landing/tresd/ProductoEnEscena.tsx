@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import type { MotorDispositivos } from './motorDispositivos';
-import { avanceDe, crearRecorrido, etapaEn, rampa, suave, textoEn, usePrefiereMenosMovimiento } from './comun';
+import { avanceDe, crearPrisa, crearRecorrido, crearSeguidor, etapaEn, rampa, scrollDe, suave, textoEn, usePrefiereMenosMovimiento } from './comun';
 import { BarraPasos, ImanesPasos, colocarImanes, pintarPasos } from './PasosEscena';
 
 /**
@@ -84,13 +84,23 @@ export function ProductoEnEscena() {
         const rellenos = Array.from(seccion.querySelectorAll<HTMLElement>('[data-relleno]'));
         const botones = Array.from(seccion.querySelectorAll<HTMLElement>('[data-paso]'));
         let vertical = window.innerWidth >= 768;
+        let scroll = scrollDe(seccion);
         colocarImanes(seccion, RECORRIDO, IMANES);
+        // Una sola posición seguida (con resorte) para textos, barra y cámara
+        const seguidor = crearSeguidor();
+        const prisa = crearPrisa();
 
         const cargar = async () => {
             if (cargado) return;
             cargado = true;
             const { crearMotorDispositivos } = await import('./motorDispositivos');
-            const m = await crearMotorDispositivos(canvas, { movil: window.innerWidth < 768, reducido, pantallas: PANTALLAS, celular: CELULAR });
+            const m = await crearMotorDispositivos(canvas, {
+                movil: window.innerWidth < 768,
+                reducido,
+                pantallas: PANTALLAS,
+                celular: CELULAR,
+                logo: '/assets/simar/simbolo-grande.png',
+            });
             if (!vivo) {
                 m?.destruir();
                 return;
@@ -104,14 +114,20 @@ export function ProductoEnEscena() {
         let ultimaParada = -1;
         const dibujar = (ahora: number) => {
             cuadro = requestAnimationFrame(dibujar);
-            const dt = Math.min(0.05, (ahora - antes) / 1000);
+            // Hasta 0.1 s por cuadro: en un celular lento la escena sigue al dedo sin quedarse atrás
+            const dt = Math.min(0.1, (ahora - antes) / 1000);
             antes = ahora;
-            if (!visible) return;
-            const posicion = RECORRIDO.posicion(avanceDe(seccion));
+            const real = RECORRIDO.posicion(avanceDe(seccion, scroll));
+            if (!visible) {
+                seguidor.saltar(real);
+                return;
+            }
+            const posicion = reducido ? real : seguidor.seguir(real, dt);
+            const atenua = 1 - (reducido ? 0 : prisa(seguidor.velocidad, dt));
 
             for (const el of textos) {
                 const [entra, sale] = textoEn(posicion, Number(el.dataset.texto), PARADAS);
-                const op = entra * sale;
+                const op = entra * sale * atenua;
                 el.style.opacity = op.toFixed(3);
                 el.style.transform = reducido ? '' : `translate3d(0, ${((1 - entra) * 26 - (1 - sale) * 26).toFixed(1)}px, 0)`;
             }
@@ -138,6 +154,7 @@ export function ProductoEnEscena() {
         const alRedimensionar = () => {
             motor?.redimensionar();
             vertical = window.innerWidth >= 768;
+            scroll = scrollDe(seccion);
             colocarImanes(seccion, RECORRIDO, IMANES);
         };
         window.addEventListener('resize', alRedimensionar);
@@ -158,7 +175,7 @@ export function ProductoEnEscena() {
     return (
         <section ref={seccionRef} id="producto" aria-label="Cómo funciona SiMAR" style={{ height: RECORRIDO.alto }} className="relative bg-simar-superficie text-simar-texto">
             <ImanesPasos pasos={PARADAS} />
-            <div className="sticky top-0 h-[100svh] overflow-hidden">
+            <div data-escenario className="sticky top-0 h-[100svh] overflow-hidden">
                 {/* Un brillo muy suave detrás de los dispositivos */}
                 <div aria-hidden="true" className="t3-escenario pointer-events-none absolute inset-0" />
                 <canvas
