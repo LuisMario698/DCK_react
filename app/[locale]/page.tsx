@@ -1,6 +1,7 @@
 import { VariantCinematic } from '@/components/landing/VariantCinematic';
 import { LandingNueva } from '@/components/landing/nueva/LandingNueva';
 import { LandingTresD } from '@/components/landing/tresd/LandingTresD';
+import { SeccionNoticias } from '@/components/landing/tresd/SeccionNoticias';
 import { SelectorVersionLanding, type VersionLanding } from '@/components/landing/SelectorVersionLanding';
 import { baseElegida, createServerClient } from '@/lib/supabase/server';
 import { AvisoBaseDck } from '@/components/landing/AvisoBaseDck';
@@ -19,10 +20,13 @@ export const revalidate = 3600;
  * y ?landing=3d enseñan las otras y el botón flotante cambia entre ellas (sin el parámetro, la actual).
  */
 export default async function LandingPage({
+    params,
     searchParams,
 }: {
+    params: Promise<{ locale: string }>;
     searchParams: Promise<{ mapa?: string; landing?: string }>;
 }) {
+    const { locale } = await params;
     // ?mapa=globo|red|silueta permite comparar las opciones del mapa de puertos
     const { mapa, landing } = await searchParams;
     const varianteMapa = VARIANTES_MAPA.some((v) => v.id === mapa)
@@ -44,7 +48,7 @@ export default async function LandingPage({
     return (
         <>
             {version === '3d' ? (
-                <LandingTresD stats={stats} varianteMapa={varianteMapa} />
+                <LandingTresD stats={stats} varianteMapa={varianteMapa} noticias={<SeccionNoticias locale={locale} />} />
             ) : version === 'nueva' ? (
                 <LandingNueva stats={stats} varianteMapa={varianteMapa} />
             ) : (

@@ -73,11 +73,13 @@ attribute vec4 aAzar;
 
 varying vec3 vColor;
 varying float vAlfa;
+varying float vNitidez;
 
 ${RUIDO_GLSL}
 
+// Crece de una gota a una mancha que se ve entera, rodeada de mar
 float radioMancha() {
-    return 0.06 * pow(140.0, uMancha);
+    return 0.05 * pow(72.0, uMancha);
 }
 
 // Olas: se calman donde hay aceite (de verdad: la película de aceite aplana el oleaje)
@@ -120,43 +122,60 @@ vec3 colorDe(float k, vec3 p) {
     if (k < 2.5) {
         float d = length(p.xz - uImpacto.xz);
         float s = d / radioMancha();
-        // La película de aceite: oscura y dorada, con un tornasol leve, y la orilla encendida
-        vec3 irid = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + d * 0.5 + snoise(p * 0.45) * 0.35));
-        vec3 pelicula = mix(cAceite * 0.85, irid * 0.9, 0.38) * (0.6 + 0.6 * aMar.w);
-        float dentro = 1.0 - smoothstep(0.9, 1.0, s);
-        float borde = exp(-pow((s - 0.96) * 11.0, 2.0));
-        return mix(colorMar(p), pelicula, dentro) + cAceite * borde * 1.1;
+        // La película de aceite: dorada, con bandas de tornasol que siguen la forma de la mancha
+        // (como el aceite en un charco) y la orilla encendida
+        float bandas = s * 1.6 + snoise(vec3(p.xz * 0.5, 4.0)) * 0.3;
+        vec3 irid = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + bandas));
+        // Ámbar, más oscuro al centro, con anillos de brillo y apenas un tornasol
+        float anillos = 0.75 + 0.25 * cos(6.2831 * bandas * 1.5);
+        vec3 pelicula = mix(cAceite, irid, 0.16) * anillos * (0.5 + 0.45 * aMar.w) * mix(0.55, 1.0, s);
+        float dentro = 1.0 - smoothstep(0.92, 1.0, s);
+        float borde = exp(-pow((s - 0.97) * 14.0, 2.0));
+        return mix(colorMar(p), pelicula, dentro) + cAceite * borde * 1.25;
     }
     if (k < 3.5) return cPapel * aPapel.w;
     if (k < 4.5) {
         if (aGolfo.w > 2.8) return mix(cEspuma, vec3(1.0), 0.45) * 1.5;
-        if (aGolfo.w > 2.0) return cEspuma * 0.9;
+        if (aGolfo.w > 2.3) return cEspuma * 0.9;
+        // La costa: una línea de luz
+        if (aGolfo.w > 2.0) return mix(cGolfo, cEspuma, 0.65) * 0.85;
         if (aGolfo.w > 1.5) return mix(cMarea, cEspuma, 0.3) * 0.22;
         return mix(cMarea, cGolfo, aGolfo.w) * (0.45 + 1.0 * aGolfo.w);
     }
     return aColorLogo * aLogo.w * 1.1;
 }
 
+// Las figuras usan puntos más chicos y más nítidos que el mar: así se leen sus orillas
 float tamanoDe(float k) {
     if (k < 0.5) return 1.0;
-    if (k < 1.5) return 1.05;
+    if (k < 1.5) return 0.78;
     if (k < 2.5) {
         float s = length(aMar.xz - uImpacto.xz) / radioMancha();
-        return 1.0 + 0.45 * (1.0 - smoothstep(0.85, 1.0, s));
+        return 1.0 + 0.3 * (1.0 - smoothstep(0.85, 1.0, s));
     }
-    if (k < 3.5) return 0.95;
-    if (k < 4.5) return aGolfo.w > 2.8 ? 2.0 : (aGolfo.w > 2.0 ? 1.3 : 0.95);
-    return 1.1;
+    if (k < 3.5) return 0.62;
+    if (k < 4.5) return aGolfo.w > 2.8 ? 1.5 : (aGolfo.w > 2.3 ? 1.0 : (aGolfo.w > 2.0 ? 0.62 : 0.7));
+    return 0.7;
+}
+
+// Qué tan nítido es cada punto: el mar es luz suave; las figuras, puntos con orilla
+float nitidezDe(float k) {
+    if (k < 0.5) return 0.0;
+    if (k < 1.5) return 0.65;
+    if (k < 2.5) return 0.35;
+    if (k < 3.5) return 1.0;
+    if (k < 4.5) return 0.85;
+    return 0.9;
 }
 
 // Cuánto brilla cada figura (la gota y el símbolo juntan muchas partículas: van más tenues)
 float intensidadDe(float k) {
     if (k < 0.5) return 1.1;
-    if (k < 1.5) return 0.8;
-    if (k < 2.5) return 1.15;
-    if (k < 3.5) return 1.0;
-    if (k < 4.5) return 1.15;
-    return 0.85;
+    if (k < 1.5) return 0.62;
+    if (k < 2.5) return 1.0;
+    if (k < 3.5) return 0.78;
+    if (k < 4.5) return 0.95;
+    return 0.6;
 }
 
 vec3 bezier(vec3 a, vec3 c, vec3 b, float t) {
@@ -220,26 +239,42 @@ void main() {
     // Lo lejano se apaga (niebla) y lo muy cercano también (no tapa el texto)
     vAlfa = clamp(1.25 - (prof - 9.0) * 0.06, 0.12, 1.0) * smoothstep(1.2, 3.6, prof);
     vColor = color;
+    vNitidez = mix(nitidezDe(k0), nitidezDe(k1), t);
 }
 `;
 
 const FRAGMENTO = /* glsl */ `
 varying vec3 vColor;
 varying float vAlfa;
+varying float vNitidez;
 void main() {
-    vec2 c = gl_PointCoord - 0.5;
-    float d = length(c);
-    float a = smoothstep(0.5, 0.05, d);
-    a *= a;
+    float d = length(gl_PointCoord - 0.5);
+    // Suave: un brillo que se desvanece. Nítido: un punto con orilla y un halo leve
+    float suave = smoothstep(0.5, 0.05, d);
+    suave *= suave;
+    float nitido = smoothstep(0.5, 0.34, d) * 0.85 + suave * 0.3;
+    float a = mix(suave, nitido, vNitidez);
     gl_FragColor = vec4(vColor * a * vAlfa, 1.0);
 }
 `;
 
-/** Cámara por etapa: [posición y, mirar a y, distancia] */
+/**
+ * Cámara por etapa: [posición y, mirar a y, distancia]. En la mancha sube y mira hacia abajo, así
+ * se ve la mancha extendida sobre el mar y no de canto.
+ */
 const CAMARAS: [number, number, number][] = [
     [0.6, 0.62, 9.2],
     [0.1, 0.15, 8.6],
-    [1.5, -0.35, 9.0],
+    [3.7, -1.05, 9.2],
+    [0.0, 0.0, 8.6],
+    [-0.2, 0.1, 8.4],
+    [0.0, 0.05, 8.8],
+];
+/** En celular las figuras van arriba (el texto abajo): la mancha también */
+const CAMARAS_MOVIL: [number, number, number][] = [
+    [0.6, 0.62, 9.2],
+    [0.1, 0.15, 8.6],
+    [5.4, -2.9, 9.6],
     [0.0, 0.0, 8.6],
     [-0.2, 0.1, 8.4],
     [0.0, 0.05, 8.8],
@@ -270,9 +305,9 @@ export function crearMotorParticulas(canvas: HTMLCanvasElement, opciones: Opcion
 
     let movil = opciones.movil;
     const nParticulas = () => {
-        if (movil) return 9000;
         const nucleos = navigator.hardwareConcurrency || 4;
-        return nucleos <= 4 ? 13000 : 20000;
+        if (movil) return nucleos <= 4 ? 10000 : 14000;
+        return nucleos <= 4 ? 15000 : 24000;
     };
 
     const geometria = new BufferGeometry();
@@ -359,8 +394,9 @@ export function crearMotorParticulas(canvas: HTMLCanvasElement, opciones: Opcion
         const k1 = Math.min(k0 + 1, CAMARAS.length - 1);
         const f = e - k0;
         const s = f * f * (3 - 2 * f);
-        const a = CAMARAS[Math.min(k0, CAMARAS.length - 1)];
-        const b = CAMARAS[k1];
+        const tomas = movil ? CAMARAS_MOVIL : CAMARAS;
+        const a = tomas[Math.min(k0, tomas.length - 1)];
+        const b = tomas[k1];
         return [a[0] + (b[0] - a[0]) * s, a[1] + (b[1] - a[1]) * s, a[2] + (b[2] - a[2]) * s];
     };
 

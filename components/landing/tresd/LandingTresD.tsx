@@ -1,7 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState, type ReactNode } from 'react';
-import { ArrowRight, MapPin } from 'lucide-react';
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { ArrowRight, ArrowUpRight, Droplets, Map as IconoMapa, MapPin, Menu, MonitorSmartphone, Newspaper, Waves, X, type LucideIcon } from 'lucide-react';
+import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { MODO_DEMO } from '@/lib/demo/config';
@@ -11,16 +14,15 @@ import { useAccesoLanding } from '../acceso/useAccesoLanding';
 import { MarDeParticulas } from './MarDeParticulas';
 import { ProductoEnEscena } from './ProductoEnEscena';
 import { CifrasEnVivo } from './CifrasEnVivo';
-import { SeccionNoticias } from './SeccionNoticias';
 import { Cierre } from './Cierre';
 import { SeccionMapaPuertos } from '../mapa/SeccionMapaPuertos';
 
-const ENLACES = [
-    { href: '#inicio', texto: 'Historia' },
-    { href: '#producto', texto: 'Cómo funciona' },
-    { href: '#impacto', texto: 'Impacto' },
-    { href: '#noticias', texto: 'Noticias' },
-    { href: '#puertos', texto: 'Puertos' },
+const ENLACES: { href: string; texto: string; detalle: string; Icono: LucideIcon }[] = [
+    { href: '#inicio', texto: 'Historia', detalle: 'Del aceite en el mar a SiMAR', Icono: Waves },
+    { href: '#producto', texto: 'Cómo funciona', detalle: 'Manifiestos, firmas y cifras', Icono: MonitorSmartphone },
+    { href: '#impacto', texto: 'Impacto', detalle: 'Lo que se ha registrado', Icono: Droplets },
+    { href: '#noticias', texto: 'Noticias', detalle: 'El puerto y el mar', Icono: Newspaper },
+    { href: '#puertos', texto: 'Puertos', detalle: 'Dónde puede llegar', Icono: IconoMapa },
 ];
 
 /**
@@ -33,12 +35,62 @@ const ENLACES = [
  *
  * Se ve con ?landing=3d (SelectorVersionLanding). Ver DISEÑO_SIMAR.md §8.6.
  */
-export function LandingTresD({ stats, varianteMapa }: { stats: LandingStats | null; varianteMapa: VarianteMapa }) {
+export function LandingTresD({
+    stats,
+    varianteMapa,
+    noticias,
+}: {
+    stats: LandingStats | null;
+    varianteMapa: VarianteMapa;
+    /** La sección de noticias, armada en el servidor (SeccionNoticias) */
+    noticias: ReactNode;
+}) {
     const hayDatos = stats !== null && stats.totalManifiestos > 0;
     const statsReales = hayDatos ? stats : null;
 
     const { abrirAcceso, rutaDemo, ventana } = useAccesoLanding();
     const textoEntrar = MODO_DEMO ? 'Probar la demo' : 'Iniciar sesión';
+    const { locale } = useParams<{ locale: string }>();
+
+    // Menú de secciones (bajo 1280 px los enlaces no caben en la barra)
+    const [menu, setMenu] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+    const botonMenuRef = useRef<HTMLButtonElement>(null);
+    useVentanaAccesible(menuRef, menu, { alEscape: () => setMenu(false) });
+    useEffect(() => {
+        if (!menu) return;
+        // Se cierra al tocar fuera de la barra
+        const fuera = (e: PointerEvent) => {
+            const t = e.target as Node;
+            if (!menuRef.current?.contains(t) && !botonMenuRef.current?.contains(t)) setMenu(false);
+        };
+        document.addEventListener('pointerdown', fuera);
+        return () => document.removeEventListener('pointerdown', fuera);
+    }, [menu]);
+
+    // Cuánto falta de toda la página: una línea en la orilla de abajo de la barra
+    const avanceRef = useRef<HTMLSpanElement>(null);
+    useEffect(() => {
+        let cuadro = 0;
+        const pintar = () => {
+            cuadro = 0;
+            const el = avanceRef.current;
+            if (!el) return;
+            const total = document.documentElement.scrollHeight - window.innerHeight;
+            el.style.transform = `scaleX(${total > 0 ? Math.min(1, window.scrollY / total).toFixed(4) : 0})`;
+        };
+        const alMover = () => {
+            if (!cuadro) cuadro = requestAnimationFrame(pintar);
+        };
+        pintar();
+        window.addEventListener('scroll', alMover, { passive: true });
+        window.addEventListener('resize', alMover);
+        return () => {
+            cancelAnimationFrame(cuadro);
+            window.removeEventListener('scroll', alMover);
+            window.removeEventListener('resize', alMover);
+        };
+    }, []);
 
     // La barra es oscura sobre el primer acto y toma el tema después
     const [sobreOscuro, setSobreOscuro] = useState(true);
@@ -110,6 +162,17 @@ export function LandingTresD({ stats, varianteMapa }: { stats: LandingStats | nu
                     <div className="ml-auto xl:ml-3 flex items-center gap-2">
                         <BotonTemaIcono className="t3-tema movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
                         <button
+                            ref={botonMenuRef}
+                            type="button"
+                            onClick={() => setMenu((v) => !v)}
+                            aria-expanded={menu}
+                            aria-controls="t3-menu"
+                            aria-label={menu ? 'Cerrar el menú de secciones' : 'Abrir el menú de secciones'}
+                            className="t3-tema xl:hidden simar-presiona w-[54px] h-[54px] md:w-[58px] md:h-[58px] flex-shrink-0 rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 flex items-center justify-center cursor-pointer movil:w-[46px] movil:h-[46px] movil:rounded-[15px]"
+                        >
+                            {menu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                        <button
                             type="button"
                             onClick={() => abrirAcceso()}
                             className="simar-presiona min-h-[52px] md:min-h-[56px] px-5 md:px-6 rounded-full bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer whitespace-nowrap movil:min-h-[46px] movil:px-4 movil:text-[15px]"
@@ -119,6 +182,55 @@ export function LandingTresD({ stats, varianteMapa }: { stats: LandingStats | nu
                         </button>
                     </div>
                 </div>
+
+                {/* El menú de secciones: renglones grandes con lo que hay en cada una; se cierra al elegir */}
+                {menu && (
+                    <div ref={menuRef} id="t3-menu" tabIndex={-1} className="xl:hidden simar-aparece px-2.5 pb-3 md:px-3 outline-none">
+                        <ul className="grid sm:grid-cols-2 gap-1 pt-2 border-t border-current/10">
+                            {ENLACES.map(({ href, texto, detalle, Icono }) => {
+                                const activa = seccion === href;
+                                return (
+                                    <li key={href}>
+                                        <a
+                                            href={href}
+                                            onClick={() => setMenu(false)}
+                                            aria-current={activa ? 'location' : undefined}
+                                            className={`t3-opcion min-h-[64px] px-3 rounded-[18px] flex items-center gap-3.5 transition-colors movil:min-h-[58px] ${activa ? 't3-opcion-activa' : ''}`}
+                                        >
+                                            <span className="t3-opcion-icono w-11 h-11 rounded-[14px] flex-shrink-0 flex items-center justify-center">
+                                                <Icono className="w-[22px] h-[22px]" strokeWidth={2} />
+                                            </span>
+                                            <span className="min-w-0">
+                                                <span className="block text-[18px] font-extrabold leading-tight movil:text-[17px]">{texto}</span>
+                                                <span className="t3-opcion-detalle block text-[15px] leading-snug">{detalle}</span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                );
+                            })}
+                            <li>
+                                <Link
+                                    href={`/${locale}/noticias`}
+                                    onClick={() => setMenu(false)}
+                                    className="t3-opcion min-h-[64px] px-3 rounded-[18px] flex items-center gap-3.5 transition-colors movil:min-h-[58px]"
+                                >
+                                    <span className="t3-opcion-icono w-11 h-11 rounded-[14px] flex-shrink-0 flex items-center justify-center">
+                                        <ArrowUpRight className="w-[22px] h-[22px]" strokeWidth={2} />
+                                    </span>
+                                    <span className="min-w-0">
+                                        <span className="block text-[18px] font-extrabold leading-tight movil:text-[17px]">Todas las noticias</span>
+                                        <span className="t3-opcion-detalle block text-[15px] leading-snug">Abre la página de noticias</span>
+                                    </span>
+                                </Link>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+
+                {/* Cuánto falta de la página */}
+                <span aria-hidden="true" className="pointer-events-none absolute left-6 right-6 bottom-0 h-[2px] rounded-full overflow-hidden">
+                    <span ref={avanceRef} className="t3-avance absolute inset-0 origin-left" style={{ transform: 'scaleX(0)' }} />
+                </span>
             </nav>
 
             <main>
@@ -131,9 +243,7 @@ export function LandingTresD({ stats, varianteMapa }: { stats: LandingStats | nu
                 <PorPartes>
                     <CifrasEnVivo stats={statsReales} />
                 </PorPartes>
-                <PorPartes>
-                    <SeccionNoticias />
-                </PorPartes>
+                {noticias}
                 <PorPartes>
                     <section id="puertos" data-tono="oscuro" className="relative bg-simar-abismo text-white px-6 py-24 md:py-36 overflow-clip movil:px-5 movil:py-16">
                         <div className="relative max-w-[1248px] mx-auto">

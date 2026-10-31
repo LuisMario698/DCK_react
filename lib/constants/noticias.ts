@@ -3,10 +3,24 @@
  *
  * Para agregar una: copia un objeto, cambia el `slug` (será la dirección) y ponla arriba si es la
  * más nueva. `destacada: true` la pone en grande en la landing (sólo una). Los datos de los
- * artículos informativos llevan su fuente: si cambias una cifra, cambia también la fuente.
+ * artículos informativos llevan su fuente: si cambias una cifra, cambia también la fuente (y el
+ * `dato`, que repite la cifra principal del texto en grande).
  */
 
 export type CategoriaNoticia = 'SiMAR' | 'Mar de Cortés' | 'Normativa' | 'Conciencia';
+
+/** Los dibujos de portada (components/noticias/ilustraciones.tsx) */
+export type Ilustracion = 'mapa' | 'altogolfo' | 'gota' | 'hojas' | 'simbolo';
+
+export const CATEGORIAS: CategoriaNoticia[] = ['SiMAR', 'Mar de Cortés', 'Normativa', 'Conciencia'];
+
+/** Sin foto, cada tema tiene su dibujo (se puede cambiar con `ilustracion`) */
+export const ILUSTRACION_DE: Record<CategoriaNoticia, Ilustracion> = {
+    SiMAR: 'simbolo',
+    'Mar de Cortés': 'mapa',
+    Normativa: 'hojas',
+    Conciencia: 'gota',
+};
 
 export interface Noticia {
     slug: string;
@@ -18,10 +32,14 @@ export interface Noticia {
     resumen: string;
     /** Párrafos del artículo */
     cuerpo: string[];
-    /** Foto de portada (de /public). Sin foto, la portada es un dibujo con el ícono del tema */
+    /** Foto de portada (de /public). Sin foto, la portada es un dibujo del tema */
     imagen?: { src: string; alt: string; posicion?: string };
-    /** Otra foto dentro del artículo */
-    imagenInterior?: { src: string; alt: string; pie: string };
+    /** El dibujo de la portada cuando no hay foto (si no, el de su tema) */
+    ilustracion?: Ilustracion;
+    /** La cifra principal del artículo, en grande (debe salir del texto y de sus fuentes) */
+    dato?: { cifra: string; texto: string };
+    /** Fotos dentro del artículo, después del texto */
+    galeria?: { src: string; alt: string; pie: string; ancho: number; alto: number }[];
     fuentes?: { texto: string; url?: string }[];
     destacada?: boolean;
 }
@@ -39,12 +57,24 @@ export const NOTICIAS: Noticia[] = [
             'Don Francisco es el responsable del área de residuos del recinto. Durante años llenó a mano, hoja por hoja, los manifiestos de lo que entregaba cada embarcación: basura, aceite usado y filtros. Esas hojas se deterioraban con el tiempo hasta volverse ilegibles.',
             'SiMAR se diseñó con él y para él: con botones grandes, pasos claros y lenguaje sencillo, para que ese trabajo quede guardado y se pueda consultar.',
         ],
-        imagen: { src: '/assets/images/img4.jpeg', alt: 'Francisco Javier Bojórquez Ochoa con su reconocimiento en Puerto Peñasco', posicion: '50% 30%' },
-        imagenInterior: {
-            src: '/assets/images/img6.jpeg',
-            alt: 'Reconocimiento de la CONANP a Francisco Javier Bojórquez Ochoa',
-            pie: 'El reconocimiento, firmado en Puerto Peñasco el 10 de junio de 2025.',
-        },
+        imagen: { src: '/assets/images/img3.jpeg', alt: 'Entrega de reconocimientos en el módulo de la CONANP, en Puerto Peñasco', posicion: '50% 40%' },
+        dato: { cifra: '25 años', texto: 'al frente del centro de acopio de residuos del recinto portuario de Puerto Peñasco.' },
+        galeria: [
+            {
+                src: '/assets/images/img4.jpeg',
+                alt: 'Francisco Javier Bojórquez Ochoa con su reconocimiento en Puerto Peñasco',
+                pie: 'Francisco Javier Bojórquez Ochoa con su reconocimiento.',
+                ancho: 1080,
+                alto: 1440,
+            },
+            {
+                src: '/assets/images/img6.jpeg',
+                alt: 'Reconocimiento de la CONANP a Francisco Javier Bojórquez Ochoa',
+                pie: 'El reconocimiento, firmado en Puerto Peñasco el 10 de junio de 2025.',
+                ancho: 1080,
+                alto: 1440,
+            },
+        ],
         fuentes: [{ texto: 'Reconocimiento original de la Dirección de la Reserva de la Biosfera Alto Golfo de California y Delta del Río Colorado (CONANP).' }],
         destacada: true,
     },
@@ -54,6 +84,7 @@ export const NOTICIAS: Noticia[] = [
         categoria: 'Conciencia',
         fecha: '2026-10-31',
         resumen: 'De dónde sale la cifra que más repetimos, qué tan exacta es y por qué el aceite usado vale más en el centro de acopio que en el mar.',
+        dato: { cifra: '1,000,000', texto: 'de litros de agua puede contaminar un litro de aceite usado, según la estimación de la EPA.' },
         cuerpo: [
             'La Agencia de Protección Ambiental de Estados Unidos (EPA) estima que el aceite usado de un solo cambio de aceite puede contaminar un millón de galones de agua dulce: el abasto de un año para 50 personas.',
             'De ahí sale la proporción que usamos en SiMAR, un litro de aceite por cada millón de litros de agua. Es una estimación del daño posible, no una medición: depende de dónde caiga el aceite y de cuánto se diluya. Pero la idea se sostiene: muy poco aceite alcanza para hacer mucho daño.',
@@ -74,6 +105,8 @@ export const NOTICIAS: Noticia[] = [
         categoria: 'Mar de Cortés',
         fecha: '2026-10-31',
         resumen: 'El conteo de 2025 confirmó crías nuevas de la marsopa más pequeña del mundo, que sólo vive en el Alto Golfo de California.',
+        dato: { cifra: '7 a 10', texto: 'vaquitas marinas confirmadas en 2025. En 1997, en el primer conteo, se estimaban unas 567.' },
+        ilustracion: 'altogolfo',
         cuerpo: [
             'La vaquita marina es la marsopa más pequeña del mundo y sólo vive en el Alto Golfo de California, el mismo mar que baña Puerto Peñasco.',
             'El crucero de observación de 2025, cuyos resultados se dieron a conocer en octubre de 2025, confirmó entre 7 y 10 vaquitas y el nacimiento de crías. Es un poco más que en 2024, el registro más bajo de la historia. En 1997, cuando se hizo el primer conteo, se estimaban unas 567.',
@@ -110,6 +143,7 @@ export const NOTICIAS: Noticia[] = [
         categoria: 'Normativa',
         fecha: '2026-10-31',
         resumen: 'La regla internacional sobre la basura de los barcos, en corto: qué dice, desde cuándo aplica en México y por qué existe el centro de acopio.',
+        dato: { cifra: '1998', texto: 'año en que México se adhirió al Anexo V de MARPOL, sobre la basura de los barcos.' },
         cuerpo: [
             'El Convenio Internacional para Prevenir la Contaminación por los Buques, conocido como MARPOL, tiene seis anexos. El Anexo V trata de la basura que se genera a bordo: restos de comida, plásticos, cabos, redes, latas, vidrio y más.',
             'Desde el 1 de enero de 2013 rige una versión revisada del anexo. La regla general es que no se descarga basura al mar, salvo excepciones muy limitadas. Los plásticos, incluidas las redes y los cabos sintéticos, no se pueden tirar nunca.',
@@ -117,6 +151,15 @@ export const NOTICIAS: Noticia[] = [
             'Por eso importa el centro de acopio del puerto: es donde las embarcaciones dejan su basura en lugar de tirarla, y el manifiesto es la constancia de esa entrega.',
         ],
         imagen: { src: '/assets/images/img1.jpeg', alt: 'Fotos de la recolección de desechos en la zona del muelle de Puerto Peñasco', posicion: '50% 40%' },
+        galeria: [
+            {
+                src: '/assets/images/img2.jpeg',
+                alt: 'Más fotos de la recolección de desechos en el muelle de Puerto Peñasco',
+                pie: 'Fotos de la recolección de desechos en el muelle de Puerto Peñasco.',
+                ancho: 1440,
+                alto: 1080,
+            },
+        ],
         fuentes: [
             { texto: 'Organización Marítima Internacional (OMI). Prevention of pollution by garbage from ships.', url: 'https://www.imo.org/en/OurWork/Environment/Pages/Garbage-Default.aspx' },
             { texto: 'Gobierno de México. Convenio MARPOL (documento informativo).', url: 'https://www.gob.mx/cms/uploads/attachment/file/902460/3_MARPOL.pdf' },
@@ -128,6 +171,7 @@ export const NOTICIAS: Noticia[] = [
         categoria: 'Mar de Cortés',
         fecha: '2026-10-31',
         resumen: 'Jacques Cousteau lo llamó así, y las cifras de la UNESCO le dan la razón. Puerto Peñasco está en su orilla norte.',
+        dato: { cifra: '39 %', texto: 'de las especies de mamíferos marinos del planeta viven en el Golfo de California, según la UNESCO.' },
         cuerpo: [
             'Jacques Cousteau llamó al Golfo de California «el acuario del mundo». Las cifras le dan la razón.',
             'En 2005, la UNESCO inscribió las Islas y Áreas Protegidas del Golfo de California en la lista del Patrimonio Mundial. Según la UNESCO, ahí vive el 39 % de las especies de mamíferos marinos del planeta y un tercio de las especies de cetáceos, y se han registrado 891 especies de peces, 90 de ellas endémicas.',
@@ -153,6 +197,27 @@ export const NOTICIAS: Noticia[] = [
 
 export function noticiaPorSlug(slug: string) {
     return NOTICIAS.find((n) => n.slug === slug) ?? null;
+}
+
+/** Otras para leer después: primero las del mismo tema */
+export function relacionadas(n: Noticia, cuantas = 3) {
+    const otras = NOTICIAS.filter((o) => o.slug !== n.slug);
+    return [...otras.filter((o) => o.categoria === n.categoria), ...otras.filter((o) => o.categoria !== n.categoria)].slice(0, cuantas);
+}
+
+/** La anterior y la siguiente en la lista (para ir de una a otra) */
+export function vecinas(n: Noticia) {
+    const i = NOTICIAS.findIndex((o) => o.slug === n.slug);
+    return { anterior: NOTICIAS[i - 1] ?? null, siguiente: NOTICIAS[i + 1] ?? null };
+}
+
+/** Lo que necesita una tarjeta (sin el cuerpo: así la lista no baja los artículos enteros) */
+export type ResumenNoticia = Omit<Noticia, 'cuerpo' | 'galeria' | 'fuentes'> & { minutos: number };
+
+export function resumenDe(n: Noticia): ResumenNoticia {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { cuerpo, galeria, fuentes, ...resto } = n;
+    return { ...resto, minutos: minutosDeLectura(n) };
 }
 
 /** «10 de junio de 2025» o, con `soloMes`, «Junio de 2025» */

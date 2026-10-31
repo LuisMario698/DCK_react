@@ -1,18 +1,19 @@
 import type { Metadata } from 'next';
-import { NOTICIAS } from '@/lib/constants/noticias';
+import { NOTICIAS, resumenDe } from '@/lib/constants/noticias';
 import { tituloPantalla } from '@/lib/constants/titulo';
 import { EncabezadoNoticias } from '@/components/noticias/EncabezadoNoticias';
-import { TarjetaNoticia } from '@/components/noticias/TarjetaNoticia';
+import { ListaNoticias } from '@/components/noticias/ListaNoticias';
 
 export const metadata: Metadata = {
     title: tituloPantalla('Noticias'),
     description: 'Noticias de SiMAR y artículos sobre el Mar de Cortés, la basura de los barcos y el aceite usado.',
 };
 
-/** Todas las noticias y artículos (los datos están en lib/constants/noticias.ts) */
+/** Todas las noticias y artículos, con filtro por tema (los datos están en lib/constants/noticias.ts) */
 export default async function NoticiasPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
-    const [destacada, ...resto] = [...NOTICIAS].sort((a, b) => Number(!!b.destacada) - Number(!!a.destacada));
+    // La destacada primero; a la lista sólo le llega lo de las tarjetas (sin el texto de los artículos)
+    const lista = [...NOTICIAS].sort((a, b) => Number(!!b.destacada) - Number(!!a.destacada)).map(resumenDe);
 
     return (
         <div className="simar-landing min-h-screen bg-simar-papel font-sans text-simar-texto antialiased">
@@ -27,14 +28,7 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
                         Novedades de SiMAR y artículos cortos, con sus fuentes, sobre el Mar de Cortés y lo que llega al centro de acopio.
                     </p>
                     <h2 className="sr-only">Todas las noticias</h2>
-                    <div className="mt-12 grid gap-5 md:gap-6 movil:mt-8 movil:gap-4">
-                        <TarjetaNoticia noticia={destacada} locale={locale} grande />
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 movil:gap-4">
-                            {resto.map((n) => (
-                                <TarjetaNoticia key={n.slug} noticia={n} locale={locale} />
-                            ))}
-                        </div>
-                    </div>
+                    <ListaNoticias noticias={lista} locale={locale} />
                 </div>
             </main>
         </div>

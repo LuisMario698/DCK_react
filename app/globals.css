@@ -1851,6 +1851,51 @@ html[data-barra-mini] .simar-flotante {
   border-color: rgba(255, 255, 255, 0.18);
 }
 
+/* El menú de secciones (bajo 1280 px): sigue el tono de la barra */
+.t3-opcion:hover,
+.t3-opcion:focus-visible,
+.t3-opcion-activa {
+  background: color-mix(in oklab, var(--simar-texto) 6%, transparent);
+}
+.t3-opcion-icono {
+  background: var(--simar-marea-suave);
+  color: var(--simar-marea-tinta);
+}
+.t3-opcion-detalle {
+  color: var(--simar-texto-2);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion:hover,
+.t3-barra[data-oscuro='true'] .t3-opcion:focus-visible,
+.t3-barra[data-oscuro='true'] .t3-opcion-activa {
+  background: rgba(255, 255, 255, 0.08);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion-icono {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--simar-espuma);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion-detalle {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Cuánto falta de la página: una línea en la orilla de abajo de la barra */
+.t3-avance {
+  background: var(--simar-golfo);
+}
+.t3-barra[data-oscuro='true'] .t3-avance {
+  background: var(--simar-espuma);
+}
+
+/* Imanes de las escenas fijas (components/landing/tresd/PasosEscena.tsx): sólo en pantallas
+   táctiles, donde un deslizón se pasaba de largo las paradas. Con el mouse no hacen falta */
+@media (pointer: coarse) {
+  html:has(.t3) {
+    scroll-snap-type: y proximity;
+  }
+  .t3-iman {
+    scroll-snap-align: start;
+  }
+}
+
 /* Viñeta del mar de partículas: las orillas se hunden y el texto se lee mejor */
 .t3-vineta {
   background:

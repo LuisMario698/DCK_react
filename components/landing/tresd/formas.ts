@@ -51,7 +51,7 @@ function generador(semilla: number) {
 
 /** Centro y escala de las figuras: a la derecha en computadora, arriba en celular */
 function centro({ movil }: Disposicion) {
-    return movil ? { cx: 0, cy: 1.05, escala: 0.56 } : { cx: 2.35, cy: 0.05, escala: 1 };
+    return movil ? { cx: 0, cy: 1.22, escala: 0.72 } : { cx: 2.35, cy: 0.05, escala: 1 };
 }
 
 /** Pixeles encendidos de un dibujo en canvas: [x, y, r, g, b] de cada uno */
@@ -76,12 +76,23 @@ function pixelesDe(ancho: number, alto: number, dibujar: (ctx: CanvasRenderingCo
 }
 
 // ── 0 · El mar ──────────────────────────────────────────────────────────────────────────────
-function crearMar(n: number, azar: () => number) {
+function crearMar(n: number, azar: () => number, impacto: [number, number, number]) {
     const f = new Float32Array(n * 4);
     for (let i = 0; i < n; i++) {
-        // Más cerca de la cámara hay menos (la perspectiva ya junta las de lejos)
-        const z = -17 + Math.pow(azar(), 0.85) * 22;
-        f[i * 4] = (azar() * 2 - 1) * (11 + Math.max(0, -z) * 0.55);
+        let x: number;
+        let z: number;
+        if (azar() < 0.3) {
+            // Más denso alrededor de donde cae la gota: la mancha se ve como una película, no puntos sueltos
+            const r = 4.4 * Math.sqrt(azar());
+            const a = azar() * Math.PI * 2;
+            x = impacto[0] + Math.cos(a) * r;
+            z = impacto[2] + Math.sin(a) * r * 0.85;
+        } else {
+            // Más cerca de la cámara hay menos (la perspectiva ya junta las de lejos)
+            z = -17 + Math.pow(azar(), 0.85) * 22;
+            x = (azar() * 2 - 1) * (11 + Math.max(0, -z) * 0.55);
+        }
+        f[i * 4] = x;
         f[i * 4 + 1] = ALTURA_MAR;
         f[i * 4 + 2] = z;
         f[i * 4 + 3] = 0.35 + 0.65 * azar();
@@ -320,10 +331,10 @@ function crearGolfo(n: number, azar: () => number, d: Disposicion) {
             ctx.fill();
         }
     });
-    const anchoMundo = (d.movil ? 3.4 : 4.3) * escala;
+    const anchoMundo = (d.movil ? 3.6 : 4.3) * escala;
     const altoMundo = anchoMundo * (ALTO / ANCHO);
     // El mapa se inclina hacia atrás: se lee como una mesa vista desde arriba
-    const inclina = -0.28;
+    const inclina = d.movil ? -0.12 : -0.28;
     const ci = Math.cos(inclina);
     const si = Math.sin(inclina);
     const desplazaY = d.movil ? 0.15 : 0.1;
@@ -350,9 +361,45 @@ function crearGolfo(n: number, azar: () => number, d: Disposicion) {
             ctx.fill();
         }
     });
+    // La costa: la orilla de la tierra, dibujada como una línea. Es lo que hace que se lea el mapa
+    const costaCruda = pixelesDe(ANCHO, ALTO, (ctx) => {
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.4;
+        ctx.lineJoin = 'round';
+        for (const anillo of TIERRA_GOLFO) {
+            ctx.beginPath();
+            for (let k = 0; k < anillo.length; k += 2) {
+                const [x, y] = aPx(anillo[k], anillo[k + 1]);
+                if (k === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+    });
+    // Fuera los pixeles pegados a la orilla del dibujo: ahí la tierra está recortada, no es costa
+    const costa = (() => {
+        const lista: number[] = [];
+        for (let k = 0; k < costaCruda.cuantos; k++) {
+            const x = costaCruda.puntos[k * 5];
+            const y = costaCruda.puntos[k * 5 + 1];
+            if (x > 2 && y > 2 && x < ANCHO - 3 && y < ALTO - 3) lista.push(x, y, 1, 1, 1);
+        }
+        return { puntos: new Float32Array(lista), cuantos: lista.length / 5 };
+    })();
+    // El eje del golfo (de la desembocadura del Colorado a la boca): el agua cerca de él brilla más
+    const [e0x, e0y] = aPx(-114.7, 31.7);
+    const [e1x, e1y] = aPx(-109.0, 23.2);
+    const distEje = (px: number, py: number) => {
+        const vx = e1x - e0x;
+        const vy = e1y - e0y;
+        const t = Math.min(1, Math.max(0, ((px - e0x) * vx + (py - e0y) * vy) / (vx * vx + vy * vy)));
+        return Math.hypot(px - (e0x + vx * t), py - (e0y + vy * t)) / ANCHO;
+    };
     const nPuerto = Math.floor(n * 0.03);
     const nAnillo = Math.floor(n * 0.012);
-    const nTierra = tierra.cuantos > 0 ? Math.floor(n * 0.14) : 0;
+    const nCosta = costa.cuantos > 0 ? Math.floor(n * 0.3) : 0;
+    const nTierra = tierra.cuantos > 0 ? Math.floor(n * 0.1) : 0;
     for (let i = 0; i < n; i++) {
         let p: [number, number, number];
         let w: number;
@@ -368,17 +415,31 @@ function crearGolfo(n: number, azar: () => number, d: Disposicion) {
             const r = 0.2 * escala * (0.96 + azar() * 0.08);
             p = [puerto[0] + Math.cos(a) * r, puerto[1] + Math.sin(a) * r * ci, puerto[2] + Math.sin(a) * r * si];
             w = 2.4;
-        } else if (i < nPuerto + nAnillo + nTierra) {
+        } else if (i < nPuerto + nAnillo + nCosta) {
+            const k = Math.floor(azar() * costa.cuantos) * 5;
+            p = aMundo(costa.puntos[k] + azar(), costa.puntos[k + 1] + azar());
+            w = 2.05 + azar() * 0.1;
+        } else if (i < nPuerto + nAnillo + nCosta + nTierra) {
             const k = Math.floor(azar() * tierra.cuantos) * 5;
             p = aMundo(tierra.puntos[k] + azar(), tierra.puntos[k + 1] + azar());
             w = 1.6 + azar() * 0.3;
         } else {
-            const k = cuantos > 0 ? Math.floor(azar() * cuantos) * 5 : 0;
-            const px = (cuantos > 0 ? puntos[k] : azar() * ANCHO) + azar();
-            const py = (cuantos > 0 ? puntos[k + 1] : azar() * ALTO) + azar();
+            // El agua: casi toda en el Golfo; el Pacífico, del otro lado de la península, apenas
+            let px = 0;
+            let py = 0;
+            let golfo = 0;
+            for (let intento = 0; intento < 8; intento++) {
+                const k = cuantos > 0 ? Math.floor(azar() * cuantos) * 5 : 0;
+                px = (cuantos > 0 ? puntos[k] : azar() * ANCHO) + azar();
+                py = (cuantos > 0 ? puntos[k + 1] : azar() * ALTO) + azar();
+                golfo = Math.max(0, 1 - distEje(px, py) * 9);
+                if (azar() < 0.18 + 0.82 * golfo) break;
+            }
             p = aMundo(px, py);
-            const dist = Math.hypot((px - gx) / ANCHO, (py - gy) / ALTO);
-            w = Math.max(0.22, 1 - dist * 1.05) * (0.75 + azar() * 0.25);
+            const centro = Math.max(0, 1 - Math.hypot((px - gx) / ANCHO, (py - gy) / ALTO) * 0.9);
+            // Las orillas del dibujo se desvanecen: no queda un rectángulo
+            const orilla = Math.min(px, py, ANCHO - px, ALTO - py) / (ANCHO * 0.12);
+            w = Math.max(0.08, golfo * (0.55 + 0.45 * centro)) * Math.min(1, orilla) * (0.75 + azar() * 0.25);
         }
         f[i * 4] = p[0];
         f[i * 4 + 1] = p[1];
@@ -393,7 +454,7 @@ function crearLogo(n: number, azar: () => number, d: Disposicion, imagen: HTMLIm
     const f = new Float32Array(n * 4);
     const color = new Float32Array(n * 3);
     const { cx, cy, escala } = centro(d);
-    const LADO = 240;
+    const LADO = 300;
     const { puntos, cuantos } = pixelesDe(
         LADO,
         LADO,
@@ -429,7 +490,9 @@ function crearLogo(n: number, azar: () => number, d: Disposicion, imagen: HTMLIm
 /** Arma todas las figuras para n partículas */
 export function crearFormas(n: number, d: Disposicion, imagenLogo: HTMLImageElement | null): Formas {
     const azar = generador(20261031);
-    const mar = crearMar(n, azar);
+    const { cx } = centro(d);
+    const impacto: [number, number, number] = [cx, ALTURA_MAR, -1.6];
+    const mar = crearMar(n, azar, impacto);
     const gota = crearGota(n, azar, d);
     const papel = crearPapel(n, azar, d);
     const { golfo, puerto } = crearGolfo(n, azar, d);
@@ -441,8 +504,7 @@ export function crearFormas(n: number, d: Disposicion, imagenLogo: HTMLImageElem
         extra[i * 4 + 2] = azar() * Math.PI * 2;
         extra[i * 4 + 3] = azar();
     }
-    const { cx } = centro(d);
-    return { n, mar, gota, papel, golfo, logo, colorLogo, azar: extra, impacto: [cx, ALTURA_MAR, -1.6], puerto };
+    return { n, mar, gota, papel, golfo, logo, colorLogo, azar: extra, impacto, puerto };
 }
 
 function normalizar(v: number[]) {

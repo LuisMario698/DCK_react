@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
+import { ProgresoLectura } from './ProgresoLectura';
 
 /**
  * Barra de arriba de /noticias: el logo lleva al inicio y "Noticias" a la lista. Mientras se
@@ -28,6 +29,7 @@ export function EncabezadoNoticias({ locale, enArticulo = false }: { locale: str
                         <BotonTemaIcono className="movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
                     </div>
                 </div>
+                {enArticulo && <ProgresoLectura />}
             </nav>
         </header>
     );

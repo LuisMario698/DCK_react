@@ -376,19 +376,41 @@ un módulo que se baja con `await import()` cuando hace falta, así three no pes
 
 | Pieza | Qué hace | Dónde |
 |---|---|---|
-| `MarDeParticulas` + `motorParticulas.ts` | **Acto 1** (oscuro, 650 vh, escenario `sticky`). 20,000 partículas (9,000 en celular) que cambian de figura con el scroll: mar, gota, mancha de aceite (con el contador de litros), hojas de papel, el Alto Golfo con Puerto Peñasco y el símbolo de SiMAR con sus colores. Un `ShaderMaterial` mezcla las figuras en la GPU con un retraso por partícula y un remolino de ruido; la gota cae y salpica | `#inicio` |
-| `formas.ts`, `golfo.ts`, `ruido.ts` | Las figuras se muestrean de dibujos en un canvas fuera de pantalla. La costa sale de Natural Earth 1:10m (dominio público); el ruido es simplex 3D (MIT) | Acto 1 |
-| `ProductoEnEscena` + `motorDispositivos.ts` | **Acto 2** (claro, 600 vh). Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla. La laptop se abre, la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. `encuadre()` baja los dispositivos para que el título de arriba quede libre | `#producto` |
+| `MarDeParticulas` + `motorParticulas.ts` | **Acto 1** (oscuro, ~590 vh, escenario `sticky`). 15,000 a 24,000 partículas (10,000 a 14,000 en celular, según los núcleos) que cambian de figura con el scroll: mar, gota, mancha de aceite (con el contador de litros), hojas de papel, el golfo de California con su costa y Puerto Peñasco, y el símbolo de SiMAR con sus colores. Un `ShaderMaterial` mezcla las figuras en la GPU con un retraso por partícula y un remolino de ruido; cada figura tiene su tamaño, brillo y nitidez de punto (la costa y el logo van nítidos, el mar suave) | `#inicio` |
+| `formas.ts`, `golfo.ts`, `ruido.ts` | Las figuras se muestrean de dibujos en un canvas fuera de pantalla. La costa sale de Natural Earth 1:10m (dominio público), sin las orillas del recorte; el mar se junta hacia el eje del golfo y se desvanece en los bordes. El mar del inicio es más denso donde cae la gota, para que la mancha se lea como una película y no como confeti. El ruido es simplex 3D (MIT) | Acto 1 |
+| `ProductoEnEscena` + `motorDispositivos.ts` | **Acto 2** (claro, ~525 vh). Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla. La laptop se abre, la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. `encuadre()` baja los dispositivos para que el título de arriba quede libre | `#producto` |
+| `PasosEscena.tsx` | La barra de pasos de cada acto (horizontal arriba en celular, vertical a la derecha en computadora) y los imanes del scroll | Actos 1 y 2 |
 | `CifrasEnVivo`, `SeccionNoticias`, `Cierre` | Cifras reales (`getLandingStats` + `lib/utils/equivalencias.ts`), las últimas noticias y el llamado final | `#impacto`, `#noticias` |
 
-- Cada parada del scroll tiene una **pausa**: la figura viaja sólo entre el 35 % y el 80 % de su
-  tramo y el texto se queda quieto mientras se lee. Los textos se mueven por `data-*` dentro del
-  `requestAnimationFrame` (sin volver a renderizar React).
+**Tiempos del scroll** (`comun.ts`). Cada acto se arma con `crearRecorrido(pesos)`: un peso por
+parada y `VH_POR_PASO` (85 vh) por peso; una parada con más que leer pesa más. Dentro de cada
+parada (`TIEMPOS`):
+
+| Tramo de la parada | Qué pasa |
+|---|---|
+| 0 a 0.56 | El texto se lee **quieto** (de 48 a 64 vh de scroll, más en las últimas) |
+| 0.56 a 0.68 | El texto se va |
+| 0.60 a 0.93 | La figura viaja a la siguiente (`etapaEn`) |
+| 0.86 a 0.98 | Entra el texto siguiente (`textoEn`) |
+
+- Los textos y las barras se mueven por `data-*` dentro del `requestAnimationFrame` (sin volver a
+  renderizar React).
+- **Barra de pasos** (`BarraPasos`): un segmento por parada que se llena mientras la figura viaja;
+  el actual lleva `aria-current="step"`. Cada segmento es un botón (44 px de alto en celular) que
+  lleva a esa parada, con su nombre al pasar el cursor o con el foco.
+- **Imanes** (`ImanesPasos`): con `pointer: coarse` la página usa `scroll-snap-type: y proximity`
+  y hay un imán invisible en el punto de lectura de cada parada. Si el dedo suelta cerca, el scroll
+  se acomoda donde el texto se lee; si va rápido, no estorba. En computadora no hay imanes.
+- **Menú de secciones**: bajo 1280 px los enlaces no caben en la barra y salen en un menú
+  (hamburguesa) con ícono, nombre y una línea de cada sección, más "Todas las noticias". Usa
+  `useVentanaAccesible`, se cierra con Escape o tocando fuera y marca la sección donde va el
+  usuario. La barra lleva abajo una línea fina con el avance de toda la página (`.t3-avance`).
 - **Excepción a 8.3:** el mar del primer acto respira despacio y las partículas se apartan del
   cursor (sólo con `pointer: fine`). Es lo único que se mueve solo; se detiene cuando la sección
   no se ve y con "reducir movimiento".
 - **Con "reducir movimiento"** las figuras cambian de golpe en cada parada (sin viaje, sin olas ni
-  ruido), la cámara salta de toma en toma y los textos sólo aparecen y desaparecen.
+  ruido), la cámara salta de toma en toma, los textos sólo aparecen y desaparecen y el contador
+  muestra la cifra completa.
 - **Sin WebGL** el acto 2 muestra la captura de cada toma en un marco sencillo; el acto 1 deja el
   fondo `--simar-abismo` y los textos.
 - Los colores de las partículas salen de los tokens (`--simar-abismo`, `--simar-aceite`,
@@ -399,9 +421,25 @@ un módulo que se baja con `await import()` cuando hace falta, así three no pes
   vidrio en celular, porque pasan partículas por detrás.
 
 **Noticias.** La sección y las páginas `/[locale]/noticias` y `/[locale]/noticias/[slug]` leen
-`lib/constants/noticias.ts` (sin base de datos). Cada noticia lleva fecha, categoría, cuerpo en
-párrafos y **fuentes** con enlace. Para agregar una, súmala al arreglo `NOTICIAS` (la más nueva
-arriba); sin `imagen`, la portada se dibuja sola (`components/noticias/PortadaNoticia.tsx`).
+`lib/constants/noticias.ts` (sin base de datos). Para agregar una noticia, súmala al arreglo
+`NOTICIAS` (la más nueva arriba).
+
+- Cada noticia lleva fecha, categoría, resumen, cuerpo en párrafos y **fuentes** con enlace.
+  Opcionales: `imagen` (portada), `galeria` (fotos con pie), `dato` (la cifra clave, que va
+  resaltada después del primer párrafo) e `ilustracion`.
+- **Sin foto, la portada se dibuja** (`components/noticias/ilustraciones.tsx`): SVG de puntos con
+  el lenguaje del mar de partículas (`mapa`, `altogolfo`, `gota`, `hojas`, `simbolo`). Si la
+  noticia no dice cuál, sale la de su categoría (`ILUSTRACION_DE`). No inventes fotos.
+- `SeccionNoticias` es un **componente de servidor**: `app/[locale]/page.tsx` la arma y se la pasa
+  a `LandingTresD` en la prop `noticias`, así los artículos no bajan con el JavaScript de la
+  landing. En computadora va la destacada a lo grande (el texto sobre la foto) y al lado una
+  lista de las más recientes; en celular, la destacada y un carrusel que se desliza de lado.
+- La página de noticias tiene filtros por tema (`ListaNoticias`, con el número de cada uno). El
+  artículo lleva migas, el botón Compartir (`navigator.share` o copia el enlace con un aviso), una
+  línea de avance de lectura en la barra, Anterior/Siguiente y "Sigue leyendo" (misma categoría
+  primero).
+- `MetaNoticia` (tema · fecha · minutos) recorta el punto que separa cuando una parte baja de
+  renglón: ningún renglón empieza con «·».
 
 ---
 
