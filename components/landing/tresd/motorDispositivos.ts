@@ -380,11 +380,12 @@ export async function crearMotorDispositivos(canvas: HTMLCanvasElement, o: Opcio
     // ── Materiales ──────────────────────────────────────────────────────────────────────────
     // Gris espacial: contrasta con el fondo claro de la sección y refleja las cajas de luz
     const aluminio = new MeshStandardMaterial({ color: new Color('#9a9fa7'), metalness: 1, roughness: 0.34 });
-    const aluminioPulido = new MeshStandardMaterial({ color: new Color('#959aa2'), metalness: 1, roughness: 0.3 });
-    const filo = new MeshStandardMaterial({ color: new Color('#6c7179'), metalness: 1, roughness: 0.42 });
+    // Las piezas planas sobre la cubierta llevan polygonOffset: vistas de lado no parpadean
+    const aluminioPulido = new MeshStandardMaterial({ color: new Color('#959aa2'), metalness: 1, roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+    const filo = new MeshStandardMaterial({ color: new Color('#6c7179'), metalness: 1, roughness: 0.42, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const vidrioNegro = new MeshStandardMaterial({ color: new Color('#030405'), metalness: 0, roughness: 0.2 });
     const plasticoTecla = new MeshStandardMaterial({ color: new Color('#1b1d21'), metalness: 0.1, roughness: 0.55 });
-    const pozo = new MeshStandardMaterial({ color: new Color('#0e1013'), metalness: 0.2, roughness: 0.75 });
+    const pozo = new MeshStandardMaterial({ color: new Color('#0e1013'), metalness: 0.2, roughness: 0.75, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
     const marcoCel = new MeshStandardMaterial({ color: new Color('#5d6878'), metalness: 1, roughness: 0.24 });
     const bisagraMat = new MeshStandardMaterial({ color: new Color('#2a2d33'), metalness: 0.9, roughness: 0.4 });
     const rejilla = new MeshStandardMaterial({ map: texturaRejilla(), transparent: true, metalness: 0.4, roughness: 0.6, depthWrite: false });
@@ -456,12 +457,12 @@ export async function crearMotorDispositivos(canvas: HTMLCanvasElement, o: Opcio
     const geoFilo = new ShapeGeometry(rectRedondeado(1.52, 0.88, 0.08), 8);
     geoFilo.rotateX(-Math.PI / 2);
     const mFilo = new Mesh(geoFilo, filo);
-    mFilo.position.set(0, arriba + 0.0001, 0.63);
+    mFilo.position.set(0, arriba + 0.0004, 0.63);
     laptop.add(mFilo);
     const geoTrack = new ShapeGeometry(rectRedondeado(1.5, 0.86, 0.07), 8);
     geoTrack.rotateX(-Math.PI / 2);
     const track = new Mesh(geoTrack, aluminioPulido);
-    track.position.set(0, arriba + 0.0003, 0.63);
+    track.position.set(0, arriba + 0.0012, 0.63);
     laptop.add(track);
 
     const sombra = new Mesh(new PlaneGeometry(BASE.ancho * 1.8, BASE.fondo * 1.8), sombraLap);
