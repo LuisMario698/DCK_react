@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { LogoSimar } from '@/components/layout/LogoSimar';
@@ -9,7 +10,7 @@ import { ProgresoLectura } from './ProgresoLectura';
  * regresa a la página de Noticias. Mientras se comparan las landings, el inicio es la versión 3D
  * (?landing=3d), que es la que enlaza aquí.
  */
-export function EncabezadoNoticias({ locale, enArticulo = false }: { locale: string; enArticulo?: boolean }) {
+export function EncabezadoNoticias({ locale, enArticulo = false, children }: { locale: string; enArticulo?: boolean; children?: ReactNode }) {
     const inicio = `/${locale}?landing=3d`;
     return (
         <header className="sticky top-0 z-40 px-3 pt-3 md:px-8 md:pt-5">
@@ -30,6 +31,8 @@ export function EncabezadoNoticias({ locale, enArticulo = false }: { locale: str
                         <BotonTemaIcono className="movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
                     </div>
                 </div>
+                {/* En la página de Noticias, la fila de secciones (NavSecciones) */}
+                {children}
                 {enArticulo && <ProgresoLectura />}
             </nav>
         </header>

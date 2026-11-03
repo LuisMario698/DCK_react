@@ -451,16 +451,27 @@ parada (`TIEMPOS`):
 leen `lib/constants/noticias.ts` (sin base de datos). La landing sólo lleva un adelanto
 (`SeccionNoticias`, las tres más recientes y «Ir a Noticias») y el enlace del menú.
 
-- La página (`app/[locale]/noticias/page.tsx` y `components/noticias/SeccionesNoticias.tsx`, todo
-  de servidor salvo el filtro), de arriba abajo: **portada** (la más reciente a lo grande con el
-  texto sobre la portada y al lado las cuatro que siguen), «En esta página», **La problemática**
-  (`TEMAS`: cuatro temas con su cifra y los artículos que los explican), **El proyecto** (qué es
-  SiMAR, quién lo hace, la historia en `HITOS` y sus noticias), **todas las noticias** con filtro
-  por tema (`ListaNoticias`: cuadrícula y, en celular, renglones con portada chica),
-  **glosario** (`GLOSARIO`) y **fuentes** (`todasLasFuentes()`: las de todos los artículos, sin
-  repetir; las primeras seis a la vista y las demás en un `<details>`).
+- La página (`app/[locale]/noticias/page.tsx`) es **poco texto a la vez y casi todo se toca**
+  (Jesus la pidió menos aburrida y con más estructura). La barra de arriba lleva una fila con las
+  secciones (`NavSecciones`, marca la que se lee) y, de arriba abajo:
+  1. **Lo último**: título corto, tres contadores (noticias, lugares, fuentes) y un mosaico: la más
+     reciente grande (portada arriba, texto abajo: un dibujo con nombres no compite con el título)
+     y tres más sólo con portada y título (`variante="mosaico"`; en celular, carrusel).
+  2. **En cifras** (oscuro, `ExploradorCifras`): `TEMAS` como pestañas; el elegido muestra su
+     cifra en grande (sube de cero al verse), una frase, su dibujo (`dibujo`) y sus artículos.
+  3. **En el mapa** (`ExploradorMapa`): el golfo dibujado (`MapaGolfo`, de servidor) con una marca
+     por lugar de `LUGARES` (el número es cuántas noticias hay) y botones para los mismos lugares,
+     más «En todo México» y «En el mundo». Toda noticia debe estar en un lugar.
+  4. **El proyecto**: la foto, SiMAR en tres ideas, con quién se hizo y la historia año por año
+     (`HistoriaProyecto`: una línea de años que se llena y una tarjeta con Anterior/Siguiente).
+  5. **Todas** (`ListaNoticias`): buscador sin acentos, filtro por tema, las primeras seis sin
+     resumen y «Ver N más». **Glosario** (`GlosarioInteractivo`: se toca una palabra y sale en una
+     tarjeta) y **fuentes** (quién las publica, de un vistazo, y la lista entera en un `<details>`).
+  Las pestañas siguen el patrón de WAI-ARIA (flechas, Inicio, Fin; `pestanas.ts`) y los paneles
+  aparecen con `simar-aparece`. A los componentes de cliente sólo les llegan resúmenes
+  (`resumenDe`), nunca el texto de los artículos.
 - Hay dos clases de artículo: noticias (lo que pasó, con su fecha) y los que explican el problema
-  (`explica: true`, no caducan): éstos van en La problemática y no en la portada. El orden lo da
+  (`explica: true`, no caducan): éstos van en En cifras y no en la portada. El orden lo da
   la fecha (`POR_FECHA`, `recientes()`).
 - Cada artículo lleva fecha, categoría (SiMAR, Mar de Cortés, Océanos, Normativa, Conciencia),
   resumen, cuerpo en párrafos y **fuentes** con enlace. Opcionales: `imagen`, `galeria`, `dato` (la

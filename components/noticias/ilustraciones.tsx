@@ -457,3 +457,76 @@ export function DibujoPortada({ tipo }: { tipo: Ilustracion }) {
         </svg>
     );
 }
+
+/* ── El mapa de «En el mapa» (ExploradorMapa) ─────────────────────────────────────────────── */
+
+/** Encuadre del mapa grande: el golfo de Puerto Peñasco a Sinaloa, en un cuadro de 400 × 400 */
+const ESCALA_EXPLORADOR = 58;
+const EXPLORADOR = encuadre({ lon: -111.95, lat: 28.95 }, 200, 200, ESCALA_EXPLORADOR);
+
+/** Dónde cae un lugar en el mapa grande, en % del cuadro (para poner encima sus botones) */
+export function enMapaGolfo(lugar: { lon: number; lat: number }) {
+    const [x, y] = EXPLORADOR.en(lugar);
+    return { x: (x / 400) * 100, y: (y / 400) * 100 };
+}
+
+/**
+ * El mapa del Golfo de California para «En el mapa»: tierra, costa, cuadrícula de grados y los
+ * nombres de los estados. Sin marcas: los botones de cada lugar van encima, en HTML (se pueden
+ * tocar y enfocar con el teclado). Es de servidor y llega al explorador como prop.
+ */
+export function MapaGolfo() {
+    const v = EXPLORADOR;
+    const lineas: ReactNode[] = [];
+    for (let lat = 26; lat <= 32; lat += 1) {
+        const [, y] = v.en({ lon: -112, lat });
+        lineas.push(<path key={`la${lat}`} d={`M0 ${y.toFixed(1)} H400`} />);
+    }
+    for (let lon = -115; lon <= -108; lon += 1) {
+        const [x] = v.en({ lon, lat: 29 });
+        lineas.push(<path key={`lo${lon}`} d={`M${x.toFixed(1)} 0 V400`} />);
+    }
+    const nombre = (texto: string, lugar: { lon: number; lat: number }, giro = 0, opacidad = 0.5) => {
+        const [x, y] = v.en(lugar);
+        return (
+            <text
+                x={x}
+                y={y}
+                textAnchor="middle"
+                fontSize="10"
+                fontWeight="800"
+                fill={ESPUMA}
+                fillOpacity={opacidad}
+                transform={giro ? `rotate(${giro} ${x.toFixed(1)} ${y.toFixed(1)})` : undefined}
+                style={{ letterSpacing: '0.22em' }}
+            >
+                {texto}
+            </text>
+        );
+    };
+    return (
+        <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full" aria-hidden="true" style={{ fontFamily: 'inherit' }}>
+            <defs>
+                <radialGradient id="mapa-golfo-luz" cx="50%" cy="55%" r="70%">
+                    <stop offset="0%" stopColor={MAR_1} stopOpacity="0.9" />
+                    <stop offset="100%" stopColor={MAR_1} stopOpacity="0" />
+                </radialGradient>
+            </defs>
+            {/* El mar en azul verdoso y la tierra oscura: se ve de inmediato dónde está el agua */}
+            <rect width="400" height="400" fill={MAR_2} />
+            <rect width="400" height="400" fill="url(#mapa-golfo-luz)" />
+            <g stroke="#fff" strokeOpacity="0.07" strokeWidth="1">
+                {lineas}
+            </g>
+            <g transform={v.transform}>
+                <path d={MAPA.tierra} fill={ABISMO} />
+                <path d={MAPA.costa} fill="none" stroke={ESPUMA} strokeOpacity="0.6" strokeWidth={1.2 / ESCALA_EXPLORADOR} strokeLinejoin="round" strokeLinecap="round" />
+            </g>
+            {nombre('SONORA', { lon: -110.6, lat: 29.9 })}
+            {nombre('SINALOA', { lon: -108.3, lat: 25.75 })}
+            {nombre('BAJA CALIFORNIA', { lon: -115.25, lat: 29.35 }, 62, 0.4)}
+            {nombre('BAJA CALIFORNIA SUR', { lon: -112.75, lat: 26.75 }, 58, 0.4)}
+            {nombre('OCÉANO PACÍFICO', { lon: -114.9, lat: 26.6 }, 58, 0.35)}
+        </svg>
+    );
+}

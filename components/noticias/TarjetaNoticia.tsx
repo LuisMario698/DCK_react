@@ -54,8 +54,10 @@ const ENFOQUE = 'focus-visible:outline-3 focus-visible:outline-simar-golfo focus
 /**
  * Tarjeta de una noticia. Toda la tarjeta es el enlace.
  *  - `normal`: portada arriba y el texto abajo.
- *  - `portada`: la destacada, con el texto sobre la foto (o el dibujo).
+ *  - `portada`: la destacada, grande, con la foto (o el dibujo) arriba y el texto abajo.
  *  - `fila`: compacta, con la portada chica a un lado (listas).
+ *  - `mosaico`: como la portada pero chica y sin resumen (el mosaico de arriba de Noticias).
+ * `breve` quita el resumen de la normal (la lista de todas: menos texto).
  */
 export function TarjetaNoticia({
     noticia,
@@ -63,11 +65,13 @@ export function TarjetaNoticia({
     variante = 'normal',
     prioridad = false,
     etiqueta,
+    breve = false,
     className = '',
 }: {
     noticia: DatosTarjeta;
     locale: string;
-    variante?: 'normal' | 'portada' | 'fila';
+    variante?: 'normal' | 'portada' | 'fila' | 'mosaico';
+    breve?: boolean;
     prioridad?: boolean;
     /** En la portada, una etiqueta arriba del título («Lo más reciente») */
     etiqueta?: string;
@@ -76,23 +80,47 @@ export function TarjetaNoticia({
     const href = `/${locale}/noticias/${noticia.slug}`;
 
     if (variante === 'portada') {
+        // La portada arriba y el texto abajo, sin encimarse: un dibujo con nombres (un mapa) no
+        // compite con el título
         return (
             <Link
                 href={href}
-                className={`simar-tarjeta-accion group relative isolate flex flex-col justify-end overflow-hidden rounded-[32px] bg-simar-abismo text-white shadow-simar min-h-[540px] movil:min-h-[440px] movil:rounded-[24px] ${ENFOQUE} ${className}`}
+                className={`simar-tarjeta-accion group flex flex-col overflow-hidden rounded-[32px] bg-simar-abismo text-white shadow-simar movil:rounded-[24px] ${ENFOQUE} ${className}`}
             >
-                <div className="absolute inset-0 -z-10 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]">
-                    <PortadaNoticia noticia={noticia} prioridad={prioridad} sizes="(min-width: 1024px) 760px, 100vw" className="w-full h-full" />
+                <div className="relative overflow-hidden aspect-[16/10] lg:aspect-auto lg:flex-1 lg:min-h-[280px]">
+                    <div className="absolute inset-0 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]">
+                        <PortadaNoticia noticia={noticia} prioridad={prioridad} sizes="(min-width: 1024px) 620px, 100vw" className="w-full h-full" />
+                    </div>
+                    {etiqueta && (
+                        <span className="absolute left-5 top-5 inline-flex rounded-full bg-simar-abismo/80 backdrop-blur-md border border-white/20 px-3.5 py-1.5 text-[15px] font-bold movil:left-4 movil:top-4">
+                            {etiqueta}
+                        </span>
+                    )}
                 </div>
-                {/* Velo de abajo: el texto se lee sobre cualquier foto */}
-                <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-simar-abismo via-simar-abismo/75 to-transparent to-[72%]" />
-                <div className="p-8 md:p-10 movil:p-5">
-                    {etiqueta && <span className="inline-flex rounded-full bg-white/14 backdrop-blur-md border border-white/20 px-3 py-1 text-[15px] font-bold">{etiqueta}</span>}
-                    <h3 className={`${etiqueta ? 'mt-4' : ''} max-w-[22ch] text-[clamp(30px,3.2vw,46px)] font-extrabold leading-[1.08] tracking-[-0.025em] movil:mt-3 movil:text-[26px] movil:leading-[1.12]`}>
+                <div className="p-7 md:p-9 movil:p-5">
+                    <MetaNoticia noticia={noticia} claro />
+                    <h3 className="mt-3 max-w-[24ch] text-[clamp(28px,2.7vw,40px)] font-extrabold leading-[1.08] tracking-[-0.025em] movil:mt-2 movil:text-[25px] movil:leading-[1.12]">
                         {noticia.titulo}
                     </h3>
-                    <p className="mt-3 max-w-[56ch] text-[18px] leading-relaxed text-white/85 line-clamp-3 movil:text-[16px]">{noticia.resumen}</p>
-                    <MetaNoticia noticia={noticia} claro className="mt-5 movil:mt-4" />
+                    <p className="mt-3 max-w-[56ch] text-[18px] leading-relaxed text-white/80 line-clamp-2 movil:text-[16px]">{noticia.resumen}</p>
+                </div>
+            </Link>
+        );
+    }
+
+    if (variante === 'mosaico') {
+        return (
+            <Link
+                href={href}
+                className={`simar-tarjeta-accion group relative isolate flex flex-col justify-end overflow-hidden rounded-[28px] bg-simar-abismo text-white shadow-simar min-h-[260px] movil:min-h-[280px] movil:rounded-[22px] ${ENFOQUE} ${className}`}
+            >
+                <div className="absolute inset-0 -z-10 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]">
+                    <PortadaNoticia noticia={noticia} sizes="(min-width: 1024px) 400px, 85vw" className="w-full h-full" />
+                </div>
+                <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-simar-abismo via-simar-abismo/70 to-transparent to-[78%]" />
+                <div className="p-6 movil:p-5">
+                    <MetaNoticia noticia={{ ...noticia, minutos: undefined }} claro />
+                    <h3 className="mt-2 max-w-[30ch] text-[22px] font-extrabold leading-[1.15] tracking-[-0.015em] line-clamp-3 movil:text-[20px]">{noticia.titulo}</h3>
                 </div>
             </Link>
         );
@@ -125,7 +153,7 @@ export function TarjetaNoticia({
             <div className="flex flex-1 flex-col p-6 md:p-7 movil:p-5">
                 <MetaNoticia noticia={noticia} />
                 <h3 className="mt-3 text-[22px] md:text-[24px] font-extrabold leading-[1.15] tracking-[-0.015em] text-simar-texto movil:text-[20px]">{noticia.titulo}</h3>
-                <p className="mt-3 text-[17px] leading-relaxed text-simar-texto-2 line-clamp-3 movil:text-[16px]">{noticia.resumen}</p>
+                {!breve && <p className="mt-3 text-[17px] leading-relaxed text-simar-texto-2 line-clamp-3 movil:text-[16px]">{noticia.resumen}</p>}
                 <span className="mt-auto pt-5 inline-flex items-center gap-1.5 text-[17px] font-bold text-simar-marea-tinta">
                     Leer
                     <span className="sr-only">: {noticia.titulo}</span>
