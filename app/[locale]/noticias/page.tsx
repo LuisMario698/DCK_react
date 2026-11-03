@@ -10,6 +10,7 @@ import { ExploradorCifras } from '@/components/noticias/ExploradorCifras';
 import { ExploradorMapa } from '@/components/noticias/ExploradorMapa';
 import { GlosarioInteractivo } from '@/components/noticias/GlosarioInteractivo';
 import { MapaGolfo, enMapaGolfo } from '@/components/noticias/ilustraciones';
+import { PortadaMar } from '@/components/noticias/PortadaMar';
 import { ElProyecto, EncabezadoSeccion, Fuentes, PortadaNoticias } from '@/components/noticias/SeccionesNoticias';
 
 export const metadata: Metadata = {
@@ -70,36 +71,12 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
                 <NavSecciones secciones={SECCIONES} />
             </EncabezadoNoticias>
             <main>
+                <PortadaMar locale={locale} cuantas={cuantas} />
+
                 {/* Lo último */}
-                <section id="portada" aria-labelledby="noticias-titulo" className="scroll-mt-[164px] px-6 pt-10 pb-20 md:pt-14 md:pb-28 movil:scroll-mt-[136px] movil:px-5 movil:pt-7 movil:pb-14">
+                <section id="portada" aria-labelledby="portada-titulo" className="scroll-mt-[164px] px-6 pt-12 pb-20 md:pt-16 md:pb-28 movil:scroll-mt-[136px] movil:px-5 movil:pt-8 movil:pb-14">
                     <div className="max-w-[1248px] mx-auto">
-                        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
-                            <div className="max-w-3xl">
-                                <p className="text-lg md:text-xl font-bold text-simar-marea-tinta movil:text-[15px]">Noticias · SiMAR</p>
-                                <h1
-                                    id="noticias-titulo"
-                                    className="mt-2 text-[clamp(44px,5.4vw,76px)] font-extrabold leading-[1] tracking-[-0.035em] text-balance movil:text-[38px] movil:leading-[1.05]"
-                                >
-                                    El mar, en noticias.
-                                </h1>
-                                <p className="mt-4 max-w-2xl text-xl md:text-[22px] leading-relaxed text-simar-texto-2 text-pretty movil:mt-3 movil:text-[17px]">
-                                    Lo que pasa en el Alto Golfo y en los océanos, con su fuente.
-                                </p>
-                            </div>
-                            <dl className="flex gap-3 movil:w-full">
-                                {cuantas.map((c) => (
-                                    <div key={c.texto} className="min-w-[112px] rounded-[22px] bg-simar-superficie border border-simar-borde px-5 py-4 movil:flex-1 movil:min-w-0 movil:px-4 movil:py-3">
-                                        <dt className="sr-only">{c.texto}</dt>
-                                        <dd>
-                                            <span className="block text-[36px] font-extrabold leading-none tracking-[-0.03em] tabular-nums movil:text-[28px]">{c.cifra}</span>
-                                            <span aria-hidden="true" className="mt-1 block text-[15px] font-bold text-simar-texto-2">
-                                                {c.texto}
-                                            </span>
-                                        </dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        </div>
+                        <EncabezadoSeccion id="portada-titulo" antetitulo="Lo último" titulo="Lo más reciente del mar." />
                         <div className="mt-10 movil:mt-7">
                             <PortadaNoticias locale={locale} principal={principal} siguientes={siguientes} />
                         </div>
