@@ -55,11 +55,15 @@ export interface OpcionesDispositivos {
     celular: string;
     /** El símbolo de SiMAR (va en la tapa) */
     logo?: string;
+    /** Dónde termina el texto de la portada (fracción del alto): la laptop cerrada va debajo */
+    portadaLibre?: number;
 }
 
 export interface MotorDispositivos {
     actualizar(etapa: number, dt: number): void;
     redimensionar(): void;
+    /** Cambia dónde termina el texto de la portada (al cambiar el tamaño de la ventana) */
+    portada(libre: number): void;
     destruir(): void;
 }
 
@@ -571,6 +575,22 @@ export async function crearMotorDispositivos(canvas: HTMLCanvasElement, o: Opcio
         return { cam: [c.x, c.y, c.z], mira: [foco.x, foco.y + sube, foco.z] };
     };
 
+    /**
+     * La portada: la laptop cerrada, centrada en el espacio libre bajo el texto (de `libre` al 91 %
+     * del alto; abajo va «Baja para abrirla») y tan lejos como haga falta para que quepa a lo alto y a lo ancho. Cerrada y girada
+     * mide en pantalla unas 1.7 unidades de alto y 4.2 de ancho.
+     */
+    let portadaLibre = o.portadaLibre ?? 0.6;
+    const tomaPortada = (minima: number): Pick<Toma, 'cam' | 'mira'> => {
+        const t = Math.tan((camara.fov * Math.PI) / 360);
+        const abajo = 0.91;
+        const libre = Math.min(0.78, Math.max(0.3, portadaLibre));
+        const porAlto = 1.7 / (0.85 * (abajo - libre) * 2 * t);
+        const porAncho = 4.2 / (0.84 * camara.aspect * 2 * t);
+        const dist = Math.min(26, Math.max(minima, porAlto, porAncho));
+        return encuadre(new Vector3(0, 0.1, 0), new Vector3(0, 0.45, 1), dist, ((libre + abajo) / 2 - 0.5) * 2);
+    };
+
     const armarTomas = (): Toma[] => {
         // En celular la pantalla es angosta: la cámara se aleja para que quepa el ancho
         const lejos = movil ? 1.4 : 1;
@@ -579,7 +599,7 @@ export async function crearMotorDispositivos(canvas: HTMLCanvasElement, o: Opcio
         const manifiesto = puntoPantalla(0.33, 0.5);
         const firmas = puntoPantalla(0.8, 0.5);
         return [
-            { ...encuadre(new Vector3(0, 0.1, 0), new Vector3(0, 0.45, 1), 10.8 * lejos, bajar), tapa: 0, giro: -0.55, lap: [0, -0.1, 0], pantalla: 0, cel: 0 },
+            { ...tomaPortada(10.8 * lejos), tapa: 0, giro: -0.55, lap: [0, -0.1, 0], pantalla: 0, cel: 0 },
             { ...encuadre(new Vector3(0, 0.9, 0), new Vector3(0, 0.2, 1), 10.2 * lejos, bajar), tapa: 1, giro: 0, lap: [0, 0, 0], pantalla: 0, cel: 0 },
             { ...encuadre(manifiesto, n.clone().add(new Vector3(-0.14, 0.06, 0)), movil ? 5.6 : 6.0, bajar + 0.14), tapa: 1, giro: 0, lap: [0, 0, 0], pantalla: 1, cel: 0 },
             { ...encuadre(firmas, n.clone().add(new Vector3(0.16, 0.06, 0)), movil ? 5.2 : 5.6, bajar + 0.14), tapa: 1, giro: 0, lap: [0, 0, 0], pantalla: 1, cel: 0 },
@@ -700,6 +720,12 @@ export async function crearMotorDispositivos(canvas: HTMLCanvasElement, o: Opcio
             renderer.render(escena, camara);
         },
         redimensionar,
+        portada(libre) {
+            if (Math.abs(libre - portadaLibre) < 0.005) return;
+            portadaLibre = libre;
+            tomas = armarTomas();
+            sucio = true;
+        },
         destruir() {
             escena.traverse((obj) => {
                 if (obj instanceof Mesh) {

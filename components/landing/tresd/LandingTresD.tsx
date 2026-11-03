@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { ArrowRight, ArrowUpRight, Droplets, Map as IconoMapa, MapPin, Menu, MonitorSmartphone, Newspaper, Waves, X, type LucideIcon } from 'lucide-react';
+import { ArrowRight, Droplets, Map as IconoMapa, MapPin, Menu, MonitorSmartphone, Newspaper, Waves, X, type LucideIcon } from 'lucide-react';
 import { useVentanaAccesible } from '@/components/ui/useVentanaAccesible';
 import { LogoSimar } from '@/components/layout/LogoSimar';
 import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
@@ -11,27 +11,29 @@ import { MODO_DEMO } from '@/lib/demo/config';
 import type { LandingStats } from '@/lib/services/landing_stats';
 import type { VarianteMapa } from '../mapa/puertos';
 import { useAccesoLanding } from '../acceso/useAccesoLanding';
-import { MarDeParticulas } from './MarDeParticulas';
 import { ProductoEnEscena } from './ProductoEnEscena';
+import { PorQueImporta } from './PorQueImporta';
 import { CifrasEnVivo } from './CifrasEnVivo';
 import { Cierre } from './Cierre';
 import { SeccionMapaPuertos } from '../mapa/SeccionMapaPuertos';
 
-const ENLACES: { href: string; texto: string; detalle: string; Icono: LucideIcon }[] = [
-    { href: '#inicio', texto: 'Historia', detalle: 'Del aceite en el mar a SiMAR', Icono: Waves },
+/** Las secciones de la página y, aparte, la página de Noticias (`pagina`: una dirección, no un ancla) */
+const ENLACES: { href: string; texto: string; detalle: string; Icono: LucideIcon; pagina?: boolean }[] = [
     { href: '#producto', texto: 'Cómo funciona', detalle: 'Manifiestos, firmas y cifras', Icono: MonitorSmartphone },
+    { href: '#por-que', texto: 'Por qué importa', detalle: 'El aceite, la basura y el mar', Icono: Waves },
     { href: '#impacto', texto: 'Impacto', detalle: 'Lo que se ha registrado', Icono: Droplets },
-    { href: '#noticias', texto: 'Noticias', detalle: 'El puerto y el mar', Icono: Newspaper },
     { href: '#puertos', texto: 'Puertos', detalle: 'Dónde puede llegar', Icono: IconoMapa },
+    { href: '/noticias', texto: 'Noticias', detalle: 'El proyecto, el mar y sus fuentes', Icono: Newspaper, pagina: true },
 ];
 
 /**
- * La landing 3D: dos actos y lo demás sencillo.
+ * La landing 3D, sencilla y en orden:
  *
- *  1. «Mar de partículas» (oscuro): una figura de luz que cambia con el scroll y cuenta el problema.
- *  2. «SiMAR, en tus manos» (claro, al estilo de las páginas de producto de Apple): una laptop y un
- *     celular en 3D con las pantallas reales.
- *  Luego: cifras en vivo, noticias, puertos y el llamado final.
+ *  1. Portada y «Cómo funciona» (al estilo de las páginas de producto de Apple): el título y una
+ *     laptop cerrada que se abre al bajar; luego la cámara recorre las pantallas reales y entra el
+ *     celular con el portal de las empresas.
+ *  2. «Por qué importa» (oscuro): la cifra del aceite, tres temas, el antes y después del papel.
+ *  Luego: cifras en vivo, un adelanto de Noticias (que es una página aparte), puertos y el cierre.
  *
  * Se ve con ?landing=3d (SelectorVersionLanding). Ver DISEÑO_SIMAR.md §8.6.
  */
@@ -68,16 +70,29 @@ export function LandingTresD({
         return () => document.removeEventListener('pointerdown', fuera);
     }, [menu]);
 
-    // Cuánto falta de toda la página: una línea en la orilla de abajo de la barra
+    // Cuánto falta de toda la página (una línea en la orilla de abajo de la barra) y en qué sección
+    // está la mitad de la pantalla (el enlace activo). «Cómo funciona» empieza en su ancla
+    // (#producto, después de la portada) y llega hasta el final de la escena (#inicio).
     const avanceRef = useRef<HTMLSpanElement>(null);
+    const [seccion, setSeccion] = useState<string | null>(null);
     useEffect(() => {
         let cuadro = 0;
         const pintar = () => {
             cuadro = 0;
             const el = avanceRef.current;
-            if (!el) return;
             const total = document.documentElement.scrollHeight - window.innerHeight;
-            el.style.transform = `scaleX(${total > 0 ? Math.min(1, window.scrollY / total).toFixed(4) : 0})`;
+            if (el) el.style.transform = `scaleX(${total > 0 ? Math.min(1, window.scrollY / total).toFixed(4) : 0})`;
+            const mitad = window.innerHeight / 2;
+            let activa: string | null = null;
+            for (const { href, pagina } of ENLACES) {
+                if (pagina) continue;
+                const destino = document.querySelector(href);
+                if (!destino) continue;
+                const arriba = destino.getBoundingClientRect().top;
+                const abajo = (href === '#producto' ? document.querySelector('#inicio') ?? destino : destino).getBoundingClientRect().bottom;
+                if (arriba <= mitad && abajo > mitad) activa = href;
+            }
+            setSeccion(activa);
         };
         const alMover = () => {
             if (!cuadro) cuadro = requestAnimationFrame(pintar);
@@ -92,9 +107,8 @@ export function LandingTresD({
         };
     }, []);
 
-    // La barra es oscura sobre el primer acto y toma el tema después
-    const [sobreOscuro, setSobreOscuro] = useState(true);
-    const [seccion, setSeccion] = useState<string | null>(null);
+    // La barra toma el tema y se vuelve oscura sobre las secciones oscuras
+    const [sobreOscuro, setSobreOscuro] = useState(false);
     useEffect(() => {
         const oscuras = Array.from(document.querySelectorAll('[data-tono="oscuro"]'));
         const visibles = new Set<Element>();
@@ -110,20 +124,7 @@ export function LandingTresD({
             { rootMargin: '0px 0px -92% 0px' }
         );
         oscuras.forEach((el) => tono.observe(el));
-        const vistas = new IntersectionObserver(
-            (entradas) => {
-                for (const e of entradas) if (e.isIntersecting) setSeccion(`#${e.target.id}`);
-            },
-            { rootMargin: '-50% 0px -50% 0px' }
-        );
-        for (const { href } of ENLACES) {
-            const el = document.querySelector(href);
-            if (el) vistas.observe(el);
-        }
-        return () => {
-            tono.disconnect();
-            vistas.disconnect();
-        };
+        return () => tono.disconnect();
     }, []);
 
     return (
@@ -141,10 +142,11 @@ export function LandingTresD({
                     <div className="hidden xl:flex items-center gap-7 ml-auto">
                         {ENLACES.map((e) => {
                             const activa = seccion === e.href;
+                            const Enlace = e.pagina ? Link : 'a';
                             return (
-                                <a
+                                <Enlace
                                     key={e.href}
-                                    href={e.href}
+                                    href={e.pagina ? `/${locale}${e.href}` : e.href}
                                     aria-current={activa ? 'location' : undefined}
                                     className="t3-enlace relative min-h-[48px] flex items-center whitespace-nowrap text-[17px] font-semibold transition-colors"
                                 >
@@ -155,7 +157,7 @@ export function LandingTresD({
                                             activa ? 'scale-x-100' : 'scale-x-0'
                                         }`}
                                     />
-                                </a>
+                                </Enlace>
                             );
                         })}
                     </div>
@@ -187,12 +189,13 @@ export function LandingTresD({
                 {menu && (
                     <div ref={menuRef} id="t3-menu" tabIndex={-1} className="xl:hidden simar-aparece px-2.5 pb-3 md:px-3 outline-none">
                         <ul className="grid sm:grid-cols-2 gap-1 pt-2 border-t border-current/10">
-                            {ENLACES.map(({ href, texto, detalle, Icono }) => {
+                            {ENLACES.map(({ href, texto, detalle, Icono, pagina }) => {
                                 const activa = seccion === href;
+                                const Enlace = pagina ? Link : 'a';
                                 return (
                                     <li key={href}>
-                                        <a
-                                            href={href}
+                                        <Enlace
+                                            href={pagina ? `/${locale}${href}` : href}
                                             onClick={() => setMenu(false)}
                                             aria-current={activa ? 'location' : undefined}
                                             className={`t3-opcion min-h-[64px] px-3 rounded-[18px] flex items-center gap-3.5 transition-colors movil:min-h-[58px] ${activa ? 't3-opcion-activa' : ''}`}
@@ -204,25 +207,10 @@ export function LandingTresD({
                                                 <span className="block text-[18px] font-extrabold leading-tight movil:text-[17px]">{texto}</span>
                                                 <span className="t3-opcion-detalle block text-[15px] leading-snug">{detalle}</span>
                                             </span>
-                                        </a>
+                                        </Enlace>
                                     </li>
                                 );
                             })}
-                            <li>
-                                <Link
-                                    href={`/${locale}/noticias`}
-                                    onClick={() => setMenu(false)}
-                                    className="t3-opcion min-h-[64px] px-3 rounded-[18px] flex items-center gap-3.5 transition-colors movil:min-h-[58px]"
-                                >
-                                    <span className="t3-opcion-icono w-11 h-11 rounded-[14px] flex-shrink-0 flex items-center justify-center">
-                                        <ArrowUpRight className="w-[22px] h-[22px]" strokeWidth={2} />
-                                    </span>
-                                    <span className="min-w-0">
-                                        <span className="block text-[18px] font-extrabold leading-tight movil:text-[17px]">Todas las noticias</span>
-                                        <span className="t3-opcion-detalle block text-[15px] leading-snug">Abre la página de noticias</span>
-                                    </span>
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                 )}
@@ -234,11 +222,11 @@ export function LandingTresD({
             </nav>
 
             <main>
-                <div data-tono="oscuro">
-                    <MarDeParticulas textoEntrar={textoEntrar} alEntrar={() => abrirAcceso()} rutaDemo={rutaDemo} />
-                </div>
+                <ProductoEnEscena textoEntrar={textoEntrar} alEntrar={() => abrirAcceso()} rutaDemo={rutaDemo} />
                 <PorPartes>
-                    <ProductoEnEscena />
+                    <div data-tono="oscuro">
+                        <PorQueImporta locale={locale} />
+                    </div>
                 </PorPartes>
                 <PorPartes>
                     <CifrasEnVivo stats={statsReales} />

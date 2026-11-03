@@ -9,6 +9,7 @@ type DatosTarjeta = Omit<Noticia, 'cuerpo' | 'galeria' | 'fuentes'> & { minutos?
 const PUNTO: Record<CategoriaNoticia, string> = {
     SiMAR: 'bg-simar-marea',
     'Mar de Cortés': 'bg-simar-golfo',
+    Océanos: 'bg-simar-arrecife',
     Normativa: 'bg-simar-texto-2',
     Conciencia: 'bg-simar-aceite',
 };
@@ -61,12 +62,15 @@ export function TarjetaNoticia({
     locale,
     variante = 'normal',
     prioridad = false,
+    etiqueta,
     className = '',
 }: {
     noticia: DatosTarjeta;
     locale: string;
     variante?: 'normal' | 'portada' | 'fila';
     prioridad?: boolean;
+    /** En la portada, una etiqueta arriba del título («Lo más reciente») */
+    etiqueta?: string;
     className?: string;
 }) {
     const href = `/${locale}/noticias/${noticia.slug}`;
@@ -83,8 +87,8 @@ export function TarjetaNoticia({
                 {/* Velo de abajo: el texto se lee sobre cualquier foto */}
                 <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-t from-simar-abismo via-simar-abismo/75 to-transparent to-[72%]" />
                 <div className="p-8 md:p-10 movil:p-5">
-                    <span className="inline-flex rounded-full bg-white/14 backdrop-blur-md border border-white/20 px-3 py-1 text-[15px] font-bold">Destacada</span>
-                    <h3 className="mt-4 max-w-[22ch] text-[clamp(30px,3.2vw,46px)] font-extrabold leading-[1.08] tracking-[-0.025em] movil:mt-3 movil:text-[26px] movil:leading-[1.12]">
+                    {etiqueta && <span className="inline-flex rounded-full bg-white/14 backdrop-blur-md border border-white/20 px-3 py-1 text-[15px] font-bold">{etiqueta}</span>}
+                    <h3 className={`${etiqueta ? 'mt-4' : ''} max-w-[22ch] text-[clamp(30px,3.2vw,46px)] font-extrabold leading-[1.08] tracking-[-0.025em] movil:mt-3 movil:text-[26px] movil:leading-[1.12]`}>
                         {noticia.titulo}
                     </h3>
                     <p className="mt-3 max-w-[56ch] text-[18px] leading-relaxed text-white/85 line-clamp-3 movil:text-[16px]">{noticia.resumen}</p>

@@ -5,8 +5,9 @@ import { BotonTemaIcono } from '@/components/layout/ThemeToggle';
 import { ProgresoLectura } from './ProgresoLectura';
 
 /**
- * Barra de arriba de /noticias: el logo lleva al inicio y "Noticias" a la lista. Mientras se
- * comparan las landings, el inicio es la versión 3D (?landing=3d), donde vive la sección.
+ * Barra de arriba de /noticias: el logo lleva al inicio y, en un artículo, «Todas las noticias»
+ * regresa a la página de Noticias. Mientras se comparan las landings, el inicio es la versión 3D
+ * (?landing=3d), que es la que enlaza aquí.
  */
 export function EncabezadoNoticias({ locale, enArticulo = false }: { locale: string; enArticulo?: boolean }) {
     const inicio = `/${locale}?landing=3d`;
@@ -20,7 +21,7 @@ export function EncabezadoNoticias({ locale, enArticulo = false }: { locale: str
                     </Link>
                     <div className="ml-auto flex items-center gap-2">
                         <Link
-                            href={enArticulo ? `/${locale}/noticias` : `${inicio}#noticias`}
+                            href={enArticulo ? `/${locale}/noticias` : inicio}
                             className="min-h-[52px] px-4 md:px-5 rounded-full inline-flex items-center gap-2 text-[17px] font-bold text-simar-texto hover:bg-simar-texto/5 transition-colors movil:min-h-[46px] movil:px-3 movil:text-[15px]"
                         >
                             <ArrowLeft className="w-5 h-5" />

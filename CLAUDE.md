@@ -111,9 +111,12 @@ para consultar (abajo).
   escenas atadas al scroll; ver DISEÑO_SIMAR.md §8.5): no lo lleves a los paneles.
   **three.js** se usa sólo en la landing 3D (`components/landing/tresd/`, `?landing=3d`; ver
   DISEÑO_SIMAR.md §8.6), cargado con `await import()`: no lo importes arriba de un archivo.
-- Las **noticias** (`/[locale]/noticias`) salen de `lib/constants/noticias.ts`, no de Supabase. Sin
-  foto, la portada se dibuja (`components/noticias/ilustraciones.tsx`). En la landing 3D,
-  `SeccionNoticias` es de servidor y llega a `LandingTresD` como prop (ver DISEÑO_SIMAR.md §8.6).
+- Las **noticias** son una página informativa aparte (`/[locale]/noticias`: portada, la
+  problemática, el proyecto, todas, glosario y fuentes) y salen de `lib/constants/noticias.ts`, no
+  de Supabase; todo dato lleva su fuente. Sin foto, la portada se dibuja
+  (`components/noticias/ilustraciones.tsx`, ilustraciones planas, sin puntos). La landing 3D sólo
+  lleva un adelanto: `SeccionNoticias`, de servidor, llega a `LandingTresD` como prop (ver
+  DISEÑO_SIMAR.md §8.6).
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar). Las
   cifras de impacto (agua, CO₂, basura) salen **sólo** de `lib/utils/equivalencias.ts`, que usan
   Estadísticas, su PDF y la landing: 1 L de aceite = 1,000,000 L de agua; 1.0 kg CO₂e por litro. La

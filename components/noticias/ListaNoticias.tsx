@@ -5,13 +5,13 @@ import { CATEGORIAS, type CategoriaNoticia, type ResumenNoticia } from '@/lib/co
 import { TarjetaNoticia } from './TarjetaNoticia';
 
 /**
- * Todas las noticias, con filtro por tema. La primera de la lista (la destacada, o la más nueva
- * del tema elegido) va a lo grande; las demás en cuadrícula.
+ * Todas las noticias y artículos (de la más nueva a la más vieja), con filtro por tema: en
+ * cuadrícula y, en celular, en renglones. Las tarjetas llegan sin el texto de los artículos
+ * (resumenDe).
  */
 export function ListaNoticias({ noticias, locale }: { noticias: ResumenNoticia[]; locale: string }) {
     const [tema, setTema] = useState<CategoriaNoticia | null>(null);
     const filtradas = tema ? noticias.filter((n) => n.categoria === tema) : noticias;
-    const [primera, ...resto] = filtradas;
     const opciones: { valor: CategoriaNoticia | null; texto: string; cuantas: number }[] = [
         { valor: null, texto: 'Todas', cuantas: noticias.length },
         ...CATEGORIAS.map((c) => ({ valor: c, texto: c, cuantas: noticias.filter((n) => n.categoria === c).length })).filter((o) => o.cuantas > 0),
@@ -19,7 +19,7 @@ export function ListaNoticias({ noticias, locale }: { noticias: ResumenNoticia[]
 
     return (
         <>
-            <div role="group" aria-label="Filtrar por tema" className="mt-10 -mx-5 px-5 flex gap-2 overflow-x-auto [scrollbar-width:none] md:mx-0 md:px-0 md:flex-wrap movil:mt-7">
+            <div role="group" aria-label="Filtrar por tema" className="mt-8 -mx-5 px-5 flex gap-2 overflow-x-auto [scrollbar-width:none] md:mx-0 md:px-0 md:flex-wrap movil:mt-7">
                 {opciones.map((o) => {
                     const activa = tema === o.valor;
                     return (
@@ -44,18 +44,21 @@ export function ListaNoticias({ noticias, locale }: { noticias: ResumenNoticia[]
                 {tema ? `${filtradas.length} de ${tema}` : `${filtradas.length} noticias`}
             </p>
 
-            {primera && (
-                <div className="mt-8 movil:mt-6">
-                    <TarjetaNoticia key={primera.slug} noticia={primera} locale={locale} variante="portada" prioridad />
-                </div>
-            )}
-            {resto.length > 0 && (
-                <div className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 movil:mt-4 movil:gap-4">
-                    {resto.map((n) => (
-                        <TarjetaNoticia key={n.slug} noticia={n} locale={locale} />
-                    ))}
-                </div>
-            )}
+            {/* En celular, renglones con la portada chica (la lista no se hace kilométrica) */}
+            <ul className="sm:hidden mt-5 divide-y divide-simar-borde">
+                {filtradas.map((n) => (
+                    <li key={n.slug} className="py-4">
+                        <TarjetaNoticia noticia={n} locale={locale} variante="fila" />
+                    </li>
+                ))}
+            </ul>
+            <ul className="max-sm:hidden mt-8 grid md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                {filtradas.map((n) => (
+                    <li key={n.slug} className="flex">
+                        <TarjetaNoticia noticia={n} locale={locale} className="w-full" />
+                    </li>
+                ))}
+            </ul>
         </>
     );
 }

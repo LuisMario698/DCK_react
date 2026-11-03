@@ -1818,10 +1818,10 @@ html[data-barra-mini] .simar-flotante {
 
 /* ============================================
    LANDING 3D (components/landing/tresd/, ?landing=3d). Ver DISEÑO_SIMAR.md §8.6.
-   El primer acto es oscuro siempre (partículas de luz sobre Abismo); el resto sigue el tema.
+   La portada y «Cómo funciona» siguen el tema; «Por qué importa», Puertos y el cierre son oscuros.
    ============================================ */
 
-/* Barra: vidrio oscuro sobre el primer acto, vidrio del tema después */
+/* Barra: vidrio del tema; sobre las secciones oscuras, vidrio oscuro */
 .t3-barra {
   background: var(--simar-vidrio-fuerte);
   -webkit-backdrop-filter: blur(22px) saturate(170%);
@@ -1896,26 +1896,34 @@ html[data-barra-mini] .simar-flotante {
   }
 }
 
-/* Viñeta del mar de partículas: las orillas se hunden y el texto se lee mejor */
-.t3-vineta {
-  background:
-    radial-gradient(120% 90% at 62% 45%, transparent 40%, rgba(6, 18, 30, 0.55) 100%),
-    linear-gradient(90deg, rgba(6, 18, 30, 0.35), transparent 45%);
+/* «Baja para abrirla»: la flecha baja y sube despacio */
+@media (prefers-reduced-motion: no-preference) {
+  .t3-baja {
+    animation: t3-baja 1.8s var(--simar-frena) infinite;
+  }
 }
-@media (max-width: 767px) {
-  .t3-vineta {
-    background:
-      radial-gradient(120% 80% at 50% 30%, transparent 45%, rgba(6, 18, 30, 0.6) 100%),
-      linear-gradient(0deg, rgba(6, 18, 30, 0.75), transparent 45%);
+@keyframes t3-baja {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
   }
 }
 
-/* Los textos del primer acto siguen legibles cuando pasa la mancha de aceite por detrás
-   (en celular ya van sobre una tarjeta de vidrio) */
-@media (min-width: 768px) {
-  .t3-legible {
-    text-shadow: 0 1px 2px rgba(6, 18, 30, 0.6), 0 2px 24px rgba(6, 18, 30, 0.9);
-  }
+/* El comparador de la hoja (ComparadorHojas.tsx): la posición vive en --corte */
+.t3-comparador-antes {
+  clip-path: inset(0 calc(100% - var(--corte)) 0 0);
+}
+.t3-comparador-barra {
+  transform: translateX(var(--corte));
+}
+.t3-corte-suave .t3-comparador-antes,
+.t3-corte-suave .t3-comparador-barra {
+  transition:
+    clip-path 0.7s var(--simar-frena),
+    transform 0.7s var(--simar-frena);
 }
 
 /* Detrás de la laptop y el celular: una luz azul muy suave, como un estudio de fotografía */

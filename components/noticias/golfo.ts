@@ -1,6 +1,6 @@
 /**
  * La tierra alrededor del Golfo de California (península de Baja California, Sonora, Sinaloa e
- * islas grandes), para dibujar el mar con partículas: lo que no es tierra dentro de la caja es mar.
+ * islas grandes), para los mapas de las portadas de Noticias (ilustraciones.tsx).
  * Sale de Natural Earth 1:10m (dominio público), recortada a la caja y simplificada (~1 km).
  * Cada anillo es una lista plana [lon, lat, lon, lat, …].
  */

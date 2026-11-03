@@ -3,7 +3,7 @@
 import { TIEMPOS, rampa, scrollDe, type Recorrido } from './comun';
 
 /**
- * Los pasos de una escena fija (el mar de partículas y la laptop):
+ * Los pasos de una escena fija (la laptop y el celular):
  *
  *  - `BarraPasos`: una barra de avance por partes, una por parada. Cada parte se llena al llegar a
  *    su parada, así se sabe cuánto falta, y al tocarla lleva a esa parada. Arriba en celular y
@@ -20,21 +20,28 @@ export function BarraPasos({
     etiquetas,
     recorrido,
     imanes,
+    desde = 0,
     tono,
     nombre,
 }: {
     etiquetas: string[];
     recorrido: Recorrido;
     imanes: Imanes;
+    /**
+     * La primera parada que cuenta la barra (las de antes, como una portada, no salen). Con
+     * `desde` > 0 la barra empieza oculta y la escena la muestra (`[data-barra]`).
+     */
+    desde?: number;
     tono: 'oscuro' | 'claro';
-    /** Para el lector de pantalla: «Pasos de la historia» */
+    /** Para el lector de pantalla: «Pasos de cómo funciona» */
     nombre: string;
 }) {
     const ir = (j: number, boton: HTMLElement) => {
         const seccion = boton.closest('section');
         if (!seccion) return;
         const arriba = seccion.getBoundingClientRect().top + window.scrollY;
-        const destino = arriba + recorrido.avance(j + imanes[j]) * scrollDe(seccion);
+        const k = j + desde;
+        const destino = arriba + recorrido.avance(k + imanes[k]) * scrollDe(seccion);
         const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         window.scrollTo({ top: destino, behavior: quieto ? 'auto' : 'smooth' });
     };
@@ -43,6 +50,8 @@ export function BarraPasos({
     return (
         <nav
             aria-label={nombre}
+            data-barra
+            style={desde > 0 ? { opacity: 0, visibility: 'hidden' } : undefined}
             className="absolute z-10 inset-x-5 top-[calc(env(safe-area-inset-top)+76px)] flex md:inset-x-auto md:top-1/2 md:-translate-y-1/2 md:right-4 md:flex-col"
         >
             {etiquetas.map((etiqueta, j) => (
@@ -101,7 +110,7 @@ export function colocarImanes(seccion: HTMLElement, recorrido: Recorrido, imanes
     });
 }
 
-/** Llena la barra según la posición (j + t). Devuelve la parada actual */
+/** Llena la barra según la posición (j + t, contada desde la primera parada de la barra). Devuelve la parada actual */
 export function pintarPasos(rellenos: HTMLElement[], botones: HTMLElement[], posicion: number, vertical: boolean) {
     let actual = 0;
     for (const el of rellenos) {

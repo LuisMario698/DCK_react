@@ -3,8 +3,8 @@ import { ILUSTRACION_DE, type Noticia } from '@/lib/constants/noticias';
 import { DibujoPortada } from './ilustraciones';
 
 /**
- * La portada de una noticia: su foto o, si no tiene, un dibujo de puntos de su tema (el mismo
- * lenguaje del mar de partículas). Así ninguna tarjeta queda vacía ni se inventa una foto.
+ * La portada de una noticia: su foto o, si no tiene, un dibujo de su tema (ilustraciones.tsx).
+ * Así ninguna tarjeta queda vacía ni se inventa una foto.
  */
 export function PortadaNoticia({
     noticia,
@@ -35,7 +35,7 @@ export function PortadaNoticia({
     const tipo = noticia.ilustracion ?? ILUSTRACION_DE[noticia.categoria];
     return (
         <div aria-hidden="true" className={`relative overflow-hidden bg-simar-abismo ${className}`}>
-            <DibujoPortada tipo={tipo} id={noticia.slug} />
+            <DibujoPortada tipo={tipo} />
         </div>
     );
 }
