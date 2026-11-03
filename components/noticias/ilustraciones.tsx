@@ -458,7 +458,7 @@ export function DibujoPortada({ tipo }: { tipo: Ilustracion }) {
     );
 }
 
-/* ── El mapa de «En el mapa» (ExploradorMapa) ─────────────────────────────────────────────── */
+/* ── El mapa de «En el mapa» (MapaHistoria) ───────────────────────────────────────────────── */
 
 /** Encuadre del mapa grande: el golfo de Puerto Peñasco a Sinaloa, en un cuadro de 400 × 400 */
 const ESCALA_EXPLORADOR = 58;
@@ -472,8 +472,9 @@ export function enMapaGolfo(lugar: { lon: number; lat: number }) {
 
 /**
  * El mapa del Golfo de California para «En el mapa»: tierra, costa, cuadrícula de grados y los
- * nombres de los estados. Sin marcas: los botones de cada lugar van encima, en HTML (se pueden
- * tocar y enfocar con el teclado). Es de servidor y llega al explorador como prop.
+ * nombres de los estados (se van al acercarse). Sin marcas: los botones de cada lugar van encima,
+ * en HTML (se pueden tocar y enfocar con el teclado). Es de servidor y llega a MapaHistoria como
+ * prop.
  */
 export function MapaGolfo() {
     const v = EXPLORADOR;
@@ -520,13 +521,26 @@ export function MapaGolfo() {
             </g>
             <g transform={v.transform}>
                 <path d={MAPA.tierra} fill={ABISMO} />
-                <path d={MAPA.costa} fill="none" stroke={ESPUMA} strokeOpacity="0.6" strokeWidth={1.2 / ESCALA_EXPLORADOR} strokeLinejoin="round" strokeLinecap="round" />
+                {/* n-costa: se dibuja al verse y no engorda al acercarse (globals.css) */}
+                <path
+                    className="n-costa"
+                    d={MAPA.costa}
+                    pathLength={1}
+                    fill="none"
+                    stroke={ESPUMA}
+                    strokeOpacity="0.6"
+                    strokeWidth={1.2 / ESCALA_EXPLORADOR}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                />
             </g>
-            {nombre('SONORA', { lon: -110.6, lat: 29.9 })}
-            {nombre('SINALOA', { lon: -108.3, lat: 25.75 })}
-            {nombre('BAJA CALIFORNIA', { lon: -115.25, lat: 29.35 }, 62, 0.4)}
-            {nombre('BAJA CALIFORNIA SUR', { lon: -112.75, lat: 26.75 }, 58, 0.4)}
-            {nombre('OCÉANO PACÍFICO', { lon: -114.9, lat: 26.6 }, 58, 0.35)}
+            <g className="n-mapa-nombres">
+                {nombre('SONORA', { lon: -110.6, lat: 29.9 })}
+                {nombre('SINALOA', { lon: -108.3, lat: 25.75 })}
+                {nombre('BAJA CALIFORNIA', { lon: -115.25, lat: 29.35 }, 62, 0.4)}
+                {nombre('BAJA CALIFORNIA SUR', { lon: -112.75, lat: 26.75 }, 58, 0.4)}
+                {nombre('OCÉANO PACÍFICO', { lon: -114.9, lat: 26.6 }, 58, 0.35)}
+            </g>
         </svg>
     );
 }

@@ -111,10 +111,12 @@ para consultar (abajo).
   escenas atadas al scroll; ver DISEÑO_SIMAR.md §8.5): no lo lleves a los paneles.
   **three.js** se usa sólo en la landing 3D (`components/landing/tresd/`, `?landing=3d`; ver
   DISEÑO_SIMAR.md §8.6), cargado con `await import()`: no lo importes arriba de un archivo.
-- Las **noticias** son una página informativa aparte (`/[locale]/noticias`: lo último, en cifras,
-  en el mapa, el proyecto, todas, glosario y fuentes; poco texto a la vez y casi todo se toca) y
-  salen de `lib/constants/noticias.ts`, no de Supabase; todo dato lleva su fuente y toda noticia,
-  su lugar en `LUGARES`. Sin foto, la portada se dibuja
+- Las **noticias** son una página informativa aparte (`/[locale]/noticias`: portada bajo el mar,
+  lo último, en cifras, en el mapa, el proyecto, todas, glosario y fuentes; muy visual y casi todo
+  se ve con sólo bajar) y salen de `lib/constants/noticias.ts`, no de Supabase; todo dato lleva su
+  fuente y toda noticia, su lugar en `LUGARES`. Lo que se mueve (la vaquita, el mar, el mapa que
+  se acerca) es SVG + CSS (`components/noticias/MarAnimado.tsx`, clases `n-*`), sin librerías:
+  no metas Motion ni three.js ahí. Sin foto, la portada se dibuja
   (`components/noticias/ilustraciones.tsx`, ilustraciones planas, sin puntos). La landing 3D sólo
   lleva un adelanto: `SeccionNoticias`, de servidor, llega a `LandingTresD` como prop (ver
   DISEÑO_SIMAR.md §8.6).

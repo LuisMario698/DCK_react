@@ -198,7 +198,7 @@ function EscenaAceite() {
                     <stop offset="80%" stopColor="#7FE0D6" stopOpacity="0.35" />
                     <stop offset="100%" stopColor="#7FE0D6" stopOpacity="0" />
                 </radialGradient>
-                <radialGradient id={`${id}-sombra`} cx="50%" cy="0%" r="70%">
+                <radialGradient id={`${id}-sombra`} cx="50%" cy="0%" r="60%">
                     <stop offset="0%" stopColor="#000" stopOpacity="0.45" />
                     <stop offset="100%" stopColor="#000" stopOpacity="0" />
                 </radialGradient>
@@ -208,7 +208,7 @@ function EscenaAceite() {
                 <path d={olas(112, 3, 40)} fill={`url(#${id}-agua)`} />
             </g>
             {/* Debajo de la mancha no pasa la luz */}
-            <ellipse className="n-mancha" cx="200" cy="150" rx="150" ry="70" fill={`url(#${id}-sombra)`} />
+            <rect x="40" y="113" width="320" height="112" fill={`url(#${id}-sombra)`} />
             <polygon points="60,114 90,114 150,225 100,225" fill={`url(#${id}-luz)`} />
             <polygon points="310,114 336,114 380,225 334,225" fill={`url(#${id}-luz)`} />
             {/* La mancha, con su brillo de arcoíris en la orilla */}
@@ -378,7 +378,7 @@ export function EscenaCifra({ tema }: { tema: string }) {
 export function FilaVaquitas() {
     return (
         <div>
-            <div className="grid grid-cols-10 gap-1.5 max-w-[420px]" aria-hidden="true">
+            <div className="grid grid-cols-10 gap-1.5 max-w-[440px] movil:grid-cols-5 movil:gap-x-3 movil:gap-y-2 movil:max-w-[300px]" aria-hidden="true">
                 {Array.from({ length: 10 }, (_, i) => (
                     <div key={i} className="n-asoma" style={v({ '--i': i })}>
                         <Vaquita cola={false} className={`w-full ${i >= 7 ? 'opacity-35' : ''}`} />

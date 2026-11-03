@@ -381,16 +381,14 @@ export function vecinas(n: Noticia) {
 
 /**
  * «En cifras»: el problema en cuatro temas. Cada uno con su cifra (que sale de un artículo y de sus
- * fuentes) y los artículos que lo explican.
+ * fuentes), los artículos que lo explican y una escena animada que se elige por `id`
+ * (EscenaCifra, components/noticias/MarAnimado.tsx).
  */
-export const TEMAS: { id: string; tema: string; corto: string; dibujo: Ilustracion; titulo: string; texto: string; cifra: string; nota: string; articulos: string[] }[] = [
+export const TEMAS: { id: string; tema: string; titulo: string; cifra: string; nota: string; articulos: string[] }[] = [
     {
         id: 'aceite',
         tema: 'El aceite usado',
-        corto: 'El aceite',
-        dibujo: 'gota',
         titulo: 'Poco aceite, mucho daño.',
-        texto: 'El aceite que sale del motor forma una capa en el agua que no deja pasar la luz ni el oxígeno. Bien entregado, se vuelve a refinar.',
         cifra: '1,000,000 L',
         nota: 'de agua puede contaminar un litro de aceite usado (EPA)',
         articulos: ['un-litro-de-aceite-un-millon-de-litros-de-agua', 'el-aceite-usado-es-un-residuo-peligroso'],
@@ -398,10 +396,7 @@ export const TEMAS: { id: string; tema: string; corto: string; dibujo: Ilustraci
     {
         id: 'basura',
         tema: 'La basura de los barcos',
-        corto: 'La basura',
-        dibujo: 'costa',
         titulo: 'Lo que se tira, vuelve.',
-        texto: 'Plásticos, cabos y redes que caen al agua terminan en las playas o en el fondo. Desde 2013, MARPOL prohíbe tirar plásticos al mar.',
         cifra: '11 millones t',
         nota: 'de plástico llegan al océano cada año (PNUMA, 2021)',
         articulos: ['marpol-anexo-v-lo-que-un-barco-no-puede-tirar-al-mar', 'mas-de-60-toneladas-fuera-de-las-playas-de-sonora-y-sinaloa', 'el-tratado-mundial-contra-el-plastico-sigue-sin-acuerdo'],
@@ -409,10 +404,7 @@ export const TEMAS: { id: string; tema: string; corto: string; dibujo: Ilustraci
     {
         id: 'redes',
         tema: 'Las redes fantasma',
-        corto: 'Las redes',
-        dibujo: 'red',
         titulo: 'Redes que siguen pescando.',
-        texto: 'Una red perdida atrapa animales durante años. En el Alto Golfo, las redes de enmalle son la mayor amenaza para la vaquita marina.',
         cifra: '10 %',
         nota: 'de la basura marina son artes de pesca perdidas o abandonadas (FAO y PNUMA, 2009)',
         articulos: ['redes-fantasma-la-pesca-que-nadie-ve', 'se-reduce-la-zona-sin-redes-de-enmalle-en-el-alto-golfo'],
@@ -420,10 +412,7 @@ export const TEMAS: { id: string; tema: string; corto: string; dibujo: Ilustraci
     {
         id: 'mar',
         tema: 'El mar que cuidamos',
-        corto: 'El mar',
-        dibujo: 'horizonte',
         titulo: 'El acuario del mundo.',
-        texto: 'Puerto Peñasco está en el Alto Golfo de California, uno de los mares con más vida del planeta y el único hogar de la vaquita marina.',
         cifra: '7 a 10',
         nota: 'vaquitas marinas quedan, según el conteo de 2025',
         articulos: ['el-mar-de-cortes-el-acuario-del-mundo', 'vaquita-marina-2025', 'jovenes-de-san-felipe-buscan-a-la-vaquita', 'entra-en-vigor-el-tratado-de-alta-mar'],
@@ -431,17 +420,30 @@ export const TEMAS: { id: string; tema: string; corto: string; dibujo: Ilustraci
 ];
 
 /**
- * «En el mapa»: dónde pasa cada noticia. Los lugares con `lon`/`lat` son marcas en el mapa del
- * golfo (ExploradorMapa); los demás (México, el mundo) van como botones aparte. `lado` dice de
- * qué lado de la marca va su nombre. Toda noticia debe estar en un lugar.
+ * «En el mapa»: dónde pasa cada noticia, en el orden en que se recorre al bajar (MapaHistoria).
+ * Los lugares con `lon`/`lat` son marcas en el mapa del golfo; `zoom` dice cuánto se acerca el
+ * mapa al llegar ahí (1 = el golfo entero) y `lado`, de qué lado de la marca va su nombre. Los
+ * demás (México, el mundo) apartan el mapa y muestran un dibujo. Toda noticia debe estar en un
+ * lugar.
  */
-export const LUGARES: { id: string; nombre: string; detalle: string; lon?: number; lat?: number; lado?: 'derecha' | 'izquierda' | 'abajo'; articulos: string[] }[] = [
+export const LUGARES: { id: string; nombre: string; detalle: string; lon?: number; lat?: number; zoom?: number; lado?: 'derecha' | 'izquierda' | 'abajo'; articulos: string[] }[] = [
+    {
+        id: 'golfo',
+        nombre: 'Golfo de California',
+        detalle: 'El Mar de Cortés, uno de los mares con más vida del planeta.',
+        lon: -111.4,
+        lat: 27.45,
+        zoom: 1,
+        lado: 'izquierda',
+        articulos: ['el-mar-de-cortes-el-acuario-del-mundo'],
+    },
     {
         id: 'penasco',
         nombre: 'Puerto Peñasco',
         detalle: 'El centro de acopio del puerto, donde nació SiMAR.',
         lon: -113.54,
         lat: 31.31,
+        zoom: 2.8,
         lado: 'derecha',
         articulos: ['simar-suma-a-las-empresas-recolectoras', 'conanp-reconoce-25-anios-del-centro-de-acopio', 'mencion-honorifica-conservacion-de-la-naturaleza-2015'],
     },
@@ -451,17 +453,9 @@ export const LUGARES: { id: string; nombre: string; detalle: string; lon?: numbe
         detalle: 'El único hogar de la vaquita marina y la zona sin redes de enmalle.',
         lon: -114.84,
         lat: 31.02,
+        zoom: 2.5,
         lado: 'abajo',
         articulos: ['se-reduce-la-zona-sin-redes-de-enmalle-en-el-alto-golfo', 'vaquita-marina-2025', 'jovenes-de-san-felipe-buscan-a-la-vaquita', 'redes-fantasma-la-pesca-que-nadie-ve'],
-    },
-    {
-        id: 'golfo',
-        nombre: 'Golfo de California',
-        detalle: 'El Mar de Cortés, uno de los mares con más vida del planeta.',
-        lon: -111.4,
-        lat: 27.45,
-        lado: 'derecha',
-        articulos: ['el-mar-de-cortes-el-acuario-del-mundo'],
     },
     {
         id: 'costa',
@@ -469,6 +463,7 @@ export const LUGARES: { id: string; nombre: string; detalle: string; lon?: numbe
         detalle: 'Las playas donde miles de personas juntaron la basura que llegó del mar.',
         lon: -109.45,
         lat: 26.25,
+        zoom: 1.9,
         lado: 'izquierda',
         articulos: ['mas-de-60-toneladas-fuera-de-las-playas-de-sonora-y-sinaloa'],
     },

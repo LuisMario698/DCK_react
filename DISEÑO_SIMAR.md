@@ -451,25 +451,43 @@ parada (`TIEMPOS`):
 leen `lib/constants/noticias.ts` (sin base de datos). La landing sólo lleva un adelanto
 (`SeccionNoticias`, las tres más recientes y «Ir a Noticias») y el enlace del menú.
 
-- La página (`app/[locale]/noticias/page.tsx`) es **poco texto a la vez y casi todo se toca**
-  (Jesus la pidió menos aburrida y con más estructura). La barra de arriba lleva una fila con las
-  secciones (`NavSecciones`, marca la que se lee) y, de arriba abajo:
-  1. **Lo último**: título corto, tres contadores (noticias, lugares, fuentes) y un mosaico: la más
-     reciente grande (portada arriba, texto abajo: un dibujo con nombres no compite con el título)
-     y tres más sólo con portada y título (`variante="mosaico"`; en celular, carrusel).
-  2. **En cifras** (oscuro, `ExploradorCifras`): `TEMAS` como pestañas; el elegido muestra su
-     cifra en grande (sube de cero al verse), una frase, su dibujo (`dibujo`) y sus artículos.
-  3. **En el mapa** (`ExploradorMapa`): el golfo dibujado (`MapaGolfo`, de servidor) con una marca
-     por lugar de `LUGARES` (el número es cuántas noticias hay) y botones para los mismos lugares,
-     más «En todo México» y «En el mundo». Toda noticia debe estar en un lugar.
-  4. **El proyecto**: la foto, SiMAR en tres ideas, con quién se hizo y la historia año por año
-     (`HistoriaProyecto`: una línea de años que se llena y una tarjeta con Anterior/Siguiente).
+- La página (`app/[locale]/noticias/page.tsx`) es **muy visual, poco texto a la vez y casi todo
+  se ve con sólo bajar** (Jesus la pidió menos aburrida, con más estructura, con animaciones de la
+  vaquita y con menos clics). La barra de arriba lleva una fila con las secciones (`NavSecciones`,
+  marca la que se lee) y, de arriba abajo:
+  0. **La portada, bajo el mar** (`PortadaMar`): se mete debajo de la barra de vidrio; entra la
+     luz, pasan cardúmenes, suben unas burbujas, se mecen las algas y la vaquita nada con su cría
+     (`Vaquita`, SVG). Encima: el título, tres contadores (noticias, lugares, fuentes) y un
+     «¿Sabías que...?» de la vaquita que lleva a su artículo.
+  1. **Lo último**: un mosaico: la más reciente grande (portada arriba, texto abajo) y tres más
+     sólo con portada y título (`variante="mosaico"`; en celular, carrusel).
+  2. **En cifras** (oscuro, `CifrasMar`): los cuatro `TEMAS` a la vista, sin pestañas. Cada tarjeta
+     lleva su escena animada (`EscenaCifra`, por `id`: la gota de aceite que cae y abre su mancha,
+     la botella que flota y la lata que se hunde, la red fantasma con un pez atrapado, la vaquita
+     y su cría), la cifra que sube al verse (`CifraAnimada`), una línea y dos artículos. La del mar
+     pinta las vaquitas que quedan (`FilaVaquitas`: siete firmes y tres claras).
+  3. **En el mapa** (`MapaHistoria`, contado con el scroll): el golfo (`MapaGolfo`, de servidor) se
+     queda fijo (a un lado en computadora, arriba en celular) y cada capítulo de `LUGARES` lo lleva
+     a su lugar: se acerca (`zoom`), se enciende su marca y se leen sus noticias. La costa se dibuja
+     al verse, la vaquita nada en el Alto Golfo y una panga sale de Puerto Peñasco. México y el
+     mundo apartan el mapa y muestran un dibujo. Tocar una marca baja a su capítulo. El zoom usa
+     propiedades registradas (`--n-z`, `--n-tx`, `--n-ty`) para que las marcas se desescalen a la
+     par; las noticias de cada capítulo se dibujan en el servidor. Toda noticia debe estar en un
+     lugar.
+  4. **El proyecto**: la foto, SiMAR en tres ideas, con quién se hizo y la historia
+     (`HistoriaProyecto`: una línea que se llena al bajar, los años en zigzag y cada uno se enciende
+     al llegar; sin clics).
   5. **Todas** (`ListaNoticias`): buscador sin acentos, filtro por tema, las primeras seis sin
-     resumen y «Ver N más». **Glosario** (`GlosarioInteractivo`: se toca una palabra y sale en una
-     tarjeta) y **fuentes** (quién las publica, de un vistazo, y la lista entera en un `<details>`).
-  Las pestañas siguen el patrón de WAI-ARIA (flechas, Inicio, Fin; `pestanas.ts`) y los paneles
-  aparecen con `simar-aparece`. A los componentes de cliente sólo les llegan resúmenes
-  (`resumenDe`), nunca el texto de los artículos.
+     resumen y «Ver N más». **Glosario** (`GlosarioTarjetas`: una tarjeta por palabra con su ícono;
+     Manifiesto y Red fantasma llevan dibujo; en celular, carrusel) y **fuentes** (quién las
+     publica, de un vistazo, y la lista entera en un `<details>`).
+  6. **Cierre** (oscuro): la vaquita y su cría se despiden nadando abajo.
+  **El movimiento** es SVG y CSS (`MarAnimado.tsx` y las clases `n-*` de `globals.css`), sin
+  librerías: sólo corre con «sin preferencia» de movimiento y, con «reducir movimiento», cada cosa
+  se queda quieta en un lugar donde se ve. `PausaFuera` pausa cada escena fuera de la pantalla
+  (`data-quieta`) y marca la primera vez que se ve (`data-visto`) para lo que se anima una vez.
+  Nada de partículas ni animaciones abstractas: animales y cosas del mar que se reconocen. A los
+  componentes de cliente sólo les llegan resúmenes (`resumenDe`), nunca el texto de los artículos.
 - Hay dos clases de artículo: noticias (lo que pasó, con su fecha) y los que explican el problema
   (`explica: true`, no caducan): éstos van en En cifras y no en la portada. El orden lo da
   la fecha (`POR_FECHA`, `recientes()`).

@@ -6,11 +6,14 @@ import { tituloPantalla } from '@/lib/constants/titulo';
 import { EncabezadoNoticias } from '@/components/noticias/EncabezadoNoticias';
 import { NavSecciones } from '@/components/noticias/NavSecciones';
 import { ListaNoticias } from '@/components/noticias/ListaNoticias';
-import { ExploradorCifras } from '@/components/noticias/ExploradorCifras';
-import { ExploradorMapa } from '@/components/noticias/ExploradorMapa';
-import { GlosarioInteractivo } from '@/components/noticias/GlosarioInteractivo';
-import { MapaGolfo, enMapaGolfo } from '@/components/noticias/ilustraciones';
+import { CifrasMar } from '@/components/noticias/CifrasMar';
+import { MapaHistoria } from '@/components/noticias/MapaHistoria';
+import { GlosarioTarjetas } from '@/components/noticias/GlosarioTarjetas';
+import { DibujoPortada, MapaGolfo, enMapaGolfo } from '@/components/noticias/ilustraciones';
 import { PortadaMar } from '@/components/noticias/PortadaMar';
+import { PausaFuera } from '@/components/noticias/PausaFuera';
+import { NadoVaquitas } from '@/components/noticias/MarAnimado';
+import { TarjetaNoticia } from '@/components/noticias/TarjetaNoticia';
 import { ElProyecto, EncabezadoSeccion, Fuentes, PortadaNoticias } from '@/components/noticias/SeccionesNoticias';
 
 export const metadata: Metadata = {
@@ -30,16 +33,20 @@ const SECCIONES = [
 
 const existe = (n: Noticia | null): n is Noticia => n !== null;
 
+/** Los dibujos que tapan el mapa en los lugares sin marca */
+const CAPA: Record<string, 'gota' | 'globo'> = { mexico: 'gota', mundo: 'globo' };
+
 /**
- * Noticias: una página informativa aparte, para leer sin la landing. Poco texto a la vez y casi
- * todo se toca. De arriba abajo:
+ * Noticias: una página informativa aparte, para leer sin la landing. Muy visual, poco texto a la
+ * vez y casi todo se ve con sólo bajar (pocos clics). De arriba abajo:
+ *  0. La portada, bajo el mar: la vaquita y su cría nadan; el título y un «¿Sabías que...?».
  *  1. Lo último: la más reciente a lo grande y tres más, en mosaico.
- *  2. En cifras (oscuro): el problema en cuatro temas; se elige uno y sale su cifra y su dibujo.
- *  3. En el mapa: las noticias por lugar, con marcas en el mapa del golfo.
- *  4. El proyecto: SiMAR en tres ideas y su historia, año por año.
- *  5. Todas, con buscador y filtro; glosario (se toca cada palabra) y fuentes.
+ *  2. En cifras (oscuro): los cuatro temas a la vista, cada uno con su escena animada.
+ *  3. En el mapa: el mapa del golfo se queda fijo y, al bajar, se acerca a cada lugar.
+ *  4. El proyecto: SiMAR en tres ideas y su historia, en una línea que se llena al bajar.
+ *  5. Todas, con buscador y filtro; el glosario en tarjetas y las fuentes.
  * La barra de arriba lleva las secciones y marca la que se lee. Los datos están en
- * lib/constants/noticias.ts. Ver DISEÑO_SIMAR.md §8.6.
+ * lib/constants/noticias.ts y el movimiento en globals.css (clases n-*). Ver DISEÑO_SIMAR.md §8.6.
  */
 export default async function NoticiasPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params;
@@ -53,11 +60,25 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
             .filter(existe)
             .map((n) => ({ slug: n.slug, titulo: n.titulo })),
     }));
-    const lugares = LUGARES.map(({ lon, lat, articulos, ...l }) => ({
-        ...l,
-        pos: lon !== undefined && lat !== undefined ? enMapaGolfo({ lon, lat }) : undefined,
-        noticias: articulos.map(noticiaPorSlug).filter(existe).map(resumenDe),
-    }));
+    // Los capítulos del mapa: sus noticias se dibujan aquí, en el servidor
+    const capitulos = LUGARES.map(({ lon, lat, articulos, ...l }) => {
+        const noticias = articulos.map(noticiaPorSlug).filter(existe).map(resumenDe);
+        return {
+            ...l,
+            pos: lon !== undefined && lat !== undefined ? enMapaGolfo({ lon, lat }) : undefined,
+            cuantas: noticias.length,
+            capa: CAPA[l.id] ? <DibujoPortada tipo={CAPA[l.id]} /> : undefined,
+            noticias: (
+                <ul className="divide-y divide-simar-borde">
+                    {noticias.map((n) => (
+                        <li key={n.slug} className="py-4 first:pt-0 last:pb-0">
+                            <TarjetaNoticia noticia={n} locale={locale} variante="fila" />
+                        </li>
+                    ))}
+                </ul>
+            ),
+        };
+    });
     const cuantas = [
         { cifra: POR_FECHA.length, texto: 'noticias' },
         { cifra: LUGARES.length, texto: 'lugares' },
@@ -86,16 +107,21 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
                 {/* En cifras */}
                 <section id="cifras" aria-labelledby="cifras-titulo" className={`${seccion} bg-simar-abismo text-white`}>
                     <div className="max-w-[1248px] mx-auto">
-                        <EncabezadoSeccion id="cifras-titulo" antetitulo="En cifras" titulo="El problema, en cuatro temas." texto="Toca uno para ver su cifra y qué leer." oscuro />
-                        <ExploradorCifras temas={temas} locale={locale} />
+                        <EncabezadoSeccion id="cifras-titulo" antetitulo="En cifras" titulo="El problema, en cuatro temas." oscuro />
+                        <CifrasMar temas={temas} locale={locale} />
                     </div>
                 </section>
 
                 {/* En el mapa */}
                 <section id="mapa" aria-labelledby="mapa-titulo" className={seccion}>
                     <div className="max-w-[1248px] mx-auto">
-                        <EncabezadoSeccion id="mapa-titulo" antetitulo="En el mapa" titulo="Dónde pasa cada noticia." texto="Toca una marca o un lugar para ver sus noticias." />
-                        <ExploradorMapa mapa={<MapaGolfo />} lugares={lugares} locale={locale} />
+                        <EncabezadoSeccion id="mapa-titulo" antetitulo="En el mapa" titulo="Dónde pasa cada noticia." texto="Baja y el mapa te lleva a cada lugar (las ubicaciones son aproximadas)." />
+                        <MapaHistoria
+                            mapa={<MapaGolfo />}
+                            capitulos={capitulos}
+                            vaquita={enMapaGolfo({ lon: -114.15, lat: 30.35 })}
+                            panga={enMapaGolfo({ lon: -113.66, lat: 31.17 })}
+                        />
                     </div>
                 </section>
 
@@ -118,8 +144,8 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
                 {/* Glosario */}
                 <section id="glosario" aria-labelledby="glosario-titulo" className={`${seccion} bg-simar-superficie/60 border-y border-simar-borde`}>
                     <div className="max-w-[1248px] mx-auto">
-                        <EncabezadoSeccion id="glosario-titulo" antetitulo="Glosario" titulo="Las palabras del puerto." texto="Toca una palabra para ver qué quiere decir." />
-                        <GlosarioInteractivo terminos={GLOSARIO} />
+                        <EncabezadoSeccion id="glosario-titulo" antetitulo="Glosario" titulo="Las palabras del puerto." />
+                        <GlosarioTarjetas terminos={GLOSARIO} />
                     </div>
                 </section>
 
@@ -132,7 +158,11 @@ export default async function NoticiasPage({ params }: { params: Promise<{ local
                 </section>
 
                 {/* Cierre */}
-                <section aria-labelledby="cierre-noticias" className="bg-simar-abismo text-white px-6 py-20 md:py-24 movil:px-5 movil:py-14">
+                <section aria-labelledby="cierre-noticias" className="relative isolate overflow-hidden bg-simar-abismo text-white px-6 pt-20 pb-[200px] md:pt-24 md:pb-[230px] movil:px-5 movil:pt-14 movil:pb-[150px]">
+                    {/* La vaquita y su cría se despiden, nadando abajo */}
+                    <PausaFuera oculto className="absolute inset-0 -z-10">
+                        <NadoVaquitas className="bottom-[36px] movil:bottom-[24px]" ancho="clamp(220px,24vw,340px)" dura={38} espera={-16} en="60%" />
+                    </PausaFuera>
                     <div className="max-w-[1248px] mx-auto flex flex-wrap items-end justify-between gap-8">
                         <div className="max-w-2xl">
                             <h2 id="cierre-noticias" className="text-[clamp(32px,3.4vw,48px)] font-extrabold leading-[1.08] tracking-[-0.025em] movil:text-[28px]">
