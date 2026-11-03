@@ -367,6 +367,145 @@ componentes `m.*` (`motion/react-m`), para bajar sólo lo que se usa. Las piezas
   paradas están en la página aunque no se vean; El viaje es `aria-hidden` y sus pasos van en una
   lista `sr-only`.
 
+### 8.6 Landing 3D: portada con laptop y página de producto
+
+La tercera landing (`components/landing/tresd/`, se ve con `?landing=3d` y el selector de abajo)
+es una **página de producto** al estilo de Apple. Usa **three.js** (sólo aquí) escrito a mano, sin
+React Three Fiber: el motor es un módulo que se baja con `await import()` cuando el navegador queda
+libre, así three no pesa en la carga inicial.
+
+Hasta noviembre de 2026 abría con un «mar de partículas» (figuras de puntos de luz). Se quitó:
+se sentía poco profesional y poco claro. Ahora la página dice qué es SiMAR en el primer vistazo y
+el contexto del problema va en una sección sencilla, con cifras y fuentes.
+
+| Pieza | Qué hace | Dónde |
+|---|---|---|
+| `ProductoEnEscena` + `motorDispositivos.ts` | **Portada y Cómo funciona** (claro, escenario `sticky`, ~580 vh). Arriba el título (`h1`), el texto y los botones; abajo una laptop **cerrada**. Con el primer movimiento del scroll el título se va y la laptop se abre en el Panel; luego la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla | `#inicio` (la escena) y `#producto` (ancla en la parada 1) |
+| `PasosEscena.tsx` | La barra de pasos (horizontal arriba en celular, vertical a la derecha en computadora) y los imanes del scroll. Con `desde={1}` la barra no cuenta la portada y aparece cuando la laptop termina de abrirse | La escena |
+| `PorQueImporta` + `ComparadorHojas` | **Por qué importa** (oscuro): la cifra del agua en grande (de `equivalencias.ts`), tres temas (aceite, basura, el lugar) con su dato y su artículo, el antes y después de la hoja (comparador que se arrastra, sin Motion: la posición vive en `--corte`) y Don Francisco con su foto. En celular, los tres temas van en un carrusel | `#por-que` |
+| `CifrasEnVivo`, `SeccionNoticias`, `Cierre` | Cifras reales (`getLandingStats` + `lib/utils/equivalencias.ts`), un adelanto de Noticias (las tres más recientes) y el llamado final | `#impacto`, `#noticias` |
+
+**La portada.** `motorDispositivos` recibe dónde termina el texto (`portadaLibre`, fracción del
+alto; `portada()` lo actualiza al cambiar el tamaño) y pone la laptop cerrada centrada en el
+espacio de abajo, tan lejos como haga falta para que quepa a lo alto y a lo ancho. El título usa
+`min(5.3vw, 8vh)` para que en pantallas bajas no tape la laptop. Abajo, «Baja para abrirla» con
+una flecha que se mueve despacio (se va con el primer scroll).
+
+**Tiempos del scroll** (`comun.ts`). La escena se arma con `crearRecorrido(pesos)`: un peso por
+parada y `VH_POR_PASO` (85 vh) por peso; una parada con más que leer pesa más. Dentro de cada
+parada (`TIEMPOS`):
+
+| Tramo de la parada | Qué pasa |
+|---|---|
+| 0 a 0.56 | El texto se lee **quieto** (de 48 a 64 vh de scroll, más en las últimas) |
+| 0.56 a 0.68 | El texto se va |
+| 0.60 a 0.93 | La figura viaja a la siguiente (`etapaEn`) |
+| 0.86 a 0.98 | Entra el texto siguiente (`textoEn`) |
+
+- Los textos y las barras se mueven por `data-*` dentro del `requestAnimationFrame` (sin volver a
+  renderizar React).
+- **Seguimiento del scroll** (`crearSeguidor`): la escena no copia el scroll tal cual, lo sigue
+  con un resorte amortiguado (SmoothDamp, 0.16 s, tope de 6.5 paradas por segundo). Textos,
+  barra y cámara leen esa misma posición, así siempre van juntos. Con scroll lento va pegada al
+  dedo; con un deslizón rápido alcanza al dedo sin brincos y llega frenando. El motor no suaviza
+  por su cuenta (sería doble arrastre).
+- **Prisa** (`crearPrisa`): según la velocidad (de 1.4 a 2.8 paradas por segundo) los textos se
+  apagan, para que al pasar de largo los que se cruzan no parpadeen; al frenar, el de la parada
+  donde se llega aparece con calma. Medido a 7,000 px/s: ningún texto intermedio pasa de 6 %; a
+  400 px/s cada texto se lee igual que antes (de 1.2 a 1.6 s).
+- **La barra del navegador del celular** sube y baja al hacer scroll y cambia `innerHeight`. Por
+  eso el avance se mide con el alto del escenario (`scrollDe`, el `[data-escenario]` de 100svh),
+  no con `innerHeight`, y el motor ignora un «resize» que no cambia el tamaño del lienzo (antes
+  la escena brincaba y el lienzo rehacía su memoria).
+- **Barra de pasos** (`BarraPasos`): un segmento por parada que se llena mientras la figura viaja;
+  el actual lleva `aria-current="step"`. Cada segmento es un botón (44 px de alto en celular) que
+  lleva a esa parada, con su nombre al pasar el cursor o con el foco.
+- **Imanes** (`ImanesPasos`): con `pointer: coarse` la página usa `scroll-snap-type: y proximity`
+  y hay un imán invisible en el punto de lectura de cada parada. Si el dedo suelta cerca, el scroll
+  se acomoda donde el texto se lee; si va rápido, no estorba. En computadora no hay imanes.
+- **Menú y barra**: los enlaces son Cómo funciona, Por qué importa, Impacto, Puertos y
+  **Noticias, que es una página aparte** (`pagina: true` en `ENLACES`, va con `Link`). Bajo
+  1280 px salen en un menú (hamburguesa) con ícono, nombre y una línea de cada uno. Usa
+  `useVentanaAccesible` y se cierra con Escape o tocando fuera. La sección activa se calcula con
+  el scroll (la que cruza la mitad de la pantalla; «Cómo funciona» va de su ancla al final de la
+  escena). La barra lleva abajo una línea fina con el avance de toda la página (`.t3-avance`).
+- **Con "reducir movimiento"** la cámara salta de toma en toma, los textos sólo aparecen y
+  desaparecen y la flecha de la portada no se mueve.
+- **Rendimiento:** la escena sólo dibuja cuando la toma cambia (quieto no gasta) y baja sola la
+  densidad de píxeles si los cuadros pasan de ~22 ms (`crearAjustePixeles`: un escalón de 0.25,
+  hasta 1.25, para que el texto de las pantallas se lea). three.js se baja con
+  `requestIdleCallback` después de pintar la portada; el `h1` y los botones ya están en el HTML.
+  La escena compila sus shaders y sube las capturas antes de mostrarse.
+- **Los dispositivos** (`motorDispositivos.ts`): cuerpos de aluminio gris espacial con esquinas y
+  cantos redondos (`losa()`: extrusión con bisel y vértices unidos para sombreado suave, caras
+  planas con su normal exacta), teclado en 3D en una sola malla, bocinas, trackpad, bisagra,
+  cámara, el símbolo de SiMAR en la tapa, celular con botones, cristal que suma reflejos encima de
+  las pantallas, sombras de contacto difuminadas y un estudio de luz propio (cajas de luz alrededor,
+  en un PMREM) con el tono `NeutralToneMapping`. Se probaron paquetes de modelos: los gratis son de
+  pocos polígonos o con licencia dudosa y los realistas pesan megas; por eso van con código.
+- **Sin WebGL** la escena muestra la captura de cada toma en un marco sencillo.
+- La barra se vuelve vidrio oscuro sobre las secciones con `data-tono="oscuro"` (Por qué importa,
+  Puertos y Cierre) y toma el tema en las demás.
+
+**Noticias: una página informativa aparte.** `/[locale]/noticias` y `/[locale]/noticias/[slug]`
+leen `lib/constants/noticias.ts` (sin base de datos). La landing sólo lleva un adelanto
+(`SeccionNoticias`, las tres más recientes y «Ir a Noticias») y el enlace del menú.
+
+- La página (`app/[locale]/noticias/page.tsx`) es **muy visual, poco texto a la vez y casi todo
+  se ve con sólo bajar** (Jesus la pidió menos aburrida, con más estructura, con animaciones de la
+  vaquita y con menos clics). La barra de arriba lleva una fila con las secciones (`NavSecciones`,
+  marca la que se lee) y, de arriba abajo:
+  0. **La portada, bajo el mar** (`PortadaMar`): se mete debajo de la barra de vidrio; entra la
+     luz, pasan cardúmenes, suben unas burbujas, se mecen las algas y la vaquita nada con su cría
+     (`Vaquita`, SVG). Encima: el título, tres contadores (noticias, lugares, fuentes) y un
+     «¿Sabías que...?» de la vaquita que lleva a su artículo.
+  1. **Lo último**: un mosaico: la más reciente grande (portada arriba, texto abajo) y tres más
+     sólo con portada y título (`variante="mosaico"`; en celular, carrusel).
+  2. **En cifras** (oscuro, `CifrasMar`): los cuatro `TEMAS` a la vista, sin pestañas. Cada tarjeta
+     lleva su escena animada (`EscenaCifra`, por `id`: la gota de aceite que cae y abre su mancha,
+     la botella que flota y la lata que se hunde, la red fantasma con un pez atrapado, la vaquita
+     y su cría), la cifra que sube al verse (`CifraAnimada`), una línea y dos artículos. La del mar
+     pinta las vaquitas que quedan (`FilaVaquitas`: siete firmes y tres claras).
+  3. **En el mapa** (`MapaHistoria`, contado con el scroll): el golfo (`MapaGolfo`, de servidor) se
+     queda fijo (a un lado en computadora, arriba en celular) y cada capítulo de `LUGARES` lo lleva
+     a su lugar: se acerca (`zoom`), se enciende su marca y se leen sus noticias. La costa se dibuja
+     al verse, la vaquita nada en el Alto Golfo y una panga sale de Puerto Peñasco. México y el
+     mundo apartan el mapa y muestran un dibujo. Tocar una marca baja a su capítulo. El zoom usa
+     propiedades registradas (`--n-z`, `--n-tx`, `--n-ty`) para que las marcas se desescalen a la
+     par; las noticias de cada capítulo se dibujan en el servidor. Toda noticia debe estar en un
+     lugar.
+  4. **El proyecto**: la foto, SiMAR en tres ideas, con quién se hizo y la historia
+     (`HistoriaProyecto`: una línea que se llena al bajar, los años en zigzag y cada uno se enciende
+     al llegar; sin clics).
+  5. **Todas** (`ListaNoticias`): buscador sin acentos, filtro por tema, las primeras seis sin
+     resumen y «Ver N más». **Glosario** (`GlosarioTarjetas`: una tarjeta por palabra con su ícono;
+     Manifiesto y Red fantasma llevan dibujo; en celular, carrusel) y **fuentes** (quién las
+     publica, de un vistazo, y la lista entera en un `<details>`).
+  6. **Cierre** (oscuro): la vaquita y su cría se despiden nadando abajo.
+  **El movimiento** es SVG y CSS (`MarAnimado.tsx` y las clases `n-*` de `globals.css`), sin
+  librerías: sólo corre con «sin preferencia» de movimiento y, con «reducir movimiento», cada cosa
+  se queda quieta en un lugar donde se ve. `PausaFuera` pausa cada escena fuera de la pantalla
+  (`data-quieta`) y marca la primera vez que se ve (`data-visto`) para lo que se anima una vez.
+  Nada de partículas ni animaciones abstractas: animales y cosas del mar que se reconocen. A los
+  componentes de cliente sólo les llegan resúmenes (`resumenDe`), nunca el texto de los artículos.
+- Hay dos clases de artículo: noticias (lo que pasó, con su fecha) y los que explican el problema
+  (`explica: true`, no caducan): éstos van en En cifras y no en la portada. El orden lo da
+  la fecha (`POR_FECHA`, `recientes()`).
+- Cada artículo lleva fecha, categoría (SiMAR, Mar de Cortés, Océanos, Normativa, Conciencia),
+  resumen, cuerpo en párrafos y **fuentes** con enlace. Opcionales: `imagen`, `galeria`, `dato` (la
+  cifra clave, resaltada después del primer párrafo) e `ilustracion`. Todo dato lleva su fuente.
+- **Sin foto, la portada se dibuja** (`components/noticias/ilustraciones.tsx`): ilustraciones
+  planas de trazo limpio, sin puntos (`mapa`, `altogolfo`, `carta`, `gota`, `hojas`, `simbolo`,
+  `red`, `globo`, `costa`, `botella`, `horizonte`). Los mapas salen de `components/noticias/golfo.ts`
+  (Natural Earth, dominio público). Si la noticia no dice cuál, sale la de su categoría
+  (`ILUSTRACION_DE`). Cada dibujo usa `useId` para sus degradados: la misma noticia puede salir dos
+  veces en una página (una oculta) y con ids repetidos la visible no se pinta. No inventes fotos.
+- El artículo lleva migas, el botón Compartir (`navigator.share` o copia el enlace con un aviso),
+  una línea de avance de lectura en la barra, Anterior (más vieja) / Siguiente (más nueva) y
+  "Sigue leyendo" (misma categoría primero).
+- `MetaNoticia` (tema · fecha · minutos) recorta el punto que separa cuando una parte baja de
+  renglón: ningún renglón empieza con «·».
+
 ---
 
 ## 9. Modo claro y oscuro

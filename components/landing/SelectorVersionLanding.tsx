@@ -4,19 +4,20 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Layers, X } from 'lucide-react';
 
-export type VersionLanding = 'actual' | 'nueva';
+export type VersionLanding = 'actual' | 'nueva' | '3d';
 
 export const VERSIONES_LANDING: { id: VersionLanding; nombre: string }[] = [
     { id: 'actual', nombre: 'Actual' },
     { id: 'nueva', nombre: 'Nueva' },
+    { id: '3d', nombre: '3D' },
 ];
 
 /**
- * Botón flotante para comparar las dos landings mientras se decide con cuál quedarse: abajo a la
+ * Botón flotante para comparar las landings (actual, nueva y 3D) mientras se decide con cuál quedarse: abajo a la
  * izquierda en celular y abajo a la derecha en computadora (a la izquierda tapaba el camino de "El
  * viaje"). Cambia ?landing= en la URL, así cada versión se puede compartir con su enlace. En celular
  * empieza como un botón redondo y se abre al tocarlo, para no tapar los botones del inicio. Al
- * elegir una versión, se quita este botón y la otra landing.
+ * elegir una versión, se quita este botón y las otras landings.
  * `sobreAviso`: en celular sube para no tapar el aviso de la base de DCK (AvisoBaseDck, abajo a la
  * izquierda); en computadora ya va del otro lado.
  */
@@ -34,7 +35,7 @@ export function SelectorVersionLanding({ version, sobreAviso = false }: { versio
                 type="button"
                 onClick={() => setAbierto((a) => !a)}
                 aria-expanded={abierto}
-                aria-label={abierto ? 'Cerrar' : 'Comparar las dos versiones de la landing'}
+                aria-label={abierto ? 'Cerrar' : 'Comparar las versiones de la landing'}
                 className="md:hidden w-11 h-11 rounded-full flex items-center justify-center hover:bg-simar-texto/10"
             >
                 {abierto ? <X className="w-5 h-5" /> : <Layers className="w-[22px] h-[22px]" />}

@@ -1816,6 +1816,152 @@ html[data-barra-mini] .simar-flotante {
   border-radius: 999px;
 }
 
+/* ============================================
+   LANDING 3D (components/landing/tresd/, ?landing=3d). Ver DISEÑO_SIMAR.md §8.6.
+   La portada y «Cómo funciona» siguen el tema; «Por qué importa», Puertos y el cierre son oscuros.
+   ============================================ */
+
+/* Barra: vidrio del tema; sobre las secciones oscuras, vidrio oscuro */
+.t3-barra {
+  background: var(--simar-vidrio-fuerte);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+  backdrop-filter: blur(22px) saturate(170%);
+  border: 1px solid var(--simar-vidrio-borde);
+  box-shadow: inset 0 1px 0 var(--simar-vidrio-brillo), 0 12px 32px -18px var(--simar-vidrio-sombra);
+  color: var(--simar-texto);
+  transition: background-color 0.35s var(--simar-frena), border-color 0.35s var(--simar-frena), color 0.35s var(--simar-frena);
+}
+.t3-barra[data-oscuro='true'] {
+  background: rgba(6, 18, 30, 0.5);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 12px 32px -18px rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+.t3-barra .t3-enlace:hover,
+.t3-barra .t3-enlace[aria-current] {
+  color: var(--simar-marea-tinta);
+}
+.t3-barra[data-oscuro='true'] .t3-enlace:hover,
+.t3-barra[data-oscuro='true'] .t3-enlace[aria-current] {
+  color: var(--simar-espuma);
+}
+.t3-barra[data-oscuro='true'] .t3-tema {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+/* El menú de secciones (bajo 1280 px): sigue el tono de la barra */
+.t3-opcion:hover,
+.t3-opcion:focus-visible,
+.t3-opcion-activa {
+  background: color-mix(in oklab, var(--simar-texto) 6%, transparent);
+}
+.t3-opcion-icono {
+  background: var(--simar-marea-suave);
+  color: var(--simar-marea-tinta);
+}
+.t3-opcion-detalle {
+  color: var(--simar-texto-2);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion:hover,
+.t3-barra[data-oscuro='true'] .t3-opcion:focus-visible,
+.t3-barra[data-oscuro='true'] .t3-opcion-activa {
+  background: rgba(255, 255, 255, 0.08);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion-icono {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--simar-espuma);
+}
+.t3-barra[data-oscuro='true'] .t3-opcion-detalle {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Cuánto falta de la página: una línea en la orilla de abajo de la barra */
+.t3-avance {
+  background: var(--simar-golfo);
+}
+.t3-barra[data-oscuro='true'] .t3-avance {
+  background: var(--simar-espuma);
+}
+
+/* Imanes de las escenas fijas (components/landing/tresd/PasosEscena.tsx): sólo en pantallas
+   táctiles, donde un deslizón se pasaba de largo las paradas. Con el mouse no hacen falta */
+@media (pointer: coarse) {
+  html:has(.t3) {
+    scroll-snap-type: y proximity;
+  }
+  .t3-iman {
+    scroll-snap-align: start;
+  }
+}
+
+/* «Baja para abrirla»: la flecha baja y sube despacio */
+@media (prefers-reduced-motion: no-preference) {
+  .t3-baja {
+    animation: t3-baja 1.8s var(--simar-frena) infinite;
+  }
+}
+@keyframes t3-baja {
+  0%,
+  100% {
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* El comparador de la hoja (ComparadorHojas.tsx): la posición vive en --corte */
+.t3-comparador-antes {
+  clip-path: inset(0 calc(100% - var(--corte)) 0 0);
+}
+.t3-comparador-barra {
+  transform: translateX(var(--corte));
+}
+.t3-corte-suave .t3-comparador-antes,
+.t3-corte-suave .t3-comparador-barra {
+  transition:
+    clip-path 0.7s var(--simar-frena),
+    transform 0.7s var(--simar-frena);
+}
+
+/* Detrás de la laptop y el celular: una luz azul muy suave, como un estudio de fotografía */
+.t3-escenario {
+  background: radial-gradient(70% 55% at 50% 78%, var(--simar-marea-suave), transparent 72%);
+}
+
+/* El llamado final: una marea de luz que sube desde abajo */
+.t3-cierre-luz {
+  background:
+    radial-gradient(80% 60% at 50% 110%, rgba(32, 178, 196, 0.32), transparent 70%),
+    radial-gradient(50% 40% at 50% 0%, rgba(27, 95, 201, 0.18), transparent 70%);
+}
+
+/* Entra desenfocado y se aclara al recorrer el tercio de abajo (como .ln-enfoca de la nueva) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .t3-enfoca {
+      animation: t3-enfoca linear backwards;
+      animation-timeline: view();
+      animation-range: cover 0% cover 28%;
+    }
+    .t3-enfoca-2 {
+      animation-range: cover 4% cover 32%;
+    }
+    .t3-enfoca-3 {
+      animation-range: cover 8% cover 36%;
+    }
+  }
+}
+@keyframes t3-enfoca {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(28px);
+  }
+}
+
 /* Reducir movimiento: todo lo anterior (y cualquier transición) se vuelve instantáneo.
    Los indicadores de carga siguen girando, más despacio. */
 @media (prefers-reduced-motion: reduce) {
@@ -1839,4 +1985,243 @@ html[data-barra-mini] .simar-flotante {
   .simar-presiona:active:not(:disabled) {
     transform: none;
   }
+}
+
+/* ── Noticias: el mar que se mueve (components/noticias/, DISEÑO_SIMAR.md §8.6) ──────────────
+   Escenas de SVG con CSS: la vaquita y su cría nadan, la luz entra, suben burbujas, se mecen las
+   algas, cae la gota de aceite... Todo se mueve sólo con «sin preferencia» de movimiento: con
+   «reducir movimiento» cada cosa se queda quieta en un lugar donde se ve. PausaFuera pone
+   data-quieta en la escena cuando sale de la pantalla (no gasta batería) y data-visto la primera
+   vez que entra (para lo que se anima una sola vez: la costa del mapa, la fila de vaquitas). */
+/* El agua de la portada: clara junto a la superficie y oscura al fondo */
+.n-agua {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--simar-mar-1) 72%, var(--simar-golfo)) 0%,
+    var(--simar-mar-1) 24%,
+    var(--simar-mar-2) 60%,
+    var(--simar-abismo) 100%
+  );
+}
+.n-escena[data-quieta='true'] *,
+.n-escena[data-quieta='true'] *::before,
+.n-escena[data-quieta='true'] *::after {
+  animation-play-state: paused !important;
+}
+
+/* El mapa que se acerca a cada lugar (MapaHistoria): --n-z es el acercamiento y --n-tx/--n-ty el
+   corrimiento en % del lienzo. Registradas, se animan juntas y las marcas se desescalan a la par */
+@property --n-z {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+@property --n-tx {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+@property --n-ty {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+/* La caja recorta y el lienzo (cuadrado) la cubre, centrado, sea cual sea su forma */
+.n-mapa-caja {
+  container-type: size;
+}
+.n-mapa-lienzo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100cqw, 100cqh);
+  height: max(100cqw, 100cqh);
+  margin-left: calc(max(100cqw, 100cqh) / -2);
+  margin-top: calc(max(100cqw, 100cqh) / -2);
+  transform-origin: 0 0;
+  transform: translate(calc(var(--n-tx) * 1%), calc(var(--n-ty) * 1%)) scale(var(--n-z));
+  transition:
+    --n-z 1.3s cubic-bezier(0.65, 0, 0.35, 1),
+    --n-tx 1.3s cubic-bezier(0.65, 0, 0.35, 1),
+    --n-ty 1.3s cubic-bezier(0.65, 0, 0.35, 1),
+    opacity 0.6s ease;
+}
+.n-mapa-marca {
+  transform: translate(-50%, -50%) scale(calc(1 / var(--n-z)));
+}
+/* La costa no engorda al acercarse; los nombres de los estados se van al entrar a un lugar */
+.n-costa {
+  stroke-width: calc(0.024 / var(--n-z, 1));
+}
+.n-mapa-nombres {
+  opacity: clamp(0, calc(1.7 - var(--n-z) * 0.7), 1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* La cola de la vaquita sube y baja; la de la cría, más rápido */
+  .n-cola {
+    animation: n-cola 0.95s ease-in-out infinite alternate;
+  }
+  .n-cria .n-cola {
+    animation-duration: 0.7s;
+  }
+  /* Cruzar la escena de lado a lado: la caja es tan ancha como la escena, así que el % es de la
+     escena. --desde y --hasta dicen de dónde a dónde (de derecha a izquierda, al revés) */
+  .n-cruza {
+    animation: n-cruza var(--dura, 48s) linear var(--espera, 0s) infinite;
+  }
+  /* Nadar: subir y bajar un poco mientras avanza */
+  .n-ondula,
+  .n-ondula-2 {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: n-ondula 3.4s ease-in-out infinite;
+  }
+  .n-ondula-2 {
+    animation: n-ondula 2.7s ease-in-out -1.2s infinite;
+  }
+  .n-rayo {
+    animation: n-rayo 7s ease-in-out var(--espera, 0s) infinite alternate;
+  }
+  .n-burbuja {
+    animation: n-burbuja var(--dura, 7s) ease-in var(--espera, 0s) infinite;
+  }
+  .n-alga {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: n-alga var(--dura, 5s) ease-in-out var(--espera, 0s) infinite alternate;
+  }
+  .n-ola {
+    transform-box: fill-box;
+    animation: n-ola var(--dura, 9s) linear infinite;
+  }
+  .n-flota {
+    transform-box: fill-box;
+    transform-origin: 50% 60%;
+    animation: n-flota 4.2s ease-in-out var(--espera, 0s) infinite;
+  }
+  .n-deriva {
+    transform-box: fill-box;
+    transform-origin: 50% 0%;
+    animation: n-deriva var(--dura, 7s) ease-in-out infinite alternate;
+  }
+  .n-aleteo {
+    transform-box: fill-box;
+    transform-origin: 70% 50%;
+    animation: n-aleteo 0.35s ease-in-out infinite alternate;
+  }
+  .n-hunde {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: n-hunde 11s linear var(--espera, 0s) infinite;
+  }
+  /* La gota de aceite: cae, toca el agua, salen ondas y la mancha se abre */
+  .n-gota-cae {
+    animation: n-gota-cae 4s cubic-bezier(0.55, 0, 1, 0.45) infinite;
+  }
+  .n-onda {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: n-onda 4s ease-out var(--espera, 0s) infinite;
+  }
+  .n-mancha {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: n-mancha 4s ease-out infinite;
+  }
+  /* En el mapa: la vaquita va y viene; la panga sale del puerto y regresa */
+  .n-patrulla {
+    animation: n-patrulla 14s ease-in-out infinite;
+  }
+  /* Una sola vez, al entrar: la costa se dibuja y las vaquitas de la cifra aparecen una a una */
+  [data-visto] .n-costa {
+    stroke-dasharray: 1;
+    animation: n-dibuja 2.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  }
+  [data-visto] .n-asoma {
+    animation: n-asoma 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--i, 0) * 110ms + 250ms) backwards;
+  }
+  /* El brillo de la marca elegida del mapa */
+  .n-pulso {
+    animation: map-ping 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+@keyframes n-cola {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(9deg); }
+}
+@keyframes n-cruza {
+  from { transform: translateX(var(--desde, -80%)); }
+  to { transform: translateX(var(--hasta, 70%)); }
+}
+@keyframes n-ondula {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-1.6deg); }
+}
+@keyframes n-rayo {
+  from { opacity: 0.35; transform: skewX(-3deg); }
+  to { opacity: 0.85; transform: skewX(3deg); }
+}
+@keyframes n-burbuja {
+  0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
+  12% { opacity: 0.85; }
+  85% { opacity: 0.6; }
+  100% { transform: translate(var(--lado, 8px), calc(var(--sube, 240px) * -1)) scale(1.15); opacity: 0; }
+}
+@keyframes n-alga {
+  from { transform: rotate(-5deg); }
+  to { transform: rotate(5deg); }
+}
+@keyframes n-ola {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes n-flota {
+  0%, 100% { transform: translateY(-3px) rotate(-6deg); }
+  50% { transform: translateY(4px) rotate(5deg); }
+}
+@keyframes n-deriva {
+  from { transform: translateX(-10px) rotate(-2.5deg); }
+  to { transform: translateX(10px) rotate(2.5deg); }
+}
+@keyframes n-aleteo {
+  from { transform: rotate(-9deg); }
+  to { transform: rotate(9deg); }
+}
+@keyframes n-hunde {
+  0% { transform: translate(0, -60px) rotate(-20deg); opacity: 0; }
+  8% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(14px, 70px) rotate(140deg); opacity: 0; }
+}
+@keyframes n-gota-cae {
+  0% { transform: translateY(-70px); opacity: 0; }
+  8% { opacity: 1; }
+  33% { transform: translateY(38px); opacity: 1; }
+  35%, 100% { transform: translateY(38px); opacity: 0; }
+}
+@keyframes n-onda {
+  0%, 33% { transform: scale(0.12); opacity: 0; }
+  36% { opacity: 0.9; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+@keyframes n-mancha {
+  0%, 33% { transform: scaleX(0.1) scaleY(0.4); opacity: 0; }
+  45% { opacity: 0.9; }
+  88% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+  100% { transform: scaleX(1.05) scaleY(1); opacity: 0; }
+}
+@keyframes n-patrulla {
+  0% { transform: translateX(-22px) scaleX(1); }
+  46% { transform: translateX(22px) scaleX(1); }
+  50% { transform: translateX(22px) scaleX(-1); }
+  96% { transform: translateX(-22px) scaleX(-1); }
+  100% { transform: translateX(-22px) scaleX(1); }
+}
+@keyframes n-dibuja {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes n-asoma {
+  from { opacity: 0; transform: translateY(10px) scale(0.6); }
 }
