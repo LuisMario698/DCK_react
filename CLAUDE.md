@@ -41,7 +41,9 @@ para consultar (abajo).
   sólo los usa `lib/data.ts`; no los uses para código nuevo.
 - **Cliente Supabase:** `lib/supabase/client.ts` en el navegador; `lib/supabase/server.ts` en
   Server Components. Varios servicios (`buques.ts`, `dashboard_stats.ts`, `landing_stats.ts`)
-  aceptan un `SupabaseClient` inyectado para usarse desde RSC.
+  aceptan un `SupabaseClient` inyectado para usarse desde RSC. El `AuthProvider` (envuelve todas
+  las páginas) pide el cliente con `import()` aparte: en el acto si hay cookie de sesión, si no en
+  reposo; así la landing y Noticias no bajan Supabase al abrir.
 - **Rutas:** todo cuelga de `app/[locale]/` y lleva prefijo `/es` o `/en` (`localePrefix:
   'always'`). El layout real (providers, `<html>`) es `app/[locale]/layout.tsx`, no
   `app/layout.tsx`.
@@ -107,16 +109,53 @@ para consultar (abajo).
   "gráficas" son divs/SVG a mano. El mapa del portal recolector usa **MapLibre GL JS +
   react-map-gl** con teselas de OpenFreeMap, sin API key (`components/recolector/MapaMapLibre.tsx`).
   Mantén `maplibre-gl` en v5: la v6 no carga su worker con Turbopack. El mapa de la landing es
-  SVG puro. **Motion** (motion.dev) se usa sólo en la landing nueva (`components/landing/nueva/`,
-  escenas atadas al scroll; ver DISEÑO_SIMAR.md §8.5): no lo lleves a los paneles.
-  **three.js** se usa sólo en la landing 3D (`components/landing/tresd/`, `?landing=3d`; ver
-  DISEÑO_SIMAR.md §8.6), cargado con `await import()`: no lo importes arriba de un archivo.
+  SVG puro; el de Noticias («En el mapa») es MapLibre directo (`components/noticias/MapaInteractivo.tsx`,
+  estilo positron de OpenFreeMap, repintado en oscuro con la paleta de SiMAR), cargado con `next/dynamic` sólo cuando la sección se acerca.
+  **Motion** (motion.dev) se usa sólo en la landing nueva (`components/landing/nueva/`, escenas
+  atadas al scroll; ver DISEÑO_SIMAR.md §8.5) y en «Otros medios» de Noticias: no lo lleves a los
+  paneles ni a la landing Actual (sus noticias y la foto de la portada de Noticias se mueven con CSS
+  atado al scroll, `n-paralaje`). Las fotos de Noticias llegan con `FotoNota` y su vista previa
+  difuminada de `lib/constants/previas.ts`: si agregas una foto, agrega su previa.
+  **three.js** se usa sólo en las landings: la 3D (`components/landing/tresd/`, `?landing=3d`; ver
+  DISEÑO_SIMAR.md §8.6) y la escena de la laptop de la Actual (`components/landing/escena-equipos/`,
+  §8.7), cargado con `await import()`: no lo importes arriba de un archivo. La escena de la Actual
+  arranca después de `load` y cerca de la sección; lo que no urge se pide con `cuandoEnReposo`
+  (`lib/utils/reposo.ts`).
+  **Carga de la landing** (DISEÑO_SIMAR.md §8.7): las landings nueva y 3D se importan desde
+  `components/landing/LandingsAlternas.tsx` (de cliente). Un `next/dynamic` en `page.tsx` (de
+  servidor) **no** parte el código: sus componentes de cliente bajaban igual con la Actual. Por lo
+  mismo, en la página de servidor no importes arriba componentes que sólo se usan en otra versión.
+  Las fotos con calidad distinta de 75 deben estar en `images.qualities` (`next.config.ts`).
+  **Animaciones atadas al scroll (`animation-timeline: view()`):** todo lo que las rodea recorta con
+  `overflow-clip`, nunca `overflow-hidden`. Un overflow hidden vuelve a la caja un contenedor de scroll
+  y la animación se mide contra ella, que no se mueve: se queda fija (así estuvieron sin funcionar el
+  paralaje de la portada de Noticias y el descubrir de sus tarjetas). Para descubrir o recortar algo
+  que se anima, usa `transform`/`translate` (dos traslados opuestos, ver `n-descubre` en
+  `globals.css`), no `clip-path`, que Chrome repinta en el hilo principal.
+- La barra del **portal público** (Noticias y la landing Actual) es una **isla dinámica**
+  (`components/isla/`, DISEÑO_SIMAR.md §8.6): sus paneles salen como gotas por la orilla de abajo de
+  la isla, bajo el botón que los abre (liquid-gooey); un botón fuera de la isla los abre con
+  `useGota().abrirDesde(boton)` (una gotita viaja a la isla primero). Para que no se trabe, la capa
+  líquida sólo existe mientras una gota vive y sólo en su columna; no le pongas sombras ni brillos al
+  filtro (van en CSS) ni la dejes montada siempre. La gota es sólida (`--isla-liquido`), sin
+  `backdrop-filter`. En el portal público, los selectores son `SelectorLiquido` (lente que se desliza,
+  `components/isla/lente.ts`) y los botones llevan `data-vidrio` (luz bajo el cursor; `VidrioVivo` se
+  monta una vez por página). Nada de eso va en el recinto.
 - Las **noticias** son una página informativa aparte (`/[locale]/noticias`: portada bajo el mar,
   lo último, en cifras, en el mapa, el proyecto, todas, glosario y fuentes; muy visual y casi todo
   se ve con sólo bajar) y salen de `lib/constants/noticias.ts`, no de Supabase; todo dato lleva su
-  fuente y toda noticia, su lugar en `LUGARES`. Lo que se mueve (la vaquita, el mar, el mapa que
-  se acerca) es SVG + CSS (`components/noticias/MarAnimado.tsx`, clases `n-*`), sin librerías:
-  no metas Motion ni three.js ahí. Sin foto, la portada se dibuja
+  fuente y toda noticia, su lugar en `LUGARES`. Es un producto editorial: debe verse como un medio
+  serio (fotos reales con su crédito y licencia, tipografía de periódico, fuentes visibles). Ahí se
+  puede usar cualquier herramienta (Motion, three.js con `await import()`, MapLibre, CSS nativo);
+  lo de siempre: con «reducir movimiento», quieto. «Otros medios» sale de
+  `lib/services/noticias_externas.ts` (RSS públicos de Mongabay Latam, SINC, ONU y The Conversation,
+  leídos en el servidor cada hora): sólo titular, resumen, autor y enlace al original, nunca el
+  texto completo ni sus fotos. Las fotos ajenas están en `lib/constants/fotos.ts` (licencia libre,
+  con crédito visible junto a la foto). Noticias tiene **ajustes de lectura** (tamaño, contraste, renglones,
+  tema, animaciones, enlaces: `components/noticias/ajustesLectura.ts` + `PanelLectura.tsx`) que sólo
+  valen dentro de `.n-pagina`; el tamaño es `zoom` en `<main>`: lo pegado y las alturas con `svh`
+  van divididos entre `var(--n-zoom,1)`. Las clases `n-*` de `globals.css` y
+  `MarAnimado.tsx` son la base anterior (DISEÑO_SIMAR.md §8.6, «Noticias»). Sin foto, la portada se dibuja
   (`components/noticias/ilustraciones.tsx`, ilustraciones planas, sin puntos). La landing 3D sólo
   lleva un adelanto: `SeccionNoticias`, de servidor, llega a `LandingTresD` como prop (ver
   DISEÑO_SIMAR.md §8.6).

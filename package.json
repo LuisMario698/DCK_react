@@ -11,7 +11,9 @@
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.80.0",
+    "fast-xml-parser": "^5.12.0",
     "jspdf": "^3.0.4",
+    "liquid-gooey": "^0.2.2",
     "lucide-react": "^0.556.0",
     "maplibre-gl": "^5.24.0",
     "motion": "^12.43.0",

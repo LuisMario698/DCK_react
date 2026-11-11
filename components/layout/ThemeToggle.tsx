@@ -23,8 +23,8 @@ export function ThemeToggle() {
     if (pathname === '/es' || pathname === '/en' || pathname === '/') {
         return null;
     }
-    // Paneles con menú lateral: el botón está en el menú
-    if (pathname.includes('/dashboard') || pathname.includes('/superadmin')) {
+    // Paneles con menú lateral (el botón está en el menú) y Noticias (está en su barra)
+    if (pathname.includes('/dashboard') || pathname.includes('/superadmin') || pathname.includes('/noticias')) {
         return null;
     }
 
@@ -44,17 +44,37 @@ export function ThemeToggle() {
  * Botón de tema redondo, sólo ícono (barra de la landing). Lleva aria-label y title.
  * `plano`: círculo sin caja ni borde, para dentro del cristal líquido del encabezado móvil.
  */
-export function BotonTemaIcono({ className = '', compacto = false, plano = false }: { className?: string; compacto?: boolean; plano?: boolean }) {
+/**
+ * El botón de tema con ícono. `vidrio` (portal público: landing y Noticias): la luz de vidrio vivo
+ * (data-vidrio, components/isla/VidrioVivo) y el ícono nuevo entra girando.
+ */
+export function BotonTemaIcono({
+    className = '',
+    compacto = false,
+    plano = false,
+    vidrio = false,
+}: {
+    className?: string;
+    compacto?: boolean;
+    plano?: boolean;
+    vidrio?: boolean;
+}) {
     const { theme, toggleTheme } = useTheme();
     const oscuro = theme === 'dark';
+    const icono = 'w-6 h-6';
     return (
         <button
             onClick={(e) => toggleTheme(centroDe(e))}
             aria-label={oscuro ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
             title={oscuro ? 'Modo claro' : 'Modo oscuro'}
+            data-vidrio={vidrio ? 'claro' : undefined}
             className={`simar-presiona ${compacto ? 'w-[52px] h-[52px]' : 'w-[54px] h-[54px] md:w-[58px] md:h-[58px]'} flex-shrink-0 ${plano ? 'rounded-full hover:bg-simar-texto/5 dark:hover:bg-white/10' : 'rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10'} text-simar-texto flex items-center justify-center ${className}`}
         >
-            {oscuro ? <Sun className="w-6 h-6" strokeWidth={2} /> : <Moon className="w-6 h-6" strokeWidth={2} />}
+            {oscuro ? (
+                <Sun key="sol" className={`${icono} ${vidrio ? 'tema-icono-entra' : ''}`} strokeWidth={2} />
+            ) : (
+                <Moon key="luna" className={`${icono} ${vidrio ? 'tema-icono-entra' : ''}`} strokeWidth={2} />
+            )}
         </button>
     );
 }

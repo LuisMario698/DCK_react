@@ -1,10 +1,9 @@
 import { VariantCinematic } from '@/components/landing/VariantCinematic';
-import { LandingNueva } from '@/components/landing/nueva/LandingNueva';
-import { LandingTresD } from '@/components/landing/tresd/LandingTresD';
-import { SeccionNoticias } from '@/components/landing/tresd/SeccionNoticias';
+import { NoticiasPortada } from '@/components/landing/NoticiasPortada';
+// Las otras dos landings (y el aviso de la base de DCK) sólo bajan cuando se piden (ver LandingsAlternas)
+import { AvisoBaseDck, LandingNueva, LandingTresD } from '@/components/landing/LandingsAlternas';
 import { SelectorVersionLanding, type VersionLanding } from '@/components/landing/SelectorVersionLanding';
 import { baseElegida, createServerClient } from '@/lib/supabase/server';
-import { AvisoBaseDck } from '@/components/landing/AvisoBaseDck';
 import { getLandingStats } from '@/lib/services/landing_stats';
 import {
     VARIANTES_MAPA,
@@ -37,6 +36,15 @@ export default async function LandingPage({
     // Si el superadmin eligió la base de DCK (sólo consulta) en su navegador, las cifras salen de ahí
     const conDck = (await baseElegida()) === 'dck';
 
+    // Las noticias de la 3D se importan sólo cuando se pide esa landing: con un import arriba, sus
+    // componentes de cliente (tarjetas, ilustraciones) bajaban también con la actual
+    const noticias3d =
+        version === '3d'
+            ? await import('@/components/landing/tresd/SeccionNoticias').then(({ SeccionNoticias }) => (
+                  <SeccionNoticias locale={locale} />
+              ))
+            : null;
+
     let stats = null;
     try {
         const supabase = await createServerClient({ conBaseElegida: true });
@@ -48,11 +56,16 @@ export default async function LandingPage({
     return (
         <>
             {version === '3d' ? (
-                <LandingTresD stats={stats} varianteMapa={varianteMapa} noticias={<SeccionNoticias locale={locale} />} />
+                <LandingTresD stats={stats} varianteMapa={varianteMapa} noticias={noticias3d} />
             ) : version === 'nueva' ? (
                 <LandingNueva stats={stats} varianteMapa={varianteMapa} />
             ) : (
-                <VariantCinematic stats={stats} varianteMapa={varianteMapa} compararMapas={mapa !== undefined} />
+                <VariantCinematic
+                    stats={stats}
+                    varianteMapa={varianteMapa}
+                    compararMapas={mapa !== undefined}
+                    noticias={<NoticiasPortada locale={locale} />}
+                />
             )}
             <SelectorVersionLanding version={version} sobreAviso={conDck} />
             {conDck && <AvisoBaseDck />}

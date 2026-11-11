@@ -159,6 +159,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-atkinson), system-ui, sans-serif;
   --font-mono: var(--font-mono);
+  /* Titulares de Noticias (components/noticias/letraTitular.ts) */
+  --font-titular: var(--font-newsreader), Georgia, "Times New Roman", serif;
 
   --color-simar-papel: var(--simar-papel);
   --color-simar-superficie: var(--simar-superficie);
@@ -374,13 +376,13 @@ body {
      al subir se revierte. El escalonado (data-delay) lo convierte useScrollReveal en un
      animation-range en línea.
    - Los demás: IntersectionObserver + transición corta al entrar (bloque de abajo). */
+/* Sin desenfoque: animar `filter: blur` obliga a repintar cada cuadro y en una página larga se traba;
+   opacidad y transform los mueve la tarjeta gráfica sola */
 .reveal {
   opacity: 0;
-  filter: blur(10px);
   transform: translateY(28px);
   transition:
     opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.65s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: var(--retraso, 0ms);
 }
@@ -393,9 +395,8 @@ body {
   transform: translateX(28px);
 }
 
-/* Fotos y mapa: se enfocan como una cámara (más desenfoque, crecen un poco) */
+/* Fotos y mapa: crecen un poco al aparecer */
 .reveal[data-efecto="foto"] {
-  filter: blur(18px);
   transform: scale(0.95);
 }
 
@@ -418,11 +419,9 @@ body {
 .reveal-palabras .palabra {
   display: inline-block;
   opacity: 0;
-  filter: blur(8px);
   transform: translateY(0.4em);
   transition:
     opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
   transition-delay: calc(var(--retraso, 0ms) + var(--i, 0) * 40ms);
 }
@@ -434,24 +433,24 @@ body {
 
 /* Versión atada al scroll */
 @keyframes simar-revela {
-  from { opacity: 0; filter: blur(10px); transform: translateY(28px); }
-  to { opacity: 1; filter: none; transform: none; }
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes simar-revela-izquierda {
-  from { opacity: 0; filter: blur(10px); transform: translateX(-28px); }
-  to { opacity: 1; filter: none; transform: none; }
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes simar-revela-derecha {
-  from { opacity: 0; filter: blur(10px); transform: translateX(28px); }
-  to { opacity: 1; filter: none; transform: none; }
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes simar-revela-foto {
-  from { opacity: 0; filter: blur(18px); transform: scale(0.95); }
-  to { opacity: 1; filter: none; transform: none; }
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes simar-revela-palabra {
-  from { opacity: 0; filter: blur(8px); transform: translateY(0.4em); }
-  to { opacity: 1; filter: none; transform: none; }
+  from { opacity: 0; transform: translateY(0.4em); }
+  to { opacity: 1; transform: none; }
 }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -1639,6 +1638,13 @@ html[data-barra-mini] .simar-flotante {
 .simar-enfoca {
   animation: simar-enfoca 1.1s var(--simar-frena) backwards;
 }
+/* El fondo del hero al cargar: aparece y se asienta, sin desenfoque (es de pantalla completa) */
+@keyframes simar-aparece {
+  from { opacity: 0; transform: scale(1.05); }
+}
+.simar-aparece {
+  animation: simar-aparece 1.6s var(--simar-frena) backwards;
+}
 /* Símbolo del hero: se enfoca y gira hasta su lugar (las flechas cierran el ciclo) */
 @keyframes simar-enfoca-simbolo {
   from { opacity: 0; filter: blur(24px); transform: scale(0.84) rotate(-50deg); }
@@ -1657,15 +1663,15 @@ html[data-barra-mini] .simar-flotante {
    La activa queda encima; la anterior se queda debajo, nítida, hasta que la cubre. */
 .simar-hero-foto {
   opacity: 0;
-  filter: blur(14px);
+  transform: scale(1.06);
   transition:
     opacity 2s ease-in-out,
-    filter 2.6s var(--simar-frena);
+    transform 6s var(--simar-frena);
 }
 .simar-hero-foto[data-estado="activa"],
 .simar-hero-foto[data-estado="anterior"] {
   opacity: 1;
-  filter: none;
+  transform: none;
 }
 .simar-hero-foto[data-estado="activa"] {
   z-index: 2;
@@ -1692,10 +1698,11 @@ html[data-barra-mini] .simar-flotante {
     );
 }
 
-/* Al bajar, el contenido del hero se difumina y se va (sin moverse). Sólo donde el
-   navegador sabe atar una animación al scroll; en los demás se queda quieto. */
+/* Al bajar, el contenido del hero se desvanece y se aleja un poco (sin desenfoque: es casi de
+   pantalla completa y se trababa al bajar). Sólo donde el navegador sabe atar una animación al
+   scroll; en los demás se queda quieto. */
 @keyframes simar-desenfoca {
-  to { opacity: 0; filter: blur(8px); }
+  to { opacity: 0; transform: scale(0.97); }
 }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -2224,4 +2231,1075 @@ html[data-barra-mini] .simar-flotante {
 }
 @keyframes n-asoma {
   from { opacity: 0; transform: translateY(10px) scale(0.6); }
+}
+
+/* ───────── Noticias de la landing (NoticiasMosaico; DISEÑO_SIMAR.md §8.7) ───────── */
+
+/* Brillo de carga: una franja de luz cruza el hueco mientras llega la foto */
+@keyframes simar-brillo {
+  from { background-position: 150% 0; }
+  to { background-position: -50% 0; }
+}
+.simar-cargando {
+  background-color: var(--simar-abismo);
+  background-image: linear-gradient(100deg, rgba(255, 255, 255, 0) 35%, rgba(127, 224, 214, 0.14) 50%, rgba(255, 255, 255, 0) 65%);
+  background-size: 200% 100%;
+  animation: simar-brillo 1.4s linear infinite;
+}
+
+/* Punto «en vivo»: un latido de espuma, como el de un instrumento que está midiendo */
+.simar-en-vivo {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--simar-espuma);
+}
+.simar-en-vivo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: simar-latido 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes simar-latido {
+  from { transform: scale(1); opacity: 0.55; }
+  to { transform: scale(2.8); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simar-cargando,
+  .simar-en-vivo::after {
+    animation: none;
+  }
+}
+
+/* ───────── Página de Noticias: movimiento editorial (DISEÑO_SIMAR.md §8.6, «Noticias») ─────────
+   Sin librerías: CSS, el resorte en linear() y View Transitions. Con «reducir movimiento», quieto. */
+
+:root {
+  /* Resorte sin rebote (Apple: amortiguamiento 1), como curva de CSS. Para lo que se desliza */
+  --n-resorte: linear(0, 0.0435 3.6%, 0.1411 7.1%, 0.2590 10.7%, 0.3782 14.3%, 0.4888 17.9%, 0.5862 21.4%, 0.6691 25.0%, 0.7381 28.6%, 0.7944 32.1%, 0.8397 35.7%, 0.8757 39.3%, 0.9041 42.9%, 0.9264 46.4%, 0.9437 50.0%, 0.9571 53.6%, 0.9674 57.1%, 0.9753 60.7%, 0.9813 64.3%, 0.9859 67.9%, 0.9894 71.4%, 0.9920 75.0%, 0.9940 78.6%, 0.9955 82.1%, 0.9967 85.7%, 0.9975 89.3%, 0.9981 92.9%, 0.9986 96.4%, 1 100%);
+  --n-frena: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Indicador que se desliza (pestañas y secciones): el contenedor da --n-x y --n-w en px */
+.n-indicador {
+  position: absolute;
+  top: var(--n-y, 6px);
+  bottom: var(--n-y, 6px);
+  left: 0;
+  width: var(--n-w, 0px);
+  transform: translateX(var(--n-x, 0px));
+  border-radius: 999px;
+  transition: transform 0.5s var(--n-resorte), width 0.5s var(--n-resorte), opacity 0.2s ease;
+  pointer-events: none;
+}
+.n-sin-medir .n-indicador {
+  opacity: 0;
+  transition: none;
+}
+
+/* Entrada al bajar: sube y se enfoca, atada al scroll donde el navegador puede (si no, ya visible).
+   n-entra-hijos escalona a sus hijos directos */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .n-entra,
+    .n-entra-hijos > * {
+      animation: n-entra linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+    .n-entra-hijos > :nth-child(2) { animation-range: entry 4% cover 25%; }
+    .n-entra-hijos > :nth-child(3) { animation-range: entry 8% cover 28%; }
+    .n-entra-hijos > :nth-child(4) { animation-range: entry 12% cover 31%; }
+    .n-entra-hijos > :nth-child(n + 5) { animation-range: entry 16% cover 34%; }
+  }
+}
+@keyframes n-entra {
+  from { opacity: 0; transform: translateY(36px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* La portada de una tarjeta se descubre de arriba abajo al entrar, mientras se acerca.
+   Sin clip-path (Chrome lo anima en el hilo principal y repintaba la foto en cada cuadro): dentro de
+   un marco que recorta, la capa (.n-descubre) baja desde arriba y su contenido (.n-descubre-contra)
+   sube lo mismo, así la foto no se mueve y lo visible crece de arriba abajo. Son dos `translate`,
+   que la tarjeta gráfica mueve sola. Las dos miden lo mismo y tienen la misma línea de tiempo.
+   La capa también recorta: lo visible es donde se cruzan el marco y la capa.
+   OJO: el marco y la capa recortan con `overflow: clip`, nunca `hidden`. Un overflow hidden vuelve
+   a la caja un contenedor de scroll, y las animaciones view() de adentro (este descubrir, el paralaje
+   de la portada) se medían contra ella, que no se mueve: se quedaban fijas */
+.n-descubre,
+.n-descubre-ya {
+  overflow: clip;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .n-descubre {
+      animation: n-descubre linear both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 35%;
+    }
+    .n-descubre-contra {
+      animation: n-descubre-contra linear both, n-acerca linear both;
+      animation-timeline: view(), view();
+      animation-range: entry 5% cover 35%, entry 5% cover 45%;
+    }
+  }
+}
+@keyframes n-descubre {
+  from { translate: 0 -100%; }
+  to { translate: none; }
+}
+@keyframes n-descubre-contra {
+  from { translate: 0 100%; }
+  to { translate: none; }
+}
+@keyframes n-acerca {
+  from { transform: scale(1.14); }
+  to { transform: scale(1); }
+}
+
+/* El título de una tarjeta se subraya de izquierda a derecha al pasar el cursor */
+.n-subraya {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  background-position: 0 100%;
+  transition: background-size 0.5s var(--n-frena);
+}
+.group:hover .n-subraya,
+.group:focus-visible .n-subraya {
+  background-size: 100% 2px;
+}
+
+/* Las palabras encontradas por el buscador */
+.n-encontrada {
+  background: color-mix(in srgb, var(--simar-aceite) 45%, transparent);
+  color: inherit;
+  border-radius: 4px;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+
+/* Al filtrar el archivo (View Transitions): cada nota se desliza a su lugar; las que entran suben y
+   las que salen se encogen. El navegador mueve las capas, la página no se recalcula */
+::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: var(--n-resorte);
+}
+::view-transition-new(.n-nota):only-child {
+  animation: n-vt-entra 0.45s var(--n-frena) both;
+}
+::view-transition-old(.n-nota):only-child {
+  animation: n-vt-sale 0.2s ease-in both;
+}
+@keyframes n-vt-entra {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+}
+@keyframes n-vt-sale {
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+/* Los desplegables (fuentes) se abren con su altura, donde el navegador puede */
+@supports (interpolate-size: allow-keywords) {
+  .n-desplegable {
+    interpolate-size: allow-keywords;
+  }
+  .n-desplegable::details-content {
+    height: 0;
+    overflow: clip;
+    transition: height 0.5s var(--n-frena), content-visibility 0.5s allow-discrete;
+  }
+  .n-desplegable[open]::details-content {
+    height: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .n-indicador {
+    transition: opacity 0.2s ease;
+  }
+  .n-subraya {
+    transition: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-new(*),
+  ::view-transition-old(*) {
+    animation: none !important;
+  }
+}
+
+/* Mientras carga Noticias o un artículo (loading.tsx): huesos con brillo. Aparecen tras un instante,
+   así una carga rápida no parpadea */
+.n-esqueleto {
+  animation: n-esqueleto-aparece 0.3s ease 0.12s both;
+}
+@keyframes n-esqueleto-aparece {
+  from { opacity: 0; }
+}
+.n-hueso {
+  border-radius: 999px;
+  background-color: color-mix(in srgb, var(--simar-texto) 8%, transparent);
+  background-image: linear-gradient(100deg, transparent 35%, color-mix(in srgb, var(--simar-superficie) 75%, transparent) 50%, transparent 65%);
+  background-size: 200% 100%;
+  animation: simar-brillo 1.4s linear infinite;
+}
+.n-hueso-claro {
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.12);
+  background-image: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%);
+  background-size: 200% 100%;
+  animation: simar-brillo 1.4s linear infinite;
+}
+
+/* Al abrir un artículo: el encabezado sube en escalón (por tiempo, no por scroll: ya está a la
+   vista al cargar) */
+@media (prefers-reduced-motion: no-preference) {
+  .n-llega > * {
+    animation: n-entra 0.8s var(--n-frena) both;
+  }
+  .n-llega > :nth-child(2) { animation-delay: 0.06s; }
+  .n-llega > :nth-child(3) { animation-delay: 0.12s; }
+  .n-llega > :nth-child(n + 4) { animation-delay: 0.18s; }
+}
+
+/* La foto principal de la portada de Noticias se mueve un poco al bajar (paralaje, atado al scroll) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .n-paralaje {
+      animation: n-paralaje linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes n-paralaje {
+  from { transform: translateY(-5%); }
+  to { transform: translateY(5%); }
+}
+html[data-n-movimiento='quieto'] .n-paralaje {
+  animation: none;
+}
+
+/* Una foto que llega bien (components/noticias/FotoNota.tsx): su vista previa difuminada aparece al
+   instante y la foto se enfoca encima cuando de verdad llegó (sólo opacidad y transform) */
+.n-foto {
+  background-color: var(--simar-abismo);
+  isolation: isolate;
+}
+.n-foto-previa {
+  position: absolute;
+  inset: -8%;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(18px);
+  transform: scale(1.02);
+}
+.n-foto-nitida {
+  opacity: 0;
+  transform: scale(1.03);
+  transition: opacity 0.8s var(--n-frena), transform 1.8s var(--n-frena);
+  /* Sin JavaScript (o si tarda en despertar), a los 3 s se ve de todos modos */
+  animation: n-foto-seguro 0s linear 3s forwards;
+}
+.n-foto[data-lista='true'] .n-foto-nitida {
+  opacity: 1;
+  transform: scale(1);
+}
+/* Ya enfocada la foto, la previa (difuminada) queda tapada: deja de pintarse */
+.n-foto[data-lista='true'] .n-foto-previa {
+  visibility: hidden;
+  transition: visibility 0s linear 0.9s;
+}
+@keyframes n-foto-seguro {
+  to { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .n-foto-previa {
+    animation: n-previa-llega 0.45s ease both;
+  }
+}
+@keyframes n-previa-llega {
+  from { opacity: 0; }
+}
+/* El pie de la foto de una nota llega un poco después que el encabezado */
+@media (prefers-reduced-motion: no-preference) {
+  .n-pie-llega {
+    animation: n-pie-llega 0.7s var(--n-frena) 0.35s both;
+  }
+}
+@keyframes n-pie-llega {
+  from { opacity: 0; transform: translateY(8px); }
+}
+html[data-n-movimiento='quieto'] .n-pie-llega {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .n-foto-nitida {
+    transform: none;
+    transition: opacity 0.3s ease;
+  }
+}
+html[data-n-movimiento='quieto'] .n-foto-nitida {
+  transform: none;
+  transition: opacity 0.3s ease;
+}
+html[data-n-movimiento='quieto'] .n-foto-previa {
+  animation: none;
+}
+
+/* Las noticias de la landing (NoticiasDiario): la hoja del periódico sube al entrar a la pantalla
+   (atada al scroll) y lo de adentro (filetes, palabras, notas) espera a que se vea para empezar */
+@media (scripting: enabled) {
+  .n-espera[data-visto='no'] :is(.n-filete, .n-palabra, .n-sube, .n-descubre-ya, .n-descubre-ya-contra, .n-acerca-ya) {
+    animation-play-state: paused;
+  }
+}
+/* Sólo sube (transform): con opacidad y escala, toda la hoja (fotos y capas adentro) se componía
+   aparte en cada cuadro del scroll, y en tarjetas gráficas de laptop eso trababa la entrada */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .n-hoja {
+      animation: n-hoja-llega linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+@keyframes n-hoja-llega {
+  from { transform: translateY(56px); }
+}
+
+/* El banner a la sección completa (NoticiasDiario): un abanico de fotos que se abre al pasar el cursor */
+.n-portal-carta {
+  transform-origin: 50% 100%;
+  box-shadow: 0 12px 26px -12px rgba(0, 0, 0, 0.65);
+  transition: transform 0.6s var(--isla-rebote);
+}
+.n-portal-carta:nth-child(1) { transform: translateX(0) rotate(-9deg); }
+.n-portal-carta:nth-child(2) { z-index: 1; transform: translateX(39px) translateY(-4px) rotate(-1deg); }
+.n-portal-carta:nth-child(3) { z-index: 2; transform: translateX(78px) rotate(8deg); }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .n-portal:hover .n-portal-carta:nth-child(1) { transform: translateX(-12px) translateY(-6px) rotate(-16deg); }
+  .n-portal:hover .n-portal-carta:nth-child(2) { transform: translateX(39px) translateY(-16px) rotate(-1deg); }
+  .n-portal:hover .n-portal-carta:nth-child(3) { transform: translateX(92px) translateY(-6px) rotate(15deg); }
+}
+@media (max-width: 639px) {
+  .n-portal-carta:nth-child(2) { transform: translateX(33px) translateY(-4px) rotate(-1deg); }
+  .n-portal-carta:nth-child(3) { transform: translateX(66px) rotate(8deg); }
+}
+/* Es grande: al presionar se hunde poco */
+.n-portal[data-vidrio]:active:not(:disabled) {
+  transform: scale(0.99);
+}
+html[data-n-movimiento='quieto'] .n-portal-carta {
+  transition: none;
+}
+
+/* ───────── La isla de Noticias saca sus secciones (EncabezadoNoticias + NavSecciones) ─────────
+   Al llegar a Noticias la isla empieza compacta (sólo su renglón) y se alarga hacia abajo, como la
+   Dynamic Island cuando se abre: se recorta con sus mismas esquinas (clip-path con round) y el
+   recorte baja hasta dejar ver la fila de secciones. El lugar ya está apartado: la página no se
+   mueve. La sombra llega al final (el recorte la tapaba). Luego la línea se dibuja desde el centro,
+   las secciones salen de la isla una tras otra con un rebote chico y la píldora de la que se lee
+   aparece en su lugar. */
+.isla-con-fila {
+  --isla-fila: 62px;
+}
+@media (max-width: 639px) {
+  .isla-con-fila {
+    --isla-fila: 60px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .isla-con-fila > .isla-cristal {
+    animation:
+      isla-crece 0.62s var(--n-frena) 0.2s backwards,
+      isla-sombra-llega 0.4s ease 0.72s backwards;
+  }
+  .isla-con-fila .isla-fila-linea {
+    animation: isla-fila-linea 0.7s var(--n-frena) 0.34s backwards;
+  }
+  .isla-con-fila .isla-ficha {
+    animation: isla-ficha-sale 0.55s var(--isla-rebote) backwards;
+    animation-delay: calc(0.34s + var(--i, 0) * 45ms);
+  }
+  .isla-con-fila .n-indicador {
+    animation: isla-pildora-llega 0.5s var(--isla-rebote) 0.62s backwards;
+  }
+}
+@keyframes isla-crece {
+  from { clip-path: inset(0 0 var(--isla-fila) 0 round 26px); }
+  to { clip-path: inset(0 0 0 0 round 26px); }
+}
+@keyframes isla-sombra-llega {
+  from { box-shadow: none; }
+}
+@keyframes isla-fila-linea {
+  from { transform: scaleX(0); }
+}
+@keyframes isla-ficha-sale {
+  from { opacity: 0; transform: translateY(-16px) scale(0.9); }
+}
+@keyframes isla-pildora-llega {
+  from { opacity: 0; scale: 0.6; }
+}
+html[data-n-movimiento='quieto'] .isla-con-fila > .isla-cristal,
+html[data-n-movimiento='quieto'] .isla-con-fila .isla-fila-linea,
+html[data-n-movimiento='quieto'] .isla-con-fila .isla-ficha,
+html[data-n-movimiento='quieto'] .isla-con-fila .n-indicador {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .n-esqueleto,
+  .n-hueso,
+  .n-hueso-claro {
+    animation: none;
+  }
+}
+
+/* «Al momento» (PortadaEditorial): la cinta de titulares. Va dos veces seguida y se corre la mitad,
+   así da la vuelta sin salto. Se detiene al pasar el cursor, al enfocarla o con su botón; con
+   «reducir movimiento» no se mueve sola: es una fila que se desliza a mano, sin la copia */
+.n-teletipo {
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 48px), transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 28px, #000 calc(100% - 48px), transparent);
+}
+@keyframes n-teletipo {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .n-teletipo-cinta {
+    animation: n-teletipo var(--n-dura, 60s) linear infinite;
+  }
+  .n-teletipo:hover .n-teletipo-cinta,
+  .n-teletipo:focus-within .n-teletipo-cinta,
+  .n-teletipo-pausa .n-teletipo-cinta {
+    animation-play-state: paused;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .n-teletipo {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .n-teletipo-cinta > [aria-hidden='true'],
+  .n-teletipo-boton {
+    display: none;
+  }
+}
+
+/* Las entradas de la portada de Noticias (PortadaEditorial): CSS para que se vean desde el primer
+   cuadro, sin esperar a JavaScript. --n-retraso escalona cada una */
+@media (prefers-reduced-motion: no-preference) {
+  .n-filete {
+    transform-origin: left;
+    animation: n-filete 1.1s var(--n-frena) var(--n-retraso, 0s) both;
+  }
+  .n-palabra {
+    animation: n-palabra 1s var(--n-frena) var(--n-retraso, 0s) both;
+  }
+  .n-sube {
+    animation: n-sube 0.8s var(--n-frena) var(--n-retraso, 0s) both;
+  }
+  .n-descubre-ya {
+    animation: n-descubre 1.2s var(--n-frena) var(--n-retraso, 0.3s) both;
+  }
+  .n-descubre-ya-contra {
+    animation: n-descubre-contra 1.2s var(--n-frena) var(--n-retraso, 0.3s) both;
+  }
+  .n-acerca-ya {
+    animation: n-acerca 2s var(--n-frena) var(--n-retraso, 0.3s) both;
+  }
+}
+@keyframes n-filete {
+  from { transform: scaleX(0); }
+}
+@keyframes n-palabra {
+  from { transform: translateY(105%); }
+}
+@keyframes n-sube {
+  from { opacity: 0; transform: translateY(24px); }
+}
+
+/* ───────── Ajustes de lectura de Noticias (components/noticias/ajustesLectura.ts) ─────────
+   El script del layout pone en <html> --n-zoom y data-n-*. Sólo valen dentro de .n-pagina */
+
+/* Tamaño: el contenido crece entero, como el zoom del navegador (la barra de arriba no) */
+.n-pagina > main {
+  zoom: var(--n-zoom, 1);
+}
+
+/* Contraste alto: el texto de apoyo pasa a ser casi tan fuerte como el principal y los bordes se ven */
+html[data-n-contraste='alto'] .n-pagina {
+  --simar-texto: #000000;
+  --simar-texto-2: #15212c;
+  --simar-texto-3: #34424f;
+  --simar-borde: #6f6656;
+  --simar-borde-suave: #8f8573;
+  --simar-campo-borde: #3d382e;
+  --simar-marea-tinta: #0a3d8f;
+  --simar-papel: #f7f4ee;
+  --simar-franja-texto-2: #ffffff;
+}
+html.dark[data-n-contraste='alto'] .n-pagina {
+  --simar-texto: #ffffff;
+  --simar-texto-2: #f0f4f8;
+  --simar-texto-3: #d2dce5;
+  --simar-borde: #7f98ae;
+  --simar-borde-suave: #607a90;
+  --simar-campo-borde: #b3c4d2;
+  --simar-marea-tinta: #a6c8ff;
+  --simar-papel: #000a14;
+  --simar-superficie: #0c2033;
+}
+
+/* Renglones amplios: más aire entre renglones y palabras (lo que más ayuda a leer de corrido) */
+html[data-n-interlineado='amplio'] .n-pagina :is(p, li, dd, figcaption, blockquote) {
+  line-height: 1.95 !important;
+  word-spacing: 0.08em;
+  letter-spacing: 0.01em;
+}
+html[data-n-interlineado='amplio'] .n-pagina :is(h1, h2, h3) {
+  line-height: 1.18 !important;
+}
+
+/* Sin animaciones: todo en su lugar final, sin moverse (la cinta queda como fila que se desliza a mano) */
+html[data-n-movimiento='quieto'] .n-pagina *,
+html[data-n-movimiento='quieto'] .n-pagina *::before,
+html[data-n-movimiento='quieto'] .n-pagina *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+html[data-n-movimiento='quieto'] .n-pagina .n-teletipo {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+html[data-n-movimiento='quieto'] .n-pagina .n-teletipo-cinta > [aria-hidden='true'],
+html[data-n-movimiento='quieto'] .n-pagina .n-teletipo-boton {
+  display: none;
+}
+
+/* Enlaces subrayados: todo lo que es enlace se distingue sin depender del color */
+html[data-n-enlaces='subrayados'] .n-pagina main a {
+  text-decoration-line: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* El panel de ajustes entra desde arriba (en celular, desde abajo) */
+@media (prefers-reduced-motion: no-preference) {
+  .n-panel-lectura {
+    animation: n-panel-entra 0.35s var(--n-frena) both;
+  }
+  @media (max-width: 639px) {
+    .n-panel-lectura {
+      animation-name: n-panel-sube;
+    }
+  }
+}
+@keyframes n-panel-entra {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+@keyframes n-panel-sube {
+  from { opacity: 0; transform: translateY(40px); }
+}
+
+/* «Escuchar la nota»: el párrafo que se está leyendo se marca */
+.n-leyendo {
+  background: color-mix(in srgb, var(--simar-espuma) 24%, transparent);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--simar-espuma) 24%, transparent);
+  border-radius: 4px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* La letra capital del primer párrafo de una nota */
+.n-capital::first-letter {
+  float: left;
+  /* (--font-titular de @theme inline no existe como variable: va la de next/font directo) */
+  font-family: var(--font-newsreader), Georgia, serif;
+  font-weight: 600;
+  font-size: 4.1em;
+  line-height: 0.82;
+  padding: 0.08em 0.1em 0 0;
+  color: var(--simar-texto);
+}
+
+/* «Escuchar la nota» (LeerEnVoz): la frase que se dice, más fuerte que el párrafo; los párrafos se
+   pueden tocar para leerlos desde ahí; el reproductor sube desde abajo y deja espacio al final */
+/* (::highlight(n-frase) va en LeerEnVoz, en un <style>: el compilador de CSS aún no lo reconoce) */
+.n-leible {
+  cursor: pointer;
+  border-radius: 4px;
+}
+.n-leible:not(.n-leyendo):hover {
+  background: color-mix(in srgb, var(--simar-texto) 5%, transparent);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--simar-texto) 5%, transparent);
+}
+.n-con-reproductor .n-pagina > main {
+  padding-bottom: 260px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .n-reproductor > * {
+    animation: n-reproductor-sube 0.45s var(--n-frena) both;
+  }
+}
+@keyframes n-reproductor-sube {
+  from { opacity: 0; transform: translateY(40px); }
+}
+html[data-n-movimiento='quieto'] .n-reproductor > * {
+  animation: none;
+}
+
+/* «En el mapa» (MapaInteractivo): las marcas de los lugares y la etiqueta de la zona de la vaquita */
+.n-marca {
+  background: var(--simar-superficie);
+  color: var(--simar-texto);
+  box-shadow: 0 0 0 1px var(--simar-borde), 0 10px 24px -10px rgba(11, 34, 54, 0.6);
+  transition: transform 0.35s var(--n-frena), background-color 0.3s ease, color 0.3s ease, opacity 0.3s ease;
+}
+.n-marca .n-marca-numero {
+  background: var(--simar-texto);
+  color: var(--simar-papel);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.n-marca:hover {
+  transform: scale(1.05);
+}
+.n-marca .n-marca-nombre {
+  display: none;
+}
+.n-marca[data-activo='true'] .n-marca-nombre,
+.n-marca:hover .n-marca-nombre,
+.n-marca:focus-visible .n-marca-nombre {
+  display: inline;
+}
+.n-marca[data-activo='true'] {
+  background: var(--simar-aceite);
+  color: #0b2236;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--simar-aceite) 35%, transparent), 0 14px 30px -10px rgba(11, 34, 54, 0.65);
+}
+.n-marca[data-activo='true'] .n-marca-numero {
+  background: #0b2236;
+  color: #ffffff;
+}
+/* Muy lejos (México, el mundo), las marcas del golfo se amontonan: se esconden */
+.n-mapa-lejos .n-marca {
+  opacity: 0;
+  pointer-events: none;
+}
+.n-zona-etiqueta {
+  background: color-mix(in srgb, var(--simar-superficie) 88%, transparent);
+  color: var(--simar-texto);
+  box-shadow: 0 0 0 1px var(--simar-borde);
+}
+/* El mapa real entra sobre el dibujado cuando termina de cargar */
+.n-mapa-real {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.n-mapa-real[data-listo='true'] {
+  opacity: 1;
+}
+.n-pagina .maplibregl-ctrl-group button {
+  width: 40px;
+  height: 40px;
+}
+.n-pagina .maplibregl-ctrl-attrib {
+  font-size: 12px;
+}
+
+/* ───────── La isla dinámica del portal público (components/isla/IslaDinamica.tsx) ─────────
+   La barra lleva su vidrio de siempre (simar-vidrio-fuerte) con un material propio: borde de luz
+   que baja desde arriba (más brillante arriba, un reflejo abajo), una línea fina que la separa de una
+   página blanca y una sombra en dos capas (cerca y lejos); al desplazar la página, un reflejo la
+   cruza (la luz que se mueve sobre el vidrio). Las gotas salen por su orilla de abajo sobre una
+   silueta líquida (liquid-gooey) que sólo existe mientras una gota vive. Gota e isla son de UN solo
+   material: mientras la gota vive, la isla y el líquido toman el mismo color sólido (--isla-liquido),
+   de principio a fin (nada se vuelve sólido al terminar). Borde de luz y sombra en CSS, no en el filtro. */
+:root {
+  --isla-liquido: #fcfbf8;
+  /* Resorte con un rebote chico (amortiguamiento 0.72, respuesta 0.42 s): para lo que se presiona o se llena */
+  --isla-rebote: linear(0, 0.0245 3.1%, 0.0872 6.3%, 0.1742 9.4%, 0.2746 12.5%, 0.3799 15.6%, 0.4838 18.8%, 0.5819 21.9%, 0.6713 25%, 0.7503 28.1%, 0.8183 31.3%, 0.8752 34.4%, 0.9216 37.5%, 0.9584 40.6%, 0.9866 43.8%, 1.0073 46.9%, 1.0217 50%, 1.0311 53.1%, 1.0363 56.3%, 1.0383 59.4%, 1.038 62.5%, 1.036 65.6%, 1.0329 68.8%, 1.0292 71.9%, 1.0251 75%, 1.0211 78.1%, 1.0173 81.3%, 1.0137 84.4%, 1.0105 87.5%, 1.0078 90.6%, 1.0055 93.8%, 1.0036 96.9%, 1 100%);
+}
+.dark {
+  --isla-liquido: #122a41;
+}
+/* Mientras sale una gota, la isla es del mismo color que el líquido (la gota es de ella) */
+.isla[data-gota='true'] > .isla-cristal {
+  background-color: var(--isla-liquido);
+}
+.isla-cristal {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(11, 34, 54, 0.05),
+    0 0 0 1px rgba(11, 34, 54, 0.07),
+    0 2px 6px -2px rgba(11, 34, 54, 0.1),
+    0 18px 40px -20px rgba(11, 34, 54, 0.3);
+}
+.isla-cristal::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.2) 42%, rgba(255, 255, 255, 0) 64%, rgba(255, 255, 255, 0.55));
+}
+.dark .isla-cristal {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 6px -2px rgba(0, 0, 0, 0.4),
+    0 22px 44px -20px rgba(0, 0, 0, 0.7);
+}
+.dark .isla-cristal::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.05) 42%, rgba(255, 255, 255, 0) 64%, rgba(255, 255, 255, 0.1));
+}
+/* Un brillo suave arriba y un reflejo que cruza la isla al desplazar la página (debajo del contenido) */
+.isla-cristal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.36) 48%, rgba(255, 255, 255, 0.1) 53%, transparent 61%) no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 42%);
+  background-size: 300% 100%, 100% 100%;
+  background-position: 100% 0, 0 0;
+}
+.dark .isla-cristal::before {
+  background:
+    linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.09) 48%, rgba(255, 255, 255, 0.03) 53%, transparent 61%) no-repeat,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 42%);
+  background-size: 300% 100%, 100% 100%;
+  background-position: 100% 0, 0 0;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .isla-cristal::before {
+      animation: isla-reflejo linear both 3;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+@keyframes isla-reflejo {
+  from { background-position: 100% 0, 0 0; }
+  to { background-position: 0% 0, 0 0; }
+}
+/* La gota es del mismo material que la isla: el mismo borde de luz (más brillante arriba a la
+   izquierda, un reflejo abajo), un brillo arriba y la sombra en dos capas */
+.isla-gota {
+  position: relative;
+  color: var(--simar-texto);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 0 1px rgba(11, 34, 54, 0.06),
+    0 2px 6px -2px rgba(11, 34, 54, 0.1),
+    0 24px 48px -24px rgba(11, 34, 54, 0.38);
+}
+.dark .isla-gota {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 2px 6px -2px rgba(0, 0, 0, 0.4),
+    0 26px 52px -24px rgba(0, 0, 0, 0.75);
+}
+.isla-gota::before,
+.isla-gota::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.isla-gota::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 28%, rgba(11, 34, 54, 0) 70%, rgba(11, 34, 54, 0.025));
+}
+.isla-gota::after {
+  padding: 1px;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.3) 30%, rgba(255, 255, 255, 0) 60%, rgba(11, 34, 54, 0.06));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.dark .isla-gota::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 30%);
+}
+.dark .isla-gota::after {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.06) 30%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.08));
+}
+/* El contenido aparece cuando la gota ya casi cayó; al cerrar se va primero */
+.isla-gota-contenido {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.isla-gota[data-abierta='true'] .isla-gota-contenido {
+  opacity: 1;
+  transition: opacity 0.18s ease 0.16s;
+}
+/* La gotita que viaja de un botón de la nota a la isla (components/isla/viaje.ts): del color del
+   botón si es sólido; si no, del material de la isla */
+.isla-viaje {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 70;
+  pointer-events: none;
+  border-radius: 999px;
+  background: var(--simar-superficie);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 0 0 1px rgba(11, 34, 54, 0.08), 0 10px 22px -10px rgba(11, 34, 54, 0.5);
+  will-change: transform, opacity;
+}
+.isla-viaje[data-tinta='true'] {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 10px 22px -10px rgba(11, 34, 54, 0.55);
+}
+.dark .isla-viaje {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.35), 0 10px 22px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Lo de adentro de una gota llega renglón por renglón (--i), cuando el panel ya casi creció */
+@media (prefers-reduced-motion: no-preference) {
+  .isla-gota[data-abierta='true'] .isla-escalon {
+    animation: isla-escalon 0.5s var(--n-frena) both;
+    animation-delay: calc(0.12s + var(--i, 0) * 32ms);
+  }
+  .isla-cifra-sube {
+    animation: isla-cifra-sube 0.45s var(--isla-rebote) both;
+  }
+  .isla-cifra-baja {
+    animation: isla-cifra-baja 0.45s var(--isla-rebote) both;
+  }
+}
+@keyframes isla-escalon {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes isla-cifra-sube {
+  from { opacity: 0; transform: translateY(80%); }
+}
+@keyframes isla-cifra-baja {
+  from { opacity: 0; transform: translateY(-80%); }
+}
+
+/* Presionar: se hunde al tocar (rápido) y regresa con un rebote chico al soltar */
+.isla-pulsa {
+  transition: transform 0.5s var(--isla-rebote), scale 0.3s var(--n-frena), background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+.isla-pulsa:active:not(:disabled) {
+  transform: scale(0.92);
+  transition-duration: 0.1s, 0.3s, 0.15s, 0.15s, 0.2s, 0.2s;
+  transition-timing-function: ease-out;
+}
+
+/* El tamaño de la letra: cada barra se llena desde abajo, como líquido que sube */
+.isla-nivel {
+  transform: translateY(101%);
+  transition: transform 0.5s var(--isla-rebote) calc(var(--i, 0) * 24ms);
+}
+.isla-nivel[data-lleno='true'] {
+  transform: translateY(0);
+}
+
+/* El selector líquido (components/isla/SelectorLiquido.tsx): la lente oscura con brillo arriba y las
+   etiquetas en claro; lente.ts la recorta donde está la opción elegida */
+.isla-selector-lente {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 60%), var(--simar-texto);
+  color: var(--simar-papel);
+  clip-path: inset(4px 100% 4px 0 round 999px);
+}
+.dark .isla-selector-lente {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 60%), var(--simar-texto);
+}
+
+/* La lente de los enlaces de la isla (landing, 1280 px o más): sigue al cursor de un enlace a otro */
+.isla-lente-enlaces {
+  position: absolute;
+  inset: 0 -14px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0) 70%), color-mix(in srgb, var(--simar-texto) 7%, transparent);
+  clip-path: inset(4px 100% 4px 0 round 999px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.dark .isla-lente-enlaces {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 70%), rgba(255, 255, 255, 0.08);
+}
+.isla-lente-enlaces[data-visible='true'] {
+  opacity: 1;
+}
+
+/* ───────── Vidrio vivo: la luz sigue al cursor y nace donde se presiona (components/isla/VidrioVivo.tsx) ─────────
+   En los botones con data-vidrio: un reflejo suave bajo el cursor (al pasar) que se abre y se aviva al
+   presionar, y el botón se hunde y regresa con un rebote chico. Sólo se repinta el fondo del botón;
+   VidrioVivo da --vx/--vy (una vez por cuadro). data-vidrio="claro" (botones claros): luz azul tenue. */
+@property --vluz {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
+}
+@property --vradio {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 90px;
+}
+[data-vidrio] {
+  --vtono: 255 255 255;
+  --vfuerza: 0.3;
+  background-image: radial-gradient(var(--vradio) circle at var(--vx, 50%) var(--vy, 50%), rgb(var(--vtono) / calc(var(--vluz) * var(--vfuerza))), rgb(var(--vtono) / 0));
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease,
+    --vluz 0.45s ease,
+    --vradio 0.5s var(--n-frena),
+    transform 0.5s var(--isla-rebote);
+}
+[data-vidrio='claro'] {
+  --vtono: 27 95 201;
+  --vfuerza: 0.13;
+}
+.dark [data-vidrio='claro'] {
+  --vtono: 255 255 255;
+  --vfuerza: 0.12;
+}
+@media (hover: hover) {
+  [data-vidrio]:hover {
+    --vluz: 1;
+  }
+}
+[data-vidrio]:active:not(:disabled) {
+  --vluz: 1.6;
+  --vradio: 160px;
+  transform: scale(0.965);
+  transition-duration: 0.15s, 0.15s, 0.15s, 0.2s, 0.12s, 0.3s, 0.1s;
+  transition-timing-function: ease-out;
+}
+
+/* El ícono del tema nuevo entra girando (sol ↔ luna), con el rebote chico */
+@media (prefers-reduced-motion: no-preference) {
+  .tema-icono-entra {
+    animation: tema-icono-entra 0.55s var(--isla-rebote) both;
+  }
+}
+@keyframes tema-icono-entra {
+  from { opacity: 0; transform: rotate(-90deg) scale(0.55); }
+}
+
+/* Un destello cruza el vidrio cuando entra a la pantalla (las leyendas sobre las fotos, los controles) */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vidrio-destello::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      border-radius: inherit;
+      pointer-events: none;
+      background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.55) 47%, rgba(255, 255, 255, 0.12) 53%, transparent 62%) no-repeat;
+      background-size: 300% 100%;
+      animation: vidrio-destello linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 55%;
+    }
+  }
+}
+@keyframes vidrio-destello {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .isla-pulsa,
+  .isla-pulsa:active:not(:disabled),
+  [data-vidrio],
+  [data-vidrio]:active:not(:disabled) {
+    transform: none;
+  }
+  .isla-nivel {
+    transition: none;
+  }
+  .isla-lente-enlaces {
+    transition: none;
+  }
+}
+html[data-n-movimiento='quieto'] .isla-escalon,
+html[data-n-movimiento='quieto'] .isla-cifra-sube,
+html[data-n-movimiento='quieto'] .isla-cifra-baja {
+  animation: none !important;
+}
+html[data-n-movimiento='quieto'] .isla-nivel {
+  transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .isla-gota-contenido,
+  .isla-gota[data-abierta='true'] .isla-gota-contenido {
+    transition: none;
+  }
+}
+@media (max-width: 639px) {
+  .isla[data-actividad='true'] .isla-volver-texto {
+    display: none;
+  }
+}
+
+/* La cápsula viva de una actividad en la isla (el reproductor): entra con resorte desde el centro,
+   como la Dynamic Island cuando empieza algo */
+@media (prefers-reduced-motion: no-preference) {
+  .isla-capsula {
+    animation: isla-capsula-entra 0.42s var(--n-resorte) both;
+    transform-origin: center;
+  }
+  .isla-frase {
+    display: inline;
+    animation: isla-frase-entra 0.28s var(--n-frena) both;
+  }
+}
+@keyframes isla-capsula-entra {
+  from { opacity: 0; transform: scale(0.4); }
+  50% { opacity: 1; }
+}
+@keyframes isla-frase-entra {
+  from { opacity: 0; }
+}
+/* Las ondas: cuatro barras que suben y bajan mientras habla; en pausa, quietas y bajas */
+.isla-ondas {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 18px;
+}
+.isla-ondas > span {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  transform: scaleY(0.3);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .isla-ondas[data-activas='true'] > span {
+    animation: isla-onda 0.9s ease-in-out infinite;
+  }
+  .isla-ondas[data-activas='true'] > span:nth-child(2) { animation-delay: -0.3s; animation-duration: 0.75s; }
+  .isla-ondas[data-activas='true'] > span:nth-child(3) { animation-delay: -0.55s; animation-duration: 1.05s; }
+  .isla-ondas[data-activas='true'] > span:nth-child(4) { animation-delay: -0.15s; animation-duration: 0.8s; }
+}
+@keyframes isla-onda {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+html[data-n-movimiento='quieto'] .isla-capsula,
+html[data-n-movimiento='quieto'] .isla-frase,
+html[data-n-movimiento='quieto'] .isla-ondas > span {
+  animation: none !important;
 }

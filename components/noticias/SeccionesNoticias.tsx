@@ -1,8 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ChevronDown, ExternalLink, FileCheck2, PenLine, Sigma, type LucideIcon } from 'lucide-react';
-import { HITOS, minutosDeLectura, todasLasFuentes, type Noticia } from '@/lib/constants/noticias';
-import { TarjetaNoticia } from './TarjetaNoticia';
+import { HITOS, todasLasFuentes } from '@/lib/constants/noticias';
+import { FOTOS } from '@/lib/constants/fotos';
+import { MarcaNueva, RecordarVisita } from '@/components/landing/MarcaNueva';
+import { TarjetaEditorial, type DatosEditorial } from './TarjetaEditorial';
 import { HistoriaProyecto } from './HistoriaProyecto';
 
 /**
@@ -11,14 +13,34 @@ import { HistoriaProyecto } from './HistoriaProyecto';
  * lib/constants/noticias.ts.
  */
 
-const conMinutos = (n: Noticia) => ({ ...n, minutos: minutosDeLectura(n) });
-
-/** Antetítulo, título y una línea de texto (mismo tamaño en toda la página) */
-export function EncabezadoSeccion({ id, antetitulo, titulo, texto, oscuro = false }: { id: string; antetitulo: string; titulo: string; texto?: string; oscuro?: boolean }) {
+/**
+ * El encabezado de cada sección, como el índice de una revista: número y nombre en versalitas con
+ * una raya fina, y el título grande. Sube y se enfoca al entrar (`n-entra`, atado al scroll).
+ */
+export function EncabezadoSeccion({
+    id,
+    numero,
+    antetitulo,
+    titulo,
+    texto,
+    oscuro = false,
+}: {
+    id: string;
+    /** «01», «02»… el lugar de la sección en la página */
+    numero?: string;
+    antetitulo: string;
+    titulo: string;
+    texto?: string;
+    oscuro?: boolean;
+}) {
     return (
-        <div className="max-w-3xl">
-            <p className={`text-lg md:text-xl font-bold movil:text-[15px] ${oscuro ? 'text-simar-espuma' : 'text-simar-marea-tinta'}`}>{antetitulo}</p>
-            <h2 id={id} className="mt-2 text-[clamp(34px,3.8vw,54px)] font-extrabold leading-[1.05] tracking-[-0.03em] text-balance movil:text-[30px] movil:leading-[1.1] movil:tracking-[-0.02em]">
+        <div className="n-entra max-w-3xl">
+            <p className={`inline-flex items-center gap-3 text-[15px] font-extrabold uppercase tracking-[0.14em] ${oscuro ? 'text-simar-espuma' : 'text-simar-marea-tinta'}`}>
+                {numero && <span className="tabular-nums">{numero}</span>}
+                {numero && <span aria-hidden="true" className="w-10 h-px bg-current opacity-50" />}
+                <span>{antetitulo}</span>
+            </p>
+            <h2 id={id} className="mt-3 font-titular text-[clamp(38px,4.2vw,62px)] font-semibold leading-[1.02] tracking-[-0.025em] text-balance movil:text-[34px] movil:leading-[1.06]">
                 {titulo}
             </h2>
             {texto && <p className={`mt-3 text-xl leading-relaxed text-pretty movil:text-[17px] ${oscuro ? 'text-simar-franja-texto-2' : 'text-simar-texto-2'}`}>{texto}</p>}
@@ -27,21 +49,25 @@ export function EncabezadoSeccion({ id, antetitulo, titulo, texto, oscuro = fals
 }
 
 /**
- * La portada, en mosaico: la más reciente a lo grande y tres más, sólo con foto (o dibujo) y
- * título. En celular, las tres van en un carrusel que se desliza de lado.
+ * La portada de la página, en mosaico editorial (como «Lo último del mar» de la landing): la más
+ * reciente en grande (2 × 2) y cuatro chicas. Cada tarjeta entra en escalonado (`n-entra-hijos`) y
+ * su portada se descubre de arriba abajo; «Nueva» marca lo publicado desde la última visita.
  */
-export function PortadaNoticias({ locale, principal, siguientes }: { locale: string; principal: Noticia; siguientes: Noticia[] }) {
+export function PortadaNoticias({ locale, notas }: { locale: string; notas: DatosEditorial[] }) {
+    const [principal, ...siguientes] = notas;
+    if (!principal) return null;
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
-            <TarjetaNoticia noticia={conMinutos(principal)} locale={locale} variante="portada" etiqueta="Lo más reciente" prioridad className="lg:h-full" />
-            <ul aria-label="También en las noticias (en celular, desliza de lado)" className="simar-carrusel grid sm:grid-cols-3 lg:grid-cols-2 lg:grid-rows-2 gap-5 md:gap-6">
-                {siguientes.slice(0, 3).map((n, i) => (
-                    <li key={n.slug} className={`flex ${i === 0 ? 'lg:col-span-2' : ''}`}>
-                        <TarjetaNoticia noticia={n} locale={locale} variante="mosaico" className="w-full" />
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <ul className="n-entra-hijos grid grid-cols-2 lg:grid-cols-4 gap-5 movil:gap-3">
+            <li className="col-span-2 lg:row-span-2">
+                <TarjetaEditorial nota={principal} locale={locale} variante="grande" etiqueta="Lo más reciente" prioridad insignia={<MarcaNueva fecha={principal.fecha} />} />
+            </li>
+            {siguientes.slice(0, 4).map((n) => (
+                <li key={n.slug} className="flex">
+                    <TarjetaEditorial nota={n} locale={locale} insignia={<MarcaNueva fecha={n.fecha} />} />
+                </li>
+            ))}
+            <RecordarVisita />
+        </ul>
     );
 }
 
@@ -95,7 +121,7 @@ export function ElProyecto({ locale }: { locale: string }) {
                         ))}
                     </ul>
                     <Link
-                        href={`/${locale}?landing=3d#producto`}
+                        href={`/${locale}#como-funciona`}
                         className="mt-7 min-h-[56px] px-7 rounded-full bg-simar-marea hover:bg-simar-marea-hover text-white text-lg font-extrabold inline-flex items-center gap-2 transition-colors movil:min-h-[52px] movil:text-[17px]"
                     >
                         Ver cómo funciona
@@ -124,14 +150,14 @@ export function Fuentes({ locale }: { locale: string }) {
     const quienes = [...new Set(fuentes.map((f) => quienPublica(f.texto)))];
     return (
         <div className="mt-8 movil:mt-6">
-            <ul aria-label="Quién publica las fuentes" className="flex flex-wrap gap-2">
+            <ul aria-label="Quién publica las fuentes" className="n-entra flex flex-wrap gap-2">
                 {quienes.map((q) => (
                     <li key={q} className="rounded-full bg-simar-superficie border border-simar-borde px-4 py-2 text-[16px] font-bold movil:text-[15px]">
                         {q}
                     </li>
                 ))}
             </ul>
-            <details className="group mt-6">
+            <details className="n-desplegable group mt-6">
                 <summary className="min-h-[56px] px-6 rounded-full border-2 border-simar-campo-borde bg-simar-superficie inline-flex items-center gap-2 text-[17px] font-extrabold cursor-pointer list-none hover:bg-simar-texto/5 transition-colors [&::-webkit-details-marker]:hidden movil:min-h-[52px] movil:text-[16px]">
                     <span className="group-open:hidden">Ver las {fuentes.length} fuentes</span>
                     <span className="hidden group-open:inline">Ocultar las fuentes</span>
@@ -162,6 +188,42 @@ export function Fuentes({ locale }: { locale: string }) {
                         </li>
                     ))}
                 </ol>
+            </details>
+
+            {/* Las fotos que no son de SiMAR: quién las tomó y con qué licencia */}
+            <details className="n-desplegable group/fotos mt-4">
+                <summary className="min-h-[56px] px-6 rounded-full border-2 border-simar-campo-borde bg-simar-superficie inline-flex items-center gap-2 text-[17px] font-extrabold cursor-pointer list-none hover:bg-simar-texto/5 transition-colors [&::-webkit-details-marker]:hidden movil:min-h-[52px] movil:text-[16px]">
+                    <span className="group-open/fotos:hidden">Ver los créditos de las {Object.keys(FOTOS).length} fotos</span>
+                    <span className="hidden group-open/fotos:inline">Ocultar los créditos</span>
+                    <ChevronDown aria-hidden="true" className="w-5 h-5 transition-transform group-open/fotos:rotate-180" />
+                </summary>
+                <ul className="mt-6 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10">
+                    {Object.values(FOTOS).map((foto) => (
+                        <li key={foto.src} className="flex gap-4 border-t border-simar-borde py-4">
+                            <span className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-[12px] simar-cargando">
+                                <Image src={foto.src} alt="" fill sizes="64px" className="object-cover" />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block text-[16px] font-bold leading-snug">{foto.que}</span>
+                                <a href={foto.credito.pagina} target="_blank" rel="noopener noreferrer" className="block text-[15px] leading-snug text-simar-texto-2 hover:text-simar-marea-tinta hover:underline">
+                                    {foto.credito.autor}
+                                    <span className="sr-only"> (abre en otra pestaña)</span>
+                                </a>
+                                {foto.credito.licenciaUrl ? (
+                                    <a href={foto.credito.licenciaUrl} target="_blank" rel="noopener noreferrer" className="text-[14px] font-bold text-simar-texto-2 underline decoration-simar-borde underline-offset-4 hover:text-simar-texto">
+                                        {foto.credito.licencia}
+                                        <span className="sr-only"> (abre en otra pestaña)</span>
+                                    </a>
+                                ) : (
+                                    <span className="text-[14px] font-bold text-simar-texto-2">{foto.credito.licencia}</span>
+                                )}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+                <p className="mt-4 max-w-3xl text-[15px] leading-relaxed text-simar-texto-2">
+                    Todas salen de Wikimedia Commons. Las de licencia CC BY-SA se muestran recortadas y reducidas (adaptadas) y conservan su licencia. Las demás fotos son de SiMAR.
+                </p>
             </details>
         </div>
     );

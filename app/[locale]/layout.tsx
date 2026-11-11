@@ -12,7 +12,9 @@ import { DeslizarParaActualizar } from "@/components/layout/DeslizarParaActualiz
 
 // Tipografía única de SiMAR (Braille Institute, pensada para baja visión). Ver DISEÑO_SIMAR.md.
 const atkinson = Atkinson_Hyperlegible_Next({
-  subsets: ["latin", "latin-ext"],
+  // Sólo «latin» (trae á, é, ñ, ü, ¿, ¡, «»): «latin-ext» es para otros idiomas y se precargaba en
+  // cada página sin usarse
+  subsets: ["latin"],
   variable: "--font-atkinson",
   display: "swap",
   fallback: ["system-ui", "sans-serif"],

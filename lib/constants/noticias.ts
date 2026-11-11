@@ -8,9 +8,12 @@
  *
  * Para agregar una: copia un objeto y cambia el `slug` (será la dirección); el orden lo da la
  * fecha. Todo dato lleva su fuente: si cambias una cifra, cambia también la fuente (y el `dato`,
- * que repite la cifra principal del texto en grande). No se inventan fotos: sin foto, la portada
- * es un dibujo (components/noticias/ilustraciones.tsx).
+ * que repite la cifra principal del texto en grande). No se inventan fotos: son las de SiMAR o
+ * las de lib/constants/fotos.ts (licencia libre, con su crédito, que se muestra con la foto). Sin
+ * foto, la portada es un dibujo (components/noticias/ilustraciones.tsx).
  */
+
+import { FOTOS, type CreditoFoto, type FotoNoticia } from './fotos';
 
 export type CategoriaNoticia = 'SiMAR' | 'Mar de Cortés' | 'Océanos' | 'Normativa' | 'Conciencia';
 
@@ -38,8 +41,8 @@ export interface Noticia {
     resumen: string;
     /** Párrafos del artículo */
     cuerpo: string[];
-    /** Foto de portada (de /public). Sin foto, la portada es un dibujo del tema */
-    imagen?: { src: string; alt: string; posicion?: string };
+    /** Foto de portada (de /public). Sin `credito`, es de SiMAR. Sin foto, la portada es un dibujo */
+    imagen?: { src: string; alt: string; posicion?: string; credito?: CreditoFoto };
     /** El dibujo de la portada cuando no hay foto (si no, el de su tema) */
     ilustracion?: Ilustracion;
     /** La cifra principal del artículo, en grande (debe salir del texto y de sus fuentes) */
@@ -51,9 +54,13 @@ export interface Noticia {
     explica?: boolean;
 }
 
+/** La portada de una nota con una foto de FOTOS (lleva su crédito) */
+const deFoto = (foto: FotoNoticia, alt: string, posicion?: string) => ({ src: foto.src, alt, posicion, credito: foto.credito });
+
 export const NOTICIAS: Noticia[] = [
     {
         slug: 'redes-fantasma-la-pesca-que-nadie-ve',
+        imagen: deFoto(FOTOS.tortugaEnRed, 'Una tortuga marina atrapada en una red de pesca abandonada', '50% 45%'),
         explica: true,
         titulo: 'Redes fantasma: la pesca que nadie ve',
         categoria: 'Conciencia',
@@ -75,6 +82,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'el-aceite-usado-es-un-residuo-peligroso',
+        imagen: deFoto(FOTOS.aceiteDeMotor, 'Aceite de motor que cae de su envase', '45% 50%'),
         explica: true,
         titulo: 'El aceite usado es un residuo peligroso: qué dice la ley',
         categoria: 'Normativa',
@@ -91,6 +99,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'se-reduce-la-zona-sin-redes-de-enmalle-en-el-alto-golfo',
+        imagen: deFoto(FOTOS.golfoSatelite, 'El Golfo de California visto desde un satélite de la NASA', '45% 25%'),
         titulo: 'Se reduce la zona sin redes de enmalle en el Alto Golfo',
         categoria: 'Normativa',
         fecha: '2026-10-15',
@@ -118,6 +127,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'jovenes-de-san-felipe-buscan-a-la-vaquita',
+        imagen: deFoto(FOTOS.playaDeSanFelipe, 'La playa de San Felipe, Baja California, frente al Alto Golfo', '50% 60%'),
         titulo: 'Jóvenes de San Felipe se suman a la búsqueda de la vaquita',
         categoria: 'Mar de Cortés',
         fecha: '2026-07-18',
@@ -141,6 +151,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'mas-de-60-toneladas-fuera-de-las-playas-de-sonora-y-sinaloa',
+        imagen: deFoto(FOTOS.retiroDeRedes, 'Una máquina retira toneladas de redes y basura sacadas del mar', '60% 45%'),
         titulo: 'Más de 60 toneladas de basura, fuera de las playas de Sonora y Sinaloa',
         categoria: 'Mar de Cortés',
         fecha: '2026-07-13',
@@ -163,6 +174,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'el-tratado-mundial-contra-el-plastico-sigue-sin-acuerdo',
+        imagen: deFoto(FOTOS.plasticoEnLaPlaya, 'Botellas, latas y bolsas de plástico juntadas en una playa', '50% 50%'),
         titulo: 'El tratado mundial contra el plástico sigue sin acuerdo',
         categoria: 'Océanos',
         fecha: '2026-02-07',
@@ -184,6 +196,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'entra-en-vigor-el-tratado-de-alta-mar',
+        imagen: deFoto(FOTOS.olaMarAbierto, 'Una ola en mar abierto', '50% 50%'),
         titulo: 'Entra en vigor el tratado de alta mar, y México es parte',
         categoria: 'Océanos',
         fecha: '2026-01-17',
@@ -234,6 +247,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'un-litro-de-aceite-un-millon-de-litros-de-agua',
+        imagen: deFoto(FOTOS.gotaEnElAgua, 'Una gota cae sobre el agua', '50% 50%'),
         explica: true,
         titulo: 'Un litro de aceite, un millón de litros de agua',
         categoria: 'Conciencia',
@@ -256,6 +270,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'vaquita-marina-2025',
+        imagen: deFoto(FOTOS.vaquitaYCria, 'Una vaquita marina y su cría en el Alto Golfo de California', '50% 50%'),
         explica: true,
         titulo: 'La vaquita marina sigue aquí: entre 7 y 10 en 2025',
         categoria: 'Mar de Cortés',
@@ -324,6 +339,7 @@ export const NOTICIAS: Noticia[] = [
     },
     {
         slug: 'el-mar-de-cortes-el-acuario-del-mundo',
+        imagen: deFoto(FOTOS.islaEspirituSanto, 'Agua turquesa frente a la Isla Espíritu Santo, en el Golfo de California', '50% 60%'),
         explica: true,
         titulo: 'El Mar de Cortés, «el acuario del mundo»',
         categoria: 'Mar de Cortés',
@@ -561,6 +577,20 @@ export function fechaNoticia(n: Pick<Noticia, 'fecha' | 'soloMes'>) {
         return texto.charAt(0).toUpperCase() + texto.slice(1);
     }
     return fecha.toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+}
+
+/**
+ * «Hoy», «Ayer», «Hace 3 días» (hasta una semana) o la fecha corta («31 oct 2026»). `hoy` es el día
+ * del puerto en AAAA-MM-DD (hoyPuerto(), en el servidor: así no cambia al hidratar).
+ */
+export function cuandoFue(n: Pick<Noticia, 'fecha' | 'soloMes'>, hoy: string) {
+    if (n.soloMes) return fechaNoticia(n);
+    const dias = Math.round((Date.parse(`${hoy}T12:00:00Z`) - Date.parse(`${n.fecha}T12:00:00Z`)) / 86_400_000);
+    if (dias <= 0) return 'Hoy';
+    if (dias === 1) return 'Ayer';
+    if (dias < 7) return `Hace ${dias} días`;
+    const [a, m, d] = n.fecha.split('-').map(Number);
+    return new Date(Date.UTC(a, m - 1, d, 12)).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
 /** Minutos de lectura (≈ 200 palabras por minuto) */

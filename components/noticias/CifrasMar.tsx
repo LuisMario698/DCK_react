@@ -1,8 +1,18 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { FOTOS, textoCredito, type FotoNoticia } from '@/lib/constants/fotos';
 import { CifraAnimada } from './CifraAnimada';
-import { EscenaCifra, FilaVaquitas } from './MarAnimado';
+import { FilaVaquitas } from './MarAnimado';
 import { PausaFuera } from './PausaFuera';
+
+/** La foto de cada tema (lib/constants/fotos.ts), con su encuadre */
+const FOTO_DE: Record<string, { foto: FotoNoticia; alt: string; posicion: string }> = {
+    aceite: { foto: FOTOS.aceiteDeMotor, alt: 'Aceite de motor que cae de su envase', posicion: '40% 55%' },
+    basura: { foto: FOTOS.plasticoEnLaPlaya, alt: 'Botellas, latas y bolsas de plástico juntadas en una playa', posicion: '50% 50%' },
+    redes: { foto: FOTOS.tortugaEnRed, alt: 'Una tortuga marina atrapada en una red de pesca abandonada', posicion: '50% 45%' },
+    mar: { foto: FOTOS.vaquitaYCria, alt: 'Una vaquita marina y su cría', posicion: '50% 50%' },
+};
 
 export interface TemaCifra {
     id: string;
@@ -15,8 +25,8 @@ export interface TemaCifra {
 
 /**
  * «En cifras» (fondo oscuro): los cuatro temas a la vista, sin pestañas. Cada tarjeta lleva su
- * escena animada (la gota de aceite, la basura que flota, la red que sigue pescando, la vaquita
- * y su cría), la cifra que sube al verse, una línea y qué leer. En celular van una debajo de otra.
+ * foto real con su crédito (se descubre al bajar y se acerca al pasar el cursor), la cifra en letra
+ * de titular que sube al verse, una línea y qué leer. En celular van una debajo de otra.
  */
 export function CifrasMar({ temas, locale }: { temas: TemaCifra[]; locale: string }) {
     return (
@@ -25,21 +35,43 @@ export function CifrasMar({ temas, locale }: { temas: TemaCifra[]; locale: strin
                 <article
                     key={t.id}
                     aria-labelledby={`cifra-${t.id}`}
-                    className={`t3-enfoca ${i % 2 ? 't3-enfoca-2' : ''} flex flex-col rounded-[32px] overflow-hidden bg-white/[0.05] border border-white/10 movil:rounded-[24px]`}
+                    className={`t3-enfoca ${i % 2 ? 't3-enfoca-2' : ''} group flex flex-col rounded-[32px] overflow-clip bg-white/[0.05] border border-white/10 movil:rounded-[24px]`}
                 >
-                    <div className="relative aspect-[16/9] overflow-hidden">
-                        {/* Cada escena se pausa sola fuera de la pantalla (no la tarjeta: su entrada va atada al scroll) */}
-                        <PausaFuera oculto className="absolute inset-0">
-                            <EscenaCifra tema={t.id} />
-                        </PausaFuera>
-                        <span className="absolute left-4 top-4 rounded-full bg-simar-abismo/60 border border-white/15 backdrop-blur-md px-3.5 py-1.5 text-[15px] font-bold text-white">{t.tema}</span>
-                    </div>
+                    <figure className="relative aspect-[16/9] overflow-clip simar-cargando">
+                        {FOTO_DE[t.id] && (
+                            // La figura recorta; la capa baja y su contenido sube lo mismo (globals.css)
+                            <div className="n-descubre absolute inset-0">
+                                <div className="n-descubre-contra absolute inset-0">
+                                    <div className="absolute inset-0 transition-transform duration-[900ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04]">
+                                        <Image
+                                            src={FOTO_DE[t.id].foto.src}
+                                            alt={FOTO_DE[t.id].alt}
+                                            fill
+                                            sizes="(min-width: 768px) 620px, 100vw"
+                                            className="object-cover"
+                                            style={{ objectPosition: FOTO_DE[t.id].posicion }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+                        <span className="absolute left-4 top-4 rounded-full bg-simar-abismo/75 border border-white/15 px-3.5 py-1.5 text-[15px] font-bold text-white">{t.tema}</span>
+                        {FOTO_DE[t.id] && (
+                            <figcaption className="absolute right-4 bottom-3 left-4 text-right text-[13px] leading-snug text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+                                <a href={FOTO_DE[t.id].foto.credito.pagina} target="_blank" rel="noopener noreferrer" className="hover:text-white hover:underline">
+                                    {textoCredito(FOTO_DE[t.id].foto.credito)}
+                                    <span className="sr-only"> (abre en otra pestaña)</span>
+                                </a>
+                            </figcaption>
+                        )}
+                    </figure>
                     <div className="flex flex-col flex-1 p-7 md:p-8 movil:p-5">
-                        <h3 id={`cifra-${t.id}`} className="text-[22px] font-extrabold leading-tight tracking-[-0.01em] text-simar-franja-texto-2 movil:text-[18px]">
+                        <h3 id={`cifra-${t.id}`} className="font-titular text-[26px] font-medium italic leading-tight text-simar-franja-texto-2 movil:text-[21px]">
                             {t.titulo}
                         </h3>
                         <p
-                            className={`mt-2 text-[clamp(48px,5.2vw,78px)] font-extrabold leading-[0.95] tracking-[-0.04em] tabular-nums whitespace-nowrap movil:text-[44px] ${
+                            className={`mt-2 font-titular text-[clamp(54px,5.8vw,86px)] font-semibold leading-[0.95] tracking-[-0.03em] tabular-nums whitespace-nowrap movil:text-[48px] ${
                                 t.id === 'aceite' ? 'text-simar-aceite' : 'text-white'
                             }`}
                         >

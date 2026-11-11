@@ -307,15 +307,15 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
 
 | Pieza | Qué hace | Dónde |
 |---|---|---|
-| `reveal` (+ `useScrollReveal`) | **Atado al scroll, como las páginas de Apple**: el estado depende de la posición, no del tiempo. Asoma por abajo con `blur(10px)`, transparente y 28 px abajo, y queda nítido al recorrer el 26 % de su paso por la pantalla (`animation-timeline: view()`, `animation-range: cover 0% cover 26%`), o sea en el tercio de abajo. Al bajar rápido todo llega ya nítido; al subir se revierte. `data-delay` (ms) se vuelve un rango que empieza más arriba (650 ms ≈ 16 %). `data-direction="left"/"right"` entra de lado | Antetítulos, párrafos, tarjetas de cada sección |
-| `reveal` + `data-efecto="foto"` | Más desenfoque (18 px) y crece de 95 % a 100 %: la foto "se enfoca" (rango hasta 30 %) | Fotos de El proyecto y Don Francisco, el mapa de puertos |
-| `reveal reveal-palabras` + `TextoEnfoca` | El título no se mueve: cada palabra se enfoca según su posición, cada una 2 % después que la anterior. El lector de pantalla oye la frase entera una vez (`sr-only`) | Títulos `h2` de las secciones y el llamado final |
+| `reveal` (+ `useScrollReveal`) | **Atado al scroll, como las páginas de Apple**: el estado depende de la posición, no del tiempo. Asoma por abajo transparente y 28 px abajo (**sin `blur`**: animar `filter` repintaba la capa en cada cuadro y la página larga se trababa), y queda en su lugar al recorrer el 26 % de su paso por la pantalla (`animation-timeline: view()`, `animation-range: cover 0% cover 26%`), o sea en el tercio de abajo. Al bajar rápido todo llega ya nítido; al subir se revierte. `data-delay` (ms) se vuelve un rango que empieza más arriba (650 ms ≈ 16 %). `data-direction="left"/"right"` entra de lado | Antetítulos, párrafos, tarjetas de cada sección |
+| `reveal` + `data-efecto="foto"` | Aparece y crece de 95 % a 100 % (rango hasta 30 %), sin desenfoque | Fotos de El proyecto y Don Francisco, el mapa de puertos |
+| `reveal reveal-palabras` + `TextoEnfoca` | El título no se mueve: cada palabra aparece y sube 0.4 em según su posición, cada una 2 % después que la anterior. El lector de pantalla oye la frase entera una vez (`sr-only`) | Títulos `h2` de las secciones y el llamado final |
 | `simar-enfoca` | Lo mismo, al cargar (animación, 1.1 s). Escalonar con `animationDelay` | Contenido del hero |
 | `simar-enfoca-simbolo` | El símbolo se enfoca, crece y gira 50° hasta su lugar: las flechas cierran el ciclo | Símbolo grande del hero |
 | `simar-enfoca-palabras` + `TextoEnfoca` | Palabras en cascada al cargar; el inicio va en `--retraso` | Subtítulo del hero |
-| `simar-hero-foto` (`data-estado="activa"/"anterior"`) | Fotos de fondo: la nueva se funde y se enfoca encima; la anterior queda debajo, nítida | Fondo del hero |
+| `simar-hero-foto` (`data-estado="activa"/"anterior"`) | Fotos de fondo: la nueva se funde encima y se asienta (de 106 % a 100 %, sin desenfoque: es de pantalla completa); la anterior queda debajo. Sólo está en la página la primera; las demás se agregan en reposo y una antes de su turno | Fondo del hero |
 | `simar-hero-tinte` / `simar-hero-velo` | Tinte azul marea (`mix-blend-mode: color`) para que todas las fotos queden en la misma gama; velo `simar-abismo` más oscuro al centro y al pie | Fondo del hero |
-| `simar-hero-sale` | Al bajar, el contenido del hero se difumina y se desvanece (sin moverse), atado al scroll (`view-timeline`). Sólo donde el navegador lo soporta y sin "reducir movimiento" | Contenido del hero |
+| `simar-hero-sale` | Al bajar, el contenido del hero se desvanece y se encoge un poco (a 97 %, sin desenfoque), atado al scroll (`view-timeline`). Sólo donde el navegador lo soporta y sin "reducir movimiento" | Contenido del hero |
 
 - Navegadores sin animaciones atadas al scroll (Safari de iOS anterior a 26, Firefox): el
   `reveal` entra con `IntersectionObserver` y una transición corta (0.55–0.65 s, retrasos al
@@ -451,60 +451,337 @@ parada (`TIEMPOS`):
 leen `lib/constants/noticias.ts` (sin base de datos). La landing sólo lleva un adelanto
 (`SeccionNoticias`, las tres más recientes y «Ir a Noticias») y el enlace del menú.
 
+- **Es un medio, no una demo** (Jesus, 2026-11-05: «son noticias y tiene que inspirar
+  profesionalismo y credibilidad»): fotos reales con su crédito, letra de periódico en los
+  titulares, fuentes y autores a la vista y noticias reales de otros medios. Nada de dibujos
+  infantiles donde puede ir una foto. Se puede usar cualquier herramienta (Motion, three.js, CSS).
 - La página (`app/[locale]/noticias/page.tsx`) es **muy visual, poco texto a la vez y casi todo
-  se ve con sólo bajar** (Jesus la pidió menos aburrida, con más estructura, con animaciones de la
-  vaquita y con menos clics). La barra de arriba lleva una fila con las secciones (`NavSecciones`,
+  se ve con sólo bajar**. La barra de arriba lleva una fila con las secciones (`NavSecciones`,
   marca la que se lee) y, de arriba abajo:
-  0. **La portada, bajo el mar** (`PortadaMar`): se mete debajo de la barra de vidrio; entra la
-     luz, pasan cardúmenes, suben unas burbujas, se mecen las algas y la vaquita nada con su cría
-     (`Vaquita`, SVG). Encima: el título, tres contadores (noticias, lugares, fuentes) y un
-     «¿Sabías que...?» de la vaquita que lleva a su artículo.
-  1. **Lo último**: un mosaico: la más reciente grande (portada arriba, texto abajo) y tres más
-     sólo con portada y título (`variante="mosaico"`; en celular, carrusel).
+  0. **La portada** (`PortadaEditorial`), como la de un periódico: un filete grueso, la fecha y
+     el lugar («Jueves, 5 de noviembre de 2026 · Puerto Peñasco, Sonora») con «Actualizado a las
+     13:50 h», la cabecera **Noticias *del* Mar** en `font-titular`, la línea de qué es y tres
+     cifras (notas, medios, fuentes), y un filete doble. Debajo, **«Al momento»**: una cinta con los
+     titulares más nuevos de SiMAR y de los otros medios (se detiene con el cursor, el foco o su
+     botón; con «reducir movimiento» es una fila que se desliza a mano). Luego la **nota principal**
+     (la más reciente de `recientes()`) con su foto grande (se descubre al cargar y se mueve un
+     poco al bajar, con CSS atado al scroll: `n-paralaje`), su crédito, tema, titular, entrada y «Redacción SiMAR · fecha ·
+     minutos»; a un lado, **«Lo último»**: las cuatro siguientes, numeradas, con miniatura.
+     Las entradas de la portada son CSS (`n-filete`, `n-palabra`, `n-sube`, `n-descubre-ya`,
+     `n-acerca-ya`) y no Motion: así se ven desde el primer cuadro, sin esperar a JavaScript.
+  1. **Otros medios** (`OtrosMedios`, fondo `superficie`): lo que publican sobre el mar medios con
+     licencia abierta, leído de sus canales RSS/Atom en el servidor y guardado una hora
+     (`lib/services/noticias_externas.ts`, `unstable_cache`). Hoy: **Mongabay Latam** (CC BY-NC-ND
+     4.0), **Agencia SINC** (CC BY 4.0), **Noticias ONU** (material de noticias, con crédito) y **The
+     Conversation** (CC BY-ND 4.0). Se quedan las que hablan del mar, la costa, la pesca o los
+     residuos (palabras con peso; lo de México primero y marcado), sin repetidas y a lo más cuatro
+     por medio (ninguno es la mayoría, como pide SINC). De cada una: el titular, el resumen de su
+     propio canal, autor, hora y «Leer en {medio}» (abre el original). **No se copian el texto
+     completo ni las fotos** (en varios medios las fotos son de agencias). Pestañas por medio y, al
+     final, quién es cada medio con el enlace a su licencia. Si no hay notas, la sección no sale.
   2. **En cifras** (oscuro, `CifrasMar`): los cuatro `TEMAS` a la vista, sin pestañas. Cada tarjeta
-     lleva su escena animada (`EscenaCifra`, por `id`: la gota de aceite que cae y abre su mancha,
-     la botella que flota y la lata que se hunde, la red fantasma con un pez atrapado, la vaquita
-     y su cría), la cifra que sube al verse (`CifraAnimada`), una línea y dos artículos. La del mar
-     pinta las vaquitas que quedan (`FilaVaquitas`: siete firmes y tres claras).
-  3. **En el mapa** (`MapaHistoria`, contado con el scroll): el golfo (`MapaGolfo`, de servidor) se
-     queda fijo (a un lado en computadora, arriba en celular) y cada capítulo de `LUGARES` lo lleva
-     a su lugar: se acerca (`zoom`), se enciende su marca y se leen sus noticias. La costa se dibuja
-     al verse, la vaquita nada en el Alto Golfo y una panga sale de Puerto Peñasco. México y el
-     mundo apartan el mapa y muestran un dibujo. Tocar una marca baja a su capítulo. El zoom usa
-     propiedades registradas (`--n-z`, `--n-tx`, `--n-ty`) para que las marcas se desescalen a la
-     par; las noticias de cada capítulo se dibujan en el servidor. Toda noticia debe estar en un
-     lugar.
+     lleva **una foto real** con su crédito (el aceite, el plástico en la playa, la tortuga en la red,
+     la vaquita y su cría), la cifra en `font-titular` que sube al verse (`CifraAnimada`), una
+     línea y dos artículos. La del mar pinta las vaquitas que quedan (`FilaVaquitas`).
+  3. **En el mapa** (`MapaHistoria`, contado con el scroll): un **mapa real** (`MapaInteractivo`:
+     MapLibre GL + OpenFreeMap, sin clave; *positron* en los dos temas, nombres en español, sin
+     carreteras numeradas, aeropuertos ni trenes; en claro con el papel y el agua de SiMAR y **en oscuro
+     repintado capa por capa con su azul marino** (`PALETA_OSCURA`: tierra azul, mar más oscuro y una
+     línea de costa fina; el *dark* de OpenFreeMap se veía casi negro y con franjas en el mar) se queda fijo (a un lado en computadora, arriba en celular) y cada
+     capítulo de `LUGARES` lo hace **volar** a su vista (`VISTAS`: el golfo, Puerto Peñasco, el Alto
+     Golfo, Sonora y Sinaloa, todo México y el mundo; con «reducir movimiento» o «Sin animaciones»,
+     salta). Cada lugar tiene su marca con el número de noticias (botón: baja a su capítulo); la del
+     capítulo que se lee se enciende en amarillo y muestra su nombre (las otras, sólo el número; el
+     nombre al pasar el cursor), y de muy lejos se esconden. **La zona de la vaquita** va marcada con
+     un círculo punteado y dice «(aprox.)»: no es el límite legal. Se puede mover y acercar (Ctrl +
+     rueda, dos dedos o los botones + y −: `cooperativeGestures`, así la rueda sigue bajando la
+     página). Los créditos del mapa van plegados (ⓘ). El mapa real **sólo baja cuando la sección se
+     acerca** (`next/dynamic` + IntersectionObserver) y entra sobre **el dibujado** (`MapaGolfo`, de
+     servidor), que se ve mientras tanto y se queda si el aparato no puede mostrar mapas (sin WebGL).
+     Cada capítulo es una tarjeta con **la foto del lugar** y su crédito, su nombre en `font-titular`,
+     de qué trata y sus noticias (de servidor). Toda noticia debe estar en un lugar.
   4. **El proyecto**: la foto, SiMAR en tres ideas, con quién se hizo y la historia
      (`HistoriaProyecto`: una línea que se llena al bajar, los años en zigzag y cada uno se enciende
      al llegar; sin clics).
-  5. **Todas** (`ListaNoticias`): buscador sin acentos, filtro por tema, las primeras seis sin
-     resumen y «Ver N más». **Glosario** (`GlosarioTarjetas`: una tarjeta por palabra con su ícono;
-     Manifiesto y Red fantasma llevan dibujo; en celular, carrusel) y **fuentes** (quién las
-     publica, de un vistazo, y la lista entera en un `<details>`).
-  6. **Cierre** (oscuro): la vaquita y su cría se despiden nadando abajo.
-  **El movimiento** es SVG y CSS (`MarAnimado.tsx` y las clases `n-*` de `globals.css`), sin
-  librerías: sólo corre con «sin preferencia» de movimiento y, con «reducir movimiento», cada cosa
+  5. **Todas, el archivo** (`ListaNoticias`): arriba, cuántas hay (se anuncia al cambiar: «4 notas
+     con «vaquita» de Océanos») y el buscador (sin acentos ni mayúsculas; resalta lo encontrado con
+     `n-encontrada`; Esc lo borra). Abajo, una barra de vidrio que **se queda pegada** bajo la de
+     arriba (en celular no): los temas como control segmentado (`role="tablist"`, flechas, Inicio y
+     Fin; el número de cada tema sigue a la búsqueda) y la vista, **cuadrícula** (`TarjetaEditorial`)
+     o **lista por mes** (fecha grande, tema, título, resumen y miniatura; en celular, sólo íconos y
+     junto al conteo). Las primeras seis y «Mostrar N más» con su avance («Ves 6 de 14»). Sin
+     resultados, sugerencias para buscar. El tema y la búsqueda viven en la dirección
+     (`?tema=…&q=…`, con `replaceState`): la página los lee en el servidor, así un enlace abre el
+     archivo ya filtrado (el hueco «Ver todas» de la landing lleva al tema elegido). **Glosario** (`GlosarioTarjetas`: una tarjeta por palabra con su ícono;
+     Manifiesto y Red fantasma llevan foto; en celular, carrusel) y **fuentes** (quién las
+     publica, de un vistazo, la lista entera en un `<details>` y otro con los créditos de las fotos).
+  6. **Cierre**: la foto de la flota de Puerto Peñasco al atardecer, con su crédito, y «Ver cómo
+     funciona».
+  Cada sección lleva su número en el encabezado («01 — Otros medios», `EncabezadoSeccion`, en
+  `font-titular`), como el índice de una revista; el número sale del orden de las secciones.
+- **La letra de los titulares** es Newsreader (`components/noticias/letraTitular.ts`, OFL, hecha
+  para titulares de periódico en pantalla), con la clase `font-titular` dentro de un contenedor con
+  `letraTitular.variable` (la página, el artículo). Sólo titulares, cifras y la cabecera; el texto
+  sigue en Atkinson (la más legible para la gente mayor).
+- **Fotos**: las de SiMAR o las de `lib/constants/fotos.ts` (`FOTOS`), todas de Wikimedia Commons
+  con licencia libre: dominio público (NOAA, NASA, USFWS), CC0, CC BY o CC BY-SA. Están en
+  `public/assets/noticias/fotos` (WebP, a lo más 2000 px). **Toda foto ajena lleva su crédito**
+  junto a ella (`textoCredito`: «Foto: Paula Olson, NOAA · Dominio público»; con CC BY-SA,
+  «(adaptada)») con enlace a su página, y la lista completa está en Fuentes. Una nota toma su foto
+  con `deFoto(FOTOS.x, alt, posicion)`. Nunca uses una foto sin licencia libre ni la de una nota de
+  otro medio.
+  **El movimiento**: lo de la portada, en CSS (también la foto principal al bajar, `n-paralaje`, que
+  se queda quieta con «sin animaciones»); Motion sólo para las tarjetas de otros medios (entran escalonadas y se reacomodan al cambiar de medio). Lo editorial (el
+  archivo, las tarjetas, la barra):
+  - `--n-resorte`: un resorte sin rebote escrito como curva `linear()` (lo que se desliza: las
+    píldoras de `NavSecciones`, de los temas y de la vista, medidas con `useIndicador` y movidas
+    con `.n-indicador`); `--n-frena` para lo que entra.
+  - Atado al scroll (`animation-timeline: view()`, donde el navegador puede; si no, ya visible):
+    `n-entra` (encabezados: suben y se enfocan), `n-entra-hijos` (escalona un mosaico) y
+    `n-descubre` (la portada de una tarjeta se descubre de arriba abajo mientras se acerca).
+  - Al pasar el cursor: la tarjeta se levanta, la portada se acerca y el título se subraya de
+    izquierda a derecha (`n-subraya`).
+  - Al filtrar, cambiar de vista o mostrar más, **View Transitions** (`startViewTransition` +
+    `flushSync`): cada nota tiene su `view-transition-name` y clase `n-nota`, así se desliza a su
+    lugar (de tarjeta a renglón al cambiar de vista); las que entran suben y las que salen se
+    encogen. Sin View Transitions, el cambio es inmediato.
+  - **Carga**: `loading.tsx` en `/noticias` y en cada nota (`Esqueletos.tsx`): la barra ya está y
+    abajo **la forma exacta de lo que llega** en huesos con brillo (`n-hueso`): la cabecera del
+    periódico con sus filetes y sus cifras, la cinta «Al momento», la nota principal y «Lo último»;
+    en una nota, el tema, el titular, la firma con sus tres botones, la foto a lo ancho, la letra
+    capital, «El dato» y los párrafos. El brillo va escalonado (cada hueso con su retraso), como una
+    ola. Aparecen tras un instante (`n-esqueleto`) y empiezan arriba (si no, heredan el scroll de la
+    landing). Mientras llega una foto, el brillo `simar-cargando` va debajo.
+  - El artículo entra por tiempo, no por scroll (ya está a la vista): el encabezado sube en escalón
+    (`n-llega`). **La foto no se descubre ni salta**: queda en el mismo lugar del esqueleto y llega
+    con `FotoNota`: al instante se ve su vista previa (20 px, difuminada, de
+    `lib/constants/previas.ts`, con sus colores) y, cuando la foto de verdad terminó de llegar (no
+    antes), se enfoca encima: aparece y se asienta de 103 % a 100 %. Sólo opacidad y transform; sin
+    JavaScript, a los 3 s se ve de todos modos. El pie llega un poco después. Antes el cuadro de
+    carga se borraba y volvía a aparecer de arriba abajo, y la foto entraba de golpe al terminar de
+    bajar: se veía raro. Las tarjetas, la portada y «Lo último» usan la misma `FotoNota`.
+  Todo sólo corre con «sin preferencia» de movimiento y, con «reducir movimiento», cada cosa
   se queda quieta en un lugar donde se ve. `PausaFuera` pausa cada escena fuera de la pantalla
   (`data-quieta`) y marca la primera vez que se ve (`data-visto`) para lo que se anima una vez.
-  Nada de partículas ni animaciones abstractas: animales y cosas del mar que se reconocen. A los
-  componentes de cliente sólo les llegan resúmenes (`resumenDe`), nunca el texto de los artículos.
+  Nada de partículas ni animaciones abstractas. A los
+  componentes de cliente sólo les llegan resúmenes (`resumenDe`, `datosEditorial`), nunca el texto
+  de los artículos.
 - Hay dos clases de artículo: noticias (lo que pasó, con su fecha) y los que explican el problema
   (`explica: true`, no caducan): éstos van en En cifras y no en la portada. El orden lo da
   la fecha (`POR_FECHA`, `recientes()`).
 - Cada artículo lleva fecha, categoría (SiMAR, Mar de Cortés, Océanos, Normativa, Conciencia),
   resumen, cuerpo en párrafos y **fuentes** con enlace. Opcionales: `imagen`, `galeria`, `dato` (la
   cifra clave, resaltada después del primer párrafo) e `ilustracion`. Todo dato lleva su fuente.
-- **Sin foto, la portada se dibuja** (`components/noticias/ilustraciones.tsx`): ilustraciones
+- **Sin foto (sólo si no hay una con licencia), la portada se dibuja** (`components/noticias/ilustraciones.tsx`): ilustraciones
   planas de trazo limpio, sin puntos (`mapa`, `altogolfo`, `carta`, `gota`, `hojas`, `simbolo`,
   `red`, `globo`, `costa`, `botella`, `horizonte`). Los mapas salen de `components/noticias/golfo.ts`
   (Natural Earth, dominio público). Si la noticia no dice cuál, sale la de su categoría
   (`ILUSTRACION_DE`). Cada dibujo usa `useId` para sus degradados: la misma noticia puede salir dos
   veces en una página (una oculta) y con ids repetidos la visible no se pinta. No inventes fotos.
-- El artículo lleva migas, el botón Compartir (`navigator.share` o copia el enlace con un aviso),
-  una línea de avance de lectura en la barra, Anterior (más vieja) / Siguiente (más nueva) y
-  "Sigue leyendo" (misma categoría primero).
+- **La nota** (`app/[locale]/noticias/[slug]/page.tsx`), para leer con calma: el tema (lleva al
+  archivo de ese tema) y si es «Noticia» o «Para entender» (`explica`), el titular en
+  `font-titular`, la entrada y **la firma** (Redacción SiMAR con su logo, fecha, Puerto Peñasco y
+  minutos) con tres botones: **Escuchar** (`LeerEnVoz`), **Letra** (los ajustes de lectura) y
+  **Compartir** (`navigator.share` o copia el enlace). La foto a lo ancho (en celular, de orilla a
+  orilla) con lo que se ve y su crédito. El texto en una columna de ~65 caracteres con **letra
+  capital** (`n-capital`), «El dato» con filete azul y la cifra grande, un cuadrito azul al final,
+  **«Fuentes de esta nota»** numeradas y **«Sobre esta nota»** (quién la escribió y con qué). Luego
+  Anterior / Siguiente (titulares en `font-titular`) y «Sigue leyendo» (`TarjetaEditorial`; en
+  celular, dos). Al bajar, **el tema y el título pasan a la barra** (`TituloAlLeer`).
+- **Escuchar la nota** (`LeerEnVoz`): la voz del navegador (`speechSynthesis`, nada de fuera) lee
+  lo marcado con `data-leer` dentro de `#nota` (título, entrada, el dato y cada párrafo), en
+  español de México si el aparato la tiene. Mientras lee, **el reproductor vive en la isla
+  dinámica** (abajo): una **cápsula viva** en la barra (ondas que se mueven mientras habla, «3/6» y
+  pausar) y, debajo, **su gota** con la frase que dice como subtítulo (en `font-titular`), una barra
+  con **un segmento por párrafo** (tocar uno salta ahí), desde el inicio, anterior, **pausar /
+  seguir** (el botón grande), siguiente, repetir, la velocidad (lenta, normal, rápida), guardar en
+  la isla (sube la gota y queda la cápsula) y cerrar. Sin isla, la misma tarjeta va abajo. **El texto se sigue solo** (centra cada párrafo); si la persona baja o sube por su cuenta,
+  deja de seguirlo y aparece «Volver a donde va». **Tocar un párrafo lo lee desde ahí.** Marca el
+  párrafo (`n-leyendo`) y, más fuerte, **la frase que dice** (CSS Custom Highlight API,
+  `::highlight(n-frase)`; donde no existe, sólo el párrafo). Dice frase por frase; pausar es callar y
+  recordar la frase (pause() no sirve en Android), y cada frase lleva un turno para ignorar avisos
+  viejos al saltar. Mientras está abierto, la nota deja espacio abajo (`n-con-reproductor`). Sin
+  voz en el navegador, el botón no sale.
+- **Ajustes de lectura** (el botón «Lectura» de la barra y «Letra» en la nota; `PanelLectura`):
+  **tamaño** con A− / A+ en cinco niveles (90 %, 100 %, 112 %, 125 %, 140 %), **contraste alto**,
+  **renglones amplios**, **tema** claro u oscuro, **animaciones** sí/no y **subrayar enlaces**, más
+  «Volver a como estaba». Se ve al momento, se guarda en el dispositivo
+  (`localStorage` `simar:noticias-lectura`) y un punto azul en el botón avisa que hay ajustes. Se
+  aplican en `<html>` (`--n-zoom`, `data-n-contraste`, `data-n-interlineado`,
+  `data-n-movimiento`, `data-n-enlaces`) con un script en `app/[locale]/noticias/layout.tsx`
+  **antes de pintar** (quien pidió letra grande no ve primero la chica). Las reglas («Ajustes de
+  lectura» en `globals.css`) sólo valen dentro de `.n-pagina` (la página, la nota y sus
+  esqueletos): el tamaño es `zoom` en `<main>` (crece como el zoom del navegador; la barra no),
+  por eso lo pegado y las alturas con `svh` se dividen entre `var(--n-zoom,1)`; el contraste alto
+  redefine los tokens `simar-*` (texto casi negro o blanco, bordes visibles); «sin animaciones»
+  quita animaciones y transiciones, las View Transitions y el movimiento de Motion
+  (`reducedMotion="always"`). El panel va en un portal, con `useVentanaAccesible` (Esc lo cierra y el
+  foco regresa) y en celular sale como hoja desde abajo.
+- **Un solo botón de tema**: el flotante de `ThemeToggle` no sale en Noticias (ya está en su barra,
+  junto a «Lectura»); antes salían los dos encimados.
+
+**La isla dinámica del portal público** (`components/isla/`): la barra de arriba de Noticias y de la
+landing Actual es una isla, como la Dynamic Island, en vidrio líquido.
+- **La isla** (`IslaDinamica`) es la barra de siempre (`simar-vidrio-fuerte`, o `simar-vidrio`
+  arriba de la landing) con material propio (`isla-cristal`): un brillo arriba, un borde de luz que
+  baja (más brillante arriba, un reflejo abajo), una línea fina que la separa de una página blanca y
+  una sombra en dos capas (cerca y lejos). Al desplazar la página, **un reflejo la cruza** (la luz que
+  se mueve sobre el vidrio: `animation-timeline: scroll(root)`, debajo del contenido).
+- **Un solo material, de principio a fin.** Mientras una gota vive, la isla y el líquido toman el mismo
+  color sólido (`--isla-liquido`: casi blanco en claro, azul noche en oscuro) y la gota lleva el
+  mismo borde de luz y brillo que la isla. Nada se vuelve sólido al terminar (antes la gota salía
+  translúcida y al detenerse se encendía un vidrio esmerilado: se notaba el cambio).
+- **Las gotas salen de la isla, por su orilla de abajo, justo bajo el botón que las abre**, y
+  regresan por el mismo lugar. Tres tiempos: (1) la orilla se abomba (**el brote**) y de ella cuelga
+  una **gotita**; (2) la gotita **se hincha** hacia abajo hasta ser el panel, colgada de su borde de
+  arriba (que casi no se mueve: crece desde la isla, no aparece en medio de la página); (3) el brote
+  regresa, **el cuello se corta** y el panel queda flotando 12 px abajo. Al cerrar: el panel se
+  encoge a gotita colgando, el brote sale a recogerla y **la isla se la sorbe**. La capa líquida va
+  encima de la isla pero recortada en su orilla: lo de adentro no se ve, así que el líquido de verdad
+  sale de ella; una franja escondida (el labio) hace que la orilla se curve hacia el brote. El
+  contenido aparece cuando el panel ya casi creció. Abre en ~0.4 s y cierra en ~0.4 s.
+- **Lo de adentro llega renglón por renglón** (`isla-escalon` con `--i`): cuando el panel ya casi
+  creció, cada renglón sube 12 px y aparece un poco después del anterior (Lectura, el menú de
+  secciones, el reproductor).
+- **El menú de letras («Lectura») es líquido y responde al presionar**:
+  - los selectores (Contraste, Renglones, Tema…) son `SelectorLiquido`: una **lente** oscura se desliza
+    a la opción elegida; el borde de adelante llega primero y el de atrás lo alcanza (se estira y se
+    recoge, y se aplasta un poco), y el texto cambia de color justo donde pasa (la lente lleva su copia
+    de las etiquetas). Al presionar otra opción la lente ya se asoma hacia ella; si el dedo se va sin
+    soltar, regresa. Siempre parte de donde se ve: se puede cambiar a media animación sin saltos;
+  - el tamaño: cada barra **se llena desde abajo** con un rebote chico y su nombre («Grande 115 %»)
+    entra desde abajo al subir y desde arriba al bajar;
+  - el tema se abre en círculo **desde la opción que se tocó**; «Volver a como estaba» gira su flecha;
+  - los botones se hunden al tocar y regresan con un rebote chico (`isla-pulsa`, resorte
+    `--isla-rebote`: amortiguamiento 0.72, respuesta 0.42 s).
+- **El viaje** (`viaje.ts`, `useGota().abrirDesde` / `alternarDesde`): si el botón está **fuera**
+  de la isla (en la nota: «Escuchar», «Letra»), una gotita del color del botón sale de él, sube en
+  curva y **entra a la isla por abajo** donde vive lo que abrió (la cápsula del reproductor, el botón
+  «Lectura»); la isla la recibe con un pulso y de ahí cae la gota. Así se entiende adónde se fue. La
+  cápsula del reproductor llega con la gotita (se esconde mientras viaja) y la voz empieza ya con el
+  reproductor abierto. Sólo transform y opacidad (WAAPI); con «reducir movimiento», no viaja.
+- Hoy hay gotas en «Lectura» (los ajustes de lectura), el reproductor de «Escuchar» y el menú de
+  secciones de la landing (bajo 1280 px). Una a la vez (si se abre otra mientras una se cierra,
+  conviven un momento, cada una en su columna); Esc, un clic afuera o su botón la cierran y el foco
+  entra y regresa (`useVentanaAccesible`). Un botón fuera de la isla que abre la misma gota lleva
+  `data-isla-abre="id"` (el clic afuera no la cierra antes de que él la alterne). La del reproductor
+  es `libre`: no atrapa el foco ni se cierra al tocar la nota (tocar un párrafo lo lee).
+- **La ranura de actividad** (`RanuraActividad`): la cápsula viva de lo que está pasando (el
+  reproductor) entra a la isla con un resorte; en celular el enlace de volver se reduce a la flecha.
+- **La isla saca las secciones de Noticias** (`isla-con-fila`, en la página de Noticias): al llegar,
+  la isla está compacta (sólo su renglón) y se alarga hacia abajo como la Dynamic Island cuando se
+  abre (un `clip-path` con sus mismas esquinas que baja; el lugar ya está apartado, así la página no
+  se mueve). Luego la línea se dibuja desde el centro, las secciones salen de la isla una tras otra
+  (45 ms entre cada una, con rebote chico), la píldora de la sección que se lee aparece en su lugar
+  y llega la sombra. Antes las secciones sólo aparecían. Unos 0.8 s en total; con «reducir
+  movimiento», quieta.
+- **Estado compartido** (`islaTienda.tsx`, `IslaProveedor` + `useGota(id)` + `useRanuraIsla()`):
+  cualquier parte de la página abre una gota o pinta en ella con un portal (`destino`).
+- **El líquido** es [liquid-gooey](https://www.npmjs.com/package/liquid-gooey) (MIT): una silueta
+  SVG con el filtro «goo» debajo del contenido real, que queda nítido; funciona en Safari.
+- **Vidrio vivo en todo el portal público** (`VidrioVivo` + `data-vidrio`, globals.css «Vidrio vivo»):
+  en los botones con `data-vidrio` (los azules, «Conocer el proyecto», los de espuma, tema, menú,
+  «Lectura», «Escuchar», los renglones del menú de secciones) **un reflejo sigue al cursor** y, al
+  presionar, se abre y se aviva desde donde se tocó mientras el botón se hunde y regresa con rebote.
+  `data-vidrio="claro"` en botones claros (luz azul tenue). Un solo oyente para toda la página, una
+  vez por cuadro; sólo se repinta el fondo del botón. En la isla de la landing (1280 px o más), **una
+  lente sigue al cursor de un enlace a otro** (`useLenteSobre`, la misma lente líquida); las leyendas
+  de vidrio sobre las fotos y los controles de las fotos reciben **un destello al entrar a la
+  pantalla** (`vidrio-destello`, atado al scroll); los puntos de las fotos crecen con rebote y el ícono
+  del tema entra girando. Con «reducir movimiento», nada se mueve (la luz sigue, sin hundirse).
+- **Rápido y sin trabas** (es lo primero): la capa líquida **sólo existe mientras una gota vive** y
+  sólo en su columna (no en toda la barra); su código (`CapaGota.tsx`, con liquid-gooey) no viaja
+  con la página: `IslaDinamica` lo pide en reposo, antes de la primera gota (los tipos compartidos
+  están en `tipos.ts`); va encima de la isla, así la isla no vuelve a difuminar su
+  fondo mientras el líquido se mueve; el filtro es el mínimo (desenfoque + contraste); el borde de luz
+  y la sombra van en CSS; nada de `backdrop-filter` en la gota (es sólida); el contenido sólo se
+  desvanece y sus renglones suben unos px. liquid-gooey anima con `requestAnimationFrame` (escribe el mismo
+  transform en la caja y en su silueta), mide cada gota al montarla y no al moverla (por eso cambia de
+  `key` si su lugar cambia) y anima desde donde estaba: la gota se mide al montarse (el alto de 0 de
+  un portal vacío no cuenta) y se vuelve a montar una vez al conocer su alto, para no salir del lugar
+  calculado con el alto supuesto.
+- Las fechas de las tarjetas son relativas con el día del puerto (`cuandoFue`: «Hoy», «Ayer»,
+  «Hace 3 días» y, desde una semana, la fecha corta); el reloj lleva la fecha larga en `title`.
 - `MetaNoticia` (tema · fecha · minutos) recorta el punto que separa cuando una parte baja de
   renglón: ningún renglón empieza con «·».
+
+### 8.7 Landing Actual: la laptop 3D y las noticias
+
+La landing Actual (`VariantCinematic`) suma dos piezas para volverla portal: «Así funciona SiMAR»
+(después de «El proyecto») y «Lo último del mar» (después de la laptop).
+
+**Así funciona SiMAR** (`components/landing/escena-equipos/`): una escena fija mientras se baja
+(pista de 400svh, escenario `sticky`). Una laptop y un celular **realistas** (modelos CC BY 4.0 de
+Sketchfab: «macbook pro M3 16 inch 2024» de jackbaeten y «Apple iPhone 15 Pro Max Black» de
+Polyman_3D; el crédito va en el pie de la landing), sin logotipos ni fondos de pantalla, comprimidos
+a `public/assets/landing/3d/modelos/` (texturas webp de 1024 px, mallas meshopt). three.js con
+`await import()`, como en la landing 3D.
+
+| Pieza | Qué hace |
+|---|---|
+| Avance | Sigue al scroll con un resorte sin rebote (~0.3 s): la rueda del ratón no da saltos |
+| Laptop | Cerrada y un poco en el aire, gira hacia el frente, baja al piso y la tapa se abre sobre su bisagra (el pivote sube lo que la orilla de la tapa baja dentro del hueco, para que cerrada quede encima de la base). Al final se hace a un lado y se vuelve hacia el celular |
+| Pantallas | Panel → manifiesto → Estadísticas → portal. **Sin desvanecido:** la nueva entra desde la derecha y empuja a la anterior (que se va más lento y se oscurece), con sombra en la orilla, como al navegar en la app; el avance lo da el scroll |
+| Celular | Llega desde la derecha (en celular, desde abajo a la derecha), un poco en el aire y ladeado, y **se posa frenando** junto a la laptop, vuelto hacia ella. Antes salía de debajo del piso. Su pantalla lleva barra de estado (hora, señal, batería) a los lados de la isla, la app completa y la barra de inicio |
+| Toma final | Los dos equipos **nunca se tocan**: en pantallas anchas van lado a lado con aire entre ellos; en angostas (celular de pie, tableta vertical) se **apilan**, la laptop atrás y el celular delante, mirados desde más arriba (42°) para que el celular quede debajo de la laptop. Antes las posiciones eran fijas y a 1024 px o en celular el teléfono quedaba pegado a la esquina de la laptop |
+| Encuadre | Cada toma dice desde dónde se mira y qué se enseña; **la distancia y el centrado se calculan para la pantalla** (`medir`): todo cabe entre el recuadro de las frases y los puntos de abajo (`reserva`, que pasa la sección), en cualquier ancho. En celular la laptop ya no se corta en la orilla |
+| Sombras | La **huella de cada equipo** difuminada sobre el piso: una de contacto (nítida) y una ambiental (suave), más una tenue detrás de la tapa abierta. En el aire se aclaran y se abren; van en su propio grupo, siempre en el piso. Antes era un degradado redondo que, visto casi de lado, se volvía una franja gris de orilla a orilla |
+| Frases | Una por paso, arriba. Tampoco se desvanecen: la nueva sube desde abajo y empuja a la anterior fuera del recuadro |
+| Pantallas en el modelo | Un `ShaderMaterial` propio (`materialPantalla`) sin tono ni reflejos (el reflejo del cuarto las deslavaba) que hace el cambio de pantalla en la tarjeta de video: recibe las dos capturas y el avance, y dibuja el empuje, el velo y la sombra de la orilla. Antes se redibujaba un lienzo de 1600 × 1035 y se volvía a subir en cada cuadro del cambio (eso trababa). Cada motor crea su propio lienzo: dos motores en el mismo lienzo (React monta el efecto dos veces en desarrollo) se pisan el contexto WebGL |
+| Títulos | La letra sigue al ancho **y al alto** de la pantalla (`min(4.4vw, 5.6svh)`): con sólo el ancho, en 1280 × 800 los títulos de dos renglones no cabían en su recuadro y se cortaban |
+
+**Carga sin trabas** (es lo que más pesaba al abrir la landing):
+
+- Los modelos se **unen y se simplifican** (laptop 2.1 → 1.5 MB, 47 piezas; celular 1.4 → 1.05 MB,
+  40 piezas): menos piezas = menos llamadas de dibujo por cuadro. Se decodifican con meshopt **en
+  dos workers**, fuera del hilo principal.
+- La escena **no empieza al cargar la página**: espera al evento `load` y a que la sección esté a una
+  pantalla. Mientras tanto, en reposo (`cuandoEnReposo`, `lib/utils/reposo.ts`), se piden con
+  prioridad baja los modelos y las capturas, para que al llegar ya estén.
+- Los sombreadores se compilan con `compileAsync` (sin congelar la página) y las texturas se suben
+  **una por cuadro** antes de enseñar el lienzo; densidad de píxeles hasta 1.5 y GPU «default»
+  (no pide la dedicada: en laptops con dos tarjetas la encendía sólo por esta escena).
+- Sólo escucha el scroll mientras la sección está cerca; el paso cambia el estado de React sólo
+  cuando cambia de verdad (no en cada cuadro).
+
+Con «reducir movimiento» no hay recorrido: se ve la toma final, quieta. Si WebGL falla, queda la
+captura del Panel. Para volver a comprimir un modelo: `gltf-transform` con `dedup` **sin
+materiales** y `prune` con `keepAttributes` (si no, la pantalla pierde su nombre o sus UV); para
+unir piezas, `joinPrimitives` sólo entre las que comparten material y **nunca** la malla de la
+pantalla (el material de la pantalla se busca por su nombre).
+
+**Noticias del Mar en la landing** (`NoticiasPortada` de servidor → `NoticiasDiario` de cliente):
+**la misma portada que la página de Noticias**, como la hoja de un periódico sobre la franja
+`bg-simar-abismo` (con olas arriba y abajo, para que no se confunda con la escena de arriba). Quien
+entra a Noticias llega a lo mismo que ya vio. Antes era un mosaico de tarjetas con pestañas por
+tema: parecía hecho por IA y no se parecía a Noticias.
+
+| Pieza | Qué hace |
+|---|---|
+| La hoja | `bg-simar-papel` (en oscuro, `simar-superficie`), esquinas de 36 px y sombra larga; sube al entrar a la pantalla (`n-hoja`, atada al scroll). **Sólo sube** (transform): con opacidad y escala, toda la hoja con sus fotos se componía aparte en cada cuadro y la llegada se trababa |
+| Cabecera | `CabeceraDiario` de la portada de Noticias, como h2 y un poco más chica (`compacta`): fecha y lugar, «Actualizado el…» con el punto en vivo, «N notas nuevas desde tu última visita», «Noticias del Mar» en Newsreader palabra por palabra, la línea de qué es, las cifras y los filetes que se dibujan |
+| Nota principal | `NotaPrincipal`: la foto grande se descubre y se mueve un poco al bajar, con su crédito; tema, titular en Newsreader que se subraya al pasar el cursor, resumen y firma |
+| Lo último | `LoUltimo`: las cuatro siguientes numeradas, con su foto chica; «Ver todas» lleva al archivo de Noticias |
+| Que se note la sección | Arriba, junto a las cifras, **«Ver la sección completa»** (píldora con borde, ícono de periódico y flecha). Al pie, **un banner oscuro** que lleva a Noticias: «Una sección entera», «Hay mucho más en Noticias del Mar» en Newsreader, lo que hay adentro (notas, cifras, mapa, glosario y fuentes) y un botón espuma «Abrir la sección»; a la izquierda, un **abanico de tres fotos** de otras notas que se abre al pasar el cursor. Todo el banner es el enlace (blanco grande, para gente mayor), con la luz de vidrio vivo |
+| Entradas | Las de Noticias (`n-filete`, `n-palabra`, `n-sube`, `n-descubre-ya`), que **esperan a que la hoja se vea**: la hoja sale del servidor en pausa (`n-espera` + `data-visto="no"`) y el atributo se cambia directo en el DOM, sin estado de React (volver a dibujar la hoja en ese cuadro trababa). Antes salía sin pausa: las entradas corrían fuera de la pantalla mientras cargaba la página y al llegar unas veces ya habían terminado y otras se reanudaban a medias. Sin JavaScript no hay pausa (`@media (scripting: enabled)`) |
+| Descubrir la foto | Ya no es `clip-path` (Chrome lo anima en el hilo principal y repintaba la foto en cada cuadro): dentro de un marco que recorta, la capa baja desde arriba y su contenido sube lo mismo (`n-descubre-ya` + `n-descubre-ya-contra`; atado al scroll, `n-descubre` + `n-descubre-contra`). Son dos `translate` que mueve la tarjeta gráfica y la foto no se mueve. Marco y capa recortan con `overflow: clip` |
+| Fotos | `FotoNota`: difuminadas al instante, se enfocan al llegar, **ya decodificadas** (`img.decode()`; si no, se decodificaban en el cuadro en que aparecían). Enfocada la foto, la previa difuminada deja de pintarse |
+| «Nueva» | `MarcaNueva` / `ContadorNuevas`: lo publicado después de la visita anterior de esa persona (fecha guardada en su navegador, `simar:noticias-vistas-hasta`; la primera vez, los últimos 3 días). Insignia coral suave |
+
+La letra de los titulares (Newsreader) sólo se pide en esta sección y en Noticias. En la landing va
+**sin precarga** (`letraTitularDiferida`, en su propio archivo: en el mismo que `letraTitular` Next
+precargaba las dos y cada archivo bajaba dos veces). Las entradas de la hoja y la foto que se mueve
+al bajar son **CSS atado al scroll** (`n-paralaje`), sin Motion. Con «reducir movimiento», nada se
+mueve.
+
+**Lo que se baja al abrir la landing** (medido en producción, `next start`): JavaScript inicial de
+~1.4 MB a ~780 KB. Lo que se quitó del arranque: las otras dos landings y Motion (se cargan desde
+`LandingsAlternas.tsx`, de cliente: un `next/dynamic` en la página de servidor **no** parte el
+código), el cliente de Supabase del `AuthProvider` (llega en reposo, o en el acto si hay una sesión
+guardada), liquid-gooey (`CapaGota.tsx` llega aparte, antes de la primera gota) y las fotos 2 a 5 del
+hero (se piden en reposo y una antes de que toque). Las fotos del hero van con calidad 60
+(`images.qualities` en `next.config.ts`) y ninguna animación de la landing usa `filter: blur`
+(repintaba toda la capa en cada cuadro): las entradas son sólo opacidad y movimiento.
 
 ---
 

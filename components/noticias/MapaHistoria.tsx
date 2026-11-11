@@ -1,46 +1,53 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Globe2, Landmark } from 'lucide-react';
-import { Vaquita } from './Vaquita';
-import { PausaFuera } from './PausaFuera';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import { Globe2, Landmark, Map as IconoMapa } from 'lucide-react';
+import { textoCredito, type CreditoFoto } from '@/lib/constants/fotos';
 import { sinMovimiento } from './movimiento';
+
+/** El mapa real (MapLibre, ~250 KB): sólo baja cuando la sección se acerca */
+const MapaInteractivo = dynamic(() => import('./MapaInteractivo'), { ssr: false, loading: () => null });
 
 export interface CapituloMapa {
     id: string;
     nombre: string;
     detalle: string;
-    /** En % del lienzo del mapa; sin posición (México, el mundo) el mapa se aparta y sale `capa` */
+    /** [lon, lat] de su marca en el mapa real; sin centro (México, el mundo) el mapa se aleja */
+    centro?: [number, number];
+    /** En % del mapa dibujado (el de respaldo); sin posición, el dibujado se aparta y sale `capa` */
     pos?: { x: number; y: number };
-    /** Cuánto se acerca el mapa a este lugar (1 = el golfo entero) */
+    /** Cuánto se acerca el mapa dibujado (1 = el golfo entero) */
     zoom?: number;
-    lado?: 'derecha' | 'izquierda' | 'abajo';
     cuantas: number;
-    /** Las noticias del lugar (de servidor: así las tarjetas y sus dibujos no bajan al navegador) */
+    /** La foto del lugar, arriba de su tarjeta (sin crédito, es de SiMAR) */
+    foto?: { src: string; alt: string; posicion?: string; credito?: CreditoFoto };
+    /** Las noticias del lugar (de servidor: así las tarjetas y sus fotos no bajan al navegador) */
     noticias: ReactNode;
-    /** El dibujo que tapa el mapa en los lugares sin posición */
+    /** El dibujo que tapa el mapa dibujado en los lugares sin posición */
     capa?: ReactNode;
 }
-
-const LADO = {
-    derecha: 'left-full ml-2 top-1/2 -translate-y-1/2',
-    izquierda: 'right-full mr-2 top-1/2 -translate-y-1/2',
-    abajo: 'top-full mt-2 left-0',
-};
 
 const ICONO_FUERA: Record<string, typeof Globe2> = { mundo: Globe2, mexico: Landmark };
 const cuantasTexto = (n: number) => (n === 1 ? '1 noticia' : `${n} noticias`);
 const limitar = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
 
 /**
- * «En el mapa», contado con el scroll: el mapa del golfo se queda fijo (a un lado en computadora,
- * arriba en celular) y, al bajar, cada capítulo lo lleva a su lugar: se acerca, se enciende su
- * marca y se leen sus noticias. Sin clics; si se toca una marca, la página baja a su capítulo.
- * La vaquita nada en el Alto Golfo y una panga sale de Puerto Peñasco. Con «reducir movimiento»
- * el mapa cambia de lugar sin animarse. El mapa (MapaGolfo) se dibuja en el servidor.
+ * «En el mapa», contado con el scroll: un **mapa real** (MapaInteractivo: MapLibre + OpenFreeMap, en
+ * español, claro u oscuro) se queda fijo (a un lado en computadora, arriba en celular) y, al bajar,
+ * cada capítulo lo hace volar a su lugar y enciende su marca; México y el mundo lo alejan. Las
+ * marcas llevan el número de noticias y, al tocarlas, la página baja a su capítulo. Se puede mover y
+ * acercar (Ctrl + rueda, dos dedos o los botones). La zona de la vaquita va marcada (aproximada).
+ * Cada capítulo es una tarjeta con la foto del lugar, su nombre, de qué trata y sus noticias.
+ * Mientras llega el mapa real (o si el aparato no puede mostrarlo), se ve el dibujado (MapaGolfo,
+ * de servidor), que también se acerca a cada lugar.
  */
-export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactNode; capitulos: CapituloMapa[]; vaquita: { x: number; y: number }; panga: { x: number; y: number } }) {
+export function MapaHistoria({ mapa, capitulos }: { mapa: ReactNode; capitulos: CapituloMapa[] }) {
     const [activo, setActivo] = useState(0);
+    const [cargar, setCargar] = useState(false);
+    const [listo, setListo] = useState(false);
+    const [fallo, setFallo] = useState(false);
     const caja = useRef<HTMLDivElement>(null);
     const tarjetas = useRef<(HTMLElement | null)[]>([]);
 
@@ -51,6 +58,7 @@ export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactN
         return r.bottom + (window.innerHeight - r.bottom) * 0.42;
     };
 
+    // El capítulo que se lee, al bajar
     useEffect(() => {
         let cuadro = 0;
         const medir = () => {
@@ -82,6 +90,23 @@ export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactN
         };
     }, []);
 
+    // El mapa real baja cuando la sección está cerca (no antes: pesa)
+    useEffect(() => {
+        const el = caja.current;
+        if (!el) return;
+        const observador = new IntersectionObserver(
+            ([e]) => {
+                if (e.isIntersecting) {
+                    setCargar(true);
+                    observador.disconnect();
+                }
+            },
+            { rootMargin: '800px 0px' },
+        );
+        observador.observe(el);
+        return () => observador.disconnect();
+    }, []);
+
     const irA = (i: number) => {
         const t = tarjetas.current[i];
         if (!t) return;
@@ -90,92 +115,61 @@ export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactN
         window.scrollTo({ top: destino, behavior: sinMovimiento() ? 'auto' : 'smooth' });
     };
 
+    // El mapa dibujado (respaldo): se acerca al lugar sin que se vea la orilla del lienzo
     const c = capitulos[activo];
     const fuera = !c.pos;
-    // Acercar al lugar sin que se vea la orilla del lienzo
     const z = c.pos ? (c.zoom ?? 1) : 1;
     const foco = c.pos && z > 1 ? c.pos : { x: 50, y: 50 };
     const tx = limitar(50 - z * foco.x, 100 - 100 * z, 0);
     const ty = limitar(50 - z * foco.y, 100 - 100 * z, 0);
     const lienzo = { '--n-z': z, '--n-tx': tx, '--n-ty': ty } as CSSProperties;
+    const real = cargar && !fallo;
 
     return (
-        <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-x-12 items-start movil:mt-7">
+        <div className="mt-10 md:mt-12 grid grid-cols-1 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] gap-x-12 items-start movil:mt-7">
             {/* El mapa, fijo mientras se baja */}
-            <div className="sticky z-10 top-[133px] sm:top-[143px] lg:top-[184px] lg:order-2 -mx-5 px-5 pt-2 pb-3 bg-simar-papel sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent">
+            <div className="sticky z-10 top-[calc(133px/var(--n-zoom,1))] sm:top-[calc(143px/var(--n-zoom,1))] lg:top-[calc(184px/var(--n-zoom,1))] lg:order-2 -mx-5 px-5 pt-2 pb-3 bg-simar-papel sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 lg:pt-0 lg:pb-0 lg:bg-transparent">
                 <div
                     ref={caja}
-                    className="n-mapa-caja relative h-[40svh] min-h-[260px] lg:h-[min(720px,calc(100svh-212px))] rounded-[32px] overflow-hidden bg-simar-mar-2 shadow-simar movil:rounded-[22px]"
+                    className="n-mapa-caja relative h-[calc(42svh/var(--n-zoom,1))] min-h-[280px] lg:h-[min(740px,calc((100svh-212px)/var(--n-zoom,1)))] rounded-[28px] overflow-hidden bg-simar-mar-2 ring-1 ring-simar-borde shadow-simar movil:rounded-[20px]"
                 >
-                    <PausaFuera className="absolute inset-0">
+                    {/* El dibujado: se ve mientras llega el real (o si no se puede) */}
+                    <div aria-hidden={real && listo} className="absolute inset-0">
                         <div className="n-mapa-lienzo" style={{ ...lienzo, opacity: fuera ? 0.35 : 1 }}>
                             {mapa}
-                            {/* La vaquita, en el Alto Golfo, va y viene */}
-                            <div aria-hidden="true" className="absolute w-[7%] -translate-x-1/2 -translate-y-1/2" style={{ left: `${vaquita.x}%`, top: `${vaquita.y}%` }}>
-                                <div className="n-patrulla">
-                                    <Vaquita className="w-full" />
-                                </div>
-                            </div>
-                            {/* Una panga sale de Puerto Peñasco */}
-                            <div aria-hidden="true" className="absolute w-[3.4%] -translate-x-1/2 -translate-y-1/2" style={{ left: `${panga.x}%`, top: `${panga.y}%` }}>
-                                <svg viewBox="0 0 40 20" className="n-flota w-full">
-                                    <path d="M2 10 H38 L33 17 H8 Z" fill="#fff" />
-                                    <path d="M14 10 V4 H24 L27 10 Z" fill="#7FE0D6" />
-                                    <path d="M0 18 C8 16 30 16 40 18" stroke="#7FE0D6" strokeOpacity="0.7" strokeWidth="1.4" fill="none" />
-                                </svg>
-                            </div>
-                            {capitulos.map((l, i) => {
-                                if (!l.pos) return null;
-                                const encendida = i === activo;
-                                return (
-                                    <button
-                                        key={l.id}
-                                        type="button"
-                                        aria-current={encendida ? 'location' : undefined}
-                                        aria-label={`${l.nombre}: ${cuantasTexto(l.cuantas)}. Ir a sus noticias`}
-                                        onClick={() => irA(i)}
-                                        style={{ left: `${l.pos.x}%`, top: `${l.pos.y}%` }}
-                                        className={`n-mapa-marca group absolute rounded-full cursor-pointer focus-visible:outline-3 focus-visible:outline-simar-espuma focus-visible:outline-offset-4 ${encendida ? 'z-10' : ''}`}
-                                    >
-                                        {encendida && <span aria-hidden="true" className="n-pulso absolute inset-0 rounded-full bg-simar-aceite" />}
-                                        <span
-                                            aria-hidden="true"
-                                            className={`relative w-12 h-12 rounded-full flex items-center justify-center text-[18px] font-extrabold tabular-nums shadow-[0_6px_18px_rgba(0,0,0,0.35)] ring-4 transition-[transform,background-color] duration-300 movil:w-11 movil:h-11 movil:text-[16px] ${
-                                                encendida ? 'bg-simar-aceite text-simar-abismo ring-simar-aceite/30 scale-110' : 'bg-white text-simar-abismo ring-white/20 group-hover:scale-105'
-                                            }`}
-                                        >
-                                            {l.cuantas}
-                                        </span>
-                                        <span
-                                            aria-hidden="true"
-                                            className={`absolute ${LADO[l.lado ?? 'derecha']} whitespace-nowrap rounded-full px-3.5 py-1.5 text-[15px] font-bold border transition-colors ${
-                                                encendida ? 'bg-simar-aceite text-simar-abismo border-simar-aceite' : 'max-sm:hidden bg-simar-abismo/85 text-white border-white/15 group-hover:bg-simar-abismo'
-                                            }`}
-                                        >
-                                            {l.nombre}
-                                        </span>
-                                    </button>
-                                );
-                            })}
                         </div>
-                    </PausaFuera>
+                        {capitulos.map((l, i) =>
+                            l.pos || !l.capa ? null : (
+                                <div key={l.id} aria-hidden="true" className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${i === activo ? 'opacity-100' : 'opacity-0'}`}>
+                                    {l.capa}
+                                </div>
+                            ),
+                        )}
+                    </div>
 
-                    {/* México y el mundo: el mapa se aparta y entra su dibujo */}
-                    {capitulos.map((l, i) =>
-                        l.pos || !l.capa ? null : (
-                            <div key={l.id} aria-hidden="true" className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${i === activo ? 'opacity-100' : 'opacity-0'}`}>
-                                {l.capa}
-                            </div>
-                        ),
+                    {/* El real, encima, cuando termina de cargar */}
+                    {real && (
+                        <div className="n-mapa-real absolute inset-0" data-listo={listo}>
+                            <MapaInteractivo
+                                lugares={capitulos.map((l) => ({ id: l.id, nombre: l.nombre, cuantas: l.cuantas, centro: l.centro }))}
+                                activo={activo}
+                                alElegir={irA}
+                                alCargar={() => setListo(true)}
+                                alFallar={() => setFallo(true)}
+                            />
+                        </div>
                     )}
 
-                    {/* Dónde vamos y, abajo, los lugares sin marca */}
-                    <p aria-hidden="true" className="max-sm:hidden absolute left-4 top-4 rounded-full bg-simar-abismo/70 border border-white/15 backdrop-blur-md px-4 py-2 text-[15px] font-bold text-white tabular-nums">
+                    {/* Dónde vamos */}
+                    <p aria-hidden="true" className="pointer-events-none absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-simar-abismo/80 backdrop-blur-md px-4 py-2 text-[15px] font-bold text-white tabular-nums movil:left-3 movil:top-3 movil:text-[14px]">
+                        <IconoMapa className="w-4 h-4 text-simar-espuma" />
                         {activo + 1} de {capitulos.length} · {c.nombre}
                     </p>
+
+                    {/* Los lugares sin marca (México, el mundo) y la leyenda */}
                     <div className="absolute left-4 bottom-4 flex gap-2 movil:left-3 movil:bottom-3">
                         {capitulos.map((l, i) => {
-                            if (l.pos) return null;
+                            if (l.centro) return null;
                             const Icono = ICONO_FUERA[l.id] ?? Globe2;
                             const encendida = i === activo;
                             return (
@@ -185,8 +179,8 @@ export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactN
                                     aria-current={encendida ? 'location' : undefined}
                                     aria-label={`${l.nombre}: ${cuantasTexto(l.cuantas)}. Ir a sus noticias`}
                                     onClick={() => irA(i)}
-                                    className={`min-h-[48px] px-4 rounded-full inline-flex items-center justify-center gap-2 text-[15px] font-bold border backdrop-blur-md transition-colors cursor-pointer focus-visible:outline-3 focus-visible:outline-simar-espuma movil:min-h-[44px] movil:px-3 ${
-                                        encendida ? 'bg-simar-aceite text-simar-abismo border-simar-aceite' : 'bg-simar-abismo/70 text-white border-white/15 hover:bg-simar-abismo'
+                                    className={`min-h-[46px] px-4 rounded-full inline-flex items-center justify-center gap-2 text-[15px] font-bold shadow-[0_8px_20px_-10px_rgba(11,34,54,0.6)] transition-colors cursor-pointer focus-visible:outline-3 focus-visible:outline-simar-golfo movil:min-h-[44px] movil:px-3 ${
+                                        encendida ? 'bg-simar-aceite text-[#0B2236]' : 'bg-simar-superficie text-simar-texto ring-1 ring-simar-borde hover:bg-simar-papel'
                                     }`}
                                 >
                                     <Icono aria-hidden="true" className="w-[18px] h-[18px]" />
@@ -197,32 +191,51 @@ export function MapaHistoria({ mapa, capitulos, vaquita, panga }: { mapa: ReactN
                             );
                         })}
                     </div>
+                    {real && listo && (
+                        <p className="pointer-events-none absolute right-3 bottom-9 max-sm:hidden inline-flex items-center gap-2 rounded-full bg-simar-superficie/90 px-3 py-1.5 text-[13px] font-bold text-simar-texto ring-1 ring-simar-borde">
+                            <span aria-hidden="true" className="w-3.5 h-3.5 rounded-full border-2 border-dashed border-simar-arrecife bg-simar-espuma/30" />
+                            Zona de la vaquita (aprox.)
+                        </p>
+                    )}
                 </div>
+                <p className="mt-2 text-[14px] leading-snug text-simar-texto-2 max-lg:hidden">Ubicaciones aproximadas. Usa Ctrl + rueda para acercar, o los botones + y −.</p>
             </div>
 
             {/* Los capítulos: uno por lugar */}
-            <ol className="lg:order-1 lg:py-[16vh]">
+            <ol className="lg:order-1 lg:py-[14vh]">
                 {capitulos.map((l, i) => {
                     const encendido = i === activo;
                     return (
-                        <li key={l.id} className="py-6 lg:min-h-[62svh] lg:flex lg:items-center movil:py-4">
+                        <li key={l.id} className="py-6 lg:min-h-[64svh] lg:flex lg:items-center movil:py-4">
                             <article
                                 ref={(el) => {
                                     tarjetas.current[i] = el;
                                 }}
                                 aria-labelledby={`lugar-${l.id}`}
-                                className={`w-full rounded-[28px] border p-6 md:p-8 transition-[opacity,border-color,box-shadow] duration-500 movil:rounded-[22px] movil:p-5 ${
-                                    encendido ? 'bg-simar-superficie border-simar-campo-borde shadow-simar opacity-100' : 'bg-simar-superficie/70 border-simar-borde opacity-55'
+                                className={`w-full overflow-hidden rounded-[28px] bg-simar-superficie ring-1 transition-[opacity,box-shadow,transform] duration-500 movil:rounded-[22px] ${
+                                    encendido ? 'ring-simar-campo-borde shadow-simar opacity-100' : 'ring-simar-borde opacity-60 lg:scale-[0.985]'
                                 }`}
                             >
-                                <p className="text-[15px] font-bold text-simar-marea-tinta tabular-nums">
-                                    {i + 1} de {capitulos.length} · {cuantasTexto(l.cuantas)}
-                                </p>
-                                <h3 id={`lugar-${l.id}`} className="mt-1 text-[30px] font-extrabold leading-[1.1] tracking-[-0.02em] movil:text-[24px]">
-                                    {l.nombre}
-                                </h3>
-                                <p className="mt-2 text-[18px] leading-relaxed text-simar-texto-2 movil:text-[16px]">{l.detalle}</p>
-                                <div className="mt-5">{l.noticias}</div>
+                                {l.foto && (
+                                    <figure className="relative aspect-[21/9] overflow-hidden simar-cargando movil:aspect-[16/9]">
+                                        <Image src={l.foto.src} alt={l.foto.alt} fill sizes="(min-width: 1024px) 560px, 100vw" className="object-cover" style={{ objectPosition: l.foto.posicion ?? '50% 50%' }} />
+                                        <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+                                        <span className="absolute left-4 top-4 rounded-full bg-simar-abismo/70 backdrop-blur-md px-3 py-1 text-[14px] font-bold text-white tabular-nums">
+                                            Lugar {i + 1} de {capitulos.length}
+                                        </span>
+                                        <figcaption className="absolute right-4 bottom-2.5 left-4 text-right text-[12px] text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.7)]">
+                                            {l.foto.credito ? textoCredito(l.foto.credito) : 'Foto: SiMAR'}
+                                        </figcaption>
+                                    </figure>
+                                )}
+                                <div className="p-6 md:p-7 movil:p-5">
+                                    <p className="text-[14px] font-extrabold uppercase tracking-[0.12em] text-simar-marea-tinta">{cuantasTexto(l.cuantas)}</p>
+                                    <h3 id={`lugar-${l.id}`} className="mt-1 font-titular text-[34px] font-semibold leading-[1.05] tracking-[-0.02em] movil:text-[28px]">
+                                        {l.nombre}
+                                    </h3>
+                                    <p className="mt-2 text-[18px] leading-relaxed text-simar-texto-2 movil:text-[17px]">{l.detalle}</p>
+                                    <div className="mt-5">{l.noticias}</div>
+                                </div>
                             </article>
                         </li>
                     );

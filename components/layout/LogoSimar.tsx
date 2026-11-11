@@ -11,7 +11,8 @@ import nombreOscuro from '@/public/assets/simar/nombre-oscuro.png';
  * El nombre cambia solo entre modo claro y oscuro (dos imágenes, se oculta una con CSS).
  * `tono="oscuro"` fuerza la versión para fondos oscuros (p. ej. bandas azul Abismo).
  * `prioridad={false}` para un logo que no se ve al abrir (el pie de la landing): así no se
- * precarga junto con lo de arriba.
+ * pide junto con lo de arriba. Con `prioridad` se pide sin esperar (eager), pero ya no con
+ * `priority` de Next (prioridad alta): es chico y no debe competir con la foto del hero, el LCP.
  */
 export function LogoSimar({
     variante = 'horizontal',
@@ -40,8 +41,10 @@ export function LogoSimar({
                     alt={variante === 'simbolo' ? 'SiMAR' : ''}
                     width={tamano}
                     height={tamano}
+                    // Las dos medidas fijas: el `height: auto` de Tailwind cambiaba sólo una y Next avisaba en la consola
+                    style={{ width: tamano, height: tamano }}
                     className="object-contain flex-shrink-0"
-                    priority={prioridad}
+                    loading={prioridad ? 'eager' : 'lazy'}
                 />
             )}
             {variante !== 'simbolo' && (
@@ -53,7 +56,7 @@ export function LogoSimar({
                             width={anchoNombre}
                             height={alturaNombre}
                             className={tono === 'auto' ? 'dark:hidden' : ''}
-                            priority={prioridad}
+                            loading={prioridad ? 'eager' : 'lazy'}
                         />
                     )}
                     {tono !== 'claro' && (
@@ -63,7 +66,7 @@ export function LogoSimar({
                             width={anchoNombre}
                             height={alturaNombre}
                             className={tono === 'auto' ? 'hidden dark:block' : ''}
-                            priority={prioridad}
+                            loading={prioridad ? 'eager' : 'lazy'}
                         />
                     )}
                 </>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useEffect, useRef, type CSSProperties } from 'react';
+import { Fragment, useState, useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import Image from 'next/image';
 import simboloGrande from '@/public/assets/simar/simbolo-grande.png';
 import nombreGrandeOscuro from '@/public/assets/simar/nombre-grande-oscuro.png';
@@ -38,6 +38,12 @@ import { NumeroAnimado, usePrefiereMenosMovimiento } from '@/components/ui/movim
 import { MODO_DEMO } from '@/lib/demo/config';
 import { useAccesoLanding } from './acceso/useAccesoLanding';
 import { OlaSeparador } from './OlaSeparador';
+import { IslaDinamica } from '@/components/isla/IslaDinamica';
+import { useGota } from '@/components/isla/islaTienda';
+import { VidrioVivo } from '@/components/isla/VidrioVivo';
+import { cuandoEnReposo } from '@/lib/utils/reposo';
+import { useLenteSobre } from '@/components/isla/useLenteSobre';
+import { EscenaEquipos } from './escena-equipos/EscenaEquipos';
 import {
     aguaProtegidaL,
     co2EvitadoKg,
@@ -88,8 +94,57 @@ const MEDIA: { src: string; encuadre?: string }[] = [
     { src: '/assets/images/img4.jpeg', encuadre: '50% 20%' },
 ];
 
+/** El botón del menú de secciones: abre su gota de la isla (y es de donde nace) */
+function BotonSecciones() {
+    const { ancla, alternar, abierta } = useGota('secciones');
+    return (
+        <button
+            ref={ancla}
+            type="button"
+            onClick={alternar}
+            aria-expanded={abierta}
+            aria-haspopup="dialog"
+            aria-label={abierta ? 'Cerrar menú de secciones' : 'Abrir menú de secciones'}
+            data-vidrio="claro"
+            className="xl:hidden simar-presiona w-[54px] h-[54px] md:w-[58px] md:h-[58px] flex-shrink-0 rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto flex items-center justify-center movil:w-[46px] movil:h-[46px] movil:rounded-[15px]"
+        >
+            {abierta ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+        </button>
+    );
+}
+
+/** Las secciones, en la gota que cae del botón del menú: renglones grandes, se cierra al elegir */
+function MenuSecciones({ activa }: { activa: string | null }) {
+    const gota = useGota('secciones');
+    return (
+        <nav aria-label="Secciones" className="p-3">
+            <p className="isla-escalon px-3 pt-1 pb-2 text-[13px] font-extrabold uppercase tracking-[0.12em] text-simar-texto-2">En esta página</p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                {NAV_LINKS.map((link, i) => (
+                    // Los renglones llegan uno tras otro cuando la gota ya casi cayó
+                    <li key={link.href} className="isla-escalon" style={{ '--i': i + 1 } as CSSProperties}>
+                        <a
+                            href={link.href}
+                            onClick={gota.cerrar}
+                            aria-current={activa === link.href ? 'location' : undefined}
+                            data-vidrio="claro"
+                            className={`min-h-[56px] px-4 rounded-2xl flex items-center justify-between text-lg font-bold transition-colors movil:min-h-[50px] movil:text-[17px] ${
+                                activa === link.href ? 'bg-simar-texto text-simar-papel' : 'text-simar-texto hover:bg-simar-texto/[0.06]'
+                            }`}
+                        >
+                            {link.label}
+                            <ArrowRight className={`w-5 h-5 ${activa === link.href ? 'text-simar-papel/70' : 'text-simar-texto-2'}`} />
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}
+
 const NAV_LINKS = [
     { href: '#proyecto', label: 'Proyecto' },
+    { href: '#noticias', label: 'Noticias' },
     { href: '#don-francisco', label: 'Don Francisco' },
     { href: '#conciencia', label: 'Conciencia Azul' },
     { href: '#equivalencias', label: 'Equivalencias' },
@@ -288,10 +343,13 @@ export function VariantCinematic({
     stats,
     varianteMapa,
     compararMapas = false,
+    noticias,
 }: {
     stats: LandingStats | null;
     varianteMapa: VarianteMapa;
     compararMapas?: boolean;
+    /** Las tarjetas de las noticias más recientes, armadas en el servidor (NoticiasPortada) */
+    noticias?: ReactNode;
 }) {
     // `stats` puede llegar relleno de ceros si la consulta no devolvió filas
     // (RLS bloquea al visitante anónimo). En ese caso la página debe usar el
@@ -305,7 +363,6 @@ export function VariantCinematic({
     const [leerProyecto, setLeerProyecto] = useState(false);
     const [leerFrancisco, setLeerFrancisco] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const [menuMovil, setMenuMovil] = useState(false);
 
     // Carrusel: se puede pausar (botón, o al pasar el cursor / enfocar la foto).
     // Con "reducir movimiento" no avanza solo.
@@ -316,6 +373,7 @@ export function VariantCinematic({
 
     // Sección visible en pantalla: la línea de marea del menú se desliza bajo su enlace
     const [seccionActiva, setSeccionActiva] = useState<string | null>(null);
+    const { lente: lenteEnlaces, ...oyentesLente } = useLenteSobre('a', 'mitad');
     const enlacesRef = useRef<HTMLDivElement>(null);
     const [marcaMenu, setMarcaMenu] = useState<{ x: number; visible: boolean }>({ x: 0, visible: false });
 
@@ -326,6 +384,7 @@ export function VariantCinematic({
     const openLoginModal = () => abrirAcceso();
 
     const projectRef = useScrollReveal<HTMLElement>();
+    const noticiasRef = useScrollReveal<HTMLElement>();
     const francoRef = useScrollReveal<HTMLElement>();
     const awarenessRef = useScrollReveal<HTMLElement>();
     const equivRef = useScrollReveal<HTMLElement>();
@@ -333,9 +392,17 @@ export function VariantCinematic({
     const mapRef = useScrollReveal<HTMLElement>();
     const ctaRef = useScrollReveal<HTMLElement>();
 
+    // Las fotos que ya se pidieron. Al cargar, sólo la primera (las cinco a 1920 px competían con ella
+    // y con el JavaScript); la segunda se pide ya en reposo, y cada cambio prepara la que sigue
+    const [fotosPedidas, setFotosPedidas] = useState<ReadonlySet<number>>(() => new Set([0]));
+    const pedirFotos = (...indices: number[]) =>
+        setFotosPedidas((antes) => (indices.every((i) => antes.has(i)) ? antes : new Set([...antes, ...indices])));
+    useEffect(() => cuandoEnReposo(() => pedirFotos(1)), []);
+
     // Cambia de foto: la anterior se queda debajo mientras la nueva se funde encima
     const irAFoto = (indice: number) => {
         if (indice === currentIndex) return;
+        pedirFotos(indice, (indice + 1) % MEDIA.length);
         setPrevIndex(currentIndex);
         setCurrentIndex(indice);
     };
@@ -384,20 +451,27 @@ export function VariantCinematic({
 
     return (
         <div className="simar-landing relative min-h-screen w-full overflow-x-clip bg-simar-papel font-sans text-simar-texto antialiased">
-            {/* Navbar — vidrio flotante */}
-            <nav
-                aria-label="Principal"
-                className={`simar-entra fixed top-3 md:top-6 inset-x-3 md:inset-x-8 z-50 rounded-[30px] transition-[background-color] duration-300 ${
-                    scrolled ? 'simar-vidrio-fuerte' : 'simar-vidrio'
-                }`}
+            {/* La luz de los botones sigue al cursor y nace donde se presiona (data-vidrio) */}
+            <VidrioVivo />
+            {/* Navbar — la isla dinámica del portal (components/isla): vidrio líquido; el menú de
+                secciones cae como gota de su botón */}
+            <IslaDinamica
+                etiqueta="Principal"
+                radio={30}
+                fuerte={scrolled}
+                // De 1280 a 1439 px la isla se abre un poco más (inset 20 px) para que quepan los enlaces
+                className="simar-entra fixed top-3 md:top-6 inset-x-3 min-[768px]:inset-x-8 min-[1280px]:inset-x-5 min-[1440px]:inset-x-8 z-50"
                 style={{ animationDuration: '0.7s' }}
+                gotas={[{ id: 'secciones', etiqueta: 'Secciones de la página', ancho: 560, contenido: <MenuSecciones activa={seccionActiva} /> }]}
             >
                 {/* Avance de lectura: la marea sube con el scroll (sólo navegadores que lo soportan) */}
                 <span aria-hidden="true" className="absolute left-7 right-7 bottom-0 h-[3px] overflow-hidden rounded-full">
                     <span className="simar-progreso h-full w-full bg-simar-golfo" />
                 </span>
                 <div className="h-[72px] md:h-[84px] pl-3 md:pl-5 pr-2 md:pr-3 flex items-center gap-2 sm:gap-5 movil:h-[62px] movil:pl-2.5">
-                    <a href="#top" className="flex items-center gap-4 rounded-2xl min-w-0" aria-label="SiMAR - Inicio">
+                    {/* flex-shrink-0: si la fila se aprieta, el logo no se encoge (el nombre se salía y
+                        quedaba encima de «Proyecto» a 1280 px) */}
+                    <a href="#top" className="flex items-center gap-4 rounded-2xl flex-shrink-0" aria-label="SiMAR - Inicio">
                         {/* En celular sólo el símbolo: el nombre ya está grande en el hero */}
                         <LogoSimar variante="simbolo" tamano={42} className="sm:hidden" />
                         <LogoSimar tamano={46} className="hidden sm:inline-flex" />
@@ -414,7 +488,11 @@ export function VariantCinematic({
                         </span>
                     </a>
 
-                    <div ref={enlacesRef} className="relative hidden xl:flex items-center gap-6 ml-auto">
+                    {/* Entre enlaces, 14 px hasta 1439 px y 24 px de ahí en adelante: con 24 px los siete
+                        enlaces no cabían junto al logo y los botones en una pantalla de 1280 px */}
+                    <div ref={enlacesRef} className="relative hidden xl:flex items-center gap-3.5 min-[1440px]:gap-6 ml-auto" {...oyentesLente}>
+                        {/* Una lente de vidrio que sigue al cursor de un enlace a otro */}
+                        <span ref={lenteEnlaces} aria-hidden="true" className="isla-lente-enlaces" />
                         {NAV_LINKS.map((link) => (
                             <a
                                 key={link.href}
@@ -440,20 +518,12 @@ export function VariantCinematic({
                     </div>
 
                     <div className="ml-auto xl:ml-0 flex items-center gap-2">
-                        <BotonTemaIcono className="movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
-                        {/* Menú de secciones (bajo 1280 px los enlaces no caben en la barra) */}
-                        <button
-                            type="button"
-                            onClick={() => setMenuMovil((v) => !v)}
-                            aria-expanded={menuMovil}
-                            aria-controls="menu-secciones"
-                            aria-label={menuMovil ? 'Cerrar menú de secciones' : 'Abrir menú de secciones'}
-                            className="xl:hidden simar-presiona w-[54px] h-[54px] md:w-[58px] md:h-[58px] flex-shrink-0 rounded-[18px] border border-simar-texto/15 bg-white/50 dark:bg-white/5 text-simar-texto flex items-center justify-center movil:w-[46px] movil:h-[46px] movil:rounded-[15px]"
-                        >
-                            {menuMovil ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                        </button>
+                        <BotonTemaIcono vidrio className="movil:w-[46px] movil:h-[46px] movil:rounded-[15px]" />
+                        {/* Menú de secciones (bajo 1280 px los enlaces no caben en la barra): cae como gota */}
+                        <BotonSecciones />
                         <button
                             onClick={openLoginModal}
+                            data-vidrio=""
                             className="simar-presiona min-h-[54px] md:min-h-[58px] px-4 sm:px-5 md:px-6 rounded-[18px] bg-simar-marea hover:bg-simar-marea-hover text-white text-base md:text-lg font-extrabold flex items-center gap-2 cursor-pointer whitespace-nowrap movil:min-h-[46px] movil:px-3.5 movil:rounded-[15px] movil:text-[15px]"
                         >
                             {MODO_DEMO ? 'Probar la demo' : 'Iniciar sesión'}
@@ -462,53 +532,34 @@ export function VariantCinematic({
                     </div>
                 </div>
 
-                {/* Menú de secciones para celular y tableta: renglones grandes, se cierra al elegir */}
-                {menuMovil && (
-                    <div id="menu-secciones" className="xl:hidden simar-aparece px-3 pb-3">
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 border-t border-simar-texto/10">
-                            {NAV_LINKS.map((link) => (
-                                <li key={link.href}>
-                                    <a
-                                        href={link.href}
-                                        onClick={() => setMenuMovil(false)}
-                                        aria-current={seccionActiva === link.href ? 'location' : undefined}
-                                        className={`min-h-[56px] px-4 rounded-2xl flex items-center justify-between text-lg font-bold transition-colors movil:min-h-[46px] movil:text-[16px] ${
-                                            seccionActiva === link.href
-                                                ? 'bg-simar-superficie text-simar-texto'
-                                                : 'text-simar-texto hover:bg-white/60 dark:hover:bg-white/10'
-                                        }`}
-                                    >
-                                        {link.label}
-                                        <ArrowRight className="w-5 h-5 text-simar-texto-2" />
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </nav>
+            </IslaDinamica>
 
             {/* Hero: las fotos del proyecto de fondo y el logo grande al centro */}
             {/* overflow-clip y no -hidden: lo decorativo que sobresale no vuelve "desplazable" la franja (al enfocar un botón se corría) */}
             <header id="top" className="simar-hero relative isolate overflow-clip bg-simar-abismo text-white">
                 {/* Fondo: las fotografías se funden y se enfocan una sobre otra. Son decorativas
                     (el texto no depende de ellas); el velo oscurece para que todo se lea */}
-                <div aria-hidden="true" className="simar-enfoca absolute inset-0 -z-10" style={{ animationDuration: '1.6s' }}>
-                    {MEDIA.map((foto, index) => (
-                        <Image
-                            key={foto.src}
-                            src={foto.src}
-                            alt=""
-                            fill
-                            sizes="100vw"
-                            // Todas están en pantalla (una sobre otra): cualquiera puede ser el LCP
-                            priority={index === 0}
-                            loading={index === 0 ? undefined : 'eager'}
-                            data-estado={index === currentIndex ? 'activa' : index === prevIndex ? 'anterior' : undefined}
-                            className="simar-hero-foto object-cover"
-                            style={{ objectPosition: foto.encuadre }}
-                        />
-                    ))}
+                <div aria-hidden="true" className="simar-aparece absolute inset-0 -z-10">
+                    {MEDIA.map((foto, index) =>
+                        fotosPedidas.has(index) ? (
+                            <Image
+                                key={foto.src}
+                                src={foto.src}
+                                alt=""
+                                fill
+                                sizes="100vw"
+                                // Van bajo un velo oscuro y un tinte: con calidad 60 no se nota y pesan menos
+                                quality={60}
+                                // La primera es la que se ve al llegar (el LCP) y se pide antes que todo; las
+                                // demás (pedirFotos) llegan después, sin quitarle ancho de banda
+                                loading="eager"
+                                fetchPriority={index === 0 ? 'high' : 'low'}
+                                data-estado={index === currentIndex ? 'activa' : index === prevIndex ? 'anterior' : undefined}
+                                className="simar-hero-foto object-cover"
+                                style={{ objectPosition: foto.encuadre }}
+                            />
+                        ) : null
+                    )}
                     <div className="simar-hero-tinte absolute inset-0 z-[5]" />
                     <div className="simar-hero-velo absolute inset-0 z-10" />
                 </div>
@@ -544,7 +595,8 @@ export function VariantCinematic({
                             <Image
                                 src={simboloGrande}
                                 alt=""
-                                priority
+                                loading="eager"
+                                fetchPriority="high"
                                 sizes="(max-width: 639px) 136px, 240px"
                                 className="simar-enfoca-simbolo relative h-[clamp(128px,24svh,240px)] w-auto movil:h-[132px]"
                                 style={{ animationDelay: '0.1s' }}
@@ -553,7 +605,8 @@ export function VariantCinematic({
                         <Image
                             src={nombreGrandeOscuro}
                             alt="SiMAR"
-                            priority
+                            loading="eager"
+                            fetchPriority="high"
                             sizes="(max-width: 639px) 290px, 600px"
                             className="simar-enfoca mt-5 w-[clamp(280px,44vw,600px)] h-auto movil:mt-4 movil:w-[280px]"
                             style={{ animationDelay: '0.6s' }}
@@ -572,6 +625,7 @@ export function VariantCinematic({
                     <div className="simar-enfoca mt-9 w-full sm:w-auto flex flex-col sm:flex-row sm:flex-wrap sm:justify-center gap-3.5 movil:mt-6 movil:gap-2.5" style={{ animationDelay: '1.45s' }}>
                         <button
                             onClick={openLoginModal}
+                            data-vidrio=""
                             className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] bg-simar-marea hover:bg-simar-marea-hover text-white text-lg md:text-xl font-extrabold flex items-center justify-center gap-2.5 cursor-pointer group shadow-[0_18px_40px_-18px_rgba(27,95,201,0.9)] movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
                         >
                             {MODO_DEMO ? 'Probar la demostración' : 'Acceder a la plataforma'}
@@ -579,6 +633,7 @@ export function VariantCinematic({
                         </button>
                         <a
                             href="#proyecto"
+                            data-vidrio=""
                             className="simar-presiona whitespace-nowrap min-h-[64px] px-7 rounded-[20px] border-2 border-white/80 text-white text-lg md:text-xl font-bold hover:bg-white/10 flex items-center justify-center movil:min-h-[50px] movil:rounded-[17px] movil:text-[16px]"
                         >
                             Conocer el proyecto
@@ -602,7 +657,7 @@ export function VariantCinematic({
                     <div
                         role="group"
                         aria-label={`Fotografía ${currentIndex + 1} de ${MEDIA.length}`}
-                        className="simar-enfoca simar-vidrio-fuerte pointer-events-auto relative rounded-full pl-1.5 pr-3 py-1.5 flex items-center gap-1"
+                        className="simar-enfoca simar-vidrio-fuerte vidrio-destello pointer-events-auto relative rounded-full pl-1.5 pr-3 py-1.5 flex items-center gap-1"
                         style={{ animationDelay: '1.7s' }}
                         onMouseEnter={() => setPausaMomentanea(true)}
                         onMouseLeave={() => setPausaMomentanea(false)}
@@ -615,6 +670,7 @@ export function VariantCinematic({
                                 onClick={() => setPausadoPorUsuario((p) => !p)}
                                 aria-label={pausadoPorUsuario ? 'Reanudar fotografías' : 'Pausar fotografías'}
                                 title={pausadoPorUsuario ? 'Reanudar' : 'Pausar'}
+                                data-vidrio="claro"
                                 className="simar-presiona w-11 h-11 rounded-full flex items-center justify-center text-simar-texto hover:bg-simar-texto/10 cursor-pointer"
                             >
                                 {pausadoPorUsuario ? (
@@ -636,6 +692,7 @@ export function VariantCinematic({
                                     className="h-11 px-[5px] flex items-center cursor-pointer group/punto"
                                 >
                                     <span
+                                        style={{ transitionTimingFunction: 'var(--isla-rebote)' }}
                                         className={`relative block h-2.5 rounded-full overflow-hidden transition-[width,background-color] duration-500 ${
                                             activa ? 'w-10 bg-simar-texto/25' : 'w-2.5 bg-simar-texto/30 group-hover/punto:bg-simar-texto/60'
                                         }`}
@@ -737,7 +794,7 @@ export function VariantCinematic({
                             sizes="(min-width: 1280px) 540px, (min-width: 1024px) 440px, 100vw"
                             className="object-cover"
                         />
-                        <figcaption className="simar-vidrio-fuerte absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
+                        <figcaption className="simar-vidrio-fuerte vidrio-destello absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                             <span className="block text-xl font-extrabold movil:text-[17px]">Alto Golfo de California</span>
                             <span className="block mt-0.5 text-[17px] text-simar-texto-2 movil:text-[15px]">
                                 Una de las regiones marinas más biodiversas y frágiles del planeta.
@@ -746,6 +803,22 @@ export function VariantCinematic({
                     </figure>
                 </div>
             </section>
+
+            {/* Así funciona SiMAR: laptop y celular 3D atados al scroll */}
+            <EscenaEquipos />
+
+            {/* Noticias: una franja oscura propia (olas arriba y abajo) para que no se confunda con la
+                escena 3D de arriba; tarjetas claras encima. La más reciente en grande y cuatro en lista */}
+            {noticias && (
+                <section id="noticias" ref={noticiasRef} aria-labelledby="noticias-titulo" className="relative pt-28 pb-28 md:pt-36 md:pb-36 px-6 bg-simar-abismo text-white overflow-clip movil:pt-20 movil:pb-20 movil:px-5">
+                    <OlaSeparador color="var(--simar-superficie)" lado="arriba" />
+                    <OlaSeparador color="var(--simar-papel)" lado="abajo" />
+                    {/* La hoja del periódico (NoticiasDiario): la misma portada que Noticias, con su cabecera */}
+                    <div className="relative max-w-[1248px] mx-auto">
+                        {noticias}
+                    </div>
+                </section>
+            )}
 
             {/* Don Francisco */}
             <section id="don-francisco" ref={francoRef} className="relative py-20 md:py-28 px-6 overflow-clip movil:py-14 movil:px-5">
@@ -766,7 +839,7 @@ export function VariantCinematic({
                                 sizes="(min-width: 1024px) 600px, 100vw"
                                 className="object-cover object-[60%_40%]"
                             />
-                            <figcaption className="simar-vidrio-fuerte absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
+                            <figcaption className="simar-vidrio-fuerte vidrio-destello absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                                 <span className="block text-lg md:text-[19px] font-extrabold movil:text-[16px]">Francisco Javier Bojórquez Ochoa</span>
                                 <span className="block text-base text-simar-texto-2 movil:text-[15px]">SEMARNAT · Puerto Peñasco</span>
                             </figcaption>
@@ -1066,6 +1139,7 @@ export function VariantCinematic({
                     <div className="reveal" data-delay="650">
                         <button
                             onClick={openLoginModal}
+                            data-vidrio="claro"
                             className="simar-presiona group mt-7 min-h-[64px] px-8 rounded-[20px] bg-simar-espuma hover:bg-[#A5ECE4] text-[#0B2236] text-lg md:text-xl font-extrabold inline-flex items-center gap-2.5 cursor-pointer movil:mt-6 movil:min-h-[54px] movil:rounded-[17px] movil:text-[17px]"
                         >
                             {MODO_DEMO ? 'Probar la demostración' : 'Iniciar sesión'}
@@ -1091,6 +1165,15 @@ export function VariantCinematic({
                     </div>
                     <div className="md:basis-full lg:basis-auto lg:ml-auto lg:text-right">
                         <p className="text-[17px] text-simar-texto-2">© {new Date().getFullYear()} SiMAR · DCK / ITSPP. Todos los derechos reservados.</p>
+                        {/* La licencia CC BY 4.0 de los modelos 3D pide el crédito y avisar que se modificaron */}
+                        <p className="mt-1 text-[14px] text-simar-texto-3 movil:text-[13px]">
+                            Modelos 3D: «macbook pro M3 16 inch 2024» de jackbaeten y «Apple iPhone 15 Pro Max Black» de
+                            Polyman_3D (Sketchfab), bajo{' '}
+                            <a href="https://creativecommons.org/licenses/by/4.0/deed.es" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-simar-texto-2">
+                                CC BY 4.0
+                            </a>
+                            ; modificados (sin logotipos y con pantallas de SiMAR).
+                        </p>
                         {/* Acceso interno al panel de superadmin: discreto a propósito (texto chico y gris, sin
                             ícono; el área que se toca sigue siendo de 44 px). También se llega entrando a
                             /es/superadmin sin sesión */}
