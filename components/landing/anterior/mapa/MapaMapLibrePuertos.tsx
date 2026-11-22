@@ -6,6 +6,7 @@ import type { FeatureCollection, LineString } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { PUERTOS, PUERTO_ACTIVO, arco } from './puertos';
 import { CONTORNO_MEXICO } from './contorno-mexico';
+import { TEXTOS_MAPA_ES } from '@/lib/constants/mapa';
 
 // Estilo vectorial gratuito y sin API key; se recolorea al cargar (ver alCargar).
 const ESTILO = 'https://tiles.openfreemap.org/styles/dark';
@@ -150,6 +151,7 @@ export default function MapaMapLibrePuertos({
                     'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 5, 1, 7, 0],
                 }}
                 style={{ width: '100%', height: '100%', position: 'absolute', inset: 0 }}
+                locale={TEXTOS_MAPA_ES}
                 attributionControl={{ compact: true }}
                 dragRotate={false}
                 touchPitch={false}

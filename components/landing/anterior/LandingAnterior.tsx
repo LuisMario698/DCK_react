@@ -1,16 +1,18 @@
 'use client';
 
 /**
- * La landing de antes del rediseño, congelada tal como estaba en producción (main, 436e404).
- * Sólo se ve en la demo con ?version=anterior (ver SwitchVersionLanding). No se edita: si algo
- * cambia, que sea en la landing nueva.
+ * La landing de antes del rediseño, congelada tal como está en producción (simaryisus-app main,
+ * df70439). Sólo se ve en la demo con ?version=anterior (ver SwitchVersionLanding). No se edita:
+ * si algo cambia, que sea en la landing nueva.
  */
 
 import { Fragment, useState, useEffect, useRef, type CSSProperties } from 'react';
 import Image from 'next/image';
+import dynamic from 'next/dynamic';
 import simboloGrande from '@/public/assets/simar/simbolo-grande.png';
 import nombreGrandeOscuro from '@/public/assets/simar/nombre-grande-oscuro.png';
-import { LoginForm } from '@/components/auth/LoginForm';
+import logoItspp from '@/public/assets/logo_ITSPP.png';
+import logoIcs from '@/public/assets/logo_ICS.png';
 import { SeccionMapaPuertos } from './mapa/SeccionMapaPuertos';
 import type { VarianteMapa } from './mapa/puertos';
 import { useScrollReveal } from '../useScrollReveal';
@@ -34,6 +36,7 @@ import {
     X,
     ArrowLeft,
     SquareTerminal,
+    Loader2,
     Pause,
     Play,
     Menu,
@@ -58,6 +61,18 @@ import {
     type Equivalencia,
 } from '@/lib/utils/equivalencias';
 import { LITROS_AGUA_POR_LITRO_ACEITE } from '@/lib/constants/impacto';
+
+// El formulario de acceso (con el registro y la recuperación de contraseña) se baja al abrir la
+// ventana, no con la landing: sólo hace falta para entrar, y en la demostración ni se abre
+const cargarLoginForm = () => import('@/components/auth/LoginForm').then((m) => m.LoginForm);
+const LoginForm = dynamic(cargarLoginForm, {
+    ssr: false,
+    loading: () => (
+        <div className="min-h-[320px] flex items-center justify-center text-simar-texto-2" role="status" aria-label="Cargando">
+            <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+    ),
+});
 
 /** Segundos que se queda cada fotografía del carrusel (la píldora activa se llena en ese tiempo) */
 const SEGUNDOS_POR_FOTO = 6;
@@ -251,15 +266,16 @@ function ModalRoleCard({
         <button
             type="button"
             onClick={onClick}
-            // En celular es un renglón: ícono, título y descripción, y la flecha a la derecha
+            // En celular es un renglón: ícono, título y descripción, y la flecha a la derecha. En computadora
+            // "Continuar" va al pie (mt-auto) y queda a la misma altura en las dos tarjetas
             className={`group text-left w-full rounded-3xl border-2 border-simar-borde bg-simar-superficie p-5 md:p-6 flex flex-col gap-2.5 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 movil:grid movil:grid-cols-[auto_1fr_auto] movil:items-center movil:gap-x-3 movil:gap-y-0.5 movil:p-4 movil:rounded-[20px] ${s.wrap}`}
         >
             <span className={`w-14 h-14 rounded-full flex items-center justify-center movil:w-12 movil:h-12 movil:row-span-2 ${s.icon}`}>
                 <Icon className="w-7 h-7 movil:w-6 movil:h-6" />
             </span>
             <span className="text-xl md:text-[21px] font-extrabold text-simar-texto movil:text-[17px] movil:leading-tight">{title}</span>
-            <span className="text-[17px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[14px]">{desc}</span>
-            <span className={`mt-1 flex items-center gap-1.5 text-[17px] font-bold movil:mt-0 movil:col-start-3 movil:row-start-1 movil:row-span-2 ${s.arrow}`}>
+            <span className="text-[17px] leading-snug text-simar-texto-2 movil:col-start-2 movil:text-[15px]">{desc}</span>
+            <span className={`mt-auto pt-1 flex items-center gap-1.5 text-[17px] font-bold movil:mt-0 movil:pt-0 movil:col-start-3 movil:row-start-1 movil:row-span-2 ${s.arrow}`}>
                 <span className="movil:sr-only">Continuar</span> <ArrowRight className="w-[18px] h-[18px] group-hover:translate-x-0.5 transition-transform movil:w-[22px] movil:h-[22px]" />
             </span>
         </button>
@@ -546,6 +562,8 @@ export function LandingAnterior({
 
     useEffect(() => {
         if (showLoginModal) {
+            // Mientras se elige el tipo de usuario, ya se va bajando el formulario
+            void cargarLoginForm();
             const prevOverflow = document.body.style.overflow;
             document.body.style.overflow = 'hidden';
             return () => {
@@ -579,8 +597,10 @@ export function LandingAnterior({
                             ya no caben en un renglón (laptops de 1366 px y proyectores). Los cortes van todos
                             como min-[…]: Tailwind pone los arbitrarios antes que md/xl y xl:hidden les ganaría */}
                         <span className="hidden min-[768px]:flex min-[1280px]:hidden min-[1440px]:flex items-center gap-3 rounded-xl dark:bg-white/90 dark:px-2.5 dark:py-1">
-                            <img src="/assets/logo_ITSPP.png" alt="ITSPP" className="h-10 w-auto object-contain" />
-                            <img src="/assets/logo_ICS.png" alt="ICS" className="h-9 w-auto object-contain" />
+                            {/* Con next/image (diferidas) no se descargan donde no se ven: en celular el PNG
+                                original del ITSPP pesaba 264 KB y bajaba aunque estuviera oculto */}
+                            <Image src={logoItspp} alt="ITSPP" width={35} height={40} className="h-10 w-auto object-contain" />
+                            <Image src={logoIcs} alt="ICS" width={48} height={36} className="h-9 w-auto object-contain" />
                         </span>
                     </a>
 
@@ -900,14 +920,18 @@ export function LandingAnterior({
                     </div>
 
                     <figure className="reveal relative m-0 h-[420px] md:h-[560px] rounded-[36px] overflow-hidden movil:h-[260px] movil:rounded-[26px]" data-efecto="foto" data-delay="150">
-                        <img
+                        {/* next/image con el ancho de la columna: antes bajaba el JPEG de 1200 px (175 KB)
+                            también en celular */}
+                        <Image
                             src="/assets/images/img3.jpeg"
                             alt="Puerto Peñasco, Sonora"
-                            className="absolute inset-0 w-full h-full object-cover"
+                            fill
+                            sizes="(min-width: 1280px) 540px, (min-width: 1024px) 440px, 100vw"
+                            className="object-cover"
                         />
                         <figcaption className="simar-vidrio-fuerte absolute left-4 right-4 bottom-4 rounded-3xl px-5 py-4 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                             <span className="block text-xl font-extrabold movil:text-[17px]">Alto Golfo de California</span>
-                            <span className="block mt-0.5 text-[17px] text-simar-texto-2 movil:text-[14px]">
+                            <span className="block mt-0.5 text-[17px] text-simar-texto-2 movil:text-[15px]">
                                 Una de las regiones marinas más biodiversas y frágiles del planeta.
                             </span>
                         </figcaption>
@@ -927,14 +951,16 @@ export function LandingAnterior({
 
                     <div className="mt-10 grid lg:grid-cols-[600px_1fr] gap-10 lg:gap-16 items-start movil:mt-6 movil:gap-6">
                         <figure className="reveal relative m-0 h-[360px] md:h-[440px] rounded-[36px] overflow-hidden movil:h-[270px] movil:rounded-[26px]" data-efecto="foto">
-                            <img
+                            <Image
                                 src="/assets/images/img5.jpeg"
                                 alt="Don Francisco en Puerto Peñasco"
-                                className="absolute inset-0 w-full h-full object-cover object-[60%_40%]"
+                                fill
+                                sizes="(min-width: 1024px) 600px, 100vw"
+                                className="object-cover object-[60%_40%]"
                             />
                             <figcaption className="simar-vidrio-fuerte absolute left-4 bottom-4 rounded-[22px] px-5 py-3.5 movil:left-3 movil:right-3 movil:bottom-3 movil:px-4 movil:py-3 movil:rounded-[18px]">
                                 <span className="block text-lg md:text-[19px] font-extrabold movil:text-[16px]">Francisco Javier Bojórquez Ochoa</span>
-                                <span className="block text-base text-simar-texto-2 movil:text-[14px]">SEMARNAT · Puerto Peñasco</span>
+                                <span className="block text-base text-simar-texto-2 movil:text-[15px]">SEMARNAT · Puerto Peñasco</span>
                             </figcaption>
                         </figure>
 
@@ -1003,10 +1029,11 @@ export function LandingAnterior({
                     </div>
 
                     {/* En celular, carrusel que se desliza de lado (cada tarjeta ocupa casi el ancho) */}
-                    <p className="hidden movil:flex mt-5 items-center gap-1.5 text-[14px] font-bold text-simar-espuma">
+                    <p className="hidden movil:flex mt-5 items-center gap-1.5 text-[15px] font-bold text-simar-espuma">
                         Desliza para ver las {AWARENESS_PANELS.length} <ArrowRight className="w-4 h-4" />
                     </p>
-                    <div className="simar-carrusel mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 movil:mt-3">
+                    {/* tabIndex: en celular se desliza de lado, y con teclado también tiene que poder moverse */}
+                    <div className="simar-carrusel mt-10 grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 movil:mt-3" role="region" aria-label="Por qué importan los datos del mar" tabIndex={0}>
                         {AWARENESS_PANELS.map((panel, i) => {
                             const Icon = panel.icon;
                             return (
@@ -1042,7 +1069,7 @@ export function LandingAnterior({
             <section id="equivalencias" ref={equivRef} className="relative py-20 md:py-28 px-6 overflow-clip movil:py-14 movil:px-5">
                 <div className="max-w-[1248px] mx-auto">
                     <div className="max-w-4xl">
-                        <span className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[14px] movil:px-3 movil:py-1.5">
+                        <span className="reveal inline-flex items-center gap-2 px-4 py-2 rounded-full bg-simar-marea-suave text-simar-marea-tinta text-base font-bold movil:text-[15px] movil:px-3 movil:py-1.5">
                             <span className="w-2 h-2 rounded-full bg-simar-marea-tinta" />
                             {hayDatos ? 'Datos reales de nuestra base de datos' : 'Datos de referencia ambiental'}
                         </span>
@@ -1066,20 +1093,24 @@ export function LandingAnterior({
                                     <article
                                         key={eq.label}
                                         data-delay={`${i * 70}`}
-                                        className="reveal md:col-span-2 lg:col-span-3 rounded-[30px] bg-simar-marea text-white p-7 md:p-8 flex flex-col md:flex-row md:items-center gap-6 md:gap-8 movil:col-span-2 movil:p-5 movil:gap-4 movil:rounded-[24px]"
+                                        className="reveal md:col-span-2 lg:col-span-3 rounded-[30px] bg-simar-marea text-white p-7 md:p-8 flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-8 movil:col-span-2 movil:p-5 movil:gap-4 movil:rounded-[24px]"
                                     >
+                                        {/* En una fila sólo desde 1024 px: en tableta, con "Basado en" al lado, a la cifra
+                                            le quedaban ~280 px y "albercas olímpicas" se partía en dos renglones */}
                                         <span className="w-[72px] h-[72px] flex-shrink-0 rounded-full bg-white text-[#1B5FC9] flex items-center justify-center movil:w-[52px] movil:h-[52px]">
                                             <Icon className="w-[34px] h-[34px] movil:w-[26px] movil:h-[26px]" />
                                         </span>
                                         <div className="flex-1">
                                             <div className="text-lg md:text-[19px] font-bold text-[#DCE8FB] movil:text-[15px]">{eq.label}</div>
-                                            <div className="mt-1 text-5xl md:text-[56px] font-extrabold leading-tight movil:text-[38px]">
-                                                <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={2400} />{' '}
-                                                <span className="text-2xl md:text-[26px]">{eq.impactUnit}</span>
+                                            {/* flex-wrap: si la unidad no cabe junto a la cifra baja entera, sin el hueco
+                                                del interlineado de 56 px */}
+                                            <div className="mt-1 flex flex-wrap items-baseline gap-x-3 text-5xl md:text-[56px] font-extrabold leading-tight movil:text-[38px] movil:gap-x-2">
+                                                <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={2400} />
+                                                <span className="text-2xl md:text-[26px] whitespace-nowrap">{eq.impactUnit}</span>
                                             </div>
                                             <div className="mt-1 text-lg md:text-[19px] text-[#E6EEFB] movil:text-[15px]">{eq.impactDescription}</div>
                                         </div>
-                                        <div className="md:w-[240px] md:pl-7 md:border-l border-white/30 movil:pt-3 movil:border-t">
+                                        <div className="pt-5 border-t border-white/30 lg:pt-0 lg:border-t-0 lg:w-[240px] lg:pl-7 lg:border-l movil:pt-3">
                                             <div className="text-base text-[#DCE8FB]">Basado en</div>
                                             <div className="text-2xl md:text-[26px] font-extrabold">
                                                 <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
@@ -1098,13 +1129,13 @@ export function LandingAnterior({
                                     <span className={`w-[52px] h-[52px] rounded-full flex items-center justify-center movil:w-9 movil:h-9 ${eq.tono}`}>
                                         <Icon className="w-[26px] h-[26px] movil:w-[18px] movil:h-[18px]" />
                                     </span>
-                                    <div className="mt-3.5 text-lg font-bold text-simar-texto-2 movil:mt-2.5 movil:text-[14px] movil:leading-tight">{eq.label}</div>
+                                    <div className="mt-3.5 text-lg font-bold text-simar-texto-2 movil:mt-2.5 movil:text-[15px] movil:leading-tight">{eq.label}</div>
                                     <div className="text-[38px] font-extrabold leading-tight movil:mt-1 movil:text-[22px] movil:break-all">
                                         <NumeroAnimado valor={eq.impactValue} decimales={eq.impactDecimals} duracion={1800} />
                                     </div>
-                                    <div className="text-lg font-bold movil:text-[14px] movil:leading-tight">{eq.impactUnit}</div>
-                                    <div className="text-[17px] text-simar-texto-2 movil:text-[13px] movil:leading-snug">{eq.impactDescription}</div>
-                                    <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2 movil:mt-2 movil:pt-2 movil:text-[12.5px] movil:leading-snug">
+                                    <div className="text-lg font-bold movil:text-[15px] movil:leading-tight">{eq.impactUnit}</div>
+                                    <div className="text-[17px] text-simar-texto-2 movil:text-[15px] movil:leading-snug">{eq.impactDescription}</div>
+                                    <div className="mt-3 pt-3 border-t border-simar-borde-suave text-base text-simar-texto-2 movil:mt-2 movil:pt-2 movil:text-[15px] movil:leading-snug">
                                         Basado en{' '}
                                         <strong className="text-simar-texto">
                                             <NumeroAnimado valor={eq.inputValue} decimales={eq.inputDecimals} duracion={1200} /> {eq.inputUnit}
@@ -1114,7 +1145,7 @@ export function LandingAnterior({
                                 </article>
                             );
                         })}
-                        <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[13px]" data-delay="200">
+                        <p className="reveal self-center px-2 text-base md:text-lg leading-relaxed text-simar-texto-2 movil:px-1 movil:text-[15px]" data-delay="200">
                             Estimaciones con los registros reales del sistema y factores aproximados: 1 L de aceite
                             puede contaminar {LITROS_AGUA_POR_LITRO_ACEITE.toLocaleString('es-MX')} L de agua y cada manifiesto ahorra unos {MINUTOS_POR_MANIFIESTO} min de
                             papeleo. Cada registro que se captura hace crecer estos números.
@@ -1181,7 +1212,7 @@ export function LandingAnterior({
                                     <Icon className="w-8 h-8 text-simar-marea-tinta movil:row-span-3 movil:w-7 movil:h-7" />
                                     <div className="mt-4 text-4xl md:text-5xl font-extrabold leading-none movil:mt-0 movil:text-[26px]">{stat.value}</div>
                                     <div className="mt-2 text-xl font-extrabold movil:mt-1 movil:text-[16px]">{stat.label}</div>
-                                    <div className="mt-1 text-[17px] text-simar-texto-2 movil:mt-0 movil:text-[14px]">{stat.detail}</div>
+                                    <div className="mt-1 text-[17px] text-simar-texto-2 movil:mt-0 movil:text-[15px]">{stat.detail}</div>
                                 </div>
                             );
                         })}
@@ -1238,17 +1269,19 @@ export function LandingAnterior({
 
             {/* Footer */}
             <footer className="bg-simar-superficie py-12 md:py-14 px-6 movil:py-10 movil:px-5">
-                <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:items-center gap-8 md:gap-14 movil:gap-6">
-                    <LogoSimar tamano={60} />
+                {/* En tableta (768–1023 px) los tres bloques no caben en una fila: el logo quedaba encima de
+                    "DCK Conciencia y Cultura". Ahí el aviso de derechos baja a su propio renglón */}
+                <div className="max-w-[1248px] mx-auto flex flex-col md:flex-row md:flex-wrap lg:flex-nowrap md:items-center gap-8 md:gap-x-14 md:gap-y-6 movil:gap-6">
+                    <LogoSimar tamano={60} prioridad={false} className="flex-shrink-0" />
                     <div>
                         <h3 className="text-lg font-extrabold">Instituciones</h3>
-                        <ul className="mt-2 space-y-1 text-lg text-simar-texto-2">
+                        <ul className="mt-2 space-y-1 text-lg text-simar-texto-2 whitespace-nowrap">
                             <li>ITSPP</li>
                             <li>DCK Conciencia y Cultura</li>
                             <li>SEMARNAT</li>
                         </ul>
                     </div>
-                    <div className="md:ml-auto md:text-right">
+                    <div className="md:basis-full lg:basis-auto lg:ml-auto lg:text-right">
                         <p className="text-[17px] text-simar-texto-2">© {new Date().getFullYear()} SiMAR · DCK / ITSPP. Todos los derechos reservados.</p>
                         {/* Acceso interno al panel de superadmin: discreto a propósito (texto chico y gris, sin
                             ícono; el área que se toca sigue siendo de 44 px). También se llega entrando a
@@ -1256,7 +1289,7 @@ export function LandingAnterior({
                         <button
                             type="button"
                             onClick={abrirAccesoDesarrollador}
-                            className="mt-1 min-h-[44px] inline-flex items-center text-[14px] text-simar-texto-3 hover:text-simar-texto-2 hover:underline underline-offset-2 transition-colors cursor-pointer"
+                            className="mt-1 min-h-[44px] inline-flex items-center text-[14px] movil:text-[15px] text-simar-texto-3 hover:text-simar-texto-2 hover:underline underline-offset-2 transition-colors cursor-pointer"
                         >
                             Acceso desarrollador
                         </button>
