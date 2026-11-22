@@ -331,125 +331,18 @@ que enfoca. Sólo en la landing (`components/landing/`); dentro de los paneles n
   texto grande (reconocimientos) no van de fondo: pelean con el logo.
 - Con "reducir movimiento" todo aparece ya nítido.
 
-### 8.5 Landing nueva: escenas atadas al scroll
+### 8.5 Las otras landings (retiradas)
 
-La landing nueva (`components/landing/nueva/`, se ve con `?landing=nueva` y el selector de abajo)
-cuenta la historia con **escenas fijas**: el bloque es alto, el escenario va con `position: sticky`
-y lo que pasa adentro depende de cuánto se ha bajado, no del tiempo (al subir se revierte). Usa
-**Motion** (motion.dev, `motion/react`), sólo en esta landing: `LazyMotion` con `domAnimation` y
-componentes `m.*` (`motion/react-m`), para bajar sólo lo que se usa. Las piezas comunes están en
-`components/landing/nueva/escena.tsx`.
+Hasta el 2026-11-17 convivían tres landings (`?landing=actual|nueva|3d`, con un selector flotante).
+Se quedó sólo la Actual (§8.7); la «Nueva» (escenas con Motion) y la «3D» (página de producto con
+three.js hecho a mano) se borraron y viven en el historial de git. De la 3D queda `.t3-enfoca` en
+`globals.css`, que usan las secciones de Noticias.
 
-| Pieza | Qué hace | Dónde |
-|---|---|---|
-| `useEscena()` | Progreso de 0 a 1 de una escena fija (`['start start', 'end end']`) | Portada, Bajar al fondo, El viaje |
-| `useRango(p, entradas, salidas)` | `useTransform` con el rango completado hasta 0 y 1. **Siempre úsalo en lugar de `useTransform` sobre un progreso de scroll:** donde hay ScrollTimeline, Motion pasa el rango a una animación nativa, y si no empieza en 0 y acaba en 1 el navegador llena los extremos con el valor base (el título volvía al final y la gota regresaba arriba) | Todas las escenas |
-| `useTramo(p, [a, b, c, d])` | Un texto aparece entre `a` y `b` (sube 28 px), se queda quieto mientras se lee y se va entre `c` y `d` | Textos de la portada y de las paradas |
-| `TextoQueSeEnciende` | El título se enciende palabra por palabra al bajar. Las apagadas quedan a **0.5 de opacidad** (así cumple 3:1 de texto grande). El lector oye la frase entera una vez | Títulos `h2` |
-| `FRENA` / `RESORTE` | La curva de SiMAR y un resorte **sin rebote** (0.45 s), interrumpible | Lo que se toca: el deslizador de Antes y después, la hoja del viaje |
-| `ln-enfoca`, `ln-enfoca-foto`, `ln-tras-1/2`, `ln-llena` | CSS con `animation-timeline: view()`: entra desenfocado y se aclara en el tercio de abajo; `ln-tras-*` escalona; `ln-llena` sube el agua de la tarjeta grande de Logros | Antetítulos, párrafos, tarjetas y fotos |
+### 8.6 Noticias: una página informativa aparte
 
-- Las escenas: la **portada** (cae la gota, se extiende la mancha y aparece la cifra de litros),
-  **Bajar al fondo** (la cámara baja de la superficie al fondo con un profundímetro; cada parada
-  queda quieta mientras se lee), **El viaje de un litro** (el celular se levanta y cambia de
-  pantalla en cada paso; los nodos del riel llevan a cada paso) y el **cierre** (el símbolo gira
-  hasta su lugar y el mar sube).
-- Siguen las prohibiciones de 8.3: nada se mueve en bucle ni solo; lo que la persona lee no se
-  mueve (los textos llegan, se quedan quietos y se van); sin rebotes ni parallax de fondo.
-- Sólo se anima `transform`, `opacity` y `clip-path` (Motion los corre fuera del hilo principal);
-  en SVG no hay aceleración, así que ahí van pocas piezas.
-- **Con "reducir movimiento" no hay escenas:** cada sección tiene su versión quieta
-  (`HeroQuieto`, las tarjetas de Bajar al fondo, `ListaQuieta` del viaje), los títulos se ven
-  enteros y el cierre queda en su lugar. `MotionConfig reducedMotion="user"` cubre lo demás.
-- Lo que va abajo de la portada se envuelve en `<Suspense>` (`PorPartes` en `LandingNueva`): React
-  lo hidrata en tareas cortas y la portada responde antes. No cambia el HTML del servidor.
-- El lector de pantalla oye el contenido una vez y en orden: los textos de la portada y de las
-  paradas están en la página aunque no se vean; El viaje es `aria-hidden` y sus pasos van en una
-  lista `sr-only`.
-
-### 8.6 Landing 3D: portada con laptop y página de producto
-
-La tercera landing (`components/landing/tresd/`, se ve con `?landing=3d` y el selector de abajo)
-es una **página de producto** al estilo de Apple. Usa **three.js** (sólo aquí) escrito a mano, sin
-React Three Fiber: el motor es un módulo que se baja con `await import()` cuando el navegador queda
-libre, así three no pesa en la carga inicial.
-
-Hasta noviembre de 2026 abría con un «mar de partículas» (figuras de puntos de luz). Se quitó:
-se sentía poco profesional y poco claro. Ahora la página dice qué es SiMAR en el primer vistazo y
-el contexto del problema va en una sección sencilla, con cifras y fuentes.
-
-| Pieza | Qué hace | Dónde |
-|---|---|---|
-| `ProductoEnEscena` + `motorDispositivos.ts` | **Portada y Cómo funciona** (claro, escenario `sticky`, ~580 vh). Arriba el título (`h1`), el texto y los botones; abajo una laptop **cerrada**. Con el primer movimiento del scroll el título se va y la laptop se abre en el Panel; luego la cámara se acerca al manifiesto y a las firmas, gira a Estadísticas y entra el celular con el portal. Laptop y celular hechos con geometría (sin modelos que bajar) y las **capturas reales** de la demo (`public/assets/landing/3d/`) como pantalla | `#inicio` (la escena) y `#producto` (ancla en la parada 1) |
-| `PasosEscena.tsx` | La barra de pasos (horizontal arriba en celular, vertical a la derecha en computadora) y los imanes del scroll. Con `desde={1}` la barra no cuenta la portada y aparece cuando la laptop termina de abrirse | La escena |
-| `PorQueImporta` + `ComparadorHojas` | **Por qué importa** (oscuro): la cifra del agua en grande (de `equivalencias.ts`), tres temas (aceite, basura, el lugar) con su dato y su artículo, el antes y después de la hoja (comparador que se arrastra, sin Motion: la posición vive en `--corte`) y Don Francisco con su foto. En celular, los tres temas van en un carrusel | `#por-que` |
-| `CifrasEnVivo`, `SeccionNoticias`, `Cierre` | Cifras reales (`getLandingStats` + `lib/utils/equivalencias.ts`), un adelanto de Noticias (las tres más recientes) y el llamado final | `#impacto`, `#noticias` |
-
-**La portada.** `motorDispositivos` recibe dónde termina el texto (`portadaLibre`, fracción del
-alto; `portada()` lo actualiza al cambiar el tamaño) y pone la laptop cerrada centrada en el
-espacio de abajo, tan lejos como haga falta para que quepa a lo alto y a lo ancho. El título usa
-`min(5.3vw, 8vh)` para que en pantallas bajas no tape la laptop. Abajo, «Baja para abrirla» con
-una flecha que se mueve despacio (se va con el primer scroll).
-
-**Tiempos del scroll** (`comun.ts`). La escena se arma con `crearRecorrido(pesos)`: un peso por
-parada y `VH_POR_PASO` (85 vh) por peso; una parada con más que leer pesa más. Dentro de cada
-parada (`TIEMPOS`):
-
-| Tramo de la parada | Qué pasa |
-|---|---|
-| 0 a 0.56 | El texto se lee **quieto** (de 48 a 64 vh de scroll, más en las últimas) |
-| 0.56 a 0.68 | El texto se va |
-| 0.60 a 0.93 | La figura viaja a la siguiente (`etapaEn`) |
-| 0.86 a 0.98 | Entra el texto siguiente (`textoEn`) |
-
-- Los textos y las barras se mueven por `data-*` dentro del `requestAnimationFrame` (sin volver a
-  renderizar React).
-- **Seguimiento del scroll** (`crearSeguidor`): la escena no copia el scroll tal cual, lo sigue
-  con un resorte amortiguado (SmoothDamp, 0.16 s, tope de 6.5 paradas por segundo). Textos,
-  barra y cámara leen esa misma posición, así siempre van juntos. Con scroll lento va pegada al
-  dedo; con un deslizón rápido alcanza al dedo sin brincos y llega frenando. El motor no suaviza
-  por su cuenta (sería doble arrastre).
-- **Prisa** (`crearPrisa`): según la velocidad (de 1.4 a 2.8 paradas por segundo) los textos se
-  apagan, para que al pasar de largo los que se cruzan no parpadeen; al frenar, el de la parada
-  donde se llega aparece con calma. Medido a 7,000 px/s: ningún texto intermedio pasa de 6 %; a
-  400 px/s cada texto se lee igual que antes (de 1.2 a 1.6 s).
-- **La barra del navegador del celular** sube y baja al hacer scroll y cambia `innerHeight`. Por
-  eso el avance se mide con el alto del escenario (`scrollDe`, el `[data-escenario]` de 100svh),
-  no con `innerHeight`, y el motor ignora un «resize» que no cambia el tamaño del lienzo (antes
-  la escena brincaba y el lienzo rehacía su memoria).
-- **Barra de pasos** (`BarraPasos`): un segmento por parada que se llena mientras la figura viaja;
-  el actual lleva `aria-current="step"`. Cada segmento es un botón (44 px de alto en celular) que
-  lleva a esa parada, con su nombre al pasar el cursor o con el foco.
-- **Imanes** (`ImanesPasos`): con `pointer: coarse` la página usa `scroll-snap-type: y proximity`
-  y hay un imán invisible en el punto de lectura de cada parada. Si el dedo suelta cerca, el scroll
-  se acomoda donde el texto se lee; si va rápido, no estorba. En computadora no hay imanes.
-- **Menú y barra**: los enlaces son Cómo funciona, Por qué importa, Impacto, Puertos y
-  **Noticias, que es una página aparte** (`pagina: true` en `ENLACES`, va con `Link`). Bajo
-  1280 px salen en un menú (hamburguesa) con ícono, nombre y una línea de cada uno. Usa
-  `useVentanaAccesible` y se cierra con Escape o tocando fuera. La sección activa se calcula con
-  el scroll (la que cruza la mitad de la pantalla; «Cómo funciona» va de su ancla al final de la
-  escena). La barra lleva abajo una línea fina con el avance de toda la página (`.t3-avance`).
-- **Con "reducir movimiento"** la cámara salta de toma en toma, los textos sólo aparecen y
-  desaparecen y la flecha de la portada no se mueve.
-- **Rendimiento:** la escena sólo dibuja cuando la toma cambia (quieto no gasta) y baja sola la
-  densidad de píxeles si los cuadros pasan de ~22 ms (`crearAjustePixeles`: un escalón de 0.25,
-  hasta 1.25, para que el texto de las pantallas se lea). three.js se baja con
-  `requestIdleCallback` después de pintar la portada; el `h1` y los botones ya están en el HTML.
-  La escena compila sus shaders y sube las capturas antes de mostrarse.
-- **Los dispositivos** (`motorDispositivos.ts`): cuerpos de aluminio gris espacial con esquinas y
-  cantos redondos (`losa()`: extrusión con bisel y vértices unidos para sombreado suave, caras
-  planas con su normal exacta), teclado en 3D en una sola malla, bocinas, trackpad, bisagra,
-  cámara, el símbolo de SiMAR en la tapa, celular con botones, cristal que suma reflejos encima de
-  las pantallas, sombras de contacto difuminadas y un estudio de luz propio (cajas de luz alrededor,
-  en un PMREM) con el tono `NeutralToneMapping`. Se probaron paquetes de modelos: los gratis son de
-  pocos polígonos o con licencia dudosa y los realistas pesan megas; por eso van con código.
-- **Sin WebGL** la escena muestra la captura de cada toma en un marco sencillo.
-- La barra se vuelve vidrio oscuro sobre las secciones con `data-tono="oscuro"` (Por qué importa,
-  Puertos y Cierre) y toma el tema en las demás.
-
-**Noticias: una página informativa aparte.** `/[locale]/noticias` y `/[locale]/noticias/[slug]`
-leen `lib/constants/noticias.ts` (sin base de datos). La landing sólo lleva un adelanto
-(`SeccionNoticias`, las tres más recientes y «Ir a Noticias») y el enlace del menú.
+`/[locale]/noticias` y `/[locale]/noticias/[slug]`
+leen `lib/constants/noticias.ts` (sin base de datos). La landing lleva su franja de noticias
+(`NoticiasPortada`, ver §8.7) y el enlace del menú.
 
 - **Es un medio, no una demo** (Jesus, 2026-11-05: «son noticias y tiene que inspirar
   profesionalismo y credibilidad»): fotos reales con su crédito, letra de periódico en los
@@ -768,6 +661,18 @@ tema: parecía hecho por IA y no se parecía a Noticias.
 | Fotos | `FotoNota`: difuminadas al instante, se enfocan al llegar, **ya decodificadas** (`img.decode()`; si no, se decodificaban en el cuadro en que aparecían). Enfocada la foto, la previa difuminada deja de pintarse |
 | «Nueva» | `MarcaNueva` / `ContadorNuevas`: lo publicado después de la visita anterior de esa persona (fecha guardada en su navegador, `simar:noticias-vistas-hasta`; la primera vez, los últimos 3 días). Insignia coral suave |
 
+**El correo del mes** (`CorreoMensual`, al pie de la franja de noticias; datos armados en
+`NoticiasPortada`): «El mar, una vez al mes, en tu correo.», una línea de qué trae y el formulario
+(campo grande con su etiqueta, botón espuma «Quiero recibirlo»). A un lado, **cómo se verá el
+correo**: la edición de este mes al frente (remitente, fecha del próximo envío —el primer lunes del
+mes que sigue—, asunto, la cabecera de Noticias del Mar, dos cifras de siempre y los tres titulares
+más nuevos) y las dos anteriores detrás, que se abren al entrar a la pantalla (`correo-hoja`, sólo
+transform). Por ahora es **sólo diseño**: valida y responde en pantalla, pero el correo no se guarda
+en ningún lado; por eso lleva «Muy pronto» y el aviso de «listo» dice que el envío todavía no empieza
+(nunca le digas a alguien que quedó suscrito si no es cierto). Error con anillo y punto coral sólido
+sobre la franja oscura; el aviso recibe el foco. Cuando exista la tabla de suscriptores, sólo cambian
+`enviar` y ese aviso.
+
 La letra de los titulares (Newsreader) sólo se pide en esta sección y en Noticias. En la landing va
 **sin precarga** (`letraTitularDiferida`, en su propio archivo: en el mismo que `letraTitular` Next
 precargaba las dos y cada archivo bajaba dos veces). Las entradas de la hoja y la foto que se mueve
@@ -775,9 +680,9 @@ al bajar son **CSS atado al scroll** (`n-paralaje`), sin Motion. Con «reducir m
 mueve.
 
 **Lo que se baja al abrir la landing** (medido en producción, `next start`): JavaScript inicial de
-~1.4 MB a ~780 KB. Lo que se quitó del arranque: las otras dos landings y Motion (se cargan desde
-`LandingsAlternas.tsx`, de cliente: un `next/dynamic` en la página de servidor **no** parte el
-código), el cliente de Supabase del `AuthProvider` (llega en reposo, o en el acto si hay una sesión
+~1.4 MB a ~780 KB. Lo que se quitó del arranque: las otras dos landings y Motion (entonces se cargaban
+desde un componente de cliente: un `next/dynamic` en la página de servidor **no** parte el
+código; hoy ya no existen, §8.5), el cliente de Supabase del `AuthProvider` (llega en reposo, o en el acto si hay una sesión
 guardada), liquid-gooey (`CapaGota.tsx` llega aparte, antes de la primera gota) y las fotos 2 a 5 del
 hero (se piden en reposo y una antes de que toque). Las fotos del hero van con calidad 60
 (`images.qualities` en `next.config.ts`) y ninguna animación de la landing usa `filter: blur`

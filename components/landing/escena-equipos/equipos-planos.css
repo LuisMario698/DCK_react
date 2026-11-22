@@ -1,0 +1,215 @@
+/* «Así funciona SiMAR» en plano (EquiposPlanos.tsx): la laptop y el celular dibujados, con las
+   capturas reales, mientras el 3D se prepara, si el equipo no da para él o con «reducir movimiento».
+   Sólo transform y opacidad, con transiciones al cambiar de paso (no se pinta nada por cuadro).
+   Los equipos van dentro de .simar-claro: el aluminio y el vidrio son los mismos en tema oscuro,
+   como en el 3D. */
+
+/* La zona libre del escenario: debajo del recuadro de las frases y arriba de los puntos (la misma
+   que deja el motor 3D). Mide su ancho y su alto para que la lámina quepa entera */
+.eqp {
+  position: absolute;
+  z-index: 1;
+  left: max(16px, 5vw);
+  right: max(16px, 5vw);
+  top: calc(max(100px, 13svh) + clamp(124px, 17svh, 176px) + 16px);
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  container: eqp / size;
+  pointer-events: none;
+  transition:
+    opacity 700ms ease,
+    visibility 0s linear 0s;
+}
+@media (min-width: 768px) {
+  .eqp {
+    left: 7vw;
+    right: 7vw;
+    top: calc(max(128px, 14svh) + clamp(124px, 17svh, 176px) + 24px);
+  }
+}
+/* Cuando el 3D ya está: se desvanece y deja de pintarse */
+.eqp[data-oculto='true'] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 700ms ease,
+    visibility 0s linear 700ms;
+}
+
+/* La lámina: 1.6 : 1 en pantallas anchas, casi cuadrada en las angostas (celular de pie) */
+.eqp-lamina {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  /* (sin consultas de contenedor, al menos el ancho completo) */
+  width: 100%;
+  width: min(100cqw, 160cqh);
+  aspect-ratio: 1.6;
+}
+@container eqp (max-aspect-ratio: 6/5) {
+  .eqp-lamina {
+    width: min(100cqw, 90cqh);
+    aspect-ratio: 0.9;
+  }
+}
+
+/* ── Laptop ─────────────────────────────────────────────────────────── */
+.eqp-laptop {
+  position: absolute;
+  left: 10%;
+  width: 80%;
+  top: 50%;
+  translate: 0 -50%;
+  aspect-ratio: 1000 / 624;
+  transform: none;
+  transition: transform 800ms var(--simar-frena);
+  will-change: transform;
+}
+.eqp[data-paso='0'] .eqp-laptop {
+  transform: translateY(3%) scale(0.95);
+}
+/* Al final se hace a un lado para el celular */
+.eqp[data-paso='4'] .eqp-laptop {
+  transform: translateX(-14%) scale(0.86);
+}
+@container eqp (max-aspect-ratio: 6/5) {
+  .eqp-laptop {
+    left: 2%;
+    width: 96%;
+  }
+  /* Apilados: la laptop sube y el celular queda delante, abajo a la derecha */
+  .eqp[data-paso='4'] .eqp-laptop {
+    transform: translateY(-34%) scale(0.9);
+  }
+}
+.eqp-laptop > svg,
+.eqp-celular > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* La pantalla (el hueco del marco en el dibujo: 744 × 465 en 1000 × 624) */
+.eqp-pantalla {
+  position: absolute;
+  left: 12.8%;
+  top: 5.128%;
+  width: 74.4%;
+  height: 74.519%;
+  overflow: clip;
+}
+.eqp-captura {
+  position: absolute;
+  inset: 0;
+  transform: none;
+  transition:
+    transform 700ms var(--simar-frena),
+    opacity 600ms ease;
+}
+/* La que entra llega desde la derecha y empuja a la anterior, como al navegar en la app */
+.eqp-captura[data-estado='siguiente'] {
+  transform: translateX(101%);
+}
+.eqp-captura[data-estado='pasada'] {
+  transform: translateX(-30%);
+}
+/* La primera no se desliza: la pantalla se enciende */
+.eqp-captura:first-child[data-estado='siguiente'] {
+  transform: none;
+  opacity: 0;
+}
+.eqp-captura:not(:first-child) {
+  box-shadow: -14px 0 28px -16px color-mix(in srgb, var(--simar-abismo) 55%, transparent);
+}
+/* El vidrio: un reflejo quieto en diagonal */
+.eqp-reflejo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    116deg,
+    color-mix(in srgb, var(--simar-superficie) 12%, transparent) 0%,
+    color-mix(in srgb, var(--simar-superficie) 4%, transparent) 34%,
+    transparent 34.2%
+  );
+}
+
+/* ── Celular ────────────────────────────────────────────────────────── */
+.eqp-celular {
+  position: absolute;
+  left: 77.5%;
+  top: 25.8%;
+  height: 58%;
+  aspect-ratio: 400 / 836;
+  opacity: 0;
+  transform: translateX(22%);
+  transition:
+    transform 850ms var(--simar-frena) 120ms,
+    opacity 500ms ease 120ms;
+  will-change: transform, opacity;
+}
+.eqp[data-paso='4'] .eqp-celular {
+  opacity: 1;
+  transform: none;
+}
+@container eqp (max-aspect-ratio: 6/5) {
+  .eqp-celular {
+    left: 66%;
+    top: 50.1%;
+    height: 50%;
+    transform: translate(16%, 6%);
+  }
+}
+/* La app del celular (328 × 710 en 400 × 836, bajo la barra de estado) */
+.eqp-app {
+  position: absolute;
+  left: 9%;
+  top: 8.373%;
+  width: 82%;
+  height: 84.928%;
+  overflow: clip;
+  border-radius: 3% / 1.4%;
+}
+
+/* ── Colores del dibujo (tokens claros: .simar-claro) ───────────────── */
+.eqp-lamina {
+  --eqp-alu-1: color-mix(in srgb, var(--simar-franja-texto-2) 25%, var(--simar-superficie));
+  --eqp-alu-2: color-mix(in srgb, var(--simar-franja-texto-2) 60%, var(--simar-superficie));
+  --eqp-alu-3: var(--simar-franja-texto-2);
+  --eqp-alu-4: color-mix(in srgb, var(--simar-franja-texto-3) 70%, var(--simar-franja-texto-2));
+  --eqp-alu-5: color-mix(in srgb, var(--simar-texto-2) 45%, var(--simar-franja-texto-3));
+}
+.eqp-s-alu-1 { stop-color: var(--eqp-alu-1); }
+.eqp-s-alu-2 { stop-color: var(--eqp-alu-2); }
+.eqp-s-alu-3 { stop-color: var(--eqp-alu-3); }
+.eqp-s-alu-4 { stop-color: var(--eqp-alu-4); }
+.eqp-s-alu-5 { stop-color: var(--eqp-alu-5); }
+.eqp-s-tinta,
+.eqp-s-sombra { stop-color: var(--simar-abismo); }
+.eqp-f-marco,
+.eqp-f-isla,
+.eqp-f-tinta { fill: var(--simar-abismo); }
+.eqp-t-tinta { stroke: var(--simar-abismo); }
+.eqp-f-camara { fill: color-mix(in srgb, var(--simar-texto-2) 55%, var(--simar-abismo)); }
+.eqp-f-brillo { fill: var(--simar-superficie); }
+.eqp-t-brillo { stroke: var(--simar-superficie); fill: none; }
+.eqp-f-apagada { fill: color-mix(in srgb, var(--simar-abismo) 85%, var(--simar-texto-2)); }
+.eqp-f-tecla { fill: color-mix(in srgb, var(--simar-abismo) 74%, var(--simar-texto-2)); }
+.eqp-f-trackpad { fill: color-mix(in srgb, var(--simar-franja-texto-3) 35%, var(--simar-franja-texto-2)); }
+.eqp-f-muesca { fill: color-mix(in srgb, var(--simar-texto-2) 60%, var(--simar-franja-texto-3)); }
+.eqp-f-boton { fill: color-mix(in srgb, var(--simar-franja-texto-3) 60%, var(--simar-franja-texto-2)); }
+.eqp-f-papel { fill: var(--simar-papel); }
+
+/* Quieto: con «reducir movimiento» se ve la toma final, sin transiciones */
+.eqp[data-quieto='true'] *,
+.eqp[data-oculto='true'] * {
+  transition: none;
+  will-change: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eqp,
+  .eqp * {
+    transition: none !important;
+  }
+}

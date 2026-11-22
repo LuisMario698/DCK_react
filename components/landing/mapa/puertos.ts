@@ -9,6 +9,8 @@ export interface PuertoMapa {
     lng: number;
     activo: boolean;
     descripcion: string;
+    /** Año en que el puerto empezó a usar SiMAR (sólo los activos) */
+    desde?: number;
 }
 
 export const PUERTOS: PuertoMapa[] = [
@@ -19,7 +21,8 @@ export const PUERTOS: PuertoMapa[] = [
         lat: 31.3037,
         lng: -113.5451,
         activo: true,
-        descripcion: 'Puerto pionero. Sistema en operación digitalizando manifiestos desde 2024 con SEMARNAT.',
+        descripcion: 'Puerto pionero. Con SiMAR desde 2026.',
+        desde: 2026,
     },
     {
         id: 'guaymas',
@@ -28,7 +31,7 @@ export const PUERTOS: PuertoMapa[] = [
         lat: 27.918,
         lng: -110.899,
         activo: false,
-        descripcion: 'Flota pesquera de gran escala. Candidato prioritario para expansión regional.',
+        descripcion: 'Flota pesquera de gran escala.',
     },
     {
         id: 'ensenada',
@@ -82,7 +85,7 @@ export const PUERTOS: PuertoMapa[] = [
         lat: 19.203,
         lng: -96.134,
         activo: false,
-        descripcion: 'Puerto más antiguo de América continental, con enorme potencial de expansión.',
+        descripcion: 'Puerto pesquero del Golfo de México.',
     },
     {
         id: 'progreso',

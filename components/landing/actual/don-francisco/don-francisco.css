@@ -1,0 +1,559 @@
+/* ============================================
+   DON FRANCISCO (#don-francisco) — prefijo df-
+   Pantalla 1: la persona (retrato, cita, 25 años). Pantalla 2: la hoja que se vuelve dato.
+   Por defecto todo está quieto y legible. El movimiento (sólo transform y opacity, atado al
+   scroll) vive dentro de @supports (animation-timeline: view()) + «sin preferencia» de movimiento.
+   OJO: los marcos recortan con overflow: clip, nunca hidden (hidden congela los view() de adentro).
+   ============================================ */
+
+.df {
+  overflow-x: clip;
+}
+
+/* ---------- Pantalla 1: la persona ---------- */
+
+/* Celular: título, cita (arriba del pliegue en 390 × 844), foto con la cifra y el enlace */
+.df-persona {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'cabeza' 'cita' 'foto' 'enlace';
+  row-gap: 32px;
+}
+.df-cabeza { grid-area: cabeza; }
+.df-cita { grid-area: cita; }
+.df-foto { grid-area: foto; position: relative; }
+.df-enlace { grid-area: enlace; }
+
+/* Tableta: la foto no crece a todo lo ancho (quedaría un recorte panorámico) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .df-foto { width: min(100%, 520px); }
+}
+
+/* Escritorio: como revista; la foto a la izquierda y el texto centrado a su lado */
+@media (min-width: 1024px) {
+  .df-persona {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    grid-template-rows: 1fr auto auto auto 1fr;
+    grid-template-areas:
+      'foto .'
+      'foto cabeza'
+      'foto cita'
+      'foto enlace'
+      'foto .';
+    column-gap: clamp(72px, 8vw, 120px);
+    row-gap: 0;
+  }
+  .df-cita { margin-top: 40px; }
+  .df-enlace { margin-top: 44px; }
+}
+
+.df-marco {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  max-height: min(680px, 80svh);
+  width: 100%;
+  border-radius: 28px;
+  overflow: clip;
+  background: var(--simar-borde-suave);
+  box-shadow: var(--simar-sombra);
+}
+/* La capa es más alta que el marco para que el retrato pueda subir sin dejar huecos */
+.df-retrato-capa {
+  position: absolute;
+  inset: -7% 0;
+}
+/* La cara queda en el tercio de arriba; el reconocimiento, a media foto */
+.df-retrato {
+  object-position: 50% 24%;
+}
+@media (max-width: 639px) {
+  .df-marco { border-radius: 24px; }
+}
+
+/* La cifra «25 años»: en celular se monta sólo sobre la orilla de abajo (no tapa la cara ni el
+   reconocimiento); en escritorio sobresale de la esquina de abajo a la derecha */
+.df-cifra {
+  position: relative;
+  z-index: 1;
+  margin: -44px 16px 0;
+  max-width: 380px;
+}
+@media (min-width: 1024px) {
+  .df-cifra {
+    position: absolute;
+    right: -44px;
+    bottom: -52px;
+    width: 340px;
+    margin: 0;
+  }
+}
+
+/* La comilla cuelga a la izquierda del texto (en pantallas angostas, arriba) */
+.df-comillas {
+  position: absolute;
+  left: -0.62em;
+  top: -0.1em;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.9em;
+  line-height: 1;
+  color: var(--simar-golfo);
+}
+@media (max-width: 1100px) {
+  .df-comillas {
+    position: static;
+    display: block;
+    height: 0.58em;
+    margin-bottom: 0.06em;
+    font-size: 2.1em;
+  }
+}
+
+.df-firma-linea {
+  display: block;
+  width: 40px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--simar-golfo);
+}
+
+/* ---------- Pantalla 2: la hoja que se vuelve dato ---------- */
+
+/* Quieto: frases en orden y, debajo, la hoja y el manifiesto lado a lado */
+.df-escenario {
+  padding-block: 24px 96px;
+}
+.df-escena {
+  display: grid;
+  gap: 32px;
+}
+.df-sobre {
+  margin: 0 0 16px;
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 700;
+  color: var(--simar-marea-tinta);
+}
+.df-frases {
+  display: grid;
+  gap: 18px;
+}
+.df-frase {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.14;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--simar-texto);
+  text-wrap: balance;
+}
+.df-frase-texto {
+  display: block;
+}
+.df-avance {
+  display: none;
+}
+.df-mesa {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  max-width: 920px;
+}
+.df-capa {
+  order: -1;
+}
+.df-orilla-marco {
+  display: none;
+}
+@media (max-width: 639px) {
+  .df-escenario { padding-block: 8px 64px; }
+  .df-escena { gap: 24px; }
+  .df-sobre { margin-bottom: 12px; }
+  .df-frase { font-size: 27px; line-height: 1.18; }
+  .df-mesa {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 380px;
+    gap: 20px;
+  }
+}
+
+/* Una lámina: la ilustración con su insignia. Las esquinas siguen las de los dos dibujos (rx 20) */
+.df-lamina {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 400 / 520;
+  border-radius: 5% / 3.85%;
+}
+.df-lamina-ahora {
+  box-shadow: var(--simar-sombra);
+}
+.df-lamina-antes {
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--simar-abismo) 12%, transparent),
+    0 16px 32px -18px color-mix(in srgb, var(--simar-abismo) 50%, transparent);
+}
+.df-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Insignias en su tono: Antes (coral) y Ahora (arrecife, guardado) */
+.df-chip {
+  position: absolute;
+  top: 4.4%;
+  right: 5%;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 17px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+/* La hoja es un objeto (no cambia con el tema): su insignia usa los tonos claros fijos */
+.df-chip-antes {
+  background: #FBEADF;
+  color: #A63F0E;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--simar-abismo) 18%, transparent);
+}
+.df-chip-ahora {
+  background: var(--simar-arrecife-suave);
+  color: var(--simar-arrecife-tinta);
+}
+/* Celular: la lámina es chica; la insignia sube para no rozar el encabezado de la hoja */
+@media (max-width: 639px) {
+  .df-chip {
+    top: 2.6%;
+    right: 4%;
+    min-height: 30px;
+    padding: 0 12px;
+  }
+}
+
+/* La palomita de «Firmado y guardado»: HTML encima del dibujo (centro 52,466 · r 17 de 400 × 520) */
+.df-ok {
+  position: absolute;
+  left: 8.75%;
+  top: 86.35%;
+  width: 8.5%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--simar-arrecife);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.df-ok svg {
+  width: 62%;
+  height: 62%;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* --- El manifiesto en SiMAR (colores de la app: cambian con el tema) --- */
+.df-d-tarjeta { fill: var(--simar-superficie); stroke: var(--simar-borde); stroke-width: 1; }
+.df-d-icono-fondo { fill: var(--simar-marea-suave); }
+.df-d-icono {
+  fill: none;
+  stroke: var(--simar-marea-tinta);
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.df-d-texto { fill: var(--simar-texto); }
+.df-d-texto-2 { fill: var(--simar-texto-2); }
+.df-d-linea { stroke: var(--simar-borde-suave); stroke-width: 1; }
+.df-d-mosaico-principal { fill: var(--simar-marea-suave); }
+.df-d-mosaico { fill: var(--simar-papel); stroke: var(--simar-borde); stroke-width: 1; }
+.df-d-cifra-principal { fill: var(--simar-marea-tinta); }
+.df-d-firma-fondo { fill: var(--simar-superficie); stroke: var(--simar-borde); stroke-width: 1; }
+.df-d-insignia { fill: var(--simar-arrecife-suave); }
+.df-d-insignia-texto { fill: var(--simar-arrecife-tinta); }
+.df-d-firma {
+  fill: none;
+  stroke: var(--simar-texto);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.df-d-base-firma { stroke: var(--simar-campo-borde); stroke-width: 1; stroke-dasharray: 4 5; }
+.df-d-accion { fill: var(--simar-marea); }
+.df-d-accion-texto { fill: #fff; }
+
+/* ============================================
+   Movimiento atado al scroll
+   ============================================ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* --- Pantalla 1: tres capas --- */
+
+    /* El título se enfoca palabra por palabra, en cascada */
+    .df-sube,
+    .df-titulo .palabra {
+      display: inline-block;
+      animation: df-sube cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+    .df-titulo .palabra {
+      animation-range: entry calc(14% + var(--i, 0) * 5%) cover calc(30% + var(--i, 0) * 3%);
+    }
+
+    /* Fondo: el retrato sube despacio dentro del marco */
+    .df-retrato-capa {
+      animation: df-deriva linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
+    /* Medio: la cita y la firma entran de lado (terminan antes de leerse) */
+    .df-lado {
+      animation: df-lado cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 28%;
+    }
+    .df-lado-tarde {
+      animation-range: entry 20% cover 34%;
+    }
+
+    /* Frente: «25 años» sale del fondo */
+    .df-cifra {
+      transform-origin: 30% 100%;
+      animation: df-fondo cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 32%;
+    }
+
+    /* --- Pantalla 2: la pista con escenario fijo --- */
+    .df-pista {
+      height: 230svh;
+      view-timeline-name: --df-pista;
+      view-timeline-axis: block;
+    }
+    /* El escenario deja libre la isla de arriba (~108 px) y la orilla segura de abajo */
+    .df-escenario {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      display: flex;
+      align-items: center;
+      padding-block: 118px max(32px, env(safe-area-inset-bottom));
+    }
+    .df-escena {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      align-items: center;
+      gap: clamp(40px, 6vw, 96px);
+    }
+
+    /* Las frases ocupan la misma celda: la que sale termina de irse antes de que entre la nueva */
+    .df-frases {
+      grid-template-areas: 'frase';
+    }
+    .df-frase {
+      grid-area: frase;
+      font-size: 42px;
+    }
+    .df-frase[data-entra] {
+      animation: df-frase-entra cubic-bezier(0.2, 0.7, 0.2, 1) both;
+      animation-timeline: --df-pista;
+      animation-range: var(--df-entra);
+    }
+    .df-frase[data-sale] > .df-frase-texto {
+      animation: df-frase-sale cubic-bezier(0.4, 0, 0.6, 1) both;
+      animation-timeline: --df-pista;
+      animation-range: var(--df-sale);
+    }
+
+    /* Avance: una línea fina bajo las frases */
+    .df-avance {
+      display: block;
+      margin-top: 28px;
+      width: 120px;
+      height: 3px;
+      border-radius: 3px;
+      background: var(--simar-borde-suave);
+      overflow: clip;
+    }
+    .df-avance > span {
+      display: block;
+      height: 100%;
+      background: var(--simar-golfo);
+      transform-origin: left center;
+      animation: df-avance linear both;
+      animation-timeline: --df-pista;
+      animation-range: contain 0% contain 100%;
+    }
+
+    /* La mesa: el manifiesto abajo y la hoja encima, del mismo tamaño */
+    .df-mesa {
+      display: block;
+      width: min(100%, 460px, calc((100svh - 170px) * 400 / 520));
+      max-width: none;
+      justify-self: center;
+      aspect-ratio: 400 / 520;
+    }
+    .df-lamina-ahora {
+      position: absolute;
+      inset: 0;
+    }
+    /* La capa se corre a la izquierda y su contenido a la derecha lo mismo: la hoja no se mueve,
+       sólo se descubre. Tres capas compuestas en todo el escenario (capa, contra y orilla) */
+    .df-capa {
+      position: absolute;
+      inset: 0;
+      overflow: clip;
+      will-change: translate;
+      animation: df-descubre cubic-bezier(0.45, 0, 0.35, 1) both;
+      animation-timeline: --df-pista;
+      animation-range: contain 8% contain 46%;
+    }
+    .df-capa-contra {
+      height: 100%;
+      will-change: translate;
+      animation: df-descubre-contra cubic-bezier(0.45, 0, 0.35, 1) both;
+      animation-timeline: --df-pista;
+      animation-range: contain 8% contain 46%;
+    }
+    /* Dentro, la hoja ya no lleva sombra propia (la recortaría la capa): la da el manifiesto */
+    .df-capa .df-lamina-antes {
+      box-shadow: none;
+    }
+    /* La orilla: una barra fina con su sombra en degradado, recortada a la tarjeta */
+    .df-orilla-marco {
+      display: block;
+      position: absolute;
+      inset: 0;
+      border-radius: 5% / 3.85%;
+      overflow: clip;
+      pointer-events: none;
+    }
+    .df-orilla {
+      position: absolute;
+      inset: 0;
+      will-change: translate, opacity;
+      animation: df-orilla cubic-bezier(0.45, 0, 0.35, 1) both;
+      animation-timeline: --df-pista;
+      animation-range: contain 8% contain 46%;
+    }
+    .df-orilla::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 100%;
+      width: 26px;
+      background: linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--simar-abismo) 20%, transparent),
+        color-mix(in srgb, var(--simar-abismo) 0%, transparent)
+      );
+    }
+    .df-orilla::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -1.5px;
+      width: 3px;
+      background: var(--simar-golfo);
+    }
+
+    /* La palomita aparece cuando la hoja termina de descubrirse */
+    .df-ok {
+      animation: df-ok cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+      animation-timeline: --df-pista;
+      animation-range: contain 42% contain 52%;
+    }
+
+    /* Tableta y celular: una columna (frases arriba, mesa abajo) */
+    @media (max-width: 1023px) {
+      .df-escena {
+        grid-template-columns: minmax(0, 1fr);
+        align-content: center;
+        gap: 24px;
+      }
+      .df-frase { font-size: 32px; }
+      .df-mesa {
+        width: min(100%, 420px, calc((100svh - 360px) * 400 / 520));
+      }
+      .df-avance { margin-top: 18px; }
+    }
+    /* Celular: la isla tapa ~84 px; el texto y la mesa caben desde 360 × 640 */
+    @media (max-width: 639px) {
+      .df-pista { height: 220svh; }
+      .df-escenario { padding-block: 94px max(20px, env(safe-area-inset-bottom)); }
+      .df-escena { gap: 20px; }
+      .df-sobre { margin-bottom: 8px; }
+      .df-frase { font-size: 26px; line-height: 1.16; }
+      .df-mesa {
+        width: min(100%, 360px, calc((100svh - 330px) * 400 / 520));
+      }
+      .df-avance { margin-top: 14px; width: 96px; }
+    }
+    /* Teléfono acostado: poca altura, así que vuelve a dos columnas */
+    @media (min-width: 640px) and (max-height: 560px) {
+      .df-escenario { padding-block: 88px 16px; }
+      .df-escena {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 32px;
+      }
+      .df-frase { font-size: 26px; }
+      .df-mesa {
+        width: calc((100svh - 112px) * 400 / 520);
+      }
+    }
+  }
+}
+
+@keyframes df-sube {
+  from { opacity: 0; translate: 0 0.45em; }
+  to { opacity: 1; translate: none; }
+}
+@keyframes df-deriva {
+  from { translate: 0 5%; }
+  to { translate: 0 -5%; }
+}
+@keyframes df-lado {
+  from { opacity: 0; translate: 40px 0; }
+  to { opacity: 1; translate: none; }
+}
+@keyframes df-fondo {
+  from { opacity: 0; scale: 0.92; }
+  to { opacity: 1; scale: 1; }
+}
+@keyframes df-frase-entra {
+  from { opacity: 0; translate: 0 0.8em; }
+  to { opacity: 1; translate: none; }
+}
+@keyframes df-frase-sale {
+  from { opacity: 1; translate: none; }
+  to { opacity: 0; translate: 0 -0.8em; }
+}
+@keyframes df-avance {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes df-descubre {
+  from { translate: 0 0; }
+  to { translate: -100% 0; }
+}
+@keyframes df-descubre-contra {
+  from { translate: 0 0; }
+  to { translate: 100% 0; }
+}
+/* La orilla aparece ya despegada (no asoma fuera de la tarjeta) y se apaga al llegar al otro lado */
+@keyframes df-orilla {
+  0% { opacity: 0; translate: 0 0; }
+  5% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { opacity: 0; translate: -100% 0; }
+}
+@keyframes df-ok {
+  from { opacity: 0; scale: 0.4; }
+  to { opacity: 1; scale: 1; }
+}

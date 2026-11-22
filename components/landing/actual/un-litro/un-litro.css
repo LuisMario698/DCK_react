@@ -1,0 +1,602 @@
+/* ============================================
+   UN LITRO (#impacto) — components/landing/actual/un-litro/UnLitro.tsx
+   Base: quieta y legible (los pasos uno debajo de otro, la foto del mar y el cubo ya lleno).
+   Con animation-timeline, sin «reducir movimiento» y con al menos 560 px de alto: pista alta,
+   escenario sticky con su propio view-timeline (--ul-pista), fotos que se funden, una frase por
+   pantalla y el dibujo de la botella al cubo de 10 m.
+   Reglas de la escena: sólo transform y opacity (cada parte que se mueve es su propia capa, ver
+   IlustracionLitro.tsx); una frase termina de irse ANTES de que llegue la siguiente; un solo crédito
+   de foto a la vez; sin blur, sin bucles, sin will-change (las animaciones atadas al scroll ya
+   tienen su capa mientras la pista está a la vista).
+   ============================================ */
+
+.ul-ancla {
+  display: block;
+  height: 0;
+  scroll-margin-top: 96px;
+}
+
+/* ── Escenario (base quieta) ─────────────────── */
+.ul-escenario {
+  position: relative;
+  overflow: clip;
+  isolation: isolate;
+  padding: 128px 0 48px;
+}
+.ul-fotos {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.ul-capa {
+  position: absolute;
+  inset: 0;
+}
+/* Quieta: sólo el mar abierto */
+.ul-capa-1,
+.ul-capa-2 {
+  display: none;
+}
+.ul-velo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--simar-abismo) 94%, transparent) 0%,
+    color-mix(in srgb, var(--simar-abismo) 84%, transparent) 44%,
+    color-mix(in srgb, var(--simar-abismo) 68%, transparent) 100%
+  );
+}
+
+.ul-contenido {
+  position: relative;
+  max-width: 1248px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 48px;
+  align-items: start;
+}
+
+/* ── El dibujo ───────────────────────────────── */
+.ul-dibujo {
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 640 / 450;
+  justify-self: end;
+  /* Quieta: el dibujo acompaña a los pasos (no es movimiento: es sticky) */
+  position: sticky;
+  top: 128px;
+}
+.ul-ilus {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+.ul-escena,
+.ul-capa-ilus,
+.ul-agua-recorte,
+.ul-agua,
+.ul-rotulos {
+  position: absolute;
+  inset: 0;
+}
+.ul-lienzo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* El agua sólo se ve dentro del cubo: el recorte es fijo (nunca se anima) */
+.ul-agua-recorte {
+  clip-path: var(--ul-recorte);
+}
+/* Quieta: la escena B (el cubo lleno) */
+.ul-escena-a {
+  display: none;
+}
+
+/* Rótulos de las cotas, en HTML: se leen igual en cualquier tamaño */
+.ul-rotulo {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--simar-franja-texto-2);
+}
+.ul-rotulo-inicio {
+  transform: translate(0, -50%);
+}
+.ul-rotulo-fin {
+  transform: translate(-100%, -50%);
+}
+.ul-rotulo-inclinado {
+  transform: translate(-50%, -50%) rotate(-30deg);
+}
+.ul-rotulo-aceite {
+  color: var(--simar-aceite);
+}
+
+/* ── Texto ───────────────────────────────────── */
+.ul-antetitulo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ul-antetitulo::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--simar-espuma);
+}
+.ul-frases {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 64px;
+}
+.ul-frase {
+  font-size: clamp(40px, 4.4vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.ul-cifra {
+  font-size: clamp(64px, 7.6vw, 112px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+.ul-cifra-unidad {
+  font-size: 0.4em;
+  letter-spacing: -0.01em;
+}
+
+/* ── Créditos: uno solo a la vez ─────────────── */
+.ul-creditos {
+  position: relative;
+  max-width: 1248px;
+  margin: 56px auto 0;
+  padding: 0 24px;
+  display: flex;
+  justify-content: flex-end;
+}
+.ul-credito-1,
+.ul-credito-2 {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .ul-escenario {
+    padding: 100px 0 32px;
+  }
+  .ul-velo {
+    background: color-mix(in srgb, var(--simar-abismo) 86%, transparent);
+  }
+  .ul-contenido {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 0 16px;
+  }
+  .ul-dibujo {
+    order: -1;
+    position: static;
+    max-width: 440px;
+    justify-self: center;
+  }
+  .ul-rotulo {
+    font-size: 15px;
+  }
+  .ul-frases {
+    gap: 44px;
+  }
+  .ul-frase {
+    font-size: 30px;
+    line-height: 1.1;
+  }
+  .ul-cifra {
+    font-size: 56px;
+  }
+  .ul-creditos {
+    margin-top: 40px;
+    padding: 0 16px calc(env(safe-area-inset-bottom, 0px));
+    justify-content: flex-start;
+  }
+}
+
+/* ── Con scroll: la escena fija ──────────────── */
+/* Las frases: llegan desde abajo (poco) y se van hacia arriba (menos), con su toque */
+@keyframes ul-sube {
+  from { opacity: 0; transform: translateY(28px); pointer-events: none; }
+  to { opacity: 1; transform: none; pointer-events: auto; }
+}
+@keyframes ul-se-va {
+  from { opacity: 1; transform: none; pointer-events: auto; }
+  to { opacity: 0; transform: translateY(-16px); pointer-events: none; }
+}
+@keyframes ul-aparece {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes ul-desaparece {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes ul-acerca {
+  from { transform: scale(1.08); }
+  to { transform: none; }
+}
+@keyframes ul-inclina {
+  from { transform: none; animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  to { transform: rotate(48deg); }
+}
+/* El aceite gira al revés: su superficie se queda horizontal */
+@keyframes ul-nivela {
+  from { transform: none; animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+  to { transform: rotate(-48deg); }
+}
+/* La gota acelera al caer (como con gravedad) */
+@keyframes ul-cae {
+  0% { opacity: 0; transform: none; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  6% { opacity: 1; }
+  94% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(var(--ul-caida)); }
+}
+@keyframes ul-ondula {
+  0% { opacity: 0; transform: scale(0.15); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  14% { opacity: 1; }
+  100% { opacity: 0; transform: none; }
+}
+/* La mancha se extiende y se queda */
+@keyframes ul-mancha {
+  from { opacity: 0; transform: scale(0.12); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  to { opacity: 1; transform: none; }
+}
+/* La cámara se aleja: la botella se vuelve el punto a los pies de la persona */
+@keyframes ul-encoge {
+  0% { opacity: 1; transform: none; animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.06); }
+}
+/* Empieza poco más grande (1.35): así, mientras aparece, no se encima en la columna del texto */
+@keyframes ul-aleja {
+  0% { opacity: 0; transform: scale(1.35); animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1); }
+  45% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+/* El agua sube dentro del cubo (el recorte no se anima: se mueve el prisma) */
+@keyframes ul-llena {
+  0% { opacity: 0; transform: translateY(var(--ul-llenado)); animation-timing-function: cubic-bezier(0.33, 0, 0.2, 1); }
+  5% { opacity: 1; }
+  100% { opacity: 1; transform: none; }
+}
+@keyframes ul-entra-tarjeta {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* La franja: las tarjetas entran al aparecer (cualquier alto de pantalla) */
+    .ul-tarjeta {
+      animation: ul-entra-tarjeta linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 26%;
+    }
+    .ul-tarjeta:nth-child(2) {
+      animation-range: entry 4% cover 30%;
+    }
+    .ul-tarjeta:nth-child(3) {
+      animation-range: entry 8% cover 34%;
+    }
+  }
+
+  /* Con menos de 540 px de alto (un teléfono acostado) la escena no cabe: se queda la versión quieta */
+  @media (prefers-reduced-motion: no-preference) and (min-height: 540px) {
+    .ul-pista {
+      view-timeline: --ul-pista block;
+      height: 320svh;
+    }
+    .ul-pista[data-pasos="3"] {
+      height: 280svh;
+    }
+    .ul-escenario {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .ul-contenido {
+      flex: 1;
+      min-height: 0;
+      width: 100%;
+      /* Arriba deja libre la isla (≈ 108 px en escritorio) y abajo el crédito */
+      padding-top: 124px;
+      padding-bottom: 76px;
+      align-items: center;
+    }
+    .ul-dibujo {
+      position: relative;
+      top: auto;
+      width: min(100%, calc((100svh - 220px) * 640 / 450));
+    }
+    .ul-frase {
+      font-size: clamp(36px, min(4.4vw, 7.2svh), 64px);
+    }
+    .ul-cifra {
+      font-size: clamp(60px, min(7.6vw, 12svh), 112px);
+    }
+    .ul-capa-1,
+    .ul-capa-2,
+    .ul-credito-1,
+    .ul-credito-2 {
+      display: block;
+    }
+    .ul-escena-a {
+      display: block;
+    }
+
+    /* Las frases ocupan la misma celda, bajo el antetítulo (que nunca se mueve) */
+    .ul-frases {
+      display: grid;
+      gap: 0;
+    }
+    .ul-paso {
+      grid-area: 1 / 1;
+      align-self: start;
+    }
+    /* El paso con el enlace queda encima: si se ve, su enlace siempre recibe el toque */
+    .ul-paso-2 {
+      position: relative;
+      z-index: 1;
+    }
+    /* Con teclado, el paso que tiene el foco se ve aunque el scroll no haya llegado, y los demás se apartan */
+    .ul-frases:has(.ul-paso:focus-within) .ul-paso:not(:focus-within) {
+      animation: none;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .ul-paso:focus-within {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .ul-paso-1 {
+      animation: ul-sube linear both, ul-se-va linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: entry 50% entry 100%, contain 20% contain 24.5%;
+    }
+    .ul-paso-2 {
+      animation: ul-sube linear both, ul-se-va linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: contain 27% contain 33%, contain 57% contain 62%;
+    }
+    .ul-paso-3 {
+      animation: ul-sube linear both, ul-se-va linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: contain 63% contain 69%, contain 80% contain 85%;
+    }
+    /* El último paso llega y se queda */
+    .ul-paso-3.ul-paso-fin {
+      animation: ul-sube linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 63% contain 69%;
+    }
+    .ul-paso-4 {
+      animation: ul-sube linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 86% contain 92%;
+    }
+
+    /* Fotos: aceite → gota → mar abierto. La de abajo se apaga cuando ya la tapó la de arriba
+       (así el navegador no pinta tres fotos de pantalla completa a la vez) */
+    .ul-capa {
+      transform-origin: 50% 50%;
+    }
+    .ul-capa-1 {
+      animation: ul-acerca linear both, ul-desaparece linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: entry 0% contain 22%, contain 22% contain 23%;
+    }
+    .ul-capa-2 {
+      animation: ul-aparece linear both, ul-acerca linear both, ul-desaparece linear forwards;
+      animation-timeline: --ul-pista, --ul-pista, --ul-pista;
+      animation-range: contain 12% contain 22%, contain 12% contain 62%, contain 62% contain 63%;
+    }
+    .ul-capa-3 {
+      animation: ul-aparece linear both, ul-acerca linear both;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: contain 54% contain 62%, contain 54% contain 100%;
+    }
+
+    /* Créditos: uno se va del todo antes de que llegue el otro */
+    .ul-creditos {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      left: auto;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      justify-items: end;
+    }
+    .ul-credito {
+      grid-area: 1 / 1;
+    }
+    .ul-credito-1 {
+      animation: ul-desaparece linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 14% contain 16.5%;
+    }
+    .ul-credito-2 {
+      animation: ul-aparece linear both, ul-desaparece linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: contain 17.5% contain 20%, contain 55% contain 57.5%;
+    }
+    .ul-credito-3 {
+      animation: ul-aparece linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 58.5% contain 61%;
+    }
+
+    /* El dibujo: cada capa se mueve entera (composición, sin repintar) */
+    .ul-escena-a,
+    .ul-escena-b {
+      transform-origin: var(--ul-foco);
+    }
+    .ul-escena-a {
+      animation: ul-aparece linear both, ul-encoge linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: entry 40% entry 90%, contain 24% contain 33%;
+    }
+    .ul-escena-b {
+      animation: ul-aleja linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 25% contain 37%;
+    }
+    .ul-botella {
+      transform-origin: var(--ul-pivote);
+      animation: ul-inclina linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 3% contain 12%;
+    }
+    /* El único movimiento dentro de un SVG: el aceite de la botella (un dibujo chico) */
+    .ul-aceite {
+      transform-box: view-box;
+      animation: ul-nivela linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 3% contain 12%;
+    }
+    .ul-gota {
+      animation: ul-cae linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 12% contain 18.5%;
+    }
+    .ul-onda,
+    .ul-mancha {
+      transform-origin: var(--ul-impacto);
+    }
+    .ul-onda-1 {
+      animation: ul-ondula linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 18% contain 26%;
+    }
+    .ul-onda-2 {
+      animation: ul-ondula linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 19.5% contain 28%;
+    }
+    .ul-mancha {
+      animation: ul-mancha linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 18% contain 27%;
+    }
+    .ul-agua {
+      animation: ul-llena linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 36% contain 54%;
+    }
+    .ul-rotulos {
+      animation: ul-aparece linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 33% contain 38%;
+    }
+  }
+
+  /* Celular: arriba el dibujo, abajo la frase; nada bajo la isla ni bajo la barra de inicio */
+  @media (prefers-reduced-motion: no-preference) and (min-height: 540px) and (max-width: 639px) {
+    .ul-pista {
+      height: 290svh;
+    }
+    .ul-pista[data-pasos="3"] {
+      height: 250svh;
+    }
+    /* El velo oscurece más donde se lee */
+    .ul-velo {
+      background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--simar-abismo) 66%, transparent) 0%,
+        color-mix(in srgb, var(--simar-abismo) 78%, transparent) 40%,
+        color-mix(in srgb, var(--simar-abismo) 92%, transparent) 60%
+      );
+    }
+    .ul-contenido {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: stretch;
+      gap: 18px;
+      /* La isla tapa ≈ 84 px; abajo, el crédito y la zona de la barra de inicio */
+      padding: 94px 16px calc(env(safe-area-inset-bottom, 0px) + 56px);
+    }
+    .ul-dibujo {
+      order: -1;
+      flex: none;
+      width: min(100%, calc(30svh * 640 / 450));
+      max-width: none;
+      align-self: center;
+    }
+    .ul-texto {
+      flex: 1;
+      min-height: 0;
+    }
+    .ul-frases {
+      margin-top: 18px;
+    }
+    .ul-frase {
+      font-size: clamp(27px, 4.6svh, 32px);
+    }
+    .ul-cifra {
+      font-size: clamp(50px, 8svh, 60px);
+    }
+    /* Sin acercamiento en las fotos: sólo se funden (menos trabajo para el teléfono) */
+    .ul-capa-1 {
+      animation: ul-desaparece linear forwards;
+      animation-timeline: --ul-pista;
+      animation-range: contain 22% contain 23%;
+    }
+    .ul-capa-2 {
+      animation: ul-aparece linear both, ul-desaparece linear forwards;
+      animation-timeline: --ul-pista, --ul-pista;
+      animation-range: contain 12% contain 22%, contain 62% contain 63%;
+    }
+    .ul-capa-3 {
+      animation: ul-aparece linear both;
+      animation-timeline: --ul-pista;
+      animation-range: contain 54% contain 62%;
+    }
+    .ul-creditos {
+      right: 16px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+      left: 16px;
+      justify-items: start;
+    }
+  }
+
+  /* Celular bajito (iPhone SE y parecidos): el dibujo un poco más chico para que la frase más larga
+     quepa entera arriba del crédito */
+  @media (prefers-reduced-motion: no-preference) and (min-height: 540px) and (max-height: 700px) and (max-width: 639px) {
+    .ul-contenido {
+      gap: 14px;
+    }
+    .ul-dibujo {
+      width: min(100%, calc(26svh * 640 / 450));
+    }
+    .ul-frases {
+      margin-top: 14px;
+    }
+  }
+}

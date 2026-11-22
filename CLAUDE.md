@@ -111,20 +111,17 @@ para consultar (abajo).
   Mantén `maplibre-gl` en v5: la v6 no carga su worker con Turbopack. El mapa de la landing es
   SVG puro; el de Noticias («En el mapa») es MapLibre directo (`components/noticias/MapaInteractivo.tsx`,
   estilo positron de OpenFreeMap, repintado en oscuro con la paleta de SiMAR), cargado con `next/dynamic` sólo cuando la sección se acerca.
-  **Motion** (motion.dev) se usa sólo en la landing nueva (`components/landing/nueva/`, escenas
-  atadas al scroll; ver DISEÑO_SIMAR.md §8.5) y en «Otros medios» de Noticias: no lo lleves a los
-  paneles ni a la landing Actual (sus noticias y la foto de la portada de Noticias se mueven con CSS
+  **Motion** (motion.dev) se usa sólo en «Otros medios» de Noticias: no lo lleves a los
+  paneles ni a la landing (sus noticias y la foto de la portada de Noticias se mueven con CSS
   atado al scroll, `n-paralaje`). Las fotos de Noticias llegan con `FotoNota` y su vista previa
   difuminada de `lib/constants/previas.ts`: si agregas una foto, agrega su previa.
-  **three.js** se usa sólo en las landings: la 3D (`components/landing/tresd/`, `?landing=3d`; ver
-  DISEÑO_SIMAR.md §8.6) y la escena de la laptop de la Actual (`components/landing/escena-equipos/`,
-  §8.7), cargado con `await import()`: no lo importes arriba de un archivo. La escena de la Actual
+  **three.js** se usa sólo en la escena de la laptop de la landing (`components/landing/escena-equipos/`,
+  DISEÑO_SIMAR.md §8.7), cargado con `await import()`: no lo importes arriba de un archivo. La escena de la Actual
   arranca después de `load` y cerca de la sección; lo que no urge se pide con `cuandoEnReposo`
   (`lib/utils/reposo.ts`).
-  **Carga de la landing** (DISEÑO_SIMAR.md §8.7): las landings nueva y 3D se importan desde
-  `components/landing/LandingsAlternas.tsx` (de cliente). Un `next/dynamic` en `page.tsx` (de
-  servidor) **no** parte el código: sus componentes de cliente bajaban igual con la Actual. Por lo
-  mismo, en la página de servidor no importes arriba componentes que sólo se usan en otra versión.
+  **Carga de la landing** (DISEÑO_SIMAR.md §8.7): hay una sola landing (la «Actual»; la nueva y la
+  3D se borraron el 2026-11-17). Lo que se carga aparte (p. ej. `AvisoBaseDckDiferido.tsx`) va con
+  `next/dynamic` desde un componente de cliente: en `page.tsx` (de servidor) **no** parte el código.
   Las fotos con calidad distinta de 75 deben estar en `images.qualities` (`next.config.ts`).
   **Animaciones atadas al scroll (`animation-timeline: view()`):** todo lo que las rodea recorta con
   `overflow-clip`, nunca `overflow-hidden`. Un overflow hidden vuelve a la caja un contenedor de scroll
@@ -156,9 +153,7 @@ para consultar (abajo).
   valen dentro de `.n-pagina`; el tamaño es `zoom` en `<main>`: lo pegado y las alturas con `svh`
   van divididos entre `var(--n-zoom,1)`. Las clases `n-*` de `globals.css` y
   `MarAnimado.tsx` son la base anterior (DISEÑO_SIMAR.md §8.6, «Noticias»). Sin foto, la portada se dibuja
-  (`components/noticias/ilustraciones.tsx`, ilustraciones planas, sin puntos). La landing 3D sólo
-  lleva un adelanto: `SeccionNoticias`, de servidor, llega a `LandingTresD` como prop (ver
-  DISEÑO_SIMAR.md §8.6).
+  (`components/noticias/ilustraciones.tsx`, ilustraciones planas, sin puntos).
 - Los factores de CO₂e de `lib/constants/impacto.ts` son **provisionales** (sin validar). Las
   cifras de impacto (agua, CO₂, basura) salen **sólo** de `lib/utils/equivalencias.ts`, que usan
   Estadísticas, su PDF y la landing: 1 L de aceite = 1,000,000 L de agua; 1.0 kg CO₂e por litro. La

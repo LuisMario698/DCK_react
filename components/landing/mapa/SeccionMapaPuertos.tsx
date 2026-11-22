@@ -2,81 +2,95 @@
 
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Anchor, Compass, Waves } from 'lucide-react';
+import { Anchor, MapPin } from 'lucide-react';
 import MapaSilueta from './MapaSilueta';
 import { PUERTOS, VARIANTES_MAPA, type VarianteMapa } from './puertos';
-import { NumeroAnimado } from '@/components/ui/movimiento';
+import './mapa.css';
 
-// MapLibre (WebGL) se descarga sólo si se usa una variante que lo necesita
+// Las variantes con MapLibre (WebGL) sólo existen para comparar en desarrollo: en producción
+// el mapa es siempre la silueta SVG, ligera y sin WebGL
+const EN_DESARROLLO = process.env.NODE_ENV === 'development';
 const MapaMapLibrePuertos = dynamic(() => import('./MapaMapLibrePuertos'), {
     ssr: false,
-    loading: () => <div className="absolute inset-0 animate-pulse bg-[#0B2236]" />,
+    loading: () => <div className="absolute inset-0 bg-simar-abismo" />,
 });
-
-// Colores sobre la franja oscura (la landing fuerza los tokens claros, así que aquí van fijos):
-// espuma = puerto activo, azul claro = expansión. Ver DISEÑO_SIMAR.md → Color.
-const ACTIVO_PUNTO = 'bg-[#7FE0D6] shadow-[0_0_8px_2px_rgba(127,224,214,0.6)]';
-const EXPANSION_PUNTO = 'bg-[#8AB4F8]';
 
 const ACTIVOS = PUERTOS.filter((p) => p.activo).length;
 const FUTUROS = PUERTOS.length - ACTIVOS;
+const ACTIVO = PUERTOS.find((p) => p.activo) ?? PUERTOS[0];
+const OTROS = PUERTOS.filter((p) => !p.activo);
+const EN_ORDEN = [ACTIVO, ...OTROS];
 
-function coordenadas(lat: number, lng: number) {
-    return `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'} · ${Math.abs(lng).toFixed(2)}° ${lng >= 0 ? 'E' : 'O'}`;
+/** Marca del puerto en la leyenda y la lista: llena si está activo, hueca si puede sumarse */
+function Marca({ activo }: { activo: boolean }) {
+    return <span aria-hidden="true" className="mp-marca" data-activo={activo} />;
 }
 
 /**
- * Mapa de puertos de la landing. `variante` elige el tipo de mapa; con
- * `mostrarSelector` aparece un selector para comparar las opciones (se activa
- * con ?mapa=... en la URL). `nombreFuturos` y `resumenFuturos` nombran a los puertos que todavía
- * no usan SiMAR (la landing nueva dice "Puede sumarse", para no prometer una expansión).
+ * Mapa de puertos de la landing. En pantallas anchas: el mapa y, debajo, el dato del Golfo; a
+ * la derecha, la ficha del puerto elegido, la leyenda y la lista para elegirlo. En el celular,
+ * compacto: el mapa de orilla a orilla, la ficha montada sobre su orilla de abajo, los puertos en
+ * una fila que se desliza con el dedo (la leyenda se vuelve la etiqueta «Activo» de Peñasco) y al
+ * final el dato. `mostrarSelector` enseña el selector para comparar mapas, sólo en desarrollo.
  */
 export function SeccionMapaPuertos({
     variante,
     mostrarSelector = false,
-    nombreFuturos = 'Expansión',
-    resumenFuturos = 'En expansión',
+    nombreFuturos = 'Puede sumarse',
+    resumenFuturos = 'Puede sumarse',
 }: {
     variante: VarianteMapa;
     mostrarSelector?: boolean;
     nombreFuturos?: string;
     resumenFuturos?: string;
 }) {
-    const [seleccionado, setSeleccionado] = useState(PUERTOS[0].id);
-    const [visible, setVisible] = useState(false);
-    const contenedor = useRef<HTMLDivElement>(null);
-    const puerto = PUERTOS.find((p) => p.id === seleccionado) ?? PUERTOS[0];
+    const [seleccionado, setSeleccionado] = useState(ACTIVO.id);
+    const escena = useRef<HTMLDivElement>(null);
+    const lista = useRef<HTMLDivElement>(null);
+    const puerto = PUERTOS.find((p) => p.id === seleccionado) ?? ACTIVO;
+    const tipo: VarianteMapa = EN_DESARROLLO ? variante : 'silueta';
+    const conMapLibre = tipo !== 'silueta';
 
-    // El mapa se monta cuando la sección se acerca a la pantalla
+    // Cuando el mapa se ve, Peñasco late dos veces (sólo CSS, una vez)
     useEffect(() => {
-        const el = contenedor.current;
+        const el = escena.current;
         if (!el) return;
         const obs = new IntersectionObserver(
             ([e]) => {
                 if (e.isIntersecting) {
-                    setVisible(true);
+                    el.dataset.visto = 'true';
                     obs.disconnect();
                 }
             },
-            { rootMargin: '300px' }
+            { threshold: 0.55 }
         );
         obs.observe(el);
         return () => obs.disconnect();
     }, []);
 
+    // Al tocar un puerto en el mapa, la fila del celular se corre hasta él (sólo en horizontal:
+    // la página no se mueve)
+    const elegirEnMapa = (id: string) => {
+        setSeleccionado(id);
+        const fila = lista.current;
+        if (!fila || fila.scrollWidth <= fila.clientWidth) return;
+        const boton = fila.querySelector<HTMLElement>(`[data-id="${id}"]`);
+        if (!boton) return;
+        const quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        fila.scrollTo({ left: Math.max(0, boton.offsetLeft - 16), behavior: quieto ? 'auto' : 'smooth' });
+    };
+
     return (
         <div className="w-full">
-            {mostrarSelector && (
+            {EN_DESARROLLO && mostrarSelector && (
                 <div className="mb-6 flex flex-wrap items-center gap-2">
-                    <span className="text-[15px] font-bold text-[#C7D3DD] mr-1">Comparar mapas:</span>
+                    <span className="text-[15px] font-bold text-white/70 mr-1">Comparar mapas:</span>
                     {VARIANTES_MAPA.map((v) => (
                         <a
                             key={v.id}
                             href={`?mapa=${v.id}#mapa`}
-                            className={`min-h-[44px] inline-flex items-center px-4 rounded-full text-base font-bold border transition-colors ${
-                                v.id === variante
-                                    ? 'bg-[#7FE0D6] text-[#0B2236] border-[#7FE0D6]'
-                                    : 'border-white/20 text-[#C7D3DD] hover:bg-white/10'
+                            className={`min-h-[44px] inline-flex items-center px-4 rounded-full text-[15px] font-bold ring-1 transition-colors ${
+                                v.id === variante ? 'bg-simar-espuma text-simar-abismo ring-simar-espuma' : 'ring-white/20 text-white/75 hover:bg-white/10'
                             }`}
                         >
                             {v.nombre}
@@ -85,118 +99,95 @@ export function SeccionMapaPuertos({
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-8 items-stretch movil:gap-4">
-                {/* Mapa. w-full: en la cuadrícula, Safari no estira a lo ancho un elemento con
-                    aspect-ratio (lo deja del ancho de su contenido, y aquí todo es absolute: 0 px) */}
-                <div
-                    ref={contenedor}
-                    className={`relative isolate w-full rounded-[28px] overflow-hidden border border-white/10 bg-[#030712] shadow-[0_30px_60px_-30px_rgba(0,0,0,0.7)] ${
-                        // La silueta conserva la proporción del mapa; los mapas MapLibre usan alto fijo
-                        variante === 'silueta' ? 'aspect-[1000/651] lg:aspect-auto lg:h-[560px]' : 'h-[360px] sm:h-[460px] lg:h-[560px]'
-                    }`}
-                >
-                    {visible &&
-                        (variante === 'silueta' ? (
-                            <MapaSilueta seleccionado={seleccionado} onSeleccionar={setSeleccionado} />
-                        ) : (
+            <div className="mp-rejilla">
+                {/* El mapa (en el celular, de orilla a orilla) */}
+                <div className="mp-area-mapa">
+                    <div
+                        ref={escena}
+                        className={`mp-escena relative isolate w-full ${
+                            conMapLibre ? 'h-[420px] lg:h-[560px] rounded-[28px] overflow-clip ring-1 ring-white/10' : 'aspect-[1000/651]'
+                        }`}
+                    >
+                        {conMapLibre ? (
                             <MapaMapLibrePuertos
-                                modo={variante === 'globo' ? 'globo' : 'red'}
+                                modo={tipo === 'globo' ? 'globo' : 'red'}
                                 seleccionado={seleccionado}
                                 onSeleccionar={setSeleccionado}
                             />
-                        ))}
-
-                    {/* Leyenda */}
-                    <div
-                        className={`pointer-events-none absolute left-3 z-10 flex flex-wrap gap-2 ${
-                            // En los mapas MapLibre la atribución ocupa la parte de abajo
-                            variante === 'silueta' ? 'bottom-3' : 'top-3'
-                        }`}
-                    >
-                        <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#06121E]/85 border border-white/10 text-[15px] text-white backdrop-blur">
-                            <span className={`w-3 h-3 rounded-full ${ACTIVO_PUNTO}`} />
-                            Activo ({ACTIVOS})
-                        </span>
-                        <span className="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#06121E]/85 border border-white/10 text-[15px] text-white backdrop-blur">
-                            <span className={`w-3 h-3 rounded-full ${EXPANSION_PUNTO}`} />
-                            {nombreFuturos} ({FUTUROS})
-                        </span>
+                        ) : (
+                            <MapaSilueta seleccionado={seleccionado} onSeleccionar={elegirEnMapa} />
+                        )}
                     </div>
                 </div>
 
-                {/* Panel lateral */}
-                <div className="flex flex-col gap-5 movil:gap-3">
-                    <div className="grid grid-cols-3 gap-3 movil:gap-2">
-                        {[
-                            { icono: Anchor, valor: ACTIVOS, texto: 'Puerto activo' },
-                            { icono: Compass, valor: FUTUROS, texto: resumenFuturos },
-                            { icono: Waves, valor: 11122, texto: 'km de litoral' },
-                        ].map(({ icono: Icono, valor, texto }) => (
-                            <div key={texto} className="rounded-[22px] border border-white/10 bg-[#12304A] p-4 min-w-0 movil:p-3 movil:rounded-[18px]">
-                                <Icono className="w-6 h-6 text-[#7FE0D6] mb-2 movil:w-5 movil:h-5 movil:mb-1.5" strokeWidth={2} />
-                                <NumeroAnimado valor={valor} duracion={1200} className="block text-[28px] font-extrabold text-white leading-none movil:text-[21px]" />
-                                <p className="text-[15px] leading-snug text-[#C7D3DD] mt-1.5 movil:text-[15px] movil:mt-1">{texto}</p>
+                {/* Ficha del puerto elegido, leyenda y lista */}
+                <div className="mp-area-panel mp-entra mp-d2">
+                    <div aria-live="polite" className="mp-ficha-caja">
+                        {/* Aparece suave cada vez que se cambia */}
+                        <div key={puerto.id} className="mp-ficha">
+                            <span aria-hidden="true" className="mp-ficha-icono" data-activo={puerto.activo}>
+                                {puerto.activo ? (
+                                    <Anchor className="w-[22px] h-[22px]" strokeWidth={2} />
+                                ) : (
+                                    <MapPin className="w-[22px] h-[22px]" strokeWidth={2} />
+                                )}
+                            </span>
+                            <div className="min-w-0">
+                                <h3 className="mp-ficha-nombre font-titular">{puerto.nombre}</h3>
+                                <p className="mp-ficha-linea">
+                                    <span>{puerto.estado}</span>
+                                    <span className="mp-insignia" data-activo={puerto.activo}>
+                                        {puerto.activo ? `Activo desde ${puerto.desde ?? 2026}` : nombreFuturos}
+                                    </span>
+                                </p>
                             </div>
-                        ))}
-                    </div>
-
-                    {/* Ficha del puerto elegido: entra de nuevo cada vez que se cambia de puerto */}
-                    <div
-                        key={puerto.id}
-                        className="simar-aparece relative overflow-hidden rounded-[22px] border border-white/10 bg-[#12304A] p-6 movil:p-4 movil:rounded-[18px]"
-                    >
-                        <div
-                            aria-hidden="true"
-                            className={`absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl ${puerto.activo ? 'bg-[rgba(127,224,214,0.16)]' : 'bg-[rgba(138,180,248,0.14)]'}`}
-                        />
-                        <div className="relative">
-                            <div className="flex items-start justify-between gap-3">
-                                <div>
-                                    <h3 className="text-[26px] font-extrabold leading-tight text-white movil:text-[21px]">{puerto.nombre}</h3>
-                                    <p className="text-base text-[#C7D3DD]">{puerto.estado}</p>
-                                </div>
-                                <span
-                                    className={`shrink-0 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[15px] font-bold border ${
-                                        // Fondo sólido: el resplandor de la ficha pasa por detrás y bajaba el contraste a 4.4:1
-                                        puerto.activo
-                                            ? 'bg-[#123F4D] text-[#7FE0D6] border-[rgba(127,224,214,0.4)]'
-                                            : 'bg-[#1B3557] text-[#9DBEF7] border-[rgba(138,180,248,0.35)]'
-                                    }`}
-                                >
-                                    <span className={`w-2.5 h-2.5 rounded-full ${puerto.activo ? ACTIVO_PUNTO : EXPANSION_PUNTO}`} />
-                                    {puerto.activo ? 'Activo' : nombreFuturos}
-                                </span>
-                            </div>
-                            <p className="mt-4 text-[17px] text-[#C7D3DD] leading-relaxed movil:mt-2.5 movil:text-[15px]">{puerto.descripcion}</p>
-                            <p className="mt-4 text-[15px] font-mono text-[#8FA3B4] movil:mt-2.5 movil:text-[15px]">{coordenadas(puerto.lat, puerto.lng)}</p>
                         </div>
                     </div>
 
-                    {/* En celular los puertos van en una fila que se desliza de lado. Desde 1024 px la
-                        columna es angosta: en tres columnas iguales "Puerto Peñasco" (el puerto activo) se
-                        cortaba con "…", así que ahí cada botón mide lo que su nombre y se acomodan solos */}
-                    <div className="simar-desliza grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap gap-2 movil:flex movil:overflow-x-auto movil:-mx-5 movil:px-5 movil:gap-1.5">
-                        {PUERTOS.map((p) => {
+                    <div className="mp-leyenda">
+                        <span className="inline-flex items-center gap-2.5">
+                            <Marca activo />
+                            Activo ({ACTIVOS})
+                        </span>
+                        <span className="inline-flex items-center gap-2.5">
+                            <Marca activo={false} />
+                            {resumenFuturos} ({FUTUROS})
+                        </span>
+                    </div>
+
+                    {/* Elegir puerto: con clic, dedo o teclado (nunca al pasar el ratón) */}
+                    <div ref={lista} role="group" aria-label="Elegir un puerto" className="mp-lista">
+                        {EN_ORDEN.map((p) => {
                             const sel = p.id === seleccionado;
                             return (
                                 <button
                                     key={p.id}
                                     type="button"
+                                    data-id={p.id}
                                     onClick={() => setSeleccionado(p.id)}
                                     aria-pressed={sel}
-                                    className={`simar-presiona flex items-center gap-2.5 min-h-[48px] px-3.5 rounded-2xl text-left text-base border lg:whitespace-nowrap movil:flex-shrink-0 movil:whitespace-nowrap movil:min-h-[44px] movil:rounded-full movil:text-[15px] movil:gap-2 ${
-                                        sel
-                                            ? 'bg-[rgba(127,224,214,0.12)] border-[rgba(127,224,214,0.5)] text-white font-bold'
-                                            : 'border-white/10 text-[#C7D3DD] hover:bg-white/5 hover:text-white'
-                                    }`}
+                                    aria-label={`${p.nombre}. ${p.activo ? 'Activo' : nombreFuturos}`}
+                                    className="mp-boton simar-presiona min-h-[56px] movil:min-h-[48px]"
+                                    data-sel={sel}
+                                    data-activo={p.activo}
                                 >
-                                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${p.activo ? ACTIVO_PUNTO : EXPANSION_PUNTO}`} />
-                                    <span className="truncate">{p.nombre}</span>
+                                    <Marca activo={p.activo} />
+                                    <span className="mp-boton-nombre">{p.nombre}</span>
+                                    {p.activo && <span className="mp-boton-activo">Activo</span>}
                                 </button>
                             );
                         })}
                     </div>
                 </div>
+
+                {/* El dato que explica por qué aquí */}
+                <p className="mp-area-dato mp-dato mp-entra">
+                    <span className="mp-dato-cifra font-titular">39 %</span>
+                    <span className="mp-dato-texto">
+                        de las especies de mamíferos marinos del planeta viven en el Golfo de California.
+                        <span className="mp-dato-fuente">Fuente: UNESCO</span>
+                    </span>
+                </p>
             </div>
         </div>
     );

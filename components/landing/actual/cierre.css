@@ -1,0 +1,310 @@
+/* Cierre de la landing Actual (Cierre.tsx): «Hecho en Puerto Peñasco» y «Tres caminos».
+   Sin JS: todo se mueve con animaciones atadas al scroll, sólo transform y opacidad. La costa
+   tiene tres capas que se mueven (lo lejano, la costa, el barco), cada una con un solo transform;
+   nada adentro de ellas se anima (así el navegador no vuelve a pintar el dibujo al bajar).
+   Sin soporte de view() o con «reducir movimiento», todo queda en su lugar y se lee completo. */
+
+/* ── Tarjetas ─────────────────────────────────────────────────────────── */
+.ci-tarjeta {
+  box-shadow: var(--simar-sombra);
+}
+
+/* ── Logos: una sola tarjeta blanca partida por una línea fina ────────── */
+.ci-logos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-radius: 28px;
+  border: 1px solid var(--simar-borde);
+  background-color: var(--simar-superficie);
+  box-shadow: var(--simar-sombra);
+}
+/* En oscuro sigue clara: los logos tienen letras negras */
+.dark .ci-logos {
+  background-color: color-mix(in oklab, white 94%, var(--simar-abismo));
+  border-color: rgba(255, 255, 255, 0.2);
+}
+/* Logo arriba en una caja de alto fijo (los dos quedan a la misma altura) y el nombre abajo */
+.ci-logo {
+  display: grid;
+  grid-template-rows: 96px auto;
+  justify-items: center;
+  align-items: center;
+  row-gap: 14px;
+  min-width: 0;
+  padding: 30px 20px 26px;
+  text-align: center;
+}
+.ci-logo + .ci-logo {
+  border-left: 1px solid var(--simar-borde-suave);
+}
+.dark .ci-logo + .ci-logo {
+  border-left-color: color-mix(in oklab, var(--simar-abismo) 12%, transparent);
+}
+.ci-logo-img {
+  height: 92px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+}
+.ci-logo-nombre {
+  align-self: start;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--simar-abismo);
+  text-wrap: balance;
+}
+@media (max-width: 639px) {
+  .ci-logos {
+    border-radius: 22px;
+  }
+  .ci-logo {
+    grid-template-rows: 68px auto;
+    row-gap: 10px;
+    padding: 20px 12px 18px;
+  }
+  .ci-logo-img {
+    height: 64px;
+  }
+}
+
+/* ── La costa ─────────────────────────────────────────────────────────── */
+/* El dibujo mide 1440 × 400 y se recorta desde abajo al centro: en el celular (228 px de alto) quedan
+   el sol, el barco completo y el cerro con su faro */
+.ci-costa {
+  height: clamp(228px, 27.8vw, 540px);
+}
+
+/* ── Tres caminos: la puerta completa es el enlace (o el botón) ───────── */
+.ci-puerta-caja {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  padding: 30px;
+  border-radius: 28px;
+  border: 1px solid var(--simar-borde);
+  background-color: var(--simar-superficie);
+  color: var(--simar-texto);
+  font: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s ease;
+}
+.ci-puerta-caja:focus-visible {
+  outline: 3px solid var(--simar-espuma);
+  outline-offset: 4px;
+}
+@media (hover: hover) {
+  a.ci-puerta-caja:hover,
+  button.ci-puerta-caja:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--simar-sombra), 0 0 0 2px var(--simar-espuma);
+  }
+}
+/* Al tocar con el dedo, la puerta se hunde apenas (respuesta inmediata) */
+a.ci-puerta-caja:active,
+button.ci-puerta-caja:active {
+  transform: scale(0.985);
+  transition-duration: 0.1s;
+}
+.ci-p-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  color: var(--simar-marea-tinta);
+  background-color: var(--simar-marea-suave);
+}
+.ci-p-titulo {
+  display: block;
+  margin-top: 24px;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--simar-texto);
+  text-wrap: balance;
+}
+.ci-p-texto {
+  display: block;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--simar-texto-2);
+  text-wrap: pretty;
+}
+.ci-p-flecha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  width: 48px;
+  height: 48px;
+  margin-top: auto;
+  border-radius: 999px;
+  color: #fff;
+  background-color: var(--simar-marea);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (hover: hover) {
+  .group:hover .ci-p-flecha {
+    transform: translateX(4px);
+  }
+}
+.ci-p-acciones {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: auto;
+}
+
+/* Celular: cada puerta es una fila compacta (ícono · texto · flecha), como una lista de ajustes */
+@media (max-width: 639px) {
+  .ci-puerta-caja {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    column-gap: 14px;
+    row-gap: 2px;
+    align-items: center;
+    min-height: 92px;
+    padding: 16px 16px 16px 16px;
+    border-radius: 22px;
+  }
+  .ci-p-icono {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    align-self: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 15px;
+  }
+  .ci-p-titulo {
+    grid-column: 2;
+    grid-row: 1;
+    margin-top: 0;
+    font-size: 19px;
+    line-height: 1.2;
+    align-self: end;
+  }
+  .ci-p-texto {
+    grid-column: 2;
+    grid-row: 2;
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.35;
+    align-self: start;
+  }
+  .ci-p-flecha {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
+    justify-self: end;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+  }
+  .ci-p-acciones {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    margin-top: 14px;
+    gap: 10px;
+  }
+}
+
+/* ── Movimiento ───────────────────────────────────────────────────────── */
+@keyframes ci-entra {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ci-simbolo {
+  from { opacity: 0; transform: rotate(-50deg) scale(0.84); }
+  to { opacity: 1; transform: none; }
+}
+/* La costa: lo lejano baja (el sol se pone) y la costa sube del agua, cada una a su ritmo; el
+   barco avanza hacia mar abierto (a la izquierda, hacia donde mira su proa). Las distancias van en
+   vw: el dibujo crece y se achica con el ancho, y las formas de atrás bajan de más (el mar las
+   tapa) para que nunca se vea su orilla */
+@keyframes ci-lejos {
+  from { transform: translateY(-1.6vw); }
+  to { transform: none; }
+}
+@keyframes ci-cerro {
+  from { transform: translateY(1vw); }
+  to { transform: none; }
+}
+@keyframes ci-barco {
+  from { transform: translateX(2.4vw); }
+  to { transform: translateX(-1.6vw); }
+}
+/* Las dos olas del final suben a distinta velocidad */
+@keyframes ci-ola-atras {
+  from { transform: translateY(56px); }
+  to { transform: none; }
+}
+@keyframes ci-ola-frente {
+  from { transform: translateY(24px); }
+  to { transform: none; }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* Entradas: terminan en el tercio de abajo de la pantalla, antes de leerse */
+    .ci-entra {
+      animation: ci-entra ease-out both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 26%;
+    }
+    .ci-entra.ci-d1 { animation-range: cover 4% cover 30%; }
+    .ci-entra.ci-d2 { animation-range: cover 8% cover 34%; }
+
+    /* La costa entera es la línea de tiempo de sus capas */
+    .ci-costa {
+      view-timeline: --ci-costa block;
+    }
+    .ci-lejos,
+    .ci-cerro,
+    .ci-barco {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --ci-costa;
+    }
+    .ci-lejos { animation-name: ci-lejos; animation-range: cover 0% cover 60%; }
+    .ci-cerro { animation-name: ci-cerro; animation-range: cover 0% cover 55%; }
+    .ci-barco { animation-name: ci-barco; animation-range: cover 0% cover 100%; }
+
+    /* El símbolo de SiMAR vuelve girando, como en la portada */
+    .ci-simbolo {
+      animation: ci-simbolo cubic-bezier(0.22, 1, 0.36, 1) both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 38%;
+    }
+
+    /* Las puertas, escalonadas (números fijos: un var() en el rango no es confiable) */
+    .ci-puerta {
+      animation: ci-entra ease-out both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 24%;
+    }
+    .ci-puerta.ci-p2 { animation-range: cover 5% cover 29%; }
+    .ci-puerta.ci-p3 { animation-range: cover 10% cover 34%; }
+
+    .ci-ola-atras,
+    .ci-ola-frente {
+      animation-timing-function: ease-out;
+      animation-fill-mode: both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+    .ci-ola-atras { animation-name: ci-ola-atras; }
+    .ci-ola-frente { animation-name: ci-ola-frente; }
+  }
+}

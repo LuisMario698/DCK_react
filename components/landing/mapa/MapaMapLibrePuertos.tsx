@@ -202,12 +202,12 @@ export default function MapaMapLibrePuertos({
                             <button
                                 type="button"
                                 onClick={() => onSeleccionar(p.id)}
-                                aria-label={`${p.nombre}, ${p.estado}. ${p.activo ? 'Puerto activo' : 'Expansión futura'}`}
-                                className="group relative flex items-center justify-center w-8 h-8 cursor-pointer"
+                                aria-label={`${p.nombre}, ${p.estado}. ${p.activo ? 'Puerto activo' : 'Puede sumarse'}`}
+                                className="group relative flex items-center justify-center w-[52px] h-[52px] cursor-pointer"
                             >
                                 {p.activo && (
                                     <>
-                                        <span className="absolute inset-0 rounded-full bg-cyan-400/40 animate-ping" />
+                                        <span className="absolute inset-3 rounded-full bg-cyan-400/25" />
                                         <span className="absolute -inset-2 rounded-full border border-cyan-300/40" />
                                     </>
                                 )}

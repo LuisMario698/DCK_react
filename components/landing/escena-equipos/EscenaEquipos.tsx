@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { ArrowDown } from 'lucide-react';
 import { usePrefiereMenosMovimiento } from '@/components/ui/movimiento';
 import { cuandoEnReposo } from '@/lib/utils/reposo';
 import type { MotorEquipos } from './motorEquipos';
+import { EquiposPlanos } from './EquiposPlanos';
 
 /**
  * «Así funciona SiMAR»: una escena fija mientras se baja, al estilo de las páginas de producto de
@@ -14,13 +14,20 @@ import type { MotorEquipos } from './motorEquipos';
  * Estadísticas, y al final entra el celular con el portal de las empresas. Arriba, una sola frase
  * por paso.
  *
- * - El avance sigue al scroll con un resorte (sin saltos con la rueda del ratón).
- * - Para no trabar la carga de la página: los modelos (≈ 2.5 MB) se bajan en segundo plano cuando
- *   la página ya cargó y está en reposo (requestIdleCallback), y la escena se arma cuando la
- *   sección está a una pantalla; el motor compila y sube texturas de a poco (motorEquipos.ts).
- * - Sólo escucha el scroll mientras la sección está cerca.
- * - Con «reducir movimiento» no hay recorrido: se ve la toma final, quieta.
- * - Si WebGL falla, queda la captura del Panel.
+ * Nunca queda en blanco: la versión plana (EquiposPlanos.tsx: los mismos equipos dibujados, con las
+ * mismas capturas y los mismos pasos) se ve desde el principio y se desvanece cuando el 3D está listo.
+ * Las frases y los puntos siguen al scroll por su cuenta: no esperan al motor.
+ *
+ * Carga (para no trabar la portada ni llegar tarde si se baja rápido):
+ *  - ya cargada la página y en un rato libre (cuandoEnReposo) empieza la descarga de los modelos
+ *    (≈ 2.7 MB, sólo red) y, en el siguiente rato libre, se baja three.js y se arma el motor, sin
+ *    esperar a que la sección esté cerca (va justo después de la portada);
+ *  - el motor se arma en pedazos, uno por rato libre (motorEquipos.ts), y entra con un fundido;
+ *  - en equipos que no dan para el 3D se queda la versión plana (ver `capacidad3D`).
+ * Al bajar:
+ *  - el avance sigue al scroll con un resorte (sin saltos con la rueda del ratón);
+ *  - sólo se escucha el scroll mientras la sección está cerca.
+ * Con «reducir movimiento» no hay recorrido ni 3D: la toma final, quieta, en plano.
  */
 
 const PASOS = [
@@ -54,6 +61,52 @@ const pasoDe = (p: number) => {
     return i;
 };
 
+type NavegadorConPistas = Navigator & {
+    /** GB, redondeado (0.25 … 8); sólo Chromium */
+    deviceMemory?: number;
+    connection?: { saveData?: boolean; effectiveType?: string };
+};
+
+/**
+ * ¿Vale el 3D en este equipo? Si no, se queda la versión plana, que cuenta lo mismo. Regla:
+ *  - no con «ahorro de datos» ni con red lenta (2G/3G): son ≈ 2.7 MB de modelos;
+ *  - no sin WebGL;
+ *  - no en equipos muy justos: ≤ 2 núcleos o ≤ 2 GB de memoria;
+ *  - no en celulares Android de gama baja: pantalla angosta (< 768 px) o táctil y ≤ 4 núcleos
+ *    (sólo cuando el navegador dice su memoria, o sea Chromium; los iPhone, que mueven bien WebGL
+ *    pero no la reportan, se quedan con el 3D).
+ * Densidad del lienzo: 1.25× en celulares y tabletas (táctiles o < 768 px) y en equipos de ≤ 4
+ * núcleos o ≤ 4 GB; 1.5× en el resto.
+ */
+function capacidad3D(): { usar: boolean; densidadMax: number } {
+    const nav = navigator as NavegadorConPistas;
+    const nucleos = nav.hardwareConcurrency || 4;
+    const memoria = nav.deviceMemory;
+    const red = nav.connection;
+    const celular = window.matchMedia('(max-width: 767px), (pointer: coarse)').matches;
+    const modesto = celular || nucleos <= 4 || (memoria !== undefined && memoria <= 4);
+    const densidadMax = modesto ? 1.25 : 1.5;
+    const no = { usar: false, densidadMax };
+    if (red?.saveData || /2g|3g/.test(red?.effectiveType ?? '')) return no;
+    if (typeof WebGLRenderingContext === 'undefined') return no;
+    if (nucleos <= 2 || (memoria !== undefined && memoria <= 2)) return no;
+    if (celular && memoria !== undefined && nucleos <= 4) return no;
+    return { usar: true, densidadMax };
+}
+
+/** Un .glb completo, pedido con prioridad baja (que no le gane a las fotos que se están viendo) */
+function pedirModelo(url: string, senal: AbortSignal): Promise<ArrayBuffer> {
+    const pedido = fetch(url, { signal: senal, priority: 'low' } as RequestInit).then((r) => {
+        if (!r.ok) throw new Error(`${url}: ${r.status}`);
+        return r.arrayBuffer();
+    });
+    // Si se cancela antes de usarlo, no queda como «rechazo sin atender»
+    pedido.catch(() => {});
+    return pedido;
+}
+
+const ratoLibre = () => new Promise<void>((listo) => cuandoEnReposo(() => listo()));
+
 export function EscenaEquipos() {
     const reducir = usePrefiereMenosMovimiento();
     const pistaRef = useRef<HTMLDivElement>(null);
@@ -61,7 +114,8 @@ export function EscenaEquipos() {
     // El recuadro de las frases: el motor encuadra los equipos debajo de él
     const frasesRef = useRef<HTMLDivElement>(null);
     const [paso, setPaso] = useState(0);
-    const [estado, setEstado] = useState<'cargando' | 'listo' | 'error'>('cargando');
+    // El 3D ya está dibujado: la versión plana se desvanece
+    const [listo, setListo] = useState(false);
 
     useEffect(() => {
         const pista = pistaRef.current;
@@ -89,7 +143,7 @@ export function EscenaEquipos() {
             return recorrido > 0 ? Math.min(1, Math.max(0, -r.top / recorrido)) : 0;
         };
 
-        // Resorte sin rebote: el avance mostrado alcanza al del scroll en ~0.3 s
+        // Resorte sin rebote: el avance mostrado alcanza al del scroll en ~0.3 s (sólo con el 3D)
         const tick = (ahora: number) => {
             const dt = antes ? Math.min(0.05, (ahora - antes) / 1000) : 1 / 60;
             antes = ahora;
@@ -97,7 +151,7 @@ export function EscenaEquipos() {
             mostrado = Math.abs(d) < 0.0005 ? meta : mostrado + d * (1 - Math.exp(-dt * 11));
             motor?.pintar(mostrado);
             ponerPaso(mostrado);
-            if (mostrado !== meta) cuadro = requestAnimationFrame(tick);
+            if (mostrado !== meta && motor) cuadro = requestAnimationFrame(tick);
             else {
                 cuadro = 0;
                 antes = 0;
@@ -105,69 +159,69 @@ export function EscenaEquipos() {
         };
         const alMover = () => {
             meta = avance();
-            if (!cuadro && motor) cuadro = requestAnimationFrame(tick);
+            if (!motor) {
+                // Sin 3D (todavía): el paso sigue directo al scroll; las transiciones de la versión
+                // plana y de las frases ya suavizan el cambio
+                mostrado = meta;
+                ponerPaso(meta);
+                return;
+            }
+            if (!cuadro) cuadro = requestAnimationFrame(tick);
         };
         const alCambiarTamano = () => {
-            if (!motor) return;
+            if (!motor) return alMover();
             motor.medir();
             meta = avance();
             mostrado = meta;
             motor.pintar(mostrado);
+            ponerPaso(mostrado);
         };
 
-        let iniciado = false;
-        const iniciar = async () => {
-            if (iniciado) return;
-            iniciado = true;
+        // El 3D: ya cargada la página y en reposo, sin esperar a que la sección esté cerca
+        const cancelar = new AbortController();
+        const reserva = () => {
+            // Lo que tapa la página: arriba, hasta el pie del recuadro de las frases; abajo, los
+            // puntos de los pasos (y «Baja para abrirla»)
+            const frases = frasesRef.current?.getBoundingClientRect();
+            const arriba = frases ? frases.bottom - lienzo.getBoundingClientRect().top : 0;
+            return { arriba, abajo: 76 };
+        };
+        const arrancar = async (densidadMax: number) => {
             try {
-                const { crearMotorEquipos } = await import('./motorEquipos');
-                // Lo que tapa la página: arriba, hasta el pie del recuadro de las frases; abajo, los
-                // puntos de los pasos (y «Baja para abrirla»)
-                const reserva = () => {
-                    const frases = frasesRef.current?.getBoundingClientRect();
-                    const arriba = frases ? frases.bottom - lienzo.getBoundingClientRect().top : 0;
-                    return { arriba, abajo: 76 };
+                // Primero la red (no ocupa el hilo principal); three.js, en el siguiente rato libre
+                const modelos = {
+                    laptop: pedirModelo(OPCIONES.laptop, cancelar.signal),
+                    celular: pedirModelo(OPCIONES.celular, cancelar.signal),
                 };
-                const m = await crearMotorEquipos(lienzo, OPCIONES, () => vivo, reserva);
+                await ratoLibre();
+                if (!vivo) return;
+                const { crearMotorEquipos } = await import('./motorEquipos');
+                if (!vivo) return;
+                const m = await crearMotorEquipos(lienzo, { ...OPCIONES, modelos, densidadMax }, () => vivo, reserva);
                 if (!vivo) {
                     m.liberar();
                     return;
                 }
                 motor = m;
+                // Se armó en varios ratos: por si la ventana cambió de tamaño mientras tanto
+                m.medir();
                 meta = mostrado = avance();
                 m.pintar(mostrado);
                 ponerPaso(mostrado);
-                setEstado('listo');
+                setListo(true);
             } catch (e) {
-                if (!vivo) return;
-                console.error('Escena 3D de la landing:', e);
-                setEstado('error');
+                // Se queda la versión plana
+                if (vivo) console.error('Escena 3D de la landing:', e);
             }
         };
+        let soltarReposo = () => {};
+        if (!reducir) {
+            const { usar, densidadMax } = capacidad3D();
+            if (usar) soltarReposo = cuandoEnReposo(() => void arrancar(densidadMax));
+        }
 
-        // 1. Ya cargada la página y en reposo: los archivos se bajan en segundo plano (a la caché)
-        const soltarReposo = cuandoEnReposo(() => {
-            const archivos = [OPCIONES.laptop, OPCIONES.celular, ...OPCIONES.pantallas, OPCIONES.capturaCelular];
-            for (const url of archivos)
-                fetch(url, { priority: 'low' } as RequestInit)
-                    .then((r) => r.blob())
-                    .catch(() => {});
-        });
-
-        // 2. A una pantalla de distancia: se arma la escena (si la página ya cargó)
+        // El scroll sólo se escucha mientras la sección está cerca
         let cerca = false;
-        const armar = new IntersectionObserver(
-            (entradas) => {
-                if (!entradas.some((e) => e.isIntersecting)) return;
-                armar.disconnect();
-                if (document.readyState === 'complete') iniciar();
-                else window.addEventListener('load', iniciar, { once: true });
-            },
-            { rootMargin: '100% 0px' }
-        );
-        armar.observe(pista);
-
-        // 3. El scroll sólo se escucha mientras la sección está cerca
         const escuchar = new IntersectionObserver(
             (entradas) => {
                 const ahora = entradas.some((e) => e.isIntersecting);
@@ -189,13 +243,14 @@ export function EscenaEquipos() {
         return () => {
             vivo = false;
             soltarReposo();
-            armar.disconnect();
+            cancelar.abort();
             escuchar.disconnect();
-            window.removeEventListener('load', iniciar);
             cancelAnimationFrame(cuadro);
             window.removeEventListener('scroll', alMover);
             window.removeEventListener('resize', alCambiarTamano);
             motor?.liberar();
+            // Sin motor, vuelve la versión plana
+            setListo(false);
         };
     }, [reducir]);
 
@@ -217,7 +272,7 @@ export function EscenaEquipos() {
             {/* La pista da el recorrido del scroll; el escenario se queda fijo mientras tanto */}
             <div ref={pistaRef} className="relative" style={{ height: reducir ? 'auto' : '400svh' }}>
                 <div
-                    className="top-0 overflow-hidden"
+                    className="top-0 overflow-clip"
                     style={{ position: reducir ? 'relative' : 'sticky', height: '100svh', minHeight: 560 }}
                 >
                     {/* El motor pone aquí su lienzo */}
@@ -225,22 +280,17 @@ export function EscenaEquipos() {
                         ref={lienzoRef}
                         aria-hidden="true"
                         className="absolute inset-0"
-                        style={{ opacity: estado === 'listo' ? 1 : 0, transition: 'opacity 700ms ease' }}
+                        style={{ opacity: listo ? 1 : 0, transition: 'opacity 700ms ease' }}
                     />
 
-                    {estado === 'error' && (
-                        <div className="absolute inset-x-6 bottom-[8svh] top-[34svh] flex items-center justify-center">
-                            <div className="relative w-full max-w-[760px] aspect-[16/10] rounded-[22px] overflow-hidden border-[10px] border-[#1b1f24] shadow-simar">
-                                <Image src="/assets/landing/3d/pantalla-panel.webp" alt="" fill sizes="760px" className="object-cover object-left-top" />
-                            </div>
-                        </div>
-                    )}
+                    {/* La versión plana: desde el primer momento, hasta que el 3D está listo (o siempre) */}
+                    <EquiposPlanos paso={paso} oculto={listo} quieto={reducir} />
 
                     {/* Una frase por paso, arriba de los equipos. Sin desvanecido: la frase que sigue sube
                         desde abajo y empuja a la anterior fuera del recuadro, como las pantallas */}
-                    {/* Debajo de la isla (74 px en celular, 108 px de 768 en adelante) con aire */}
+                    {/* Debajo de la isla (≈ 84 px en celular, 108 px de 768 en adelante) con aire */}
                     <div aria-hidden="true" className="relative z-10 px-6 text-center pointer-events-none pt-[max(100px,13svh)] md:pt-[max(128px,14svh)]">
-                        <div ref={frasesRef} className="relative mx-auto max-w-[900px] overflow-hidden" style={{ height: 'clamp(124px, 17svh, 176px)' }}>
+                        <div ref={frasesRef} className="relative mx-auto max-w-[900px] overflow-clip" style={{ height: 'clamp(124px, 17svh, 176px)' }}>
                             {PASOS.map((s, i) => {
                                 const activo = i === visible;
                                 return (
@@ -253,7 +303,7 @@ export function EscenaEquipos() {
                                             transition: 'transform 520ms cubic-bezier(0.22,1,0.36,1)',
                                         }}
                                     >
-                                        <p className="text-lg font-bold text-simar-marea-tinta movil:text-[15px]">{s.antetitulo}</p>
+                                        <p className="text-lg font-bold text-simar-marea-tinta movil:text-[17px]">{s.antetitulo}</p>
                                         {/* La letra también sigue al alto de la pantalla (5.6svh): con sólo el
                                             ancho, en una laptop de 1280 × 800 los títulos de dos renglones medían
                                             154 px en un recuadro de 136 y se cortaba el segundo renglón */}
@@ -274,17 +324,17 @@ export function EscenaEquipos() {
                             {/* Pista para bajar, sólo al principio */}
                             <div
                                 aria-hidden="true"
-                                className="absolute left-1/2 -translate-x-1/2 bottom-8 flex items-center gap-2 text-base font-semibold text-simar-texto-2"
-                                style={{ opacity: paso === 0 && estado === 'listo' ? 1 : 0, transition: 'opacity 400ms ease' }}
+                                className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 whitespace-nowrap text-[17px] font-semibold text-simar-texto-2"
+                                style={{ bottom: 'calc(30px + env(safe-area-inset-bottom, 0px))', opacity: paso === 0 ? 1 : 0, transition: 'opacity 400ms ease' }}
                             >
                                 <ArrowDown className="w-5 h-5" />
-                                Baja para abrirla
+                                {listo ? 'Baja para abrirla' : 'Baja para encenderla'}
                             </div>
                             {/* Cuatro pasos: el actual se alarga */}
                             <div
                                 aria-hidden="true"
-                                className="absolute left-1/2 -translate-x-1/2 bottom-9 flex items-center gap-2"
-                                style={{ opacity: paso > 0 ? 1 : 0, transition: 'opacity 400ms ease' }}
+                                className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2"
+                                style={{ bottom: 'calc(36px + env(safe-area-inset-bottom, 0px))', opacity: paso > 0 ? 1 : 0, transition: 'opacity 400ms ease' }}
                             >
                                 {PASOS.slice(1).map((s, i) => (
                                     <span

@@ -1,0 +1,725 @@
+/* «Dónde» (#mapa): Mapa.tsx, SeccionMapaPuertos.tsx y MapaSilueta.tsx.
+   El mapa va en tres capas que el scroll mueve a distinta velocidad (el mar al fondo, México en
+   medio, las rutas al frente) y las rutas se trazan una sola vez desde Peñasco. Sólo se anima
+   transform y opacidad (y el trazo de las rutas, que son líneas chicas). Sin soporte de view() o
+   con «reducir movimiento», todo queda quieto y completo. Nada se repite sin fin.
+   Se escribe primero para el celular (360–390 px) y luego se abre en tableta y escritorio. */
+
+/* ── Franja ──────────────────────────────────────────────────────────── */
+.mp-resplandor {
+  background:
+    radial-gradient(55% 45% at 34% 46%, color-mix(in oklab, var(--simar-marea) 16%, transparent), transparent 72%),
+    radial-gradient(40% 35% at 85% 70%, color-mix(in oklab, var(--simar-golfo) 7%, transparent), transparent 70%);
+}
+
+/* ── Rejilla ─────────────────────────────────────────────────────────── */
+/* Celular: el mapa de orilla a orilla, la ficha montada sobre su orilla de abajo, la fila de
+   puertos y el dato. Nada se apila de más */
+.mp-rejilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'mapa' 'panel' 'dato';
+}
+.mp-area-mapa {
+  grid-area: mapa;
+  min-width: 0;
+  margin-inline: -16px;
+}
+.mp-area-panel {
+  grid-area: panel;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: -26px;
+}
+.mp-area-dato {
+  grid-area: dato;
+  min-width: 0;
+  margin-top: 28px;
+}
+@media (min-width: 640px) {
+  .mp-area-mapa { margin-inline: 0; }
+  .mp-area-panel { gap: 16px; margin-top: 24px; }
+  .mp-area-dato { margin-top: 32px; }
+}
+@media (min-width: 1024px) {
+  .mp-rejilla {
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    grid-template-areas: 'mapa panel' 'dato panel';
+    grid-template-rows: auto 1fr;
+    column-gap: 48px;
+  }
+  .mp-area-panel { gap: 20px; margin-top: 0; }
+  .mp-area-dato { margin-top: 20px; }
+}
+
+/* ── Capas del mapa ──────────────────────────────────────────────────── */
+.mp-capa {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* El fondo es más grande que el mapa: así puede moverse sin que se vea su orilla */
+.mp-capa-fondo {
+  top: -8%;
+  left: -3%;
+  width: 106%;
+  height: 116%;
+}
+.mp-reticula {
+  stroke: var(--simar-espuma);
+  stroke-width: 0.8;
+  opacity: 0.11;
+}
+/* La plataforma: una banda tenue pegada a la costa; afuera, dos curvas de profundidad finas */
+.mp-plataforma {
+  stroke: var(--simar-espuma);
+  opacity: 0.05;
+}
+.mp-isobatas {
+  fill: var(--simar-espuma);
+  opacity: 0.2;
+}
+/* Grosor del anillo = (trazo blanco − trazo negro) ÷ 2, en unidades del mapa */
+.mp-iso-cerca { stroke-width: 29.6; }
+.mp-iso-lejos { stroke-width: 59.6; }
+.mp-vecinos {
+  fill: color-mix(in oklab, white 5%, var(--simar-abismo));
+  stroke: color-mix(in oklab, white 16%, var(--simar-abismo));
+  stroke-width: 0.8;
+}
+.mp-costa {
+  stroke: var(--simar-espuma);
+  stroke-width: 1.2;
+  opacity: 0.8;
+}
+.mp-mares {
+  fill: var(--simar-espuma);
+  font-family: var(--font-newsreader), Georgia, serif;
+}
+.mp-guia {
+  stroke: var(--simar-espuma);
+}
+/* Velo fijo: las orillas del mapa se funden con la franja (sin máscaras en capas que se mueven) */
+.mp-velo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, var(--simar-abismo), transparent 7%, transparent 90%, var(--simar-abismo)),
+    linear-gradient(to right, var(--simar-abismo), transparent 5%, transparent 95%, var(--simar-abismo));
+}
+.mp-solo-ancho {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .mp-solo-ancho {
+    display: inline;
+  }
+}
+/* En el celular el mapa se ve a un tercio: las líneas engordan para no perderse */
+@media (max-width: 1023px) {
+  .mp-costa { stroke-width: 1.8; }
+  .mp-reticula { stroke-width: 1.2; }
+  .mp-vecinos { stroke-width: 1.2; }
+}
+@media (max-width: 639px) {
+  .mp-costa { stroke-width: 2.6; }
+  .mp-reticula { stroke-width: 1.6; opacity: 0.09; }
+  .mp-vecinos { stroke-width: 1.6; }
+  .mp-iso-cerca { stroke-width: 31.6; }
+  .mp-iso-lejos { stroke-width: 61.6; }
+  .mp-isobatas { opacity: 0.17; }
+  /* Abajo, la ficha se monta sobre el mapa: el velo de abajo crece para recibirla */
+  .mp-velo {
+    background:
+      linear-gradient(to bottom, var(--simar-abismo), transparent 8%, transparent 84%, var(--simar-abismo)),
+      linear-gradient(to right, var(--simar-abismo), transparent 4%, transparent 96%, var(--simar-abismo));
+  }
+}
+
+/* ── Rutas ───────────────────────────────────────────────────────────── */
+.mp-ruta path {
+  stroke: var(--simar-espuma);
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.mp-ruta-halo {
+  stroke-width: 8;
+  opacity: 0.16;
+}
+.mp-ruta-linea {
+  stroke-width: 1.8;
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+.mp-ruta[data-sel='true'] .mp-ruta-linea {
+  opacity: 1;
+  stroke-width: 2.6;
+}
+@media (max-width: 1023px) {
+  .mp-ruta-linea { stroke-width: 2.6; }
+  .mp-ruta[data-sel='true'] .mp-ruta-linea { stroke-width: 3.6; }
+  .mp-ruta-halo { stroke-width: 12; }
+}
+@media (max-width: 639px) {
+  .mp-ruta-linea { stroke-width: 3.2; }
+  .mp-ruta[data-sel='true'] .mp-ruta-linea { stroke-width: 5; }
+  .mp-ruta-halo { stroke-width: 16; }
+}
+
+/* ── Puertos sobre el mapa ───────────────────────────────────────────── */
+.mp-puerto {
+  position: absolute;
+  z-index: 1;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Peñasco queda encima de Ensenada, su vecino más cercano; el elegido, encima de todos */
+.mp-puerto[data-activo='true'] {
+  z-index: 2;
+}
+.mp-puerto[data-sel='true'] {
+  z-index: 3;
+}
+.mp-puerto:focus {
+  outline: none;
+}
+.mp-puerto-marca {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+}
+.mp-punto {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.88);
+  background-color: var(--simar-abismo);
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.3s ease;
+}
+.mp-puerto[data-sel='true'] .mp-punto {
+  border-color: var(--simar-espuma);
+  background-color: color-mix(in oklab, var(--simar-espuma) 45%, var(--simar-abismo));
+  transform: scale(1.35);
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--simar-espuma) 20%, transparent);
+}
+/* Peñasco: punto lleno con borde blanco, un halo corto y un anillo fino fijo (el pulso sólo late
+   dos veces) */
+.mp-puerto[data-activo='true'] .mp-punto {
+  width: 16px;
+  height: 16px;
+  border: 2.5px solid #fff;
+  background-color: var(--simar-espuma);
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--simar-espuma) 16%, transparent);
+}
+.mp-puerto[data-activo='true'][data-sel='true'] .mp-punto {
+  transform: scale(1.12);
+}
+.mp-anillo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in oklab, var(--simar-espuma) 45%, transparent);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .mp-puerto:hover .mp-punto {
+    transform: scale(1.3);
+  }
+}
+.mp-pulso {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 2px solid var(--simar-espuma);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Nombres: desde tableta, todos; en el celular sólo Peñasco y el elegido (la ficha dice cuál es) */
+.mp-nombre {
+  position: absolute;
+  display: block;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.74);
+  text-shadow:
+    0 1px 2px var(--simar-abismo),
+    0 0 10px var(--simar-abismo);
+  pointer-events: none;
+  transition: color 0.2s ease;
+}
+.mp-nombre[data-lado='derecha'] {
+  left: calc(50% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.mp-nombre[data-lado='izquierda'] {
+  right: calc(50% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+}
+.mp-nombre[data-lado='arriba'] {
+  bottom: calc(50% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mp-nombre[data-lado='abajo'] {
+  top: calc(50% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+}
+.mp-puerto[data-activo='true'] .mp-nombre {
+  left: calc(50% + 22px);
+  font-weight: 700;
+  color: #fff;
+}
+.mp-puerto[data-sel='true'] .mp-nombre {
+  color: #fff;
+  font-weight: 700;
+}
+@media (max-width: 639px) {
+  .mp-puerto {
+    width: 44px;
+    height: 44px;
+    margin: -22px 0 0 -22px;
+  }
+  .mp-nombre {
+    display: none;
+  }
+  .mp-puerto[data-activo='true'] .mp-nombre,
+  .mp-puerto[data-sel='true'] .mp-nombre[data-celular='si'] {
+    display: block;
+  }
+  .mp-puerto[data-activo='true'] .mp-nombre {
+    left: calc(50% + 18px);
+  }
+  .mp-anillo {
+    width: 30px;
+    height: 30px;
+    margin: -15px 0 0 -15px;
+  }
+  .mp-puerto[data-activo='true'] .mp-punto {
+    width: 14px;
+    height: 14px;
+    border-width: 2px;
+  }
+}
+
+/* ── Ficha del puerto elegido ────────────────────────────────────────── */
+.mp-ficha {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 24px;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.mp-ficha-icono {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.82);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+.mp-ficha-icono[data-activo='true'] {
+  color: var(--simar-espuma);
+  background-color: color-mix(in oklab, var(--simar-espuma) 15%, transparent);
+}
+.mp-ficha-nombre {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: #fff;
+}
+.mp-ficha-linea {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.mp-insignia {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  background-color: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+.mp-insignia[data-activo='true'] {
+  color: var(--simar-espuma);
+  background-color: color-mix(in oklab, var(--simar-espuma) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--simar-espuma) 40%, transparent);
+}
+/* Celular: la ficha se monta sobre el mapa, así que es opaca y tiene sombra; todo en una línea */
+@media (max-width: 639px) {
+  .mp-ficha {
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 20px;
+    background-color: color-mix(in oklab, white 7%, var(--simar-abismo));
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+      0 14px 30px -18px color-mix(in oklab, var(--simar-abismo) 90%, transparent);
+  }
+  .mp-ficha-icono {
+    width: 44px;
+    height: 44px;
+  }
+  .mp-ficha-nombre {
+    font-size: 24px;
+  }
+  .mp-ficha-linea {
+    margin-top: 4px;
+    gap: 4px 10px;
+  }
+  .mp-insignia {
+    min-height: 26px;
+    padding: 0 10px;
+  }
+}
+
+/* ── Leyenda y lista ─────────────────────────────────────────────────── */
+/* En el celular la leyenda sobra: Peñasco lleva su «Activo» en la fila y la ficha dice el resto */
+.mp-leyenda {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  font-size: 17px;
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (min-width: 640px) {
+  .mp-leyenda { display: flex; }
+}
+.mp-marca {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+}
+.mp-marca[data-activo='true'] {
+  border-color: var(--simar-espuma);
+  background-color: var(--simar-espuma);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--simar-espuma) 20%, transparent);
+}
+
+/* Celular: una fila que se desliza con el dedo, de orilla a orilla; el último botón cortado en la
+   orilla avisa que hay más */
+.mp-lista {
+  display: flex;
+  gap: 8px;
+  margin-inline: -16px;
+  padding: 2px 16px 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 16px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mp-lista::-webkit-scrollbar {
+  display: none;
+}
+.mp-boton {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 18px 0 16px;
+  border-radius: 999px;
+  font-size: 17px;
+  text-align: left;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  color: rgba(255, 255, 255, 0.82);
+  background-color: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+.mp-boton-nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mp-boton-activo {
+  margin-left: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--simar-espuma);
+}
+@media (hover: hover) {
+  .mp-boton:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+}
+.mp-boton[data-sel='true'] {
+  color: #fff;
+  font-weight: 700;
+  background-color: color-mix(in oklab, var(--simar-espuma) 12%, transparent);
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--simar-espuma) 60%, transparent);
+}
+.mp-boton:focus-visible {
+  outline: 3px solid var(--simar-espuma);
+  outline-offset: 2px;
+}
+/* Tableta y escritorio: rejilla (tres columnas en tableta, dos al lado del mapa); Peñasco ocupa
+   la fila entera */
+@media (min-width: 640px) {
+  .mp-lista {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-inline: 0;
+    padding: 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+  .mp-boton {
+    gap: 12px;
+    padding: 0 16px;
+    border-radius: 16px;
+  }
+  .mp-boton[data-activo='true'] {
+    grid-column: 1 / -1;
+  }
+  .mp-boton-activo {
+    margin-left: auto;
+    padding-left: 8px;
+    font-size: 17px;
+  }
+}
+@media (min-width: 1024px) {
+  .mp-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── El dato del Golfo ───────────────────────────────────────────────── */
+.mp-dato {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  max-width: 640px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.mp-dato-cifra {
+  flex-shrink: 0;
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--simar-espuma);
+}
+.mp-dato-texto {
+  font-size: 17px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+  text-wrap: pretty;
+}
+.mp-dato-fuente {
+  display: block;
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--simar-franja-texto-3);
+}
+@media (min-width: 640px) {
+  .mp-dato { gap: 20px; }
+  .mp-dato-cifra { font-size: 48px; }
+}
+
+/* ── Movimiento ──────────────────────────────────────────────────────── */
+@keyframes mp-entra {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-fondo {
+  from { transform: translateY(-24px); }
+  to { transform: translateY(24px); }
+}
+@keyframes mp-tierra {
+  from { opacity: 0; transform: translateY(32px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-frente {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-fondo-movil {
+  from { transform: translateY(-10px); }
+  to { transform: translateY(10px); }
+}
+@keyframes mp-tierra-movil {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-frente-movil {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-traza {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes mp-aparece {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mp-pulso {
+  from { opacity: 0.75; transform: scale(1); }
+  to { opacity: 0; transform: scale(3.4); }
+}
+@keyframes mp-ficha {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Al llegar al mapa, Peñasco late dos veces y se queda quieto */
+  .mp-escena[data-visto='true'] .mp-pulso {
+    animation: mp-pulso 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s 2;
+  }
+  .mp-escena[data-visto='true'] .mp-pulso-2 {
+    animation-delay: 0.85s;
+  }
+  /* La ficha nueva aparece suave al elegir otro puerto */
+  .mp-ficha {
+    animation: mp-ficha 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mp-entra {
+      animation: mp-entra linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 75%;
+    }
+    .mp-d1 {
+      animation-range: entry 8% entry 85%;
+    }
+    .mp-d2 {
+      animation-range: entry 10% cover 28%;
+    }
+
+    /* Una sola línea de tiempo para todo el mapa: la del escenario */
+    .mp-escena {
+      view-timeline: --mp-escena block;
+    }
+    .mp-capa-fondo,
+    .mp-capa-tierra,
+    .mp-capa-frente {
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: --mp-escena;
+    }
+    /* Fondo: el más lento, acompaña todo el paso del mapa por la pantalla */
+    .mp-capa-fondo {
+      animation-name: mp-fondo;
+      animation-range: cover 0% cover 100%;
+    }
+    /* México y el frente llegan a su lugar (alineados) antes de que el mapa esté al centro */
+    .mp-capa-tierra {
+      animation-name: mp-tierra;
+      animation-range: cover 0% cover 34%;
+    }
+    .mp-capa-frente {
+      animation-name: mp-frente;
+      animation-range: cover 0% cover 36%;
+    }
+    @media (max-width: 639px) {
+      .mp-capa-fondo { animation-name: mp-fondo-movil; }
+      .mp-capa-tierra { animation-name: mp-tierra-movil; }
+      .mp-capa-frente { animation-name: mp-frente-movil; }
+    }
+    /* Las rutas se trazan una tras otra, de la más cercana a la más lejana (rangos escritos
+       uno por uno: un var() dentro de animation-range no es confiable en todos los motores). En
+       el celular el mapa es bajo y cruza la pantalla rápido: las rutas van un poco antes */
+    .mp-ruta path {
+      animation: mp-traza linear both;
+      animation-timeline: --mp-escena;
+    }
+    .mp-ruta[data-i='0'] path { animation-range: cover 14% cover 28%; }
+    .mp-ruta[data-i='1'] path { animation-range: cover 17% cover 31%; }
+    .mp-ruta[data-i='2'] path { animation-range: cover 20% cover 34%; }
+    .mp-ruta[data-i='3'] path { animation-range: cover 23% cover 37%; }
+    .mp-ruta[data-i='4'] path { animation-range: cover 26% cover 40%; }
+    .mp-ruta[data-i='5'] path { animation-range: cover 29% cover 43%; }
+    .mp-ruta[data-i='6'] path { animation-range: cover 32% cover 46%; }
+    .mp-ruta[data-i='7'] path { animation-range: cover 35% cover 49%; }
+    /* Cada puerto (punto y nombre juntos) aparece cuando su ruta lo alcanza */
+    .mp-puerto[data-activo='false'] {
+      animation: mp-aparece linear both;
+      animation-timeline: --mp-escena;
+    }
+    .mp-puerto[data-activo='false'][data-i='0'] { animation-range: cover 25% cover 30%; }
+    .mp-puerto[data-activo='false'][data-i='1'] { animation-range: cover 28% cover 33%; }
+    .mp-puerto[data-activo='false'][data-i='2'] { animation-range: cover 31% cover 36%; }
+    .mp-puerto[data-activo='false'][data-i='3'] { animation-range: cover 34% cover 39%; }
+    .mp-puerto[data-activo='false'][data-i='4'] { animation-range: cover 37% cover 42%; }
+    .mp-puerto[data-activo='false'][data-i='5'] { animation-range: cover 40% cover 45%; }
+    .mp-puerto[data-activo='false'][data-i='6'] { animation-range: cover 43% cover 48%; }
+    .mp-puerto[data-activo='false'][data-i='7'] { animation-range: cover 46% cover 51%; }
+    @media (max-width: 639px) {
+      .mp-ruta[data-i='0'] path { animation-range: cover 8% cover 22%; }
+      .mp-ruta[data-i='1'] path { animation-range: cover 11% cover 25%; }
+      .mp-ruta[data-i='2'] path { animation-range: cover 14% cover 28%; }
+      .mp-ruta[data-i='3'] path { animation-range: cover 17% cover 31%; }
+      .mp-ruta[data-i='4'] path { animation-range: cover 20% cover 34%; }
+      .mp-ruta[data-i='5'] path { animation-range: cover 23% cover 37%; }
+      .mp-ruta[data-i='6'] path { animation-range: cover 26% cover 40%; }
+      .mp-ruta[data-i='7'] path { animation-range: cover 29% cover 43%; }
+      .mp-puerto[data-activo='false'][data-i='0'] { animation-range: cover 19% cover 24%; }
+      .mp-puerto[data-activo='false'][data-i='1'] { animation-range: cover 22% cover 27%; }
+      .mp-puerto[data-activo='false'][data-i='2'] { animation-range: cover 25% cover 30%; }
+      .mp-puerto[data-activo='false'][data-i='3'] { animation-range: cover 28% cover 33%; }
+      .mp-puerto[data-activo='false'][data-i='4'] { animation-range: cover 31% cover 36%; }
+      .mp-puerto[data-activo='false'][data-i='5'] { animation-range: cover 34% cover 39%; }
+      .mp-puerto[data-activo='false'][data-i='6'] { animation-range: cover 37% cover 42%; }
+      .mp-puerto[data-activo='false'][data-i='7'] { animation-range: cover 40% cover 45%; }
+    }
+  }
+}

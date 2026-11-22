@@ -1,0 +1,38 @@
+/* Switch de versión de la landing (sólo en la demo, ver SwitchVersionLanding.tsx).
+   En celulares angostos el botón extra no cabe con los demás: bajo 390 px los botones de ícono
+   pasan de 46 a 40 px y los espacios de 8 a 4; de 360 a 374 px, 38 px; bajo 360 px se esconde el del tema.
+   Sin capa (@layer): así le gana a las clases de Tailwind y a la variante movil:. */
+@media (max-width: 389.98px) {
+    div:has(> div > .sv-switch),
+    div:has(> .sv-switch) {
+        gap: 4px;
+    }
+    div:has(> .sv-switch) > :is(a, button):not(:last-child) {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        border-radius: 13px;
+    }
+}
+@media (max-width: 359.98px) {
+    .sv-switch + button {
+        display: none;
+    }
+}
+/* 360-374 px: 2 px más chicos todavía (a 360 faltaban 4 px) */
+@media (max-width: 374.98px) {
+    div:has(> .sv-switch) > :is(a, button):not(:last-child) {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        min-height: 38px;
+    }
+}
+/* 768-899 px: en la barra nueva entran los logos del ITSPP y el ICS y con el switch ya no cabe
+   «Probar la demo»; ahí los logos se van (el nombre SiMAR se queda) */
+@media (min-width: 768px) and (max-width: 899.98px) {
+    :root:has(.sv-switch) a[href='#top'] > span {
+        display: none;
+    }
+}

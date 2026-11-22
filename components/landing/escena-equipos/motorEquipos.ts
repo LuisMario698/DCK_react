@@ -46,12 +46,17 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
  * Para que no se trabe (ni al cargar ni al bajar):
  *  - los modelos vienen con las piezas de cada parte unidas por material y la geometría
  *    simplificada (≈ 90 llamadas de dibujo en vez de ≈ 150) y se descomprimen en workers;
- *  - los shaders se compilan en segundo plano (compileAsync) y las texturas suben a la GPU de a una
- *    por cuadro, antes de enseñar la escena: el primer cuadro no compila nada;
+ *  - la preparación va en pedazos, cada uno en un rato libre del navegador (`ceder`): leer cada
+ *    modelo, crear el contexto WebGL, el cuarto de los reflejos, cada captura, las sombras… Así,
+ *    aunque se arme mientras se ve la portada, nunca hay un bloque largo en el hilo principal;
+ *  - los .glb pueden llegar ya pedidos (`modelos`): la descarga empieza antes que three.js;
+ *  - los shaders se compilan en segundo plano (compileAsync), las texturas suben a la GPU de a una
+ *    por rato libre y se dibuja un cuadro de prueba fuera de la página (sube la geometría) antes de
+ *    enseñar la escena: el primer cuadro visible no compila ni sube nada;
  *  - cada captura de la laptop sube una sola vez; el cambio de pantalla lo hace un shader que las
  *    desliza (antes se redibujaba un lienzo de 1600 × 1035 y se volvía a subir en cada cuadro);
- *  - la resolución se limita a 1.5× y no se pide la GPU de alto rendimiento (en laptops con dos
- *    tarjetas, el cambio de una a otra se notaba como un tirón).
+ *  - la resolución se limita a 1.5× (1.25× en celulares y equipos modestos: `densidadMax`) y no se
+ *    pide la GPU de alto rendimiento (en laptops con dos tarjetas, el cambio se notaba como tirón).
  */
 
 export interface MotorEquipos {
@@ -66,6 +71,10 @@ export interface OpcionesMotor {
     /** Capturas de la laptop, en orden: Panel, manifiesto, Estadísticas, portal */
     pantallas: string[];
     capturaCelular: string;
+    /** Los .glb ya pedidos (la descarga empieza antes de bajar three.js); si no, se piden aquí */
+    modelos?: { laptop: Promise<ArrayBuffer>; celular: Promise<ArrayBuffer> };
+    /** Densidad de píxeles máxima del lienzo (1.5 por omisión) */
+    densidadMax?: number;
 }
 
 /** Lo que ocupa la página sobre el lienzo (px): arriba el título del paso, abajo los puntos */
@@ -77,7 +86,26 @@ const suave = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2,
 const mezclar = (a: number, b: number, t: number) => a + (b - a) * t;
 /** Frena al llegar: para lo que se asienta (el celular al posarse) */
 const frenar = (t: number) => 1 - Math.pow(1 - t, 3);
-const siguienteCuadro = () => new Promise<void>((listo) => requestAnimationFrame(() => listo()));
+/**
+ * Espera un rato libre del navegador (requestIdleCallback; a lo más 200 ms) antes del siguiente
+ * pedazo pesado: entre pedazo y pedazo la página pinta sus cuadros y atiende el scroll
+ */
+const ceder = () =>
+    new Promise<void>((listo) => {
+        if (typeof window.requestIdleCallback === 'function') window.requestIdleCallback(() => listo(), { timeout: 200 });
+        else window.setTimeout(listo, 32);
+    });
+
+/** Pide un archivo completo como ArrayBuffer (los .glb) */
+function pedirArchivo(url: string, senal?: AbortSignal): Promise<ArrayBuffer> {
+    return fetch(url, { signal: senal }).then((r) => {
+        if (!r.ok) throw new Error(`${url}: ${r.status}`);
+        return r.arrayBuffer();
+    });
+}
+
+/** La carpeta de un archivo (para lo que el .glb pudiera traer aparte) */
+const carpetaDe = (url: string) => url.slice(0, url.lastIndexOf('/') + 1);
 
 // La geometría se descomprime en dos workers, fuera del hilo principal (una vez por página)
 let decodificadorListo = false;
@@ -295,6 +323,40 @@ export async function crearMotorEquipos(
     reserva: Reserva = () => ({ arriba: 0, abajo: 0 })
 ): Promise<MotorEquipos> {
     prepararDecodificador();
+    // Lo que haya que soltar si ya no hace falta a medio camino (crece conforme se arma)
+    let liberar: () => void = () => {};
+    /** Cede el hilo hasta un rato libre y, si la sección ya no está, suelta todo y se detiene */
+    const seguir = async () => {
+        await ceder();
+        if (!vivo()) {
+            liberar();
+            throw new Error('cancelado');
+        }
+    };
+
+    // 1. Los archivos, todos a la vez: los modelos (si no llegaron ya pedidos) y las capturas
+    const modelos = opciones.modelos ?? { laptop: pedirArchivo(opciones.laptop), celular: pedirArchivo(opciones.celular) };
+    const pedidasLap = Promise.all(opciones.pantallas.map(cargarImagen));
+    const pedidaCel = cargarImagen(opciones.capturaCelular);
+    // (si algo falla mientras se espera otra cosa, no queda como «rechazo sin atender»: el error
+    // llega igual al esperarla)
+    const pendientes: Promise<unknown>[] = [modelos.laptop, modelos.celular, pedidasLap, pedidaCel];
+    for (const pr of pendientes) pr.catch(() => {});
+
+    // 2. Cada modelo se lee en su propio rato libre (el análisis del glTF corre en el hilo principal;
+    // la geometría se descomprime en los workers)
+    const cargador = new GLTFLoader();
+    cargador.setMeshoptDecoder(MeshoptDecoder);
+    const datosLap = await modelos.laptop;
+    await seguir();
+    const gltfLaptop = await cargador.parseAsync(datosLap, carpetaDe(opciones.laptop));
+    const datosCel = await modelos.celular;
+    await seguir();
+    const gltfCelular = await cargador.parseAsync(datosCel, carpetaDe(opciones.celular));
+    const [imagenes, imagenCel] = await Promise.all([pedidasLap, pedidaCel]);
+    await seguir();
+
+    // 3. El contexto WebGL (crearlo cuesta: va en su propio rato)
     const lienzo = document.createElement('canvas');
     lienzo.setAttribute('aria-hidden', 'true');
     lienzo.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block';
@@ -309,8 +371,10 @@ export async function crearMotorEquipos(
     luz.position.set(3, 6, 5);
     escena.add(luz);
     const camara = new PerspectiveCamera(30, 1, 0.1, 200);
+    let ambiente: Texture | undefined;
+    let pmrem: PMREMGenerator | undefined;
 
-    const liberarTodo = (ambiente?: Texture, pmrem?: PMREMGenerator) => {
+    liberar = () => {
         const texturas = new Set<Texture>();
         escena.traverse((o) => {
             const malla = o as Mesh;
@@ -331,25 +395,16 @@ export async function crearMotorEquipos(
         renderer.dispose();
         lienzo.remove();
     };
+    await seguir();
 
-    const cargador = new GLTFLoader();
-    cargador.setMeshoptDecoder(MeshoptDecoder);
-    const [gltfLaptop, gltfCelular, imagenes, imagenCel] = await Promise.all([
-        cargador.loadAsync(opciones.laptop),
-        cargador.loadAsync(opciones.celular),
-        Promise.all(opciones.pantallas.map(cargarImagen)),
-        cargarImagen(opciones.capturaCelular),
-    ]);
-    if (!vivo()) {
-        liberarTodo();
-        throw new Error('cancelado');
-    }
-
-    // El cuarto que se refleja en el aluminio y el vidrio (una vez, ya con los modelos listos)
-    const pmrem = new PMREMGenerator(renderer);
-    const ambiente = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    // 4. El cuarto que se refleja en el aluminio y el vidrio (compila sus shaders: su propio rato)
+    pmrem = new PMREMGenerator(renderer);
+    const cuarto = new RoomEnvironment();
+    ambiente = pmrem.fromScene(cuarto, 0.04).texture;
+    cuarto.dispose();
     escena.environment = ambiente;
     const anisotropia = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+    await seguir();
 
     // ── Laptop ────────────────────────────────────────────────────────────────
     // `laptop` lo mueve la animación; `ajusteLap` (adentro) escala y centra el modelo para que el
@@ -392,8 +447,13 @@ export async function crearMotorEquipos(
         anguloCerrada = Math.atan2(caja.max.y - caja.min.y, caja.min.z - caja.max.z) - 0.01;
     }
 
-    // Las cuatro capturas de la laptop, compuestas una vez (mismo aspecto que su pantalla)
-    const capturasLap = imagenes.map((img) => texturaDeCaptura(img, 1600, 1035, anisotropia));
+    // Las cuatro capturas de la laptop, compuestas una vez (mismo aspecto que su pantalla); cada una
+    // en su rato libre: dibujar 1600 × 1035 en un lienzo no es gratis en un equipo modesto
+    const capturasLap: Texture[] = [];
+    for (const img of imagenes) {
+        await seguir();
+        capturasLap.push(texturaDeCaptura(img, 1600, 1035, anisotropia));
+    }
     const pantallaLap = materialPantalla();
     pantallaLap.uniforms.mapaA.value = capturasLap[0];
     pantallaLap.uniforms.mapaB.value = capturasLap[1];
@@ -418,6 +478,7 @@ export async function crearMotorEquipos(
     ambienteLap.renderOrder = contactoLap.renderOrder = sombraTapa.renderOrder = -1;
     sombrasLap.add(ambienteLap, sombraTapa, contactoLap);
     escena.add(sombrasLap);
+    await seguir();
 
     // ── Celular ───────────────────────────────────────────────────────────────
     const celular = new Group();
@@ -447,6 +508,7 @@ export async function crearMotorEquipos(
         }
     }
     // Mismo aspecto que la pantalla del modelo (7.13 × 15.40); el fondo es el papel de la app
+    await seguir();
     const capturaCel = texturaDeCaptura(imagenCel, 1080, 2334, anisotropia, componerTelefono('#E8E3D8'));
     encenderPantalla(gltfCelular.scene, new MeshBasicMaterial({ map: capturaCel, toneMapped: false, name: 'pantalla' }));
 
@@ -600,8 +662,9 @@ export async function crearMotorEquipos(
     const medir = () => {
         ancho = contenedor.clientWidth || 1;
         alto = contenedor.clientHeight || 1;
-        // 1.5× a lo más: nítido en pantallas de alta densidad y con la mitad de píxeles que 2×
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+        // 1.5× a lo más (1.25× en equipos modestos): nítido en pantallas de alta densidad y con la
+        // mitad de píxeles que 2×
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, opciones.densidadMax ?? 1.5));
         renderer.setSize(ancho, alto, false);
         angosto = ancho / alto < 0.9;
         camara.aspect = ancho / alto;
@@ -615,7 +678,8 @@ export async function crearMotorEquipos(
     };
     medir();
 
-    // ── Preparar sin trabar: shaders en segundo plano y texturas de a una por cuadro ──
+    // ── Preparar sin trabar: shaders en segundo plano y texturas de a una por rato libre ──
+    await seguir();
     celular.visible = sombrasCel.visible = true;
     await renderer.compileAsync(escena, camara);
     const porSubir = new Set<Texture>([...capturasLap, capturaCel]);
@@ -625,16 +689,10 @@ export async function crearMotorEquipos(
         for (const v of Object.values(m)) if (v && (v as Texture).isTexture) porSubir.add(v as Texture);
     });
     for (const t of porSubir) {
-        if (!vivo()) break;
+        await seguir();
         renderer.initTexture(t);
-        await siguienteCuadro();
     }
-    if (!vivo()) {
-        liberarTodo(ambiente, pmrem);
-        throw new Error('cancelado');
-    }
-    contenedor.appendChild(lienzo);
-
+    await seguir();
 
     /** Qué capturas y cuánto avance del cambio, según el scroll */
     const capturas = (p: number): [number, number, number] => {
@@ -672,5 +730,11 @@ export async function crearMotorEquipos(
         renderer.render(escena, camara);
     };
 
-    return { pintar, medir, liberar: () => liberarTodo(ambiente, pmrem) };
+    // Un cuadro de prueba fuera de la página, con los dos equipos a cuadro (la toma final): sube su
+    // geometría a la GPU ahora y no en el primer cuadro que se ve
+    pintar(1);
+    await seguir();
+    contenedor.appendChild(lienzo);
+
+    return { pintar, medir, liberar };
 }
