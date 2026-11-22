@@ -20,8 +20,11 @@
         display: none;
     }
 }
-/* 360-374 px: 2 px más chicos todavía (a 360 faltaban 4 px) */
+/* 360-374 px: 2 px más chicos todavía y «Probar la demo» con menos relleno (a 360 faltaban 4 px) */
 @media (max-width: 374.98px) {
+    div:has(> .sv-switch) > :last-child {
+        padding-inline: 10px;
+    }
     div:has(> .sv-switch) > :is(a, button):not(:last-child) {
         width: 38px;
         height: 38px;
